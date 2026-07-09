@@ -12,13 +12,12 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Hifzly</title>
+    <!-- FontAwesome sudah ditarik otomatis dari nav.php nanti, tapi kita pastikan styling utamanya aman -->
     <style>
         :root {
             --primary: #064e3b;
-            /* Hijau sangat gelap ala referensi gambar */
             --primary-light: #059669;
             --accent: #fbbf24;
-            /* Emas */
             --dark: #1f2937;
             --bg: #f3f4f6;
             --card-bg: #ffffff;
@@ -38,7 +37,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             padding-bottom: 90px;
         }
 
-        /* HEADER HERO (Setengah Layar Atas) */
+        /* HEADER HERO */
         .hero-section {
             background: linear-gradient(160deg, #022c22, var(--primary), var(--primary-light));
             color: white;
@@ -49,7 +48,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             text-align: center;
         }
 
-        /* Top Bar: Lokasi & Profil */
         .top-bar {
             display: flex;
             justify-content: space-between;
@@ -65,14 +63,13 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             font-size: 0.85rem;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
             cursor: pointer;
-            transition: 0.3s;
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .location-badge:hover {
-            background: rgba(255, 255, 255, 0.25);
+        .location-badge i {
+            color: var(--accent);
         }
 
         .profile-btn {
@@ -87,12 +84,10 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             border: 2px solid rgba(255, 255, 255, 0.5);
         }
 
-        /* Bismillah & Waktu */
         .bismillah {
             font-size: 1.8rem;
             font-family: 'Amiri', 'Traditional Arabic', serif;
             margin-bottom: 15px;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .date-time-row {
@@ -124,10 +119,9 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             font-size: 2.2rem;
             font-weight: bold;
             letter-spacing: 2px;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
         }
 
-        /* Jadwal Sholat Horizontal */
+        /* Jadwal Sholat */
         .prayer-row {
             display: flex;
             justify-content: space-between;
@@ -142,7 +136,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 5px;
+            gap: 6px;
             opacity: 0.6;
             transition: 0.3s;
         }
@@ -156,21 +150,25 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             color: var(--accent);
         }
 
+        .prayer-item.active .p-icon {
+            color: var(--accent);
+        }
+
         .p-time {
             font-size: 0.85rem;
             font-weight: bold;
         }
 
         .p-icon {
-            font-size: 1.2rem;
+            font-size: 1.3rem;
         }
 
         .p-name {
             font-size: 0.7rem;
             text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        /* Countdown */
         .countdown-text {
             font-size: 0.9rem;
             font-weight: 600;
@@ -182,7 +180,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             font-weight: bold;
         }
 
-        /* KONTEN UTAMA (Overlapping Hero) */
+        /* MAIN CONTENT */
         .main-content {
             padding: 0 20px;
             max-width: 600px;
@@ -191,7 +189,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             z-index: 5;
         }
 
-        /* Floating Card (Continue Reading) */
         .floating-card {
             background: var(--card-bg);
             border-radius: 20px;
@@ -203,10 +200,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             margin-bottom: 30px;
             cursor: pointer;
             transition: 0.3s;
-        }
-
-        .floating-card:active {
-            transform: scale(0.98);
         }
 
         .fc-left {
@@ -272,10 +265,11 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             display: flex;
             justify-content: center;
             align-items: center;
-            color: var(--dark);
+            color: var(--text-muted);
+            font-size: 0.8rem;
         }
 
-        /* Quick Access Grid */
+        /* Quick Access */
         .section-title {
             font-size: 1.1rem;
             font-weight: bold;
@@ -294,7 +288,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             text-decoration: none;
         }
 
@@ -306,17 +300,16 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 1.6rem;
+            font-size: 1.5rem;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
             color: var(--primary);
-            transition: 0.2s;
             border: 1px solid #f3f4f6;
+            transition: 0.2s;
         }
 
-        .q-item:active .q-icon {
-            transform: scale(0.9);
-            background: #ecfdf5;
-            border-color: var(--primary-light);
+        .q-item:hover .q-icon {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
         }
 
         .q-text {
@@ -326,7 +319,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             text-align: center;
         }
 
-        /* Responsif Desktop */
         @media (min-width: 768px) {
             .hero-section {
                 padding-top: 100px;
@@ -347,24 +339,17 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
 
 <body>
 
-    <!-- HERO SECTION -->
     <div class="hero-section">
-        <!-- Top Bar -->
         <div class="top-bar">
-            <!-- Tombol Lokasi -->
             <div class="location-badge" onclick="getLocation()">
-                <span id="loc-icon">📍</span>
+                <i class="fas fa-map-marker-alt"></i>
                 <span id="location-text">Mencari Lokasi...</span>
             </div>
-            <!-- Profil -->
-            <div class="profile-btn">
-                <?= strtoupper(substr($_SESSION['nama_lengkap'], 0, 1)) ?>
-            </div>
+            <div class="profile-btn"><?= strtoupper(substr($_SESSION['nama_lengkap'], 0, 1)) ?></div>
         </div>
 
         <div class="bismillah">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم</div>
 
-        <!-- Tanggal & Jam -->
         <div class="date-time-row">
             <div class="date-box">
                 <div class="label">Hijriah</div>
@@ -377,7 +362,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             </div>
         </div>
 
-        <!-- Jadwal Sholat -->
         <div class="prayer-row" id="prayer-container">
             <div style="font-size: 0.85rem; width: 100%; text-align: center;">Menyelaraskan jadwal sholat...</div>
         </div>
@@ -385,9 +369,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
         <div class="countdown-text" id="countdown-text">--:--:-- menuju waktu sholat berikutnya</div>
     </div>
 
-    <!-- MAIN CONTENT -->
     <div class="main-content">
-        <!-- Floating Card -->
         <div class="floating-card" onclick="window.location.href='alquran.php'">
             <div class="fc-left">
                 <div class="progress-circle">
@@ -402,68 +384,63 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
                     </div>
                 </div>
             </div>
-            <div class="fc-arrow">❯</div>
+            <div class="fc-arrow"><i class="fas fa-chevron-right"></i></div>
         </div>
 
-        <!-- Quick Access Grid -->
         <h3 class="section-title">Akses Cepat</h3>
         <div class="quick-grid">
             <a href="alquran.php" class="q-item">
-                <div class="q-icon">📖</div>
+                <div class="q-icon"><i class="fas fa-book-open"></i></div>
                 <div class="q-text">Qur'an</div>
             </a>
             <a href="#" class="q-item">
-                <div class="q-icon" style="color: #f59e0b;">🎙️</div>
-                <div class="q-text">Smart Murojaah</div>
+                <div class="q-icon" style="color: #f59e0b;"><i class="fas fa-microphone-alt"></i></div>
+                <div class="q-text">Murojaah</div>
             </a>
             <a href="mutabaah.php" class="q-item">
-                <div class="q-icon" style="color: #3b82f6;">📊</div>
+                <div class="q-icon" style="color: #3b82f6;"><i class="fas fa-chart-line"></i></div>
                 <div class="q-text">Mutabaah</div>
             </a>
             <a href="#" class="q-item">
-                <div class="q-icon" style="color: #8b5cf6;">🤲</div>
-                <div class="q-text">Doa & Zikir</div>
+                <div class="q-icon" style="color: #8b5cf6;"><i class="fas fa-hands-praying"></i></div>
+                <div class="q-text">Doa</div>
             </a>
             <a href="#" class="q-item">
-                <div class="q-icon" style="color: #ef4444;">🎯</div>
+                <div class="q-icon" style="color: #ef4444;"><i class="fas fa-bullseye"></i></div>
                 <div class="q-text">Target</div>
             </a>
             <a href="#" class="q-item">
-                <div class="q-icon" style="color: #10b981;">🏆</div>
+                <div class="q-icon" style="color: #10b981;"><i class="fas fa-medal"></i></div>
                 <div class="q-text">Pencapaian</div>
             </a>
             <a href="#" class="q-item">
-                <div class="q-icon" style="color: #6366f1;">🤖</div>
+                <div class="q-icon" style="color: #6366f1;"><i class="fas fa-robot"></i></div>
                 <div class="q-text">AI Coach</div>
             </a>
             <a href="#" class="q-item">
-                <div class="q-icon" style="color: #6b7280;">⚙️</div>
+                <div class="q-icon" style="color: #6b7280;"><i class="fas fa-cog"></i></div>
                 <div class="q-text">Pengaturan</div>
             </a>
         </div>
     </div>
 
-    <!-- Panggil Navigasi -->
+    <!-- Panggil Navigasi (Otomatis load FontAwesome) -->
     <?php include '../components/nav.php'; ?>
 
     <script>
         let prayerTimesData = null;
 
-        // 1. FUNGSI JAM REAL-TIME
         function updateClock() {
             const now = new Date();
             const h = String(now.getHours()).padStart(2, '0');
             const m = String(now.getMinutes()).padStart(2, '0');
             const s = String(now.getSeconds()).padStart(2, '0');
             document.getElementById('clock').innerText = `${h}:${m}:${s}`;
-
-            // Perbarui countdown jika jadwal sholat sudah dimuat
             if (prayerTimesData) updateCountdown(now);
         }
         setInterval(updateClock, 1000);
-        updateClock(); // Panggil sekali di awal
+        updateClock();
 
-        // 2. FUNGSI GEOLOCATION & JADWAL SHOLAT
         function getLocation() {
             document.getElementById('location-text').innerText = "Melacak...";
             if (navigator.geolocation) {
@@ -474,46 +451,36 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
         }
 
         function showPosition(position) {
-            const lat = position.coords.latitude;
-            const lon = position.coords.longitude;
-            fetchPrayerAPI(lat, lon);
-            fetchCityName(lat, lon);
+            fetchPrayerAPI(position.coords.latitude, position.coords.longitude);
+            fetchCityName(position.coords.latitude, position.coords.longitude);
         }
 
-        // Jika GPS ditolak / error, gunakan default Cikande, Banten
-        function showError(error) {
-            console.log("GPS Error:", error);
+        function showError() {
             fallbackLocation();
         }
 
         function fallbackLocation() {
             document.getElementById('location-text').innerText = "Cikande, Banten";
-            // Koordinat Cikande
             fetchPrayerAPI(-6.1824, 106.3351);
         }
 
-        // Ambil Nama Kota dari Koordinat
         async function fetchCityName(lat, lon) {
             try {
                 const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=id`);
                 const data = await res.json();
-                const city = data.city || data.locality || "Lokasi Anda";
-                document.getElementById('location-text').innerText = city;
+                document.getElementById('location-text').innerText = data.city || data.locality || "Lokasi Anda";
             } catch (e) {
                 document.getElementById('location-text').innerText = "Lokasi Ditemukan";
             }
         }
 
-        // Ambil Jadwal Sholat & Tanggal Hijriah dari Aladhan API
         async function fetchPrayerAPI(lat, lon) {
             try {
                 const res = await fetch(`https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lon}&method=11`);
                 const result = await res.json();
-
                 const data = result.data;
                 prayerTimesData = data.timings;
 
-                // Set Tanggal
                 document.getElementById('masehi-date').innerText = data.date.gregorian.date;
                 document.getElementById('hijri-date').innerText = `${data.date.hijri.day} ${data.date.hijri.month.en} ${data.date.hijri.year}`;
 
@@ -523,31 +490,31 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             }
         }
 
-        // 3. FUNGSI RENDER JADWAL & COUNTDOWN
+        // Konfigurasi Ikon FontAwesome untuk Sholat
         const prayerConfig = [{
                 id: 'Fajr',
                 name: 'Subuh',
-                icon: '🌅'
+                icon: '<i class="fas fa-cloud-moon"></i>'
             },
             {
                 id: 'Dhuhr',
                 name: 'Dzuhur',
-                icon: '☀️'
+                icon: '<i class="fas fa-sun"></i>'
             },
             {
                 id: 'Asr',
                 name: 'Ashar',
-                icon: '⛅'
+                icon: '<i class="fas fa-cloud-sun"></i>'
             },
             {
                 id: 'Maghrib',
                 name: 'Maghrib',
-                icon: '🌇'
+                icon: '<i class="fas fa-moon"></i>'
             },
             {
                 id: 'Isha',
                 name: 'Isya',
-                icon: '🌙'
+                icon: '<i class="fas fa-star"></i>'
             }
         ];
 
@@ -569,12 +536,9 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             let nextPrayerTimeDate = null;
             let activeId = "";
 
-            // Cari sholat berikutnya di hari ini
             for (let i = 0; i < prayerConfig.length; i++) {
                 const p = prayerConfig[i];
-                const timeStr = prayerTimesData[p.id];
-                const [h, m] = timeStr.split(':');
-
+                const [h, m] = prayerTimesData[p.id].split(':');
                 let pTime = new Date();
                 pTime.setHours(h, m, 0, 0);
 
@@ -586,10 +550,8 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
                 }
             }
 
-            // Jika semua sholat hari ini sudah lewat, maka sholat berikutnya adalah Subuh besok
             if (!nextPrayerTimeDate) {
-                const fStr = prayerTimesData['Fajr'];
-                const [fh, fm] = fStr.split(':');
+                const [fh, fm] = prayerTimesData['Fajr'].split(':');
                 nextPrayerTimeDate = new Date();
                 nextPrayerTimeDate.setDate(now.getDate() + 1);
                 nextPrayerTimeDate.setHours(fh, fm, 0, 0);
@@ -597,23 +559,20 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
                 activeId = 'Fajr';
             }
 
-            // Reset highlight
             document.querySelectorAll('.prayer-item').forEach(el => el.classList.remove('active'));
             if (document.getElementById(`pr-${activeId}`)) {
                 document.getElementById(`pr-${activeId}`).classList.add('active');
             }
 
-            // Hitung selisih
             const diffMs = nextPrayerTimeDate - now;
             const diffHrs = Math.floor((diffMs % 86400000) / 3600000);
             const diffMins = Math.floor((diffMs % 3600000) / 60000);
             const diffSecs = Math.floor((diffMs % 60000) / 1000);
-
             const format = (num) => String(num).padStart(2, '0');
+
             document.getElementById('countdown-text').innerHTML = `<span>${format(diffHrs)}:${format(diffMins)}:${format(diffSecs)}</span> menuju ${nextPrayerName}`;
         }
 
-        // Inisialisasi Lokasi Pertama Kali
         window.onload = () => {
             getLocation();
         };

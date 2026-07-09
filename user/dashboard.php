@@ -11,730 +11,612 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard — Hifzly</title>
-
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-    <!-- Google Fonts: Inter + Amiri -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
-
+    <title>Dashboard - Hifzly</title>
     <style>
         :root {
-            --emerald-50: #ecfdf5;
-            --emerald-100: #d1fae5;
-            --emerald-500: #10b981;
-            --emerald-600: #059669;
-            --emerald-700: #047857;
-            --surface: #ffffff;
-            --text-primary: #111827;
-            --text-muted: #9ca3af;
-            --border-light: #f3f4f6;
-            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
-            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
-            --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.08);
-            --radius: 16px;
-            --radius-lg: 20px;
-            --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            --primary: #064e3b;
+            /* Hijau sangat gelap ala referensi gambar */
+            --primary-light: #059669;
+            --accent: #fbbf24;
+            /* Emas */
+            --dark: #1f2937;
+            --bg: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-muted: #6b7280;
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         body {
-            font-family: 'Inter', sans-serif;
-            background: #f8fafb;
-            color: var(--text-primary);
-            min-height: 100vh;
+            background-color: var(--bg);
+            color: var(--dark);
             padding-bottom: 90px;
-            /* ruang untuk bottom nav di mobile */
-            -webkit-font-smoothing: antialiased;
         }
 
-        /* ========== NAVBAR DESKTOP (d-none d-md-flex) ========== */
-        .navbar-desktop {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
-            box-shadow: var(--shadow-sm);
-            padding: 0.6rem 1.2rem;
-            position: sticky;
-            top: 0;
-            z-index: 1020;
-            display: none;
-            /* default hidden, ditampilkan di md */
+        /* HEADER HERO (Setengah Layar Atas) */
+        .hero-section {
+            background: linear-gradient(160deg, #022c22, var(--primary), var(--primary-light));
+            color: white;
+            padding: 30px 20px 80px 20px;
+            position: relative;
+            border-bottom-left-radius: 40px;
+            border-bottom-right-radius: 40px;
+            text-align: center;
         }
 
-        @media (min-width: 768px) {
-            .navbar-desktop {
-                display: flex;
-            }
-
-            body {
-                padding-bottom: 20px;
-                /* kurangi padding bawah karena pakai navbar atas */
-            }
+        /* Top Bar: Lokasi & Profil */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
         }
 
-        .navbar-desktop .navbar-brand {
-            font-weight: 700;
-            font-size: 1.25rem;
-            color: var(--emerald-700);
-            letter-spacing: -0.02em;
+        .location-badge {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(5px);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
             display: flex;
             align-items: center;
             gap: 6px;
-            text-decoration: none;
+            cursor: pointer;
+            transition: 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .navbar-desktop .nav-link {
-            font-weight: 500;
-            color: var(--text-primary);
-            margin: 0 0.15rem;
-            padding: 0.5rem 0.9rem;
-            border-radius: 10px;
-            transition: var(--transition);
-            font-size: 0.9rem;
-            letter-spacing: -0.01em;
+        .location-badge:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .profile-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
             display: flex;
+            justify-content: center;
             align-items: center;
-            gap: 5px;
+            font-weight: bold;
+            border: 2px solid rgba(255, 255, 255, 0.5);
         }
 
-        .navbar-desktop .nav-link:hover {
-            background: var(--emerald-50);
-            color: var(--emerald-700);
+        /* Bismillah & Waktu */
+        .bismillah {
+            font-size: 1.8rem;
+            font-family: 'Amiri', 'Traditional Arabic', serif;
+            margin-bottom: 15px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
 
-        .navbar-desktop .nav-link.active {
-            background: var(--emerald-50);
-            color: var(--emerald-700);
+        .date-time-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .date-box {
+            text-align: center;
+        }
+
+        .date-box .label {
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.7);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 3px;
+        }
+
+        .date-box .value {
+            font-size: 0.85rem;
             font-weight: 600;
         }
 
-        .navbar-desktop .navbar-nav {
-            margin-left: auto;
+        .realtime-clock {
+            font-size: 2.2rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
         }
 
-        /* ========== HEADER PREMIUM ========== */
-        .header-wrapper {
-            position: relative;
-            overflow: hidden;
-            background: linear-gradient(160deg, #064e3b 0%, #047857 25%, #059669 55%, #10b981 100%);
-            padding: 24px 20px 50px 20px;
-            border-bottom-left-radius: 32px;
-            border-bottom-right-radius: 32px;
-            box-shadow: 0 10px 40px rgba(5, 150, 105, 0.25);
-        }
-
-        .header-wrapper::before {
-            content: '';
-            position: absolute;
-            top: -60px;
-            right: -60px;
-            width: 200px;
-            height: 200px;
-            background: rgba(255, 255, 255, 0.04);
-            border-radius: 50%;
-            pointer-events: none;
-        }
-
-        .header-wrapper::after {
-            content: '';
-            position: absolute;
-            bottom: -40px;
-            left: -40px;
-            width: 160px;
-            height: 160px;
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 50%;
-            pointer-events: none;
-        }
-
-        .header-content {
-            position: relative;
-            z-index: 2;
+        /* Jadwal Sholat Horizontal */
+        .prayer-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            max-width: 650px;
-            margin: 0 auto;
+            background: rgba(0, 0, 0, 0.15);
+            padding: 15px;
+            border-radius: 20px;
+            margin-bottom: 15px;
         }
 
-        .greeting-salam {
+        .prayer-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            opacity: 0.6;
+            transition: 0.3s;
+        }
+
+        .prayer-item.active {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        .prayer-item.active .p-time {
+            color: var(--accent);
+        }
+
+        .p-time {
             font-size: 0.85rem;
-            color: rgba(255, 255, 255, 0.8);
-            margin-bottom: 2px;
+            font-weight: bold;
         }
 
-        .greeting-name {
-            font-size: 1.55rem;
-            font-weight: 700;
-            color: #fff;
-            line-height: 1.2;
-        }
-
-        .greeting-subtitle {
-            font-size: 0.78rem;
-            color: rgba(255, 255, 255, 0.7);
-            margin-top: 4px;
-        }
-
-        .avatar-premium {
-            width: 54px;
-            height: 54px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.18);
-            backdrop-filter: blur(10px);
-            border: 2.5px solid rgba(255, 255, 255, 0.4);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.4rem;
-            font-weight: 700;
-            color: #fff;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-            transition: var(--transition);
-            cursor: pointer;
-            text-decoration: none;
-        }
-
-        .avatar-premium:hover {
-            transform: scale(1.05);
-            border-color: rgba(255, 255, 255, 0.7);
-        }
-
-        /* ========== MAIN CONTAINER ========== */
-        .main-container {
-            max-width: 650px;
-            margin: -28px auto 0;
-            padding: 0 16px;
-            position: relative;
-            z-index: 10;
-        }
-
-        /* ========== PRAYER CARD ========== */
-        .prayer-card-premium {
-            background: var(--surface);
-            border-radius: var(--radius-lg);
-            padding: 20px 16px 18px;
-            box-shadow: var(--shadow-lg);
-            margin-bottom: 22px;
-            border: 1px solid var(--border-light);
-        }
-
-        .prayer-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid var(--border-light);
-        }
-
-        .prayer-label {
-            font-weight: 700;
-            font-size: 0.95rem;
-            display: flex;
-            align-items: center;
-            gap: 7px;
-        }
-
-        .prayer-label i {
-            color: var(--emerald-500);
+        .p-icon {
             font-size: 1.2rem;
         }
 
-        .prayer-location-badge {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            background: #f9fafb;
-            padding: 6px 12px;
+        .p-name {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+        }
+
+        /* Countdown */
+        .countdown-text {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .countdown-text span {
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        /* KONTEN UTAMA (Overlapping Hero) */
+        .main-content {
+            padding: 0 20px;
+            max-width: 600px;
+            margin: -50px auto 0;
+            position: relative;
+            z-index: 5;
+        }
+
+        /* Floating Card (Continue Reading) */
+        .floating-card {
+            background: var(--card-bg);
             border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
             display: flex;
             align-items: center;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .floating-card:active {
+            transform: scale(0.98);
+        }
+
+        .fc-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .progress-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: conic-gradient(var(--primary-light) 21%, #e5e7eb 0);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .progress-inner {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: var(--dark);
+        }
+
+        .fc-text h4 {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 3px;
+        }
+
+        .fc-text h3 {
+            font-size: 1.1rem;
+            color: var(--dark);
+            margin-bottom: 3px;
+        }
+
+        .fc-badges {
+            display: flex;
             gap: 5px;
         }
 
-        .prayer-times-row {
-            display: flex;
-            justify-content: space-between;
-            text-align: center;
-            gap: 2px;
-        }
-
-        .prayer-time-block {
-            flex: 1;
-            padding: 6px 2px;
+        .fc-badge {
+            font-size: 0.7rem;
+            background: #f3f4f6;
+            padding: 2px 8px;
             border-radius: 10px;
-            transition: var(--transition);
-        }
-
-        .prayer-time-block:hover {
-            background: var(--emerald-50);
-        }
-
-        .prayer-time-block.active {
-            background: var(--emerald-50);
-        }
-
-        .prayer-time-name {
-            font-size: 0.68rem;
-            font-weight: 600;
             color: var(--text-muted);
-            text-transform: uppercase;
-            margin-bottom: 4px;
         }
 
-        .prayer-time-value {
-            font-size: 0.9rem;
-            font-weight: 700;
-            color: var(--text-primary);
-        }
-
-        .prayer-time-block.active .prayer-time-name {
-            color: var(--emerald-600);
-        }
-
-        .prayer-time-block.active .prayer-time-value {
-            color: var(--emerald-700);
-        }
-
-        /* ========== SECTION TITLE ========== */
-        .section-header {
+        .fc-arrow {
+            width: 30px;
+            height: 30px;
+            background: #f3f4f6;
+            border-radius: 50%;
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
-            margin-bottom: 14px;
-            margin-top: 4px;
+            color: var(--dark);
         }
 
+        /* Quick Access Grid */
         .section-title {
-            font-size: 1.05rem;
-            font-weight: 700;
-        }
-
-        .section-link {
-            font-size: 0.8rem;
-            color: var(--emerald-600);
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        /* ========== MENU GRID ========== */
-        .menu-grid-premium {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 24px;
-        }
-
-        .menu-card-premium {
-            background: var(--surface);
-            border-radius: var(--radius);
-            padding: 18px 14px;
-            text-decoration: none;
-            box-shadow: var(--shadow-sm);
-            transition: all var(--transition);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-            border: 1.5px solid transparent;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .menu-card-premium:hover {
-            transform: translateY(-3px);
-            box-shadow: var(--shadow-lg);
-            border-color: var(--emerald-200);
-        }
-
-        .menu-card-premium.featured {
-            background: linear-gradient(135deg, #f0fdf6 0%, #ecfdf5 100%);
-            border-color: var(--emerald-300);
-        }
-
-        .menu-card-premium.featured .menu-icon-circle {
-            background: linear-gradient(135deg, var(--emerald-500), var(--emerald-600));
-            color: #fff;
-            box-shadow: 0 4px 14px rgba(5, 150, 105, 0.35);
-        }
-
-        .menu-icon-circle {
-            width: 50px;
-            height: 50px;
-            border-radius: 14px;
-            background: var(--emerald-50);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.6rem;
-            color: var(--emerald-600);
-        }
-
-        .menu-label {
-            font-size: 0.88rem;
-            font-weight: 600;
-            text-align: center;
-        }
-
-        .menu-sub {
-            font-size: 0.7rem;
-            color: var(--text-muted);
-            margin-top: -6px;
-            text-align: center;
-        }
-
-        .badge-new {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: var(--emerald-500);
-            color: #fff;
-            font-size: 0.65rem;
-            font-weight: 700;
-            padding: 3px 8px;
-            border-radius: 20px;
-        }
-
-        /* ========== STATS ========== */
-        .stats-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 24px;
-        }
-
-        .stat-card {
-            background: var(--surface);
-            border-radius: var(--radius);
-            padding: 16px;
-            box-shadow: var(--shadow-sm);
-            border: 1px solid var(--border-light);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .stat-icon {
-            width: 42px;
-            height: 42px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.3rem;
-            flex-shrink: 0;
-        }
-
-        .stat-icon.streak {
-            background: #fff7ed;
-            color: #f97316;
-        }
-
-        .stat-icon.progress {
-            background: #eff6ff;
-            color: #3b82f6;
-        }
-
-        .stat-value {
             font-size: 1.1rem;
-            font-weight: 700;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: var(--dark);
         }
 
-        .stat-label {
-            font-size: 0.7rem;
-            color: var(--text-muted);
-            font-weight: 500;
+        .quick-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px 10px;
+            margin-bottom: 30px;
         }
 
-        /* ========== BOTTOM NAV (MOBILE ONLY) ========== */
-        .bottom-nav {
-            position: fixed;
-            bottom: 16px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1000;
-            background: #ffffff;
-            border-radius: 20px;
-            padding: 8px 10px;
-            display: flex;
-            gap: 4px;
-            box-shadow: 0 8px 35px rgba(0, 0, 0, 0.12);
-            border: 1px solid rgba(0, 0, 0, 0.04);
-            width: fit-content;
-            max-width: 95vw;
-            display: none;
-            /* default hidden, tampil di mobile */
-        }
-
-        @media (max-width: 767.98px) {
-            .bottom-nav {
-                display: flex;
-            }
-        }
-
-        .bottom-nav a {
+        .q-item {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 3px;
-            padding: 10px 16px;
-            border-radius: 14px;
+            gap: 8px;
             text-decoration: none;
-            color: var(--text-muted);
-            font-size: 0.68rem;
-            font-weight: 500;
-            transition: var(--transition);
-            white-space: nowrap;
-            min-width: 56px;
         }
 
-        .bottom-nav a i {
-            font-size: 1.4rem;
+        .q-icon {
+            width: 55px;
+            height: 55px;
+            background: var(--card-bg);
+            border-radius: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.6rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+            color: var(--primary);
+            transition: 0.2s;
+            border: 1px solid #f3f4f6;
         }
 
-        .bottom-nav a.active {
-            background: var(--emerald-50);
-            color: var(--emerald-700);
-            font-weight: 700;
+        .q-item:active .q-icon {
+            transform: scale(0.9);
+            background: #ecfdf5;
+            border-color: var(--primary-light);
         }
 
-        .bottom-nav a.active i {
-            color: var(--emerald-600);
+        .q-text {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--dark);
+            text-align: center;
         }
 
-        .bottom-nav a:hover {
-            color: var(--emerald-600);
-            background: var(--emerald-50);
+        /* Responsif Desktop */
+        @media (min-width: 768px) {
+            .hero-section {
+                padding-top: 100px;
+                border-bottom-left-radius: 60px;
+                border-bottom-right-radius: 60px;
+            }
+
+            .quick-grid {
+                grid-template-columns: repeat(6, 1fr);
+            }
+
+            .main-content {
+                max-width: 800px;
+            }
         }
     </style>
 </head>
 
 <body>
 
-    <!-- ==================== NAVBAR DESKTOP (Header untuk desktop) ==================== -->
-    <nav class="navbar-desktop navbar navbar-expand">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="dashboard.php">
-                <i class="bi bi-bookmark-heart-fill"></i> Hifzly
-            </a>
-            <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link active" href="dashboard.php"><i class="bi bi-house-door-fill"></i> Beranda</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="alquran.php"><i class="bi bi-book"></i> Al-Qur'an</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#"><i class="bi bi-mic-fill"></i> Murojaah</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="mutabaah.php"><i class="bi bi-bar-chart-fill"></i> Mutabaah</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="profil.php"><i class="bi bi-person"></i> Profil</a>
-                </li>
-            </ul>
-        </div>
-    </nav>
-
-    <!-- ==================== HEADER PROFILE ==================== -->
-    <div class="header-wrapper">
-        <div class="header-content">
-            <div>
-                <div class="greeting-salam">Assalamu'alaikum wr. wb. 👋</div>
-                <div class="greeting-name"><?= htmlspecialchars($_SESSION['nama_lengkap']) ?></div>
-                <div class="greeting-subtitle">Semoga hari ini penuh berkah ✨</div>
+    <!-- HERO SECTION -->
+    <div class="hero-section">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <!-- Tombol Lokasi -->
+            <div class="location-badge" onclick="getLocation()">
+                <span id="loc-icon">📍</span>
+                <span id="location-text">Mencari Lokasi...</span>
             </div>
-            <a href="profil.php" class="avatar-premium">
+            <!-- Profil -->
+            <div class="profile-btn">
                 <?= strtoupper(substr($_SESSION['nama_lengkap'], 0, 1)) ?>
-            </a>
+            </div>
         </div>
-    </div>
 
-    <!-- ==================== MAIN CONTENT ==================== -->
-    <div class="main-container">
+        <div class="bismillah">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم</div>
+
+        <!-- Tanggal & Jam -->
+        <div class="date-time-row">
+            <div class="date-box">
+                <div class="label">Hijriah</div>
+                <div class="value" id="hijri-date">--</div>
+            </div>
+            <div class="realtime-clock" id="clock">00:00:00</div>
+            <div class="date-box">
+                <div class="label">Masehi</div>
+                <div class="value" id="masehi-date">--</div>
+            </div>
+        </div>
+
         <!-- Jadwal Sholat -->
-        <div class="prayer-card-premium">
-            <div class="prayer-top">
-                <div class="prayer-label"><i class="bi bi-clock"></i> Jadwal Sholat</div>
-                <div class="prayer-location-badge">
-                    <i class="bi bi-geo-alt-fill"></i> <span id="loc-text">Memuat...</span>
-                </div>
-            </div>
-            <div class="prayer-times-row" id="prayer-container">
-                <div style="text-align:center;width:100%;font-size:0.82rem;color:#9ca3af;padding:10px 0;">
-                    <span class="spinner-border spinner-border-sm text-emerald-500 me-2"></span>
-                    Mengambil jadwal...
-                </div>
-            </div>
+        <div class="prayer-row" id="prayer-container">
+            <div style="font-size: 0.85rem; width: 100%; text-align: center;">Menyelaraskan jadwal sholat...</div>
         </div>
 
-        <!-- Quick Stats -->
-        <div class="stats-row">
-            <div class="stat-card">
-                <div class="stat-icon streak"><i class="bi bi-fire"></i></div>
-                <div class="stat-info">
-                    <div class="stat-value">12 Hari</div>
-                    <div class="stat-label">Streak Mengaji</div>
+        <div class="countdown-text" id="countdown-text">--:--:-- menuju waktu sholat berikutnya</div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <!-- Floating Card -->
+        <div class="floating-card" onclick="window.location.href='alquran.php'">
+            <div class="fc-left">
+                <div class="progress-circle">
+                    <div class="progress-inner">21%</div>
+                </div>
+                <div class="fc-text">
+                    <h4>Lanjutkan Hafalan</h4>
+                    <h3>Surah Al-Baqarah</h3>
+                    <div class="fc-badges">
+                        <span class="fc-badge">Juz 1</span>
+                        <span class="fc-badge">Ayat 60</span>
+                    </div>
                 </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-icon progress"><i class="bi bi-trophy"></i></div>
-                <div class="stat-info">
-                    <div class="stat-value">3 Juz</div>
-                    <div class="stat-label">Progress Hafalan</div>
-                </div>
-            </div>
+            <div class="fc-arrow">❯</div>
         </div>
 
-        <!-- Menu Eksplorasi -->
-        <div class="section-header">
-            <div class="section-title">📌 Menu Utama</div>
-            <a href="#" class="section-link">Lihat Semua →</a>
-        </div>
-        <div class="menu-grid-premium">
-            <a href="alquran.php" class="menu-card-premium">
-                <div class="menu-icon-circle"><i class="bi bi-book"></i></div>
-                <div class="menu-label">Al-Qur'an</div>
-                <div class="menu-sub">Baca & tadabbur</div>
+        <!-- Quick Access Grid -->
+        <h3 class="section-title">Akses Cepat</h3>
+        <div class="quick-grid">
+            <a href="alquran.php" class="q-item">
+                <div class="q-icon">📖</div>
+                <div class="q-text">Qur'an</div>
             </a>
-            <a href="#" class="menu-card-premium featured">
-                <span class="badge-new">AI</span>
-                <div class="menu-icon-circle"><i class="bi bi-mic"></i></div>
-                <div class="menu-label">Smart Murojaah</div>
-                <div class="menu-sub">Setor hafalan pakai AI</div>
+            <a href="#" class="q-item">
+                <div class="q-icon" style="color: #f59e0b;">🎙️</div>
+                <div class="q-text">Smart Murojaah</div>
             </a>
-            <a href="mutabaah.php" class="menu-card-premium">
-                <div class="menu-icon-circle"><i class="bi bi-graph-up"></i></div>
-                <div class="menu-label">Mutabaah</div>
-                <div class="menu-sub">Pantau progress harian</div>
+            <a href="mutabaah.php" class="q-item">
+                <div class="q-icon" style="color: #3b82f6;">📊</div>
+                <div class="q-text">Mutabaah</div>
             </a>
-            <a href="#" class="menu-card-premium">
-                <div class="menu-icon-circle"><i class="bi bi-heart"></i></div>
-                <div class="menu-label">Doa Harian</div>
-                <div class="menu-sub">Kumpulan doa pilihan</div>
+            <a href="#" class="q-item">
+                <div class="q-icon" style="color: #8b5cf6;">🤲</div>
+                <div class="q-text">Doa & Zikir</div>
             </a>
-        </div>
-
-        <!-- Lainnya -->
-        <div class="section-header">
-            <div class="section-title">🔧 Lainnya</div>
-        </div>
-        <div class="menu-grid-premium" style="margin-bottom: 10px;">
-            <a href="#" class="menu-card-premium">
-                <div class="menu-icon-circle"><i class="bi bi-gear"></i></div>
-                <div class="menu-label">Pengaturan</div>
-                <div class="menu-sub">Atur preferensi</div>
+            <a href="#" class="q-item">
+                <div class="q-icon" style="color: #ef4444;">🎯</div>
+                <div class="q-text">Target</div>
             </a>
-            <a href="../logout.php" class="menu-card-premium" style="border-color: #fee2e2;">
-                <div class="menu-icon-circle" style="background:#fef2f2;color:#ef4444;"><i class="bi bi-box-arrow-right"></i></div>
-                <div class="menu-label" style="color:#dc2626;">Keluar</div>
-                <div class="menu-sub">Logout akun</div>
+            <a href="#" class="q-item">
+                <div class="q-icon" style="color: #10b981;">🏆</div>
+                <div class="q-text">Pencapaian</div>
+            </a>
+            <a href="#" class="q-item">
+                <div class="q-icon" style="color: #6366f1;">🤖</div>
+                <div class="q-text">AI Coach</div>
+            </a>
+            <a href="#" class="q-item">
+                <div class="q-icon" style="color: #6b7280;">⚙️</div>
+                <div class="q-text">Pengaturan</div>
             </a>
         </div>
     </div>
 
-    <!-- ==================== BOTTOM NAV (Footer untuk mobile) ==================== -->
-    <nav class="bottom-nav" id="bottomNav">
-        <a href="dashboard.php" class="active"><i class="bi bi-house-door-fill"></i><span>Beranda</span></a>
-        <a href="alquran.php"><i class="bi bi-book"></i><span>Al-Qur'an</span></a>
-        <a href="#"><i class="bi bi-mic-fill"></i><span>Murojaah</span></a>
-        <a href="mutabaah.php"><i class="bi bi-bar-chart-fill"></i><span>Mutabaah</span></a>
-        <a href="profil.php"><i class="bi bi-person"></i><span>Profil</span></a>
-    </nav>
+    <!-- Panggil Navigasi -->
+    <?php include '../components/nav.php'; ?>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Fetch jadwal sholat
-        async function fetchPrayerTimes() {
-            const container = document.getElementById('prayer-container');
-            const locText = document.getElementById('loc-text');
-            try {
-                const response = await fetch('https://api.aladhan.com/v1/timingsByCity?city=Jakarta&country=Indonesia&method=11');
-                const result = await response.json();
-                const timings = result.data.timings;
-                locText.innerText = 'Jakarta, ID';
-                const prayerData = [{
-                        name: 'Subuh',
-                        time: timings.Fajr,
-                        key: 'fajr'
-                    },
-                    {
-                        name: 'Dzuhur',
-                        time: timings.Dhuhr,
-                        key: 'dhuhr'
-                    },
-                    {
-                        name: 'Ashar',
-                        time: timings.Asr,
-                        key: 'asr'
-                    },
-                    {
-                        name: 'Maghrib',
-                        time: timings.Maghrib,
-                        key: 'maghrib'
-                    },
-                    {
-                        name: 'Isya',
-                        time: timings.Isha,
-                        key: 'isha'
-                    }
-                ];
-                const now = new Date();
-                const currentTotal = now.getHours() * 60 + now.getMinutes();
-                const prayerMinutes = prayerData.map(p => {
-                    const [h, m] = p.time.split(':').map(Number);
-                    return {
-                        key: p.key,
-                        total: h * 60 + m
-                    };
-                });
-                let activeKey = prayerMinutes[prayerMinutes.length - 1].key;
-                for (let i = prayerMinutes.length - 1; i >= 0; i--) {
-                    if (currentTotal >= prayerMinutes[i].total) {
-                        activeKey = prayerMinutes[i].key;
-                        break;
-                    }
-                }
-                let html = '';
-                prayerData.forEach(p => {
-                    const isActive = p.key === activeKey ? ' active' : '';
-                    html += `<div class="prayer-time-block${isActive}">
-                                <div class="prayer-time-name">${p.name}</div>
-                                <div class="prayer-time-value">${p.time}</div>
-                            </div>`;
-                });
-                container.innerHTML = html;
-            } catch (error) {
-                container.innerHTML = "<div style='font-size:0.78rem;color:#ef4444;text-align:center;'>⚠️ Gagal memuat jadwal</div>";
+        let prayerTimesData = null;
+
+        // 1. FUNGSI JAM REAL-TIME
+        function updateClock() {
+            const now = new Date();
+            const h = String(now.getHours()).padStart(2, '0');
+            const m = String(now.getMinutes()).padStart(2, '0');
+            const s = String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('clock').innerText = `${h}:${m}:${s}`;
+
+            // Perbarui countdown jika jadwal sholat sudah dimuat
+            if (prayerTimesData) updateCountdown(now);
+        }
+        setInterval(updateClock, 1000);
+        updateClock(); // Panggil sekali di awal
+
+        // 2. FUNGSI GEOLOCATION & JADWAL SHOLAT
+        function getLocation() {
+            document.getElementById('location-text').innerText = "Melacak...";
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(showPosition, showError);
+            } else {
+                fallbackLocation();
             }
         }
-        fetchPrayerTimes();
 
-        // Active state bottom nav (mobile)
-        document.addEventListener('DOMContentLoaded', function() {
-            const navLinks = document.querySelectorAll('#bottomNav a');
-            const currentPath = window.location.pathname;
-            navLinks.forEach(link => {
-                link.classList.remove('active');
-                if (link.getAttribute('href') && currentPath.includes(link.getAttribute('href').replace(/\/$/, '').split('/').pop())) {
-                    link.classList.add('active');
-                }
-                if (currentPath.includes('dashboard.php') && link.getAttribute('href') === 'dashboard.php') {
-                    link.classList.add('active');
-                }
+        function showPosition(position) {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+            fetchPrayerAPI(lat, lon);
+            fetchCityName(lat, lon);
+        }
+
+        // Jika GPS ditolak / error, gunakan default Cikande, Banten
+        function showError(error) {
+            console.log("GPS Error:", error);
+            fallbackLocation();
+        }
+
+        function fallbackLocation() {
+            document.getElementById('location-text').innerText = "Cikande, Banten";
+            // Koordinat Cikande
+            fetchPrayerAPI(-6.1824, 106.3351);
+        }
+
+        // Ambil Nama Kota dari Koordinat
+        async function fetchCityName(lat, lon) {
+            try {
+                const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=id`);
+                const data = await res.json();
+                const city = data.city || data.locality || "Lokasi Anda";
+                document.getElementById('location-text').innerText = city;
+            } catch (e) {
+                document.getElementById('location-text').innerText = "Lokasi Ditemukan";
+            }
+        }
+
+        // Ambil Jadwal Sholat & Tanggal Hijriah dari Aladhan API
+        async function fetchPrayerAPI(lat, lon) {
+            try {
+                const res = await fetch(`https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lon}&method=11`);
+                const result = await res.json();
+
+                const data = result.data;
+                prayerTimesData = data.timings;
+
+                // Set Tanggal
+                document.getElementById('masehi-date').innerText = data.date.gregorian.date;
+                document.getElementById('hijri-date').innerText = `${data.date.hijri.day} ${data.date.hijri.month.en} ${data.date.hijri.year}`;
+
+                renderPrayerTimes();
+            } catch (e) {
+                document.getElementById('prayer-container').innerHTML = "<div style='color:red;'>Gagal memuat jadwal.</div>";
+            }
+        }
+
+        // 3. FUNGSI RENDER JADWAL & COUNTDOWN
+        const prayerConfig = [{
+                id: 'Fajr',
+                name: 'Subuh',
+                icon: '🌅'
+            },
+            {
+                id: 'Dhuhr',
+                name: 'Dzuhur',
+                icon: '☀️'
+            },
+            {
+                id: 'Asr',
+                name: 'Ashar',
+                icon: '⛅'
+            },
+            {
+                id: 'Maghrib',
+                name: 'Maghrib',
+                icon: '🌇'
+            },
+            {
+                id: 'Isha',
+                name: 'Isya',
+                icon: '🌙'
+            }
+        ];
+
+        function renderPrayerTimes() {
+            let html = '';
+            prayerConfig.forEach(p => {
+                html += `
+                <div class="prayer-item" id="pr-${p.id}">
+                    <div class="p-time">${prayerTimesData[p.id]}</div>
+                    <div class="p-icon">${p.icon}</div>
+                    <div class="p-name">${p.name}</div>
+                </div>`;
             });
-        });
+            document.getElementById('prayer-container').innerHTML = html;
+        }
+
+        function updateCountdown(now) {
+            let nextPrayerName = "";
+            let nextPrayerTimeDate = null;
+            let activeId = "";
+
+            // Cari sholat berikutnya di hari ini
+            for (let i = 0; i < prayerConfig.length; i++) {
+                const p = prayerConfig[i];
+                const timeStr = prayerTimesData[p.id];
+                const [h, m] = timeStr.split(':');
+
+                let pTime = new Date();
+                pTime.setHours(h, m, 0, 0);
+
+                if (pTime > now) {
+                    nextPrayerName = p.name;
+                    nextPrayerTimeDate = pTime;
+                    activeId = p.id;
+                    break;
+                }
+            }
+
+            // Jika semua sholat hari ini sudah lewat, maka sholat berikutnya adalah Subuh besok
+            if (!nextPrayerTimeDate) {
+                const fStr = prayerTimesData['Fajr'];
+                const [fh, fm] = fStr.split(':');
+                nextPrayerTimeDate = new Date();
+                nextPrayerTimeDate.setDate(now.getDate() + 1);
+                nextPrayerTimeDate.setHours(fh, fm, 0, 0);
+                nextPrayerName = 'Subuh';
+                activeId = 'Fajr';
+            }
+
+            // Reset highlight
+            document.querySelectorAll('.prayer-item').forEach(el => el.classList.remove('active'));
+            if (document.getElementById(`pr-${activeId}`)) {
+                document.getElementById(`pr-${activeId}`).classList.add('active');
+            }
+
+            // Hitung selisih
+            const diffMs = nextPrayerTimeDate - now;
+            const diffHrs = Math.floor((diffMs % 86400000) / 3600000);
+            const diffMins = Math.floor((diffMs % 3600000) / 60000);
+            const diffSecs = Math.floor((diffMs % 60000) / 1000);
+
+            const format = (num) => String(num).padStart(2, '0');
+            document.getElementById('countdown-text').innerHTML = `<span>${format(diffHrs)}:${format(diffMins)}:${format(diffSecs)}</span> menuju ${nextPrayerName}`;
+        }
+
+        // Inisialisasi Lokasi Pertama Kali
+        window.onload = () => {
+            getLocation();
+        };
     </script>
 </body>
 

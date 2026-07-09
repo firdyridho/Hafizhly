@@ -30,7 +30,7 @@ if (isset($_POST['simpan_aktivitas'])) {
     $q_insert = "INSERT INTO mutabaah (user_id, activity_type, activity_date, activity_time, surah, ayah_start, ayah_end, notes) 
                  VALUES ('$user_id', '$type', '$date', '$time', '$surah', '$a_start', '$a_end', '$notes')";
     if (mysqli_query($conn, $q_insert)) {
-        $pesan = "<div class='alert alert-success'>Aktivitas berhasil dicatat!</div>";
+        $pesan = "<div class='alert alert-success'><i class='fas fa-check-circle'></i> Aktivitas berhasil dicatat!</div>";
     }
 }
 
@@ -78,541 +78,217 @@ while ($row = mysqli_fetch_assoc($time_q)) {
 
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mutabaah - Hifzly</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #059669;
-            --primary-light: #d1fae5;
-            --dark: #1f2937;
-            --bg: #f3f4f6;
-            --card-bg: #ffffff;
-            --text-muted: #6b7280;
-            --border: #e5e7eb;
+            --primary: #059669; --primary-hover: #047857; --primary-light: #d1fae5;
+            --dark: #0f172a; --text-muted: #64748b; 
+            --bg: #f8fafc; --card-bg: #ffffff; --border: #e2e8f0;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', sans-serif;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--bg); color: var(--dark); padding-bottom: 90px; }
 
-        /* Padding untuk mobile (memberi ruang footer nav) */
-        body {
-            background-color: var(--bg);
-            color: var(--dark);
-            padding-bottom: 90px;
-        }
-
-        /* Header Navigasi Bulan */
+        /* HEADER BULAN */
         .month-header {
-            background: var(--card-bg);
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-            margin-bottom: 20px;
+            background: var(--card-bg); padding: 15px 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); margin-bottom: 25px;
         }
-
-        .month-header h2 {
-            font-size: 1.2rem;
-            color: var(--primary);
-            font-weight: bold;
-        }
-
+        .month-header h2 { font-size: 1.25rem; color: var(--dark); font-weight: 700; }
         .month-nav a {
-            text-decoration: none;
-            color: var(--dark);
-            font-weight: bold;
-            padding: 8px 15px;
-            background: var(--bg);
-            border-radius: 8px;
-            transition: 0.2s;
+            text-decoration: none; color: var(--text-muted); font-weight: 600; font-size: 0.9rem;
+            padding: 8px 16px; background: var(--bg); border-radius: 12px; transition: all 0.3s ease;
         }
+        .month-nav a:hover { background: var(--border); color: var(--dark); }
 
-        .month-nav a:hover {
-            background: var(--border);
-        }
-
-        .container {
-            padding: 0 20px;
-            max-width: 1100px;
-            margin: 0 auto;
-        }
-
+        .container { padding: 0 20px; max-width: 1100px; margin: 0 auto; }
         .alert {
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            text-align: center;
-            font-size: 0.95rem;
-            background-color: var(--primary-light);
-            color: #065f46;
-            border: 1px solid #a7f3d0;
+            padding: 15px; border-radius: 12px; margin-bottom: 25px; display: flex; gap: 10px; align-items: center;
+            font-size: 0.95rem; background-color: var(--primary-light); color: #065f46; font-weight: 500;
         }
 
-        /* Grid Layout Utama */
-        .mutabaah-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
+        /* GRID LAYOUT */
+        .mutabaah-grid { display: flex; flex-direction: column; gap: 25px; }
 
-        /* Gaya Card Umum */
+        /* KARTU MODERN (Next.js / Vue style) */
         .card {
-            background: var(--card-bg);
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
-            margin-bottom: 20px;
+            background: var(--card-bg); border-radius: 20px; padding: 25px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+            border: 1px solid rgba(255,255,255,0.1);
         }
+        .card-title { font-size: 1.15rem; font-weight: 700; margin-bottom: 20px; color: var(--dark); display: flex; justify-content: space-between; align-items: center; }
 
-        .card-title {
-            font-size: 1.1rem;
-            font-weight: bold;
-            margin-bottom: 15px;
-            color: var(--dark);
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 10px;
-        }
+        /* STATISTIK */
+        .stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+        .stat-item { background: var(--bg); padding: 15px; border-radius: 16px; display: flex; flex-direction: column; gap: 8px; border: 1px solid var(--border); }
+        .stat-label { font-size: 0.85rem; color: var(--text-muted); font-weight: 500; }
+        .stat-value { font-size: 1.5rem; font-weight: 800; color: var(--primary); }
+        .streak { grid-column: span 2; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border: none; flex-direction: row; justify-content: space-between; align-items: center; }
+        .streak .stat-label { color: rgba(255, 255, 255, 0.9); }
+        .streak .stat-value { color: white; }
 
-        /* Summary Grid */
-        .stat-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-        }
-
-        .stat-item {
-            background: var(--bg);
-            padding: 12px;
-            border-radius: 10px;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        .stat-label {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-        }
-
-        .stat-value {
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: var(--primary);
-        }
-
-        .streak {
-            grid-column: span 2;
-            background: linear-gradient(135deg, #f59e0b, #d97706);
-            color: white;
-        }
-
-        .streak .stat-label {
-            color: rgba(255, 255, 255, 0.8);
-        }
-
-        .streak .stat-value {
-            color: white;
-        }
-
-        /* Calendar */
-        .cal-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 6px;
-        }
-
-        .cal-day-label {
-            text-align: center;
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-
+        /* KALENDER */
+        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+        .cal-day-label { text-align: center; font-size: 0.8rem; color: var(--text-muted); font-weight: 600; margin-bottom: 5px; }
         .cal-box {
-            aspect-ratio: 1;
-            border-radius: 6px;
-            background-color: #ebedf0;
-            position: relative;
-            cursor: pointer;
-            transition: 0.2s;
-            border: 1px solid rgba(27, 31, 35, 0.06);
+            aspect-ratio: 1; border-radius: 8px; background-color: #f1f5f9; position: relative;
+            cursor: pointer; transition: all 0.2s ease; border: 1px solid transparent;
         }
-
-        .cal-box.active {
-            background-color: var(--primary);
-            border-color: rgba(27, 31, 35, 0.1);
-        }
-
-        .cal-box:hover {
-            transform: scale(1.1);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            z-index: 2;
-        }
-
+        .cal-box.active { background-color: var(--primary); box-shadow: 0 4px 10px rgba(5,150,105,0.3); }
+        .cal-box:hover { transform: translateY(-2px); border-color: var(--text-muted); z-index: 2; }
+        .cal-box.active:hover { border-color: transparent; transform: scale(1.1); }
         .cal-badge {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            font-size: 0.65rem;
-            background: #ef4444;
-            color: white;
-            border-radius: 50%;
-            width: 16px;
-            height: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            position: absolute; top: -6px; right: -6px; font-size: 0.7rem; background: #ef4444; color: white;
+            border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center;
+            font-weight: 700; box-shadow: 0 2px 5px rgba(239, 68, 68, 0.4); border: 2px solid white;
         }
 
-        /* Timeline & Filter */
-        .filter-scroll {
-            display: flex;
-            gap: 10px;
-            overflow-x: auto;
-            padding-bottom: 10px;
-            margin-bottom: 10px;
-        }
-
-        .filter-scroll::-webkit-scrollbar {
-            height: 4px;
-        }
-
-        .filter-scroll::-webkit-scrollbar-thumb {
-            background: #d1d5db;
-            border-radius: 4px;
-        }
-
+        /* FILTER & TIMELINE */
+        .filter-scroll { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 15px; margin-bottom: 15px; }
+        .filter-scroll::-webkit-scrollbar { height: 0px; } /* Hide scrollbar for clean UI */
         .filter-btn {
-            padding: 8px 16px;
-            border-radius: 20px;
-            border: 1px solid var(--border);
-            background: var(--bg);
-            font-size: 0.85rem;
-            cursor: pointer;
-            white-space: nowrap;
-            transition: 0.3s;
-            color: var(--text-muted);
-            font-weight: 600;
+            padding: 8px 18px; border-radius: 20px; border: 1px solid var(--border); background: var(--card-bg);
+            font-size: 0.9rem; cursor: pointer; white-space: nowrap; transition: all 0.3s ease;
+            color: var(--text-muted); font-weight: 500;
         }
+        .filter-btn:hover { background: var(--bg); color: var(--dark); }
+        .filter-btn.active { background: var(--dark); color: white; border-color: var(--dark); }
 
-        .filter-btn:hover {
-            background: #e5e7eb;
-        }
-
-        .filter-btn.active {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-
-        .timeline {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
+        .timeline { display: flex; flex-direction: column; gap: 15px; }
         .tl-card {
-            background: var(--bg);
-            padding: 15px;
-            border-radius: 12px;
-            border-left: 5px solid var(--primary);
-            transition: 0.2s;
+            background: var(--card-bg); padding: 18px; border-radius: 16px; border: 1px solid var(--border);
+            border-left: 6px solid var(--primary); transition: all 0.3s ease;
         }
-
-        .tl-card:hover {
-            transform: translateX(5px);
-        }
-
-        .tl-header {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            margin-bottom: 8px;
-        }
-
-        .tl-title {
-            font-weight: bold;
-            font-size: 1.05rem;
-            color: var(--dark);
-            margin-bottom: 4px;
-        }
-
+        .tl-card:hover { transform: translateX(5px); box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .tl-header { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px; font-weight: 500; }
+        .tl-title { font-weight: 700; font-size: 1.1rem; color: var(--dark); margin-bottom: 5px; }
         .tl-type {
-            font-size: 0.7rem;
-            padding: 3px 10px;
-            border-radius: 12px;
-            background: var(--primary-light);
-            color: var(--primary);
-            text-transform: uppercase;
-            font-weight: bold;
-            display: inline-block;
-            margin-bottom: 6px;
+            font-size: 0.75rem; padding: 4px 12px; border-radius: 12px; background: var(--primary-light);
+            color: var(--primary-hover); text-transform: uppercase; font-weight: 700; display: inline-block; margin-bottom: 8px; letter-spacing: 0.5px;
         }
+        .tl-notes { font-size: 0.9rem; margin-top: 10px; font-style: italic; color: #475569; background: var(--bg); padding: 10px; border-radius: 8px; }
 
         /* FAB */
         .fab {
-            position: fixed;
-            bottom: 90px;
-            right: 20px;
-            width: 60px;
-            height: 60px;
-            background: var(--primary);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 28px;
-            box-shadow: 0 4px 15px rgba(5, 150, 105, 0.4);
-            cursor: pointer;
-            z-index: 100;
-            transition: 0.3s;
+            position: fixed; bottom: 90px; right: 25px; width: 65px; height: 65px; background: var(--primary); color: white;
+            border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 30px;
+            box-shadow: 0 10px 25px rgba(5, 150, 105, 0.5); cursor: pointer; z-index: 100; transition: all 0.3s ease;
         }
+        .fab:hover { transform: translateY(-5px) scale(1.05); }
 
-        .fab:hover {
-            transform: scale(1.05);
-        }
-
-        /* Export Button */
+        /* TOMBOL EXPORT */
         .btn-export {
-            display: block;
-            width: 100%;
-            padding: 12px;
-            background: white;
-            border: 2px dashed var(--primary);
-            color: var(--primary);
-            border-radius: 12px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            cursor: pointer;
-            transition: 0.3s;
-            text-align: center;
+            display: flex; justify-content: center; align-items: center; gap: 10px; width: 100%; padding: 15px;
+            background: white; border: 2px dashed var(--border); color: var(--text-muted); border-radius: 16px;
+            font-weight: 600; font-size: 1rem; margin-bottom: 25px; cursor: pointer; transition: all 0.3s ease;
         }
+        .btn-export:hover { border-color: var(--primary); color: var(--primary); background: #f0fdf4; }
 
-        .btn-export:hover {
-            background: var(--primary-light);
-        }
-
-        /* RESPONSIVE DESKTOP (Grid 2 Kolom) */
-        @media (min-width: 768px) {
-            .month-header {
-                border-radius: 16px;
-                margin-top: 20px;
-            }
-
-            .mutabaah-grid {
-                display: grid;
-                grid-template-columns: 1fr 1.2fr;
-                gap: 30px;
-                align-items: start;
-            }
-
-            .fab {
-                bottom: 40px;
-                right: 40px;
-            }
-
-            /* Sesuaikan FAB karena tidak ada footer nav */
-            .filter-scroll {
-                flex-wrap: wrap;
-            }
-        }
-
-        /* Modal Settings */
+        /* MODAL ANIMASI & STYLING */
         .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(4px);
-            z-index: 1050;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
+            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(5px); z-index: 1050;
+            align-items: center; justify-content: center; padding: 20px;
+            opacity: 0; transition: opacity 0.3s ease;
         }
-
+        .modal.show { display: flex; opacity: 1; }
         .modal-content {
-            background: var(--card-bg);
-            width: 100%;
-            max-width: 500px;
-            border-radius: 16px;
-            padding: 25px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-            max-height: 90vh;
-            overflow-y: auto;
+            background: var(--card-bg); width: 100%; max-width: 500px; border-radius: 24px; padding: 30px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); max-height: 90vh; overflow-y: auto;
+            transform: translateY(20px); transition: transform 0.3s ease;
         }
+        .modal.show .modal-content { transform: translateY(0); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; font-weight: 700; font-size: 1.3rem; color: var(--dark); }
+        .close-btn { font-size: 1.5rem; cursor: pointer; color: var(--text-muted); padding: 5px; line-height: 1; border-radius: 8px; transition: 0.2s; }
+        .close-btn:hover { background: #fee2e2; color: #ef4444; }
 
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            font-weight: bold;
-            font-size: 1.2rem;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 10px;
-        }
-
-        .close-btn {
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: var(--text-muted);
-            transition: 0.2s;
-        }
-
-        .close-btn:hover {
-            color: red;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 0.9rem;
-            margin-bottom: 5px;
-            font-weight: 600;
-            color: var(--dark);
-        }
-
+        /* FORM INPUTS */
+        .form-group { margin-bottom: 18px; position: relative; }
+        .form-group label { display: block; font-size: 0.9rem; margin-bottom: 8px; font-weight: 600; color: var(--dark); }
         .form-control {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            font-size: 0.95rem;
-            outline: none;
-            transition: 0.3s;
+            width: 100%; padding: 14px 16px; border: 1.5px solid var(--border); border-radius: 12px;
+            font-size: 1rem; outline: none; transition: all 0.3s ease; background: var(--bg); color: var(--dark);
         }
-
-        .form-control:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px var(--primary-light);
-        }
-
+        .form-control:focus { border-color: var(--primary); background: white; box-shadow: 0 0 0 4px var(--primary-light); }
+        .form-control:disabled { background: #e2e8f0; cursor: not-allowed; color: #94a3b8; }
+        
         .btn-submit {
-            width: 100%;
-            padding: 14px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            margin-top: 10px;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: 0.3s;
+            width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px;
+            font-weight: 700; margin-top: 10px; cursor: pointer; font-size: 1.05rem; transition: all 0.3s ease;
         }
+        .btn-submit:hover { background: var(--primary-hover); box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3); }
 
-        .btn-submit:hover {
-            background: #047857;
+        /* SEARCHABLE DROPDOWN SURAH */
+        .custom-select-wrapper { position: relative; }
+        .dropdown-list {
+            position: absolute; top: 100%; left: 0; right: 0; background: white;
+            border: 1px solid var(--border); border-radius: 12px; max-height: 220px; overflow-y: auto;
+            z-index: 1060; box-shadow: 0 10px 25px rgba(0,0,0,0.1); margin-top: 8px;
+            display: none; flex-direction: column;
         }
+        .dropdown-list.show { display: flex; }
+        .dropdown-item {
+            padding: 12px 16px; cursor: pointer; border-bottom: 1px solid var(--bg);
+            display: flex; justify-content: space-between; align-items: center; transition: 0.2s;
+        }
+        .dropdown-item:last-child { border-bottom: none; }
+        .dropdown-item:hover { background: var(--primary-light); color: var(--primary-hover); }
+        .dropdown-item .s-name { font-weight: 600; }
+        .dropdown-item .s-ayat { font-size: 0.8rem; color: var(--text-muted); background: var(--bg); padding: 2px 8px; border-radius: 10px; }
 
-        @media print {
-            body {
-                padding: 0 !important;
-                background: white;
-            }
-
-            .app-nav,
-            .fab,
-            .filter-scroll,
-            .btn-export,
-            .month-nav {
-                display: none !important;
-            }
-
-            .container {
-                max-width: 100%;
-                padding: 0;
-            }
-
-            .card {
-                box-shadow: none;
-                border: 1px solid #ccc;
-                margin-bottom: 10px;
-                break-inside: avoid;
-            }
-
-            .tl-card {
-                border-left: 2px solid #ccc;
-            }
+        /* RESPONSIVE DESKTOP */
+        @media (min-width: 768px) {
+            .month-header { border-radius: 20px; margin-top: 25px; }
+            .mutabaah-grid { display: grid; grid-template-columns: 1fr 1.5fr; gap: 30px; align-items: start; }
+            .fab { bottom: 40px; right: 40px; }
         }
     </style>
 </head>
-
 <body>
 
-    <!-- Navigasi Utama (Include) -->
     <?php include '../components/nav.php'; ?>
 
     <div class="container">
-        <!-- Header Bulan -->
         <div class="month-header">
             <?php
-            $prev_m = $m - 1;
-            $prev_y = $y;
-            if ($prev_m < 1) {
-                $prev_m = 12;
-                $prev_y--;
-            }
-            $next_m = $m + 1;
-            $next_y = $y;
-            if ($next_m > 12) {
-                $next_m = 1;
-                $next_y++;
-            }
+            $prev_m = $m - 1; $prev_y = $y;
+            if ($prev_m < 1) { $prev_m = 12; $prev_y--; }
+            $next_m = $m + 1; $next_y = $y;
+            if ($next_m > 12) { $next_m = 1; $next_y++; }
             ?>
-            <a href="?m=<?= $prev_m ?>&y=<?= $prev_y ?>" class="month-nav">❮ Prev</a>
+            <a href="?m=<?= $prev_m ?>&y=<?= $prev_y ?>" class="month-nav"><i class="fas fa-chevron-left"></i> Sebelumnya</a>
             <h2><?= $month_name ?></h2>
-            <a href="?m=<?= $next_m ?>&y=<?= $next_y ?>" class="month-nav">Next ❯</a>
+            <a href="?m=<?= $next_m ?>&y=<?= $next_y ?>" class="month-nav">Selanjutnya <i class="fas fa-chevron-right"></i></a>
         </div>
 
         <?= $pesan; ?>
 
-        <!-- Grid Responsif -->
         <div class="mutabaah-grid">
-
-            <!-- KOLOM KIRI (Summary & Calendar) -->
             <div class="left-panel">
                 <div class="card">
-                    <div class="card-title">Ringkasan Bulan Ini</div>
+                    <div class="card-title">Ringkasan Aktivitas</div>
                     <div class="stat-grid">
                         <div class="stat-item"><span class="stat-label">Hari Aktif</span><span class="stat-value"><?= $hari_aktif ?></span></div>
                         <div class="stat-item"><span class="stat-label">Tilawah</span><span class="stat-value"><?= $stats['tilawah'] ?></span></div>
                         <div class="stat-item"><span class="stat-label">Murojaah</span><span class="stat-value"><?= $stats['murojaah'] ?></span></div>
                         <div class="stat-item"><span class="stat-label">Setoran</span><span class="stat-value"><?= $stats['setoran'] ?></span></div>
-                        <div class="stat-item streak"><span class="stat-label">🔥 Streak Saat Ini</span><span class="stat-value"><?= $streak ?> Hari</span></div>
+                        <div class="stat-item streak">
+                            <span class="stat-label"><i class="fas fa-fire"></i> Streak Saat Ini</span>
+                            <span class="stat-value"><?= $streak ?> Hari</span>
+                        </div>
                     </div>
                 </div>
 
                 <div class="card">
-                    <div class="card-title">Kalender Aktivitas</div>
+                    <div class="card-title">Kalender Kontribusi</div>
                     <div class="cal-grid">
-                        <div class="cal-day-label">Min</div>
-                        <div class="cal-day-label">Sen</div>
-                        <div class="cal-day-label">Sel</div>
-                        <div class="cal-day-label">Rab</div>
-                        <div class="cal-day-label">Kam</div>
-                        <div class="cal-day-label">Jum</div>
-                        <div class="cal-day-label">Sab</div>
+                        <div class="cal-day-label">Min</div><div class="cal-day-label">Sen</div><div class="cal-day-label">Sel</div>
+                        <div class="cal-day-label">Rab</div><div class="cal-day-label">Kam</div><div class="cal-day-label">Jum</div><div class="cal-day-label">Sab</div>
                         <?php
                         $days_in_month = cal_days_in_month(CAL_GREGORIAN, $m, $y);
                         $first_day = date('w', mktime(0, 0, 0, $m, 1, $y));
@@ -631,13 +307,14 @@ while ($row = mysqli_fetch_assoc($time_q)) {
                     </div>
                 </div>
 
-                <button class="btn-export" onclick="window.print()">📥 Download Laporan (PDF)</button>
+                <button class="btn-export" onclick="window.print()">
+                    <i class="fas fa-file-pdf"></i> Download Laporan Bulanan
+                </button>
             </div>
 
-            <!-- KOLOM KANAN (Filter & Timeline) -->
             <div class="right-panel">
-                <div class="card">
-                    <div class="card-title">Jejak Langkah (Timeline)</div>
+                <div class="card" style="background: transparent; box-shadow: none; padding: 0; border: none;">
+                    <div class="card-title" style="padding-left: 5px;">Jejak Langkah (Timeline)</div>
 
                     <div class="filter-scroll">
                         <button class="filter-btn active" onclick="filterTimeline('all', this)">Semua</button>
@@ -653,21 +330,25 @@ while ($row = mysqli_fetch_assoc($time_q)) {
                         ?>
                             <div class="tl-card tl-item" data-type="<?= $tl['activity_type'] ?>" data-date="<?= $tl['activity_date'] ?>">
                                 <div class="tl-header">
-                                    <span>📅 <?= date('d M Y', strtotime($tl['activity_date'])) ?></span>
-                                    <span>⏱️ <?= date('H:i', strtotime($tl['activity_time'])) ?></span>
+                                    <span><i class="far fa-calendar-alt"></i> <?= date('d M Y', strtotime($tl['activity_date'])) ?></span>
+                                    <span><i class="far fa-clock"></i> <?= date('H:i', strtotime($tl['activity_time'])) ?></span>
                                 </div>
                                 <div class="tl-type"><?= $type_label ?></div>
                                 <div class="tl-title">Surah <?= htmlspecialchars($tl['surah']) ?></div>
-                                <div style="font-size:0.9rem; color:#4b5563;">Ayat <?= $tl['ayah_start'] ?> - <?= $tl['ayah_end'] ?></div>
+                                <div style="font-size:0.95rem; color:var(--text-muted); font-weight:500;">
+                                    Ayat <?= $tl['ayah_start'] ?> - <?= $tl['ayah_end'] ?>
+                                </div>
                                 <?php if ($tl['notes']): ?>
-                                    <div style="font-size:0.85rem; margin-top:8px; font-style:italic; border-top:1px dashed #d1d5db; padding-top:8px;">"<?= htmlspecialchars($tl['notes']) ?>"</div>
+                                    <div class="tl-notes">"<?= htmlspecialchars($tl['notes']) ?>"</div>
                                 <?php endif; ?>
                             </div>
                         <?php endforeach; ?>
+                        
                         <?php if (empty($timeline)): ?>
-                            <div style="text-align:center; padding: 40px 20px; color:var(--text-muted); background:var(--bg); border-radius:12px;">
-                                <div style="font-size:3rem; margin-bottom:10px;">🍃</div>
-                                <p>Belum ada catatan aktivitas di bulan ini.</p>
+                            <div style="text-align:center; padding: 60px 20px; color:var(--text-muted); background:var(--card-bg); border-radius:20px; border:1px dashed var(--border);">
+                                <div style="font-size:3.5rem; margin-bottom:15px; opacity:0.5;">🍃</div>
+                                <h3 style="color:var(--dark); margin-bottom:5px;">Belum ada aktivitas</h3>
+                                <p>Yuk, mulai catat perjalanan hafalanmu hari ini!</p>
                             </div>
                         <?php endif; ?>
                     </div>
@@ -676,26 +357,45 @@ while ($row = mysqli_fetch_assoc($time_q)) {
         </div>
     </div>
 
-    <!-- Add Activity FAB -->
-    <div class="fab" onclick="document.getElementById('modalAdd').style.display='flex'">+</div>
+    <div class="fab" onclick="openModal('modalAdd')"><i class="fas fa-plus"></i></div>
 
-    <!-- Modal: Add Activity -->
     <div class="modal" id="modalAdd">
         <div class="modal-content">
             <div class="modal-header">
-                <span>Catat Aktivitas Manual</span>
-                <span class="close-btn" onclick="document.getElementById('modalAdd').style.display='none'">&times;</span>
+                <span>Catat Aktivitas</span>
+                <span class="close-btn" onclick="closeModal('modalAdd')"><i class="fas fa-times"></i></span>
             </div>
             <form method="POST">
                 <div class="form-group">
                     <label>Kategori Aktivitas</label>
                     <select name="activity_type" class="form-control" required>
-                        <option value="tilawah">Tilawah</option>
-                        <option value="murojaah">Murojaah</option>
-                        <option value="hafalan_baru">Hafalan Baru</option>
-                        <option value="setoran">Setoran</option>
+                        <option value="tilawah">📖 Tilawah</option>
+                        <option value="murojaah">🔄 Murojaah</option>
+                        <option value="hafalan_baru">✨ Hafalan Baru</option>
+                        <option value="setoran">🎙️ Setoran</option>
                     </select>
                 </div>
+                
+                <div class="form-group custom-select-wrapper">
+                    <label>Nama Surah</label>
+                    <input type="hidden" name="surah" id="hidden_surah" required>
+                    <input type="text" id="search_surah" class="form-control" placeholder="🔍 Ketik & cari nama surah..." autocomplete="off" required>
+                    <div class="dropdown-list" id="surah_dropdown">
+                        <div style="padding:15px; text-align:center; color:#64748b; font-size:0.85rem;">Memuat data surah...</div>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 15px;">
+                    <div class="form-group" style="flex:1;">
+                        <label>Ayat Awal</label>
+                        <input type="number" name="ayah_start" id="ayah_start" class="form-control" required min="1" disabled placeholder="Pilih Surah">
+                    </div>
+                    <div class="form-group" style="flex:1;">
+                        <label>Ayat Akhir</label>
+                        <input type="number" name="ayah_end" id="ayah_end" class="form-control" required min="1" disabled placeholder="Pilih Surah">
+                    </div>
+                </div>
+
                 <div style="display: flex; gap: 15px;">
                     <div class="form-group" style="flex:1;">
                         <label>Tanggal</label>
@@ -706,47 +406,43 @@ while ($row = mysqli_fetch_assoc($time_q)) {
                         <input type="time" name="activity_time" class="form-control" value="<?= date('H:i') ?>" required>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label>Nama Surah</label>
-                    <input type="text" name="surah" class="form-control" placeholder="Contoh: Al-Mulk" required>
-                </div>
-                <div style="display: flex; gap: 15px;">
-                    <div class="form-group" style="flex:1;">
-                        <label>Ayat Awal</label>
-                        <input type="number" name="ayah_start" class="form-control" required min="1">
-                    </div>
-                    <div class="form-group" style="flex:1;">
-                        <label>Ayat Akhir</label>
-                        <input type="number" name="ayah_end" class="form-control" required min="1">
-                    </div>
-                </div>
+                
                 <div class="form-group">
                     <label>Catatan (Opsional)</label>
-                    <textarea name="notes" class="form-control" rows="2" placeholder="Tuliskan catatan atau refleksi progresmu di sini..."></textarea>
+                    <textarea name="notes" class="form-control" rows="2" placeholder="Bagaimana kelancaran hafalanmu?"></textarea>
                 </div>
                 <button type="submit" name="simpan_aktivitas" class="btn-submit">Simpan Catatan</button>
             </form>
         </div>
     </div>
 
-    <!-- Modal: Daily Detail (Dipicu dari klik Kalender) -->
     <div class="modal" id="modalDetail">
         <div class="modal-content">
             <div class="modal-header">
                 <span id="detail-date-title">Aktivitas Harian</span>
-                <span class="close-btn" onclick="document.getElementById('modalDetail').style.display='none'">&times;</span>
+                <span class="close-btn" onclick="closeModal('modalDetail')"><i class="fas fa-times"></i></span>
             </div>
-            <div class="timeline" id="daily-timeline-container">
-                <!-- Konten akan diisi oleh JavaScript -->
-            </div>
+            <div class="timeline" id="daily-timeline-container"></div>
         </div>
     </div>
 
     <script>
+        // --- LOGIK MODAL ANIMASI ---
+        function openModal(id) {
+            const modal = document.getElementById(id);
+            modal.style.display = 'flex';
+            setTimeout(() => modal.classList.add('show'), 10);
+        }
+        function closeModal(id) {
+            const modal = document.getElementById(id);
+            modal.classList.remove('show');
+            setTimeout(() => modal.style.display = 'none', 300);
+        }
+
+        // --- LOGIK FILTER TIMELINE ---
         function filterTimeline(type, btn) {
             document.querySelectorAll('.filter-btn').forEach(el => el.classList.remove('active'));
             btn.classList.add('active');
-
             const items = document.querySelectorAll('.tl-item');
             items.forEach(item => {
                 if (type === 'all' || item.getAttribute('data-type') === type) {
@@ -757,31 +453,129 @@ while ($row = mysqli_fetch_assoc($time_q)) {
             });
         }
 
+        // --- LOGIK DETAIL HARIAN KALENDER ---
         function showDaily(dateStr) {
             document.getElementById('detail-date-title').innerText = "Catatan: " + dateStr;
             const container = document.getElementById('daily-timeline-container');
             container.innerHTML = "";
-
             let found = false;
             document.querySelectorAll('.tl-item').forEach(item => {
                 if (item.getAttribute('data-date') === dateStr) {
                     const clone = item.cloneNode(true);
-                    clone.style.display = 'block'; // Paksa tampil walau sedang difilter
+                    clone.style.display = 'block'; 
                     container.appendChild(clone);
                     found = true;
                 }
             });
-
             if (!found) {
-                container.innerHTML = `
-                    <div style="text-align:center; padding: 20px; color:#6b7280; background:#f9fafb; border-radius:8px;">
-                        Tidak ada aktivitas yang tercatat pada tanggal ini.
-                    </div>`;
+                container.innerHTML = `<div style="text-align:center; padding: 25px; color:#64748b; background:#f8fafc; border-radius:12px; border:1px solid #e2e8f0;">Belum ada aktivitas pada tanggal ini.</div>`;
             }
-
-            document.getElementById('modalDetail').style.display = 'flex';
+            openModal('modalDetail');
         }
+
+        // --- LOGIK PENCARIAN SURAH DARI API EQURAN.ID ---
+        let surahData = [];
+        const searchInput = document.getElementById('search_surah');
+        const dropdownList = document.getElementById('surah_dropdown');
+        const hiddenSurah = document.getElementById('hidden_surah');
+        const inputAyahStart = document.getElementById('ayah_start');
+        const inputAyahEnd = document.getElementById('ayah_end');
+
+        // Mengambil data surah saat halaman dimuat
+        async function fetchSurahList() {
+            try {
+                const response = await fetch('https://equran.id/api/v2/surat');
+                const json = await response.json();
+                surahData = json.data;
+                renderDropdown(surahData);
+            } catch (error) {
+                dropdownList.innerHTML = `<div style="padding:15px; text-align:center; color:red;">Gagal memuat data surah. Cek internet.</div>`;
+            }
+        }
+
+        // Render isi dropdown
+        function renderDropdown(dataList) {
+            if (dataList.length === 0) {
+                dropdownList.innerHTML = `<div style="padding:15px; text-align:center; color:#64748b;">Surah tidak ditemukan.</div>`;
+                return;
+            }
+            let html = '';
+            dataList.forEach(surah => {
+                html += `
+                <div class="dropdown-item" onclick="selectSurah('${surah.namaLatin}', ${surah.jumlahAyat})">
+                    <span class="s-name">${surah.nomor}. ${surah.namaLatin}</span>
+                    <span class="s-ayat">${surah.jumlahAyat} Ayat</span>
+                </div>`;
+            });
+            dropdownList.innerHTML = html;
+        }
+
+        // Ketika Surah Dipilih
+        function selectSurah(namaLatin, jumlahAyat) {
+            // Set input nilai
+            searchInput.value = namaLatin;
+            hiddenSurah.value = namaLatin;
+            
+            // Buka gembok (enable) input ayat
+            inputAyahStart.disabled = false;
+            inputAyahEnd.disabled = false;
+            
+            // Set batas MAX ayat sesuai surah yang dipilih
+            inputAyahStart.max = jumlahAyat;
+            inputAyahEnd.max = jumlahAyat;
+            
+            // Ubah placeholder untuk instruksi user
+            inputAyahStart.placeholder = `Maks: ${jumlahAyat}`;
+            inputAyahEnd.placeholder = `Maks: ${jumlahAyat}`;
+            
+            // Kosongkan nilai sebelumnya jika ada agar user tidak salah input
+            inputAyahStart.value = '';
+            inputAyahEnd.value = '';
+
+            // Sembunyikan dropdown
+            dropdownList.classList.remove('show');
+        }
+
+        // Event listener saat user mengetik di kotak pencarian
+        searchInput.addEventListener('input', function() {
+            const query = this.value.toLowerCase();
+            // Filter data surah berdasarkan teks latin
+            const filtered = surahData.filter(surah => surah.namaLatin.toLowerCase().includes(query));
+            renderDropdown(filtered);
+            dropdownList.classList.add('show');
+            
+            // Jika user merubah teks (mengetik ulang), kunci lagi input ayatnya
+            if (hiddenSurah.value !== query) {
+                inputAyahStart.disabled = true;
+                inputAyahEnd.disabled = true;
+                inputAyahStart.placeholder = "Pilih Surah";
+                inputAyahEnd.placeholder = "Pilih Surah";
+                hiddenSurah.value = '';
+            }
+        });
+
+        // Buka dropdown saat input diklik
+        searchInput.addEventListener('focus', function() {
+            dropdownList.classList.add('show');
+        });
+
+        // Sembunyikan dropdown jika user klik di luar area
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && !dropdownList.contains(e.target)) {
+                dropdownList.classList.remove('show');
+            }
+        });
+
+        // Validasi form agar Ayat Akhir tidak lebih kecil dari Ayat Awal (Opsional tambahan UI/UX)
+        inputAyahEnd.addEventListener('change', function() {
+            if (parseInt(this.value) < parseInt(inputAyahStart.value)) {
+                alert("Ayat Akhir tidak boleh lebih kecil dari Ayat Awal.");
+                this.value = inputAyahStart.value;
+            }
+        });
+
+        // Panggil fungsi saat web jalan
+        fetchSurahList();
     </script>
 </body>
-
 </html>

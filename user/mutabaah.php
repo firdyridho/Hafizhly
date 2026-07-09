@@ -30,7 +30,7 @@ if (isset($_POST['simpan_aktivitas'])) {
     $q_insert = "INSERT INTO mutabaah (user_id, activity_type, activity_date, activity_time, surah, ayah_start, ayah_end, notes) 
                  VALUES ('$user_id', '$type', '$date', '$time', '$surah', '$a_start', '$a_end', '$notes')";
     if (mysqli_query($conn, $q_insert)) {
-        $pesan = "<div class='alert alert-success'><i class='fas fa-check-circle'></i> Aktivitas berhasil dicatat!</div>";
+        $pesan = "<div class='alert alert-success d-flex align-items-center'><i class='fas fa-check-circle me-2'></i> Aktivitas berhasil dicatat!</div>";
     }
 }
 
@@ -78,382 +78,676 @@ while ($row = mysqli_fetch_assoc($time_q)) {
 
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mutabaah - Hifzly</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #059669; --primary-hover: #047857; --primary-light: #d1fae5;
-            --dark: #0f172a; --text-muted: #64748b; 
-            --bg: #f8fafc; --card-bg: #ffffff; --border: #e2e8f0;
+            --primary: #059669;
+            --primary-hover: #047857;
+            --primary-light: #d1fae5;
+            --dark: #0f172a;
+            --text-muted: #64748b;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --border: #e2e8f0;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background-color: var(--bg); color: var(--dark); padding-bottom: 90px; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--dark);
+            padding-bottom: 80px;
+        }
 
         /* HEADER BULAN */
         .month-header {
-            background: var(--card-bg); padding: 15px 20px;
-            display: flex; justify-content: space-between; align-items: center;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); margin-bottom: 25px;
+            background: var(--card-bg);
+            padding: 1rem 1.5rem;
+            border-radius: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
         }
-        .month-header h2 { font-size: 1.25rem; color: var(--dark); font-weight: 700; }
-        .month-nav a {
-            text-decoration: none; color: var(--text-muted); font-weight: 600; font-size: 0.9rem;
-            padding: 8px 16px; background: var(--bg); border-radius: 12px; transition: all 0.3s ease;
-        }
-        .month-nav a:hover { background: var(--border); color: var(--dark); }
 
-        .container { padding: 0 20px; max-width: 1100px; margin: 0 auto; }
+        .month-header h2 {
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .month-nav-link {
+            color: var(--text-muted);
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 12px;
+            background: var(--bg);
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .month-nav-link:hover {
+            background: var(--border);
+            color: var(--dark);
+        }
+
         .alert {
-            padding: 15px; border-radius: 12px; margin-bottom: 25px; display: flex; gap: 10px; align-items: center;
-            font-size: 0.95rem; background-color: var(--primary-light); color: #065f46; font-weight: 500;
+            border-radius: 12px;
+            font-weight: 500;
         }
-
-        /* GRID LAYOUT */
-        .mutabaah-grid { display: flex; flex-direction: column; gap: 25px; }
-
-        /* KARTU MODERN (Next.js / Vue style) */
-        .card {
-            background: var(--card-bg); border-radius: 20px; padding: 25px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        .card-title { font-size: 1.15rem; font-weight: 700; margin-bottom: 20px; color: var(--dark); display: flex; justify-content: space-between; align-items: center; }
 
         /* STATISTIK */
-        .stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
-        .stat-item { background: var(--bg); padding: 15px; border-radius: 16px; display: flex; flex-direction: column; gap: 8px; border: 1px solid var(--border); }
-        .stat-label { font-size: 0.85rem; color: var(--text-muted); font-weight: 500; }
-        .stat-value { font-size: 1.5rem; font-weight: 800; color: var(--primary); }
-        .streak { grid-column: span 2; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border: none; flex-direction: row; justify-content: space-between; align-items: center; }
-        .streak .stat-label { color: rgba(255, 255, 255, 0.9); }
-        .streak .stat-value { color: white; }
+        .stat-card {
+            background: var(--bg);
+            border-radius: 16px;
+            padding: 1.2rem;
+            border: 1px solid var(--border);
+            transition: transform 0.2s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .streak-card {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            border: none;
+        }
+
+        .streak-card .stat-label,
+        .streak-card .stat-value {
+            color: white;
+        }
 
         /* KALENDER */
-        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
-        .cal-day-label { text-align: center; font-size: 0.8rem; color: var(--text-muted); font-weight: 600; margin-bottom: 5px; }
+        .cal-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+        }
+
+        .cal-day-label {
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
         .cal-box {
-            aspect-ratio: 1; border-radius: 8px; background-color: #f1f5f9; position: relative;
-            cursor: pointer; transition: all 0.2s ease; border: 1px solid transparent;
+            aspect-ratio: 1;
+            border-radius: 10px;
+            background-color: #f1f5f9;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: rgba(0, 0, 0, 0.25);
+            user-select: none;
         }
-        .cal-box.active { background-color: var(--primary); box-shadow: 0 4px 10px rgba(5,150,105,0.3); }
-        .cal-box:hover { transform: translateY(-2px); border-color: var(--text-muted); z-index: 2; }
-        .cal-box.active:hover { border-color: transparent; transform: scale(1.1); }
+
+        .cal-box.active {
+            background-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.35);
+            color: white;
+            font-weight: 700;
+        }
+
+        .cal-box:hover {
+            transform: translateY(-3px);
+            border-color: var(--primary);
+            color: var(--dark);
+        }
+
+        .cal-box.active:hover {
+            border-color: transparent;
+            transform: scale(1.08);
+            color: white;
+        }
+
         .cal-badge {
-            position: absolute; top: -6px; right: -6px; font-size: 0.7rem; background: #ef4444; color: white;
-            border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center;
-            font-weight: 700; box-shadow: 0 2px 5px rgba(239, 68, 68, 0.4); border: 2px solid white;
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            font-size: 0.7rem;
+            background: #ef4444;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            box-shadow: 0 2px 5px rgba(239, 68, 68, 0.5);
+            border: 2px solid white;
+            z-index: 5;
         }
 
-        /* FILTER & TIMELINE */
-        .filter-scroll { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 15px; margin-bottom: 15px; }
-        .filter-scroll::-webkit-scrollbar { height: 0px; } /* Hide scrollbar for clean UI */
-        .filter-btn {
-            padding: 8px 18px; border-radius: 20px; border: 1px solid var(--border); background: var(--card-bg);
-            font-size: 0.9rem; cursor: pointer; white-space: nowrap; transition: all 0.3s ease;
-            color: var(--text-muted); font-weight: 500;
-        }
-        .filter-btn:hover { background: var(--bg); color: var(--dark); }
-        .filter-btn.active { background: var(--dark); color: white; border-color: var(--dark); }
-
-        .timeline { display: flex; flex-direction: column; gap: 15px; }
+        /* TIMELINE */
         .tl-card {
-            background: var(--card-bg); padding: 18px; border-radius: 16px; border: 1px solid var(--border);
-            border-left: 6px solid var(--primary); transition: all 0.3s ease;
+            background: var(--card-bg);
+            padding: 1.2rem;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            border-left: 6px solid var(--primary);
+            transition: all 0.3s ease;
         }
-        .tl-card:hover { transform: translateX(5px); box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-        .tl-header { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px; font-weight: 500; }
-        .tl-title { font-weight: 700; font-size: 1.1rem; color: var(--dark); margin-bottom: 5px; }
+
+        .tl-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+        }
+
         .tl-type {
-            font-size: 0.75rem; padding: 4px 12px; border-radius: 12px; background: var(--primary-light);
-            color: var(--primary-hover); text-transform: uppercase; font-weight: 700; display: inline-block; margin-bottom: 8px; letter-spacing: 0.5px;
+            font-size: 0.75rem;
+            padding: 0.3rem 0.8rem;
+            border-radius: 12px;
+            background: var(--primary-light);
+            color: var(--primary-hover);
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.5px;
         }
-        .tl-notes { font-size: 0.9rem; margin-top: 10px; font-style: italic; color: #475569; background: var(--bg); padding: 10px; border-radius: 8px; }
+
+        .tl-notes {
+            font-style: italic;
+            background: var(--bg);
+            padding: 0.8rem;
+            border-radius: 10px;
+            margin-top: 0.8rem;
+            color: #475569;
+        }
 
         /* FAB */
         .fab {
-            position: fixed; bottom: 90px; right: 25px; width: 65px; height: 65px; background: var(--primary); color: white;
-            border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 30px;
-            box-shadow: 0 10px 25px rgba(5, 150, 105, 0.5); cursor: pointer; z-index: 100; transition: all 0.3s ease;
+            position: fixed;
+            bottom: 100px;
+            right: 25px;
+            width: 60px;
+            height: 60px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            box-shadow: 0 8px 25px rgba(5, 150, 105, 0.4);
+            cursor: pointer;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            border: none;
         }
-        .fab:hover { transform: translateY(-5px) scale(1.05); }
 
-        /* TOMBOL EXPORT */
-        .btn-export {
-            display: flex; justify-content: center; align-items: center; gap: 10px; width: 100%; padding: 15px;
-            background: white; border: 2px dashed var(--border); color: var(--text-muted); border-radius: 16px;
-            font-weight: 600; font-size: 1rem; margin-bottom: 25px; cursor: pointer; transition: all 0.3s ease;
+        .fab:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 12px 30px rgba(5, 150, 105, 0.5);
         }
-        .btn-export:hover { border-color: var(--primary); color: var(--primary); background: #f0fdf4; }
 
-        /* MODAL ANIMASI & STYLING */
-        .modal {
-            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(5px); z-index: 1050;
-            align-items: center; justify-content: center; padding: 20px;
-            opacity: 0; transition: opacity 0.3s ease;
+        /* MODAL & BOTTOM SHEET */
+        .modal-backdrop-custom {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1050;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
         }
-        .modal.show { display: flex; opacity: 1; }
-        .modal-content {
-            background: var(--card-bg); width: 100%; max-width: 500px; border-radius: 24px; padding: 30px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); max-height: 90vh; overflow-y: auto;
-            transform: translateY(20px); transition: transform 0.3s ease;
-        }
-        .modal.show .modal-content { transform: translateY(0); }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; font-weight: 700; font-size: 1.3rem; color: var(--dark); }
-        .close-btn { font-size: 1.5rem; cursor: pointer; color: var(--text-muted); padding: 5px; line-height: 1; border-radius: 8px; transition: 0.2s; }
-        .close-btn:hover { background: #fee2e2; color: #ef4444; }
 
-        /* FORM INPUTS */
-        .form-group { margin-bottom: 18px; position: relative; }
-        .form-group label { display: block; font-size: 0.9rem; margin-bottom: 8px; font-weight: 600; color: var(--dark); }
-        .form-control {
-            width: 100%; padding: 14px 16px; border: 1.5px solid var(--border); border-radius: 12px;
-            font-size: 1rem; outline: none; transition: all 0.3s ease; background: var(--bg); color: var(--dark);
+        .modal-backdrop-custom.show {
+            opacity: 1;
+            pointer-events: auto;
         }
-        .form-control:focus { border-color: var(--primary); background: white; box-shadow: 0 0 0 4px var(--primary-light); }
-        .form-control:disabled { background: #e2e8f0; cursor: not-allowed; color: #94a3b8; }
-        
-        .btn-submit {
-            width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px;
-            font-weight: 700; margin-top: 10px; cursor: pointer; font-size: 1.05rem; transition: all 0.3s ease;
-        }
-        .btn-submit:hover { background: var(--primary-hover); box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3); }
 
-        /* SEARCHABLE DROPDOWN SURAH */
-        .custom-select-wrapper { position: relative; }
+        .modal-content-custom {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 500px;
+            border-radius: 24px;
+            padding: 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-backdrop-custom.show .modal-content-custom {
+            transform: translateY(0);
+        }
+
+        /* BOTTOM SHEET UNTUK MOBILE */
+        @media (max-width: 767.98px) {
+            .modal-backdrop-custom {
+                align-items: flex-end;
+            }
+
+            .modal-content-custom {
+                max-width: 100%;
+                border-radius: 24px 24px 0 0;
+                max-height: 85vh;
+                transform: translateY(100%);
+            }
+
+            .modal-backdrop-custom.show .modal-content-custom {
+                transform: translateY(0);
+            }
+
+            .fab {
+                bottom: 90px;
+                right: 20px;
+            }
+        }
+
+        /* FILTER BUTTONS */
+        .filter-scroll {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .filter-scroll::-webkit-scrollbar {
+            height: 0;
+        }
+
+        .filter-btn-custom {
+            padding: 0.5rem 1.2rem;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+            font-size: 0.9rem;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .filter-btn-custom.active,
+        .filter-btn-custom:hover {
+            background: var(--dark);
+            color: white;
+            border-color: var(--dark);
+        }
+
+        /* DROPDOWN SURAH */
+        .custom-select-wrapper {
+            position: relative;
+        }
+
         .dropdown-list {
-            position: absolute; top: 100%; left: 0; right: 0; background: white;
-            border: 1px solid var(--border); border-radius: 12px; max-height: 220px; overflow-y: auto;
-            z-index: 1060; box-shadow: 0 10px 25px rgba(0,0,0,0.1); margin-top: 8px;
-            display: none; flex-direction: column;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            max-height: 220px;
+            overflow-y: auto;
+            z-index: 1060;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            margin-top: 6px;
+            display: none;
+            flex-direction: column;
         }
-        .dropdown-list.show { display: flex; }
-        .dropdown-item {
-            padding: 12px 16px; cursor: pointer; border-bottom: 1px solid var(--bg);
-            display: flex; justify-content: space-between; align-items: center; transition: 0.2s;
-        }
-        .dropdown-item:last-child { border-bottom: none; }
-        .dropdown-item:hover { background: var(--primary-light); color: var(--primary-hover); }
-        .dropdown-item .s-name { font-weight: 600; }
-        .dropdown-item .s-ayat { font-size: 0.8rem; color: var(--text-muted); background: var(--bg); padding: 2px 8px; border-radius: 10px; }
 
-        /* RESPONSIVE DESKTOP */
-        @media (min-width: 768px) {
-            .month-header { border-radius: 20px; margin-top: 25px; }
-            .mutabaah-grid { display: grid; grid-template-columns: 1fr 1.5fr; gap: 30px; align-items: start; }
-            .fab { bottom: 40px; right: 40px; }
+        .dropdown-list.show {
+            display: flex;
+        }
+
+        .dropdown-item-custom {
+            padding: 0.8rem 1rem;
+            cursor: pointer;
+            border-bottom: 1px solid var(--bg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: 0.2s;
+        }
+
+        .dropdown-item-custom:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-item-custom:hover {
+            background: var(--primary-light);
+            color: var(--primary-hover);
+        }
+
+        .dropdown-item-custom .s-name {
+            font-weight: 600;
+        }
+
+        .dropdown-item-custom .s-ayat {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            background: var(--bg);
+            padding: 0.2rem 0.6rem;
+            border-radius: 10px;
         }
     </style>
 </head>
+
 <body>
 
     <?php include '../components/nav.php'; ?>
 
     <div class="container">
-        <div class="month-header">
+        <!-- HEADER BULAN -->
+        <div class="month-header d-flex justify-content-between align-items-center">
             <?php
-            $prev_m = $m - 1; $prev_y = $y;
-            if ($prev_m < 1) { $prev_m = 12; $prev_y--; }
-            $next_m = $m + 1; $next_y = $y;
-            if ($next_m > 12) { $next_m = 1; $next_y++; }
+            $prev_m = $m - 1;
+            $prev_y = $y;
+            if ($prev_m < 1) {
+                $prev_m = 12;
+                $prev_y--;
+            }
+            $next_m = $m + 1;
+            $next_y = $y;
+            if ($next_m > 12) {
+                $next_m = 1;
+                $next_y++;
+            }
             ?>
-            <a href="?m=<?= $prev_m ?>&y=<?= $prev_y ?>" class="month-nav"><i class="fas fa-chevron-left"></i> Sebelumnya</a>
-            <h2><?= $month_name ?></h2>
-            <a href="?m=<?= $next_m ?>&y=<?= $next_y ?>" class="month-nav">Selanjutnya <i class="fas fa-chevron-right"></i></a>
+            <a href="?m=<?= $prev_m ?>&y=<?= $prev_y ?>" class="month-nav-link">
+                <i class="fas fa-chevron-left me-1"></i> Sebelumnya
+            </a>
+            <h2 class="mb-0 fs-4"><?= $month_name ?></h2>
+            <a href="?m=<?= $next_m ?>&y=<?= $next_y ?>" class="month-nav-link">
+                Selanjutnya <i class="fas fa-chevron-right ms-1"></i>
+            </a>
         </div>
 
-        <?= $pesan; ?>
+        <!-- PESAN ALERT -->
+        <?php if ($pesan): ?>
+            <?= $pesan ?>
+        <?php endif; ?>
 
-        <div class="mutabaah-grid">
-            <div class="left-panel">
-                <div class="card">
-                    <div class="card-title">Ringkasan Aktivitas</div>
-                    <div class="stat-grid">
-                        <div class="stat-item"><span class="stat-label">Hari Aktif</span><span class="stat-value"><?= $hari_aktif ?></span></div>
-                        <div class="stat-item"><span class="stat-label">Tilawah</span><span class="stat-value"><?= $stats['tilawah'] ?></span></div>
-                        <div class="stat-item"><span class="stat-label">Murojaah</span><span class="stat-value"><?= $stats['murojaah'] ?></span></div>
-                        <div class="stat-item"><span class="stat-label">Setoran</span><span class="stat-value"><?= $stats['setoran'] ?></span></div>
-                        <div class="stat-item streak">
-                            <span class="stat-label"><i class="fas fa-fire"></i> Streak Saat Ini</span>
-                            <span class="stat-value"><?= $streak ?> Hari</span>
+        <!-- GRID UTAMA -->
+        <div class="row g-4">
+            <!-- KOLOM KIRI: STATS + KALENDER + EXPORT -->
+            <div class="col-lg-5">
+                <!-- Ringkasan Aktivitas -->
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3"><i class="fas fa-chart-pie me-2"></i>Ringkasan Aktivitas</h5>
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="stat-card">
+                                    <div class="stat-label">Hari Aktif</div>
+                                    <div class="stat-value"><?= $hari_aktif ?></div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="stat-card">
+                                    <div class="stat-label">Tilawah</div>
+                                    <div class="stat-value"><?= $stats['tilawah'] ?></div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="stat-card">
+                                    <div class="stat-label">Murojaah</div>
+                                    <div class="stat-value"><?= $stats['murojaah'] ?></div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="stat-card">
+                                    <div class="stat-label">Setoran</div>
+                                    <div class="stat-value"><?= $stats['setoran'] ?></div>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="stat-card streak-card d-flex justify-content-between align-items-center">
+                                    <span class="stat-label"><i class="fas fa-fire me-1"></i> Streak Saat Ini</span>
+                                    <span class="stat-value"><?= $streak ?> Hari</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="card">
-                    <div class="card-title">Kalender Kontribusi</div>
-                    <div class="cal-grid">
-                        <div class="cal-day-label">Min</div><div class="cal-day-label">Sen</div><div class="cal-day-label">Sel</div>
-                        <div class="cal-day-label">Rab</div><div class="cal-day-label">Kam</div><div class="cal-day-label">Jum</div><div class="cal-day-label">Sab</div>
-                        <?php
-                        $days_in_month = cal_days_in_month(CAL_GREGORIAN, $m, $y);
-                        $first_day = date('w', mktime(0, 0, 0, $m, 1, $y));
+                <!-- Kalender Kontribusi -->
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3"><i class="fas fa-calendar-check me-2"></i>Kalender Kontribusi</h5>
+                        <div class="cal-grid">
+                            <div class="cal-day-label">Min</div>
+                            <div class="cal-day-label">Sen</div>
+                            <div class="cal-day-label">Sel</div>
+                            <div class="cal-day-label">Rab</div>
+                            <div class="cal-day-label">Kam</div>
+                            <div class="cal-day-label">Jum</div>
+                            <div class="cal-day-label">Sab</div>
+                            <?php
+                            $days_in_month = cal_days_in_month(CAL_GREGORIAN, $m, $y);
+                            $first_day = date('w', mktime(0, 0, 0, $m, 1, $y));
 
-                        for ($i = 0; $i < $first_day; $i++) echo "<div></div>";
+                            for ($i = 0; $i < $first_day; $i++) echo "<div></div>";
 
-                        for ($d = 1; $d <= $days_in_month; $d++) {
-                            $date_str = sprintf("%04d-%02d-%02d", $y, $m, $d);
-                            $count = isset($cal_data[$date_str]) ? $cal_data[$date_str] : 0;
-                            $class = $count > 0 ? 'active' : '';
-                            $badge = $count > 1 ? "<div class='cal-badge'>$count</div>" : "";
-
-                            echo "<div class='cal-box $class' onclick='showDaily(\"$date_str\")'>$badge</div>";
-                        }
-                        ?>
+                            for ($d = 1; $d <= $days_in_month; $d++) {
+                                $date_str = sprintf("%04d-%02d-%02d", $y, $m, $d);
+                                $count = isset($cal_data[$date_str]) ? $cal_data[$date_str] : 0;
+                                $class = $count > 0 ? 'active' : '';
+                                $badge = $count > 1 ? "<div class='cal-badge'>$count</div>" : "";
+                                // Angka tanggal dengan opasitas semi transparan
+                                echo "<div class='cal-box $class' onclick='showDaily(\"$date_str\")'>
+                                        <span style='opacity: 0.7;'>$d</span>
+                                        $badge
+                                      </div>";
+                            }
+                            ?>
+                        </div>
                     </div>
                 </div>
 
-                <button class="btn-export" onclick="window.print()">
-                    <i class="fas fa-file-pdf"></i> Download Laporan Bulanan
+                <!-- Tombol Download Laporan -->
+                <button class="btn btn-outline-secondary w-100 rounded-3 py-3 fw-semibold" onclick="window.print()">
+                    <i class="fas fa-file-pdf me-2"></i> Download Laporan Bulanan
                 </button>
             </div>
 
-            <div class="right-panel">
-                <div class="card" style="background: transparent; box-shadow: none; padding: 0; border: none;">
-                    <div class="card-title" style="padding-left: 5px;">Jejak Langkah (Timeline)</div>
+            <!-- KOLOM KANAN: TIMELINE -->
+            <div class="col-lg-7">
+                <div class="card border-0 shadow-sm rounded-4">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3"><i class="fas fa-history me-2"></i>Jejak Langkah (Timeline)</h5>
 
-                    <div class="filter-scroll">
-                        <button class="filter-btn active" onclick="filterTimeline('all', this)">Semua</button>
-                        <button class="filter-btn" onclick="filterTimeline('tilawah', this)">Tilawah</button>
-                        <button class="filter-btn" onclick="filterTimeline('murojaah', this)">Murojaah</button>
-                        <button class="filter-btn" onclick="filterTimeline('hafalan_baru', this)">Hafalan Baru</button>
-                        <button class="filter-btn" onclick="filterTimeline('setoran', this)">Setoran</button>
-                    </div>
+                        <!-- Filter -->
+                        <div class="filter-scroll">
+                            <button class="filter-btn-custom active" onclick="filterTimeline('all', this)">Semua</button>
+                            <button class="filter-btn-custom" onclick="filterTimeline('tilawah', this)">Tilawah</button>
+                            <button class="filter-btn-custom" onclick="filterTimeline('murojaah', this)">Murojaah</button>
+                            <button class="filter-btn-custom" onclick="filterTimeline('hafalan_baru', this)">Hafalan Baru</button>
+                            <button class="filter-btn-custom" onclick="filterTimeline('setoran', this)">Setoran</button>
+                        </div>
 
-                    <div class="timeline" id="timeline-container">
-                        <?php foreach ($timeline as $tl):
-                            $type_label = str_replace('_', ' ', $tl['activity_type']);
-                        ?>
-                            <div class="tl-card tl-item" data-type="<?= $tl['activity_type'] ?>" data-date="<?= $tl['activity_date'] ?>">
-                                <div class="tl-header">
-                                    <span><i class="far fa-calendar-alt"></i> <?= date('d M Y', strtotime($tl['activity_date'])) ?></span>
-                                    <span><i class="far fa-clock"></i> <?= date('H:i', strtotime($tl['activity_time'])) ?></span>
+                        <!-- Timeline -->
+                        <div id="timeline-container" class="d-flex flex-column gap-3">
+                            <?php foreach ($timeline as $tl):
+                                $type_label = str_replace('_', ' ', $tl['activity_type']);
+                            ?>
+                                <div class="tl-card tl-item" data-type="<?= $tl['activity_type'] ?>" data-date="<?= $tl['activity_date'] ?>">
+                                    <div class="d-flex justify-content-between text-muted small mb-2">
+                                        <span><i class="fas fa-calendar-alt me-1"></i> <?= date('d M Y', strtotime($tl['activity_date'])) ?></span>
+                                        <span><i class="fas fa-clock me-1"></i> <?= date('H:i', strtotime($tl['activity_time'])) ?></span>
+                                    </div>
+                                    <span class="tl-type mb-2"><?= $type_label ?></span>
+                                    <div class="fw-bold fs-6">Surah <?= htmlspecialchars($tl['surah']) ?></div>
+                                    <div class="text-muted small fw-medium">
+                                        Ayat <?= $tl['ayah_start'] ?> - <?= $tl['ayah_end'] ?>
+                                    </div>
+                                    <?php if ($tl['notes']): ?>
+                                        <div class="tl-notes">"<?= htmlspecialchars($tl['notes']) ?>"</div>
+                                    <?php endif; ?>
                                 </div>
-                                <div class="tl-type"><?= $type_label ?></div>
-                                <div class="tl-title">Surah <?= htmlspecialchars($tl['surah']) ?></div>
-                                <div style="font-size:0.95rem; color:var(--text-muted); font-weight:500;">
-                                    Ayat <?= $tl['ayah_start'] ?> - <?= $tl['ayah_end'] ?>
+                            <?php endforeach; ?>
+
+                            <?php if (empty($timeline)): ?>
+                                <div class="text-center py-5 text-muted">
+                                    <i class="fas fa-seedling fa-3x mb-3 opacity-50"></i>
+                                    <h5>Belum ada aktivitas</h5>
+                                    <p>Yuk, mulai catat perjalanan hafalanmu hari ini!</p>
                                 </div>
-                                <?php if ($tl['notes']): ?>
-                                    <div class="tl-notes">"<?= htmlspecialchars($tl['notes']) ?>"</div>
-                                <?php endif; ?>
-                            </div>
-                        <?php endforeach; ?>
-                        
-                        <?php if (empty($timeline)): ?>
-                            <div style="text-align:center; padding: 60px 20px; color:var(--text-muted); background:var(--card-bg); border-radius:20px; border:1px dashed var(--border);">
-                                <div style="font-size:3.5rem; margin-bottom:15px; opacity:0.5;">🍃</div>
-                                <h3 style="color:var(--dark); margin-bottom:5px;">Belum ada aktivitas</h3>
-                                <p>Yuk, mulai catat perjalanan hafalanmu hari ini!</p>
-                            </div>
-                        <?php endif; ?>
+                            <?php endif; ?>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="fab" onclick="openModal('modalAdd')"><i class="fas fa-plus"></i></div>
+    <!-- FAB -->
+    <button class="fab" onclick="openModal('modalAdd')">
+        <i class="fas fa-plus"></i>
+    </button>
 
-    <div class="modal" id="modalAdd">
-        <div class="modal-content">
-            <div class="modal-header">
-                <span>Catat Aktivitas</span>
-                <span class="close-btn" onclick="closeModal('modalAdd')"><i class="fas fa-times"></i></span>
+    <!-- MODAL / BOTTOM SHEET: Tambah Aktivitas -->
+    <div class="modal-backdrop-custom" id="modalAdd">
+        <div class="modal-content-custom">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="fw-bold mb-0">Catat Aktivitas</h5>
+                <button type="button" class="btn-close" onclick="closeModal('modalAdd')"></button>
             </div>
             <form method="POST">
-                <div class="form-group">
-                    <label>Kategori Aktivitas</label>
-                    <select name="activity_type" class="form-control" required>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Kategori Aktivitas</label>
+                    <select name="activity_type" class="form-select rounded-3" required>
                         <option value="tilawah">📖 Tilawah</option>
                         <option value="murojaah">🔄 Murojaah</option>
                         <option value="hafalan_baru">✨ Hafalan Baru</option>
                         <option value="setoran">🎙️ Setoran</option>
                     </select>
                 </div>
-                
-                <div class="form-group custom-select-wrapper">
-                    <label>Nama Surah</label>
+
+                <div class="mb-3 custom-select-wrapper">
+                    <label class="form-label fw-semibold">Nama Surah</label>
                     <input type="hidden" name="surah" id="hidden_surah" required>
-                    <input type="text" id="search_surah" class="form-control" placeholder="🔍 Ketik & cari nama surah..." autocomplete="off" required>
+                    <input type="text" id="search_surah" class="form-control rounded-3" placeholder="🔍 Ketik & cari nama surah..." autocomplete="off" required>
                     <div class="dropdown-list" id="surah_dropdown">
-                        <div style="padding:15px; text-align:center; color:#64748b; font-size:0.85rem;">Memuat data surah...</div>
+                        <div class="p-3 text-center text-muted small">Memuat data surah...</div>
                     </div>
                 </div>
 
-                <div style="display: flex; gap: 15px;">
-                    <div class="form-group" style="flex:1;">
-                        <label>Ayat Awal</label>
-                        <input type="number" name="ayah_start" id="ayah_start" class="form-control" required min="1" disabled placeholder="Pilih Surah">
+                <div class="row g-3">
+                    <div class="col-6">
+                        <label class="form-label fw-semibold">Ayat Awal</label>
+                        <input type="number" name="ayah_start" id="ayah_start" class="form-control rounded-3" required min="1" disabled placeholder="Pilih Surah">
                     </div>
-                    <div class="form-group" style="flex:1;">
-                        <label>Ayat Akhir</label>
-                        <input type="number" name="ayah_end" id="ayah_end" class="form-control" required min="1" disabled placeholder="Pilih Surah">
+                    <div class="col-6">
+                        <label class="form-label fw-semibold">Ayat Akhir</label>
+                        <input type="number" name="ayah_end" id="ayah_end" class="form-control rounded-3" required min="1" disabled placeholder="Pilih Surah">
                     </div>
                 </div>
 
-                <div style="display: flex; gap: 15px;">
-                    <div class="form-group" style="flex:1;">
-                        <label>Tanggal</label>
-                        <input type="date" name="activity_date" class="form-control" value="<?= date('Y-m-d') ?>" required>
+                <div class="row g-3 mt-2">
+                    <div class="col-6">
+                        <label class="form-label fw-semibold">Tanggal</label>
+                        <input type="date" name="activity_date" class="form-control rounded-3" value="<?= date('Y-m-d') ?>" required>
                     </div>
-                    <div class="form-group" style="flex:1;">
-                        <label>Jam</label>
-                        <input type="time" name="activity_time" class="form-control" value="<?= date('H:i') ?>" required>
+                    <div class="col-6">
+                        <label class="form-label fw-semibold">Jam</label>
+                        <input type="time" name="activity_time" class="form-control rounded-3" value="<?= date('H:i') ?>" required>
                     </div>
                 </div>
-                
-                <div class="form-group">
-                    <label>Catatan (Opsional)</label>
-                    <textarea name="notes" class="form-control" rows="2" placeholder="Bagaimana kelancaran hafalanmu?"></textarea>
+
+                <div class="mb-3 mt-3">
+                    <label class="form-label fw-semibold">Catatan (Opsional)</label>
+                    <textarea name="notes" class="form-control rounded-3" rows="2" placeholder="Bagaimana kelancaran hafalanmu?"></textarea>
                 </div>
-                <button type="submit" name="simpan_aktivitas" class="btn-submit">Simpan Catatan</button>
+                <button type="submit" name="simpan_aktivitas" class="btn btn-success w-100 py-3 rounded-3 fw-bold mt-2">
+                    <i class="fas fa-save me-2"></i> Simpan Catatan
+                </button>
             </form>
         </div>
     </div>
 
-    <div class="modal" id="modalDetail">
-        <div class="modal-content">
-            <div class="modal-header">
-                <span id="detail-date-title">Aktivitas Harian</span>
-                <span class="close-btn" onclick="closeModal('modalDetail')"><i class="fas fa-times"></i></span>
+    <!-- MODAL / BOTTOM SHEET: Detail Harian -->
+    <div class="modal-backdrop-custom" id="modalDetail">
+        <div class="modal-content-custom">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="fw-bold mb-0" id="detail-date-title">Aktivitas Harian</h5>
+                <button type="button" class="btn-close" onclick="closeModal('modalDetail')"></button>
             </div>
-            <div class="timeline" id="daily-timeline-container"></div>
+            <div id="daily-timeline-container" class="d-flex flex-column gap-3"></div>
         </div>
     </div>
 
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // --- LOGIK MODAL ANIMASI ---
+        // MODAL / BOTTOM SHEET LOGIC
         function openModal(id) {
             const modal = document.getElementById(id);
-            modal.style.display = 'flex';
-            setTimeout(() => modal.classList.add('show'), 10);
+            modal.classList.add('show');
+            document.body.style.overflow = 'hidden';
         }
+
         function closeModal(id) {
             const modal = document.getElementById(id);
             modal.classList.remove('show');
-            setTimeout(() => modal.style.display = 'none', 300);
+            document.body.style.overflow = '';
         }
-
-        // --- LOGIK FILTER TIMELINE ---
-        function filterTimeline(type, btn) {
-            document.querySelectorAll('.filter-btn').forEach(el => el.classList.remove('active'));
-            btn.classList.add('active');
-            const items = document.querySelectorAll('.tl-item');
-            items.forEach(item => {
-                if (type === 'all' || item.getAttribute('data-type') === type) {
-                    item.style.display = 'block';
-                } else {
-                    item.style.display = 'none';
+        // Tutup modal jika klik di luar area konten
+        document.querySelectorAll('.modal-backdrop-custom').forEach(backdrop => {
+            backdrop.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeModal(this.id);
                 }
+            });
+        });
+
+        // FILTER TIMELINE
+        function filterTimeline(type, btn) {
+            document.querySelectorAll('.filter-btn-custom').forEach(el => el.classList.remove('active'));
+            btn.classList.add('active');
+            document.querySelectorAll('.tl-item').forEach(item => {
+                item.style.display = (type === 'all' || item.getAttribute('data-type') === type) ? 'block' : 'none';
             });
         }
 
-        // --- LOGIK DETAIL HARIAN KALENDER ---
+        // DETAIL HARIAN DARI KALENDER
         function showDaily(dateStr) {
             document.getElementById('detail-date-title').innerText = "Catatan: " + dateStr;
             const container = document.getElementById('daily-timeline-container');
@@ -462,18 +756,18 @@ while ($row = mysqli_fetch_assoc($time_q)) {
             document.querySelectorAll('.tl-item').forEach(item => {
                 if (item.getAttribute('data-date') === dateStr) {
                     const clone = item.cloneNode(true);
-                    clone.style.display = 'block'; 
+                    clone.style.display = 'block';
                     container.appendChild(clone);
                     found = true;
                 }
             });
             if (!found) {
-                container.innerHTML = `<div style="text-align:center; padding: 25px; color:#64748b; background:#f8fafc; border-radius:12px; border:1px solid #e2e8f0;">Belum ada aktivitas pada tanggal ini.</div>`;
+                container.innerHTML = `<div class="text-center py-4 text-muted bg-light rounded-3">Belum ada aktivitas pada tanggal ini.</div>`;
             }
             openModal('modalDetail');
         }
 
-        // --- LOGIK PENCARIAN SURAH DARI API EQURAN.ID ---
+        // SURAH SEARCH LOGIC
         let surahData = [];
         const searchInput = document.getElementById('search_surah');
         const dropdownList = document.getElementById('surah_dropdown');
@@ -481,7 +775,6 @@ while ($row = mysqli_fetch_assoc($time_q)) {
         const inputAyahStart = document.getElementById('ayah_start');
         const inputAyahEnd = document.getElementById('ayah_end');
 
-        // Mengambil data surah saat halaman dimuat
         async function fetchSurahList() {
             try {
                 const response = await fetch('https://equran.id/api/v2/surat');
@@ -489,20 +782,19 @@ while ($row = mysqli_fetch_assoc($time_q)) {
                 surahData = json.data;
                 renderDropdown(surahData);
             } catch (error) {
-                dropdownList.innerHTML = `<div style="padding:15px; text-align:center; color:red;">Gagal memuat data surah. Cek internet.</div>`;
+                dropdownList.innerHTML = `<div class="p-3 text-center text-danger">Gagal memuat data surah. Periksa koneksi internet.</div>`;
             }
         }
 
-        // Render isi dropdown
         function renderDropdown(dataList) {
             if (dataList.length === 0) {
-                dropdownList.innerHTML = `<div style="padding:15px; text-align:center; color:#64748b;">Surah tidak ditemukan.</div>`;
+                dropdownList.innerHTML = `<div class="p-3 text-center text-muted">Surah tidak ditemukan.</div>`;
                 return;
             }
             let html = '';
             dataList.forEach(surah => {
                 html += `
-                <div class="dropdown-item" onclick="selectSurah('${surah.namaLatin}', ${surah.jumlahAyat})">
+                <div class="dropdown-item-custom" onclick="selectSurah('${surah.namaLatin}', ${surah.jumlahAyat})">
                     <span class="s-name">${surah.nomor}. ${surah.namaLatin}</span>
                     <span class="s-ayat">${surah.jumlahAyat} Ayat</span>
                 </div>`;
@@ -510,41 +802,25 @@ while ($row = mysqli_fetch_assoc($time_q)) {
             dropdownList.innerHTML = html;
         }
 
-        // Ketika Surah Dipilih
         function selectSurah(namaLatin, jumlahAyat) {
-            // Set input nilai
             searchInput.value = namaLatin;
             hiddenSurah.value = namaLatin;
-            
-            // Buka gembok (enable) input ayat
             inputAyahStart.disabled = false;
             inputAyahEnd.disabled = false;
-            
-            // Set batas MAX ayat sesuai surah yang dipilih
             inputAyahStart.max = jumlahAyat;
             inputAyahEnd.max = jumlahAyat;
-            
-            // Ubah placeholder untuk instruksi user
             inputAyahStart.placeholder = `Maks: ${jumlahAyat}`;
             inputAyahEnd.placeholder = `Maks: ${jumlahAyat}`;
-            
-            // Kosongkan nilai sebelumnya jika ada agar user tidak salah input
             inputAyahStart.value = '';
             inputAyahEnd.value = '';
-
-            // Sembunyikan dropdown
             dropdownList.classList.remove('show');
         }
 
-        // Event listener saat user mengetik di kotak pencarian
         searchInput.addEventListener('input', function() {
             const query = this.value.toLowerCase();
-            // Filter data surah berdasarkan teks latin
             const filtered = surahData.filter(surah => surah.namaLatin.toLowerCase().includes(query));
             renderDropdown(filtered);
             dropdownList.classList.add('show');
-            
-            // Jika user merubah teks (mengetik ulang), kunci lagi input ayatnya
             if (hiddenSurah.value !== query) {
                 inputAyahStart.disabled = true;
                 inputAyahEnd.disabled = true;
@@ -554,19 +830,14 @@ while ($row = mysqli_fetch_assoc($time_q)) {
             }
         });
 
-        // Buka dropdown saat input diklik
-        searchInput.addEventListener('focus', function() {
-            dropdownList.classList.add('show');
-        });
+        searchInput.addEventListener('focus', () => dropdownList.classList.add('show'));
 
-        // Sembunyikan dropdown jika user klik di luar area
         document.addEventListener('click', function(e) {
             if (!searchInput.contains(e.target) && !dropdownList.contains(e.target)) {
                 dropdownList.classList.remove('show');
             }
         });
 
-        // Validasi form agar Ayat Akhir tidak lebih kecil dari Ayat Awal (Opsional tambahan UI/UX)
         inputAyahEnd.addEventListener('change', function() {
             if (parseInt(this.value) < parseInt(inputAyahStart.value)) {
                 alert("Ayat Akhir tidak boleh lebih kecil dari Ayat Awal.");
@@ -574,8 +845,8 @@ while ($row = mysqli_fetch_assoc($time_q)) {
             }
         });
 
-        // Panggil fungsi saat web jalan
         fetchSurahList();
     </script>
 </body>
+
 </html>

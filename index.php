@@ -80,12 +80,16 @@ if (isset($_SESSION['user_id'])) {
             position: fixed;
             inset: 0;
             z-index: 9999;
+            width: 100vw;
+            height: 100dvh;
             background: #ffffff;
             display: flex;
             flex-direction: column;
-            gap: 22px;
+            gap: clamp(14px, 4vw, 22px);
             align-items: center;
             justify-content: center;
+            padding: 0 24px;
+            box-sizing: border-box;
             transition: opacity 0.6s ease, visibility 0.6s ease;
             overflow: hidden;
         }
@@ -98,34 +102,35 @@ if (isset($_SESSION['user_id'])) {
         .preloader-orb {
             position: absolute;
             border-radius: 50%;
-            filter: blur(60px);
+            filter: blur(clamp(36px, 8vw, 60px));
             animation: drift 7s ease-in-out infinite;
         }
 
         .preloader-orb.o1 {
-            width: 280px;
-            height: 280px;
+            width: clamp(160px, 45vw, 280px);
+            height: clamp(160px, 45vw, 280px);
             background: radial-gradient(circle, rgba(52, 211, 153, 0.4), transparent 70%);
-            top: -70px;
-            left: -60px;
+            top: -15%;
+            left: -12%;
         }
 
         .preloader-orb.o2 {
-            width: 260px;
-            height: 260px;
+            width: clamp(150px, 42vw, 260px);
+            height: clamp(150px, 42vw, 260px);
             background: radial-gradient(circle, rgba(5, 150, 105, 0.3), transparent 70%);
-            bottom: -80px;
-            right: -50px;
+            bottom: -18%;
+            right: -12%;
             animation-delay: -3.5s;
         }
 
         .preloader-ring-wrap {
             position: relative;
-            width: 92px;
-            height: 92px;
+            width: clamp(68px, 18vw, 92px);
+            height: clamp(68px, 18vw, 92px);
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
         }
 
         .preloader-ring {
@@ -139,14 +144,14 @@ if (isset($_SESSION['user_id'])) {
         }
 
         .preloader-mark {
-            width: 60px;
-            height: 60px;
+            width: clamp(44px, 12vw, 60px);
+            height: clamp(44px, 12vw, 60px);
             border-radius: 17px 6px 17px 17px;
             background: linear-gradient(135deg, var(--primary-light), var(--primary));
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
+            font-size: clamp(1.1rem, 4vw, 1.5rem);
             color: #fff;
             animation: markPulse 1.3s ease-in-out infinite;
             box-shadow: 0 12px 30px rgba(5, 150, 105, 0.3);
@@ -154,14 +159,16 @@ if (isset($_SESSION['user_id'])) {
 
         .preloader-text {
             color: var(--primary-dark);
-            font-size: 0.78rem;
+            font-size: clamp(0.65rem, 2.4vw, 0.78rem);
             font-weight: 700;
-            letter-spacing: 3px;
+            letter-spacing: clamp(1.5px, 0.6vw, 3px);
             text-transform: uppercase;
+            text-align: center;
+            white-space: nowrap;
         }
 
         .preloader-bar {
-            width: 160px;
+            width: clamp(120px, 40vw, 160px);
             height: 4px;
             border-radius: 4px;
             background: rgba(5, 150, 105, 0.12);
@@ -971,10 +978,6 @@ if (isset($_SESSION['user_id'])) {
 
             .ayat-box {
                 font-size: 1.05rem;
-            }
-
-            .preloader-orb {
-                filter: blur(45px);
             }
         }
 

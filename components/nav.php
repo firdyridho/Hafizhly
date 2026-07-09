@@ -4,8 +4,8 @@
 $current_page = basename($_SERVER['PHP_SELF']);
 ?>
 
-<!-- Kalau Font Awesome belum di-load di halaman ini, sertakan baris ini di <head> -->
-<!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"> -->
+<!-- Font Awesome (dihapus komentarnya biar ikon pasti muncul, aman walau ke-load 2x di halaman yang sudah punya) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
 <style>
     :root {
@@ -179,19 +179,6 @@ $current_page = basename($_SERVER['PHP_SELF']);
             text-decoration: none;
         }
 
-        .nav-brand .brand-mark {
-            width: 36px;
-            height: 36px;
-            border-radius: 10px 4px 10px 10px;
-            background: linear-gradient(135deg, var(--nav-primary-light), var(--nav-primary));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            font-size: 1rem;
-            box-shadow: 0 6px 14px var(--nav-glow);
-        }
-
         .nav-brand span.dot {
             color: var(--nav-gold);
         }
@@ -273,7 +260,6 @@ $current_page = basename($_SERVER['PHP_SELF']);
 
 <nav class="app-nav">
     <a href="dashboard.php" class="nav-brand">
-        <span class="brand-mark"><i class="fa-solid fa-book-quran"></i></span>
         Hafizhly<span class="dot">.</span>
     </a>
 

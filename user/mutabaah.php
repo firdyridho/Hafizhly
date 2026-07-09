@@ -79,6 +79,7 @@ while ($row = mysqli_fetch_assoc($time_q)) {
 
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -93,90 +94,425 @@ while ($row = mysqli_fetch_assoc($time_q)) {
             --text-muted: #6b7280;
             --border: #e5e7eb;
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background-color: var(--bg); color: var(--dark); padding-bottom: 90px; }
-        
-        .header { background: var(--card-bg); padding: 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 10; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .header h2 { font-size: 1.2rem; color: var(--primary); }
-        .month-nav a { text-decoration: none; color: var(--dark); font-weight: bold; padding: 5px 10px; background: var(--bg); border-radius: 6px; }
 
-        .container { padding: 15px; max-width: 600px; margin: 0 auto; }
-        .alert { padding: 10px; border-radius: 6px; margin-bottom: 15px; text-align: center; font-size: 0.9rem; background-color: var(--primary-light); color: #065f46; }
-        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--dark);
+            padding-bottom: 90px;
+        }
+
+        .header {
+            background: var(--card-bg);
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .header h2 {
+            font-size: 1.2rem;
+            color: var(--primary);
+        }
+
+        .month-nav a {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: bold;
+            padding: 5px 10px;
+            background: var(--bg);
+            border-radius: 6px;
+        }
+
+        .container {
+            padding: 15px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .alert {
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 0.9rem;
+            background-color: var(--primary-light);
+            color: #065f46;
+        }
+
         /* Summary Card */
-        .summary-card { background: var(--card-bg); border-radius: 12px; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        .summary-header { text-align: center; font-weight: bold; margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
-        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.9rem; }
-        .stat-item { display: flex; justify-content: space-between; padding: 8px; background: var(--bg); border-radius: 6px; }
-        .streak { grid-column: span 2; background: #fffbeb; color: #b45309; text-align: center; font-weight: bold; font-size: 1rem; }
+        .summary-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+        }
+
+        .summary-header {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            font-size: 0.9rem;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px;
+            background: var(--bg);
+            border-radius: 6px;
+        }
+
+        .streak {
+            grid-column: span 2;
+            background: #fffbeb;
+            color: #b45309;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1rem;
+        }
 
         /* Calendar GitHub Style */
-        .calendar-section { background: var(--card-bg); border-radius: 12px; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px; overflow-x: auto; }
-        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
-        .cal-day-label { text-align: center; font-size: 0.7rem; color: var(--text-muted); margin-bottom: 5px; }
-        .cal-box { aspect-ratio: 1; border-radius: 4px; background-color: var(--border); position: relative; cursor: pointer; transition: 0.2s; }
-        .cal-box.active { background-color: var(--primary); }
-        .cal-box:hover { transform: scale(1.1); }
-        .cal-badge { position: absolute; top: -4px; right: -4px; font-size: 0.6rem; background: white; color: var(--primary); border-radius: 50%; width: 14px; height: 14px; display: flex; align-items: center; justify-content: center; font-weight: bold; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+        .calendar-section {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+            overflow-x: auto;
+        }
+
+        .cal-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+        }
+
+        .cal-day-label {
+            text-align: center;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+
+        .cal-box {
+            aspect-ratio: 1;
+            border-radius: 4px;
+            background-color: var(--border);
+            position: relative;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .cal-box.active {
+            background-color: var(--primary);
+        }
+
+        .cal-box:hover {
+            transform: scale(1.1);
+        }
+
+        .cal-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            font-size: 0.6rem;
+            background: white;
+            color: var(--primary);
+            border-radius: 50%;
+            width: 14px;
+            height: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
 
         /* Export Button */
-        .btn-export { width: 100%; padding: 12px; background: white; border: 1px solid var(--primary); color: var(--primary); border-radius: 8px; font-weight: bold; margin-bottom: 20px; cursor: pointer; }
-        .btn-export:hover { background: var(--primary-light); }
+        .btn-export {
+            width: 100%;
+            padding: 12px;
+            background: white;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            border-radius: 8px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            cursor: pointer;
+        }
+
+        .btn-export:hover {
+            background: var(--primary-light);
+        }
 
         /* Filter & Timeline */
-        .filter-scroll { display: flex; gap: 10px; overflow-x: auto; margin-bottom: 15px; padding-bottom: 5px; }
-        .filter-btn { padding: 6px 15px; border-radius: 20px; border: 1px solid var(--border); background: var(--card-bg); font-size: 0.85rem; cursor: pointer; white-space: nowrap; }
-        .filter-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .filter-scroll {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            margin-bottom: 15px;
+            padding-bottom: 5px;
+        }
 
-        .timeline { display: flex; flex-direction: column; gap: 10px; }
-        .tl-card { background: var(--card-bg); padding: 15px; border-radius: 10px; border-left: 4px solid var(--primary); box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .tl-header { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px; border-bottom: 1px dashed var(--border); padding-bottom: 5px; }
-        .tl-title { font-weight: bold; font-size: 1rem; color: var(--dark); margin-bottom: 3px; }
-        .tl-type { font-size: 0.75rem; padding: 2px 8px; border-radius: 10px; background: var(--primary-light); color: var(--primary); text-transform: uppercase; font-weight: bold; display: inline-block; margin-bottom: 5px; }
+        .filter-btn {
+            padding: 6px 15px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+            font-size: 0.85rem;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .filter-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .tl-card {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid var(--primary);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .tl-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            border-bottom: 1px dashed var(--border);
+            padding-bottom: 5px;
+        }
+
+        .tl-title {
+            font-weight: bold;
+            font-size: 1rem;
+            color: var(--dark);
+            margin-bottom: 3px;
+        }
+
+        .tl-type {
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background: var(--primary-light);
+            color: var(--primary);
+            text-transform: uppercase;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 5px;
+        }
 
         /* FAB */
-        .fab { position: fixed; bottom: 80px; right: 20px; width: 56px; height: 56px; background: var(--primary); color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 24px; box-shadow: 0 4px 10px rgba(5, 150, 105, 0.4); cursor: pointer; z-index: 100; transition: 0.3s; }
-        .fab:active { transform: scale(0.9); }
+        .fab {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            box-shadow: 0 4px 10px rgba(5, 150, 105, 0.4);
+            cursor: pointer;
+            z-index: 100;
+            transition: 0.3s;
+        }
+
+        .fab:active {
+            transform: scale(0.9);
+        }
 
         /* Modal Base */
-        .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
-        .modal-content { background: var(--card-bg); width: 100%; max-width: 500px; border-radius: 12px; padding: 20px; max-height: 90vh; overflow-y: auto; }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-weight: bold; font-size: 1.1rem; }
-        .close-btn { font-size: 1.5rem; cursor: pointer; color: var(--text-muted); }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 500px;
+            border-radius: 12px;
+            padding: 20px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .close-btn {
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
 
         /* Form elements */
-        .form-group { margin-bottom: 12px; }
-        .form-group label { display: block; font-size: 0.85rem; margin-bottom: 4px; font-weight: 600; }
-        .form-control { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.95rem; }
-        .btn-submit { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: bold; margin-top: 10px; cursor: pointer; }
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.95rem;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            margin-top: 10px;
+            cursor: pointer;
+        }
 
         /* Bottom Nav */
-        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card-bg); box-shadow: 0 -2px 10px rgba(0,0,0,0.05); display: flex; justify-content: space-around; padding: 12px 0; z-index: 90; }
-        .nav-item { text-align: center; color: var(--text-muted); text-decoration: none; font-size: 0.75rem; font-weight: 500; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-        .nav-item.active { color: var(--primary); }
-        .nav-icon { font-size: 1.4rem; }
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--card-bg);
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0;
+            z-index: 90;
+        }
+
+        .nav-item {
+            text-align: center;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.75rem;
+            font-weight: 500;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+        }
+
+        .nav-icon {
+            font-size: 1.4rem;
+        }
 
         /* Print Media for Report Export */
         @media print {
-            body { background: white; padding: 0; }
-            .header, .bottom-nav, .fab, .filter-scroll, .btn-export, .calendar-section { display: none !important; }
-            .container { max-width: 100%; padding: 0; }
-            .tl-card { border: 1px solid #ccc; break-inside: avoid; margin-bottom: 10px; }
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .header,
+            .bottom-nav,
+            .fab,
+            .filter-scroll,
+            .btn-export,
+            .calendar-section {
+                display: none !important;
+            }
+
+            .container {
+                max-width: 100%;
+                padding: 0;
+            }
+
+            .tl-card {
+                border: 1px solid #ccc;
+                break-inside: avoid;
+                margin-bottom: 10px;
+            }
         }
     </style>
 </head>
+
 <body>
 
     <div class="header">
-        <?php 
-            $prev_m = $m - 1; $prev_y = $y;
-            if($prev_m < 1) { $prev_m = 12; $prev_y--; }
-            $next_m = $m + 1; $next_y = $y;
-            if($next_m > 12) { $next_m = 1; $next_y++; }
+        <?php
+        $prev_m = $m - 1;
+        $prev_y = $y;
+        if ($prev_m < 1) {
+            $prev_m = 12;
+            $prev_y--;
+        }
+        $next_m = $m + 1;
+        $next_y = $y;
+        if ($next_m > 12) {
+            $next_m = 1;
+            $next_y++;
+        }
         ?>
-        <a href="?m=<?=$prev_m?>&y=<?=$prev_y?>" class="month-nav">❮</a>
+        <a href="?m=<?= $prev_m ?>&y=<?= $prev_y ?>" class="month-nav">❮</a>
         <h2><?= $month_name ?></h2>
-        <a href="?m=<?=$next_m?>&y=<?=$next_y?>" class="month-nav">❯</a>
+        <a href="?m=<?= $next_m ?>&y=<?= $next_y ?>" class="month-nav">❯</a>
     </div>
 
     <div class="container">
@@ -198,24 +534,29 @@ while ($row = mysqli_fetch_assoc($time_q)) {
         <!-- 2. Activity Calendar -->
         <div class="calendar-section">
             <div class="cal-grid">
-                <div class="cal-day-label">Min</div><div class="cal-day-label">Sen</div><div class="cal-day-label">Sel</div>
-                <div class="cal-day-label">Rab</div><div class="cal-day-label">Kam</div><div class="cal-day-label">Jum</div><div class="cal-day-label">Sab</div>
+                <div class="cal-day-label">Min</div>
+                <div class="cal-day-label">Sen</div>
+                <div class="cal-day-label">Sel</div>
+                <div class="cal-day-label">Rab</div>
+                <div class="cal-day-label">Kam</div>
+                <div class="cal-day-label">Jum</div>
+                <div class="cal-day-label">Sab</div>
                 <?php
-                    $days_in_month = cal_days_in_month(CAL_GREGORIAN, $m, $y);
-                    $first_day = date('w', mktime(0, 0, 0, $m, 1, $y)); // 0 (Sun) to 6 (Sat)
-                    
-                    // Empty slots before first day
-                    for ($i = 0; $i < $first_day; $i++) echo "<div></div>";
-                    
-                    // Days of the month
-                    for ($d = 1; $d <= $days_in_month; $d++) {
-                        $date_str = sprintf("%04d-%02d-%02d", $y, $m, $d);
-                        $count = isset($cal_data[$date_str]) ? $cal_data[$date_str] : 0;
-                        $class = $count > 0 ? 'active' : '';
-                        $badge = $count > 1 ? "<div class='cal-badge'>$count</div>" : "";
-                        
-                        echo "<div class='cal-box $class' onclick='showDaily(\"$date_str\")'>$badge</div>";
-                    }
+                $days_in_month = cal_days_in_month(CAL_GREGORIAN, $m, $y);
+                $first_day = date('w', mktime(0, 0, 0, $m, 1, $y)); // 0 (Sun) to 6 (Sat)
+
+                // Empty slots before first day
+                for ($i = 0; $i < $first_day; $i++) echo "<div></div>";
+
+                // Days of the month
+                for ($d = 1; $d <= $days_in_month; $d++) {
+                    $date_str = sprintf("%04d-%02d-%02d", $y, $m, $d);
+                    $count = isset($cal_data[$date_str]) ? $cal_data[$date_str] : 0;
+                    $class = $count > 0 ? 'active' : '';
+                    $badge = $count > 1 ? "<div class='cal-badge'>$count</div>" : "";
+
+                    echo "<div class='cal-box $class' onclick='showDaily(\"$date_str\")'>$badge</div>";
+                }
                 ?>
             </div>
         </div>
@@ -233,7 +574,7 @@ while ($row = mysqli_fetch_assoc($time_q)) {
         </div>
 
         <div class="timeline" id="timeline-container">
-            <?php foreach ($timeline as $tl): 
+            <?php foreach ($timeline as $tl):
                 $type_label = str_replace('_', ' ', $tl['activity_type']);
             ?>
                 <div class="tl-card tl-item" data-type="<?= $tl['activity_type'] ?>" data-date="<?= $tl['activity_date'] ?>">
@@ -244,12 +585,12 @@ while ($row = mysqli_fetch_assoc($time_q)) {
                     <div class="tl-type"><?= $type_label ?></div>
                     <div class="tl-title">Surah <?= htmlspecialchars($tl['surah']) ?></div>
                     <div style="font-size:0.85rem; color:#4b5563;">Ayat <?= $tl['ayah_start'] ?> - <?= $tl['ayah_end'] ?></div>
-                    <?php if($tl['notes']): ?>
+                    <?php if ($tl['notes']): ?>
                         <div style="font-size:0.8rem; margin-top:5px; font-style:italic;">"<?= htmlspecialchars($tl['notes']) ?>"</div>
                     <?php endif; ?>
                 </div>
             <?php endforeach; ?>
-            <?php if(empty($timeline)): ?>
+            <?php if (empty($timeline)): ?>
                 <p style="text-align:center; color:#6b7280; font-size:0.9rem; padding: 20px;">Belum ada aktivitas di bulan ini.</p>
             <?php endif; ?>
         </div>
@@ -351,7 +692,7 @@ while ($row = mysqli_fetch_assoc($time_q)) {
             document.getElementById('detail-date-title').innerText = "Aktivitas: " + dateStr;
             const container = document.getElementById('daily-timeline-container');
             container.innerHTML = ""; // Bersihkan kontainer
-            
+
             let found = false;
             // Ambil semua data dari timeline yang ada di DOM dan filter berdasarkan tanggal kalender
             document.querySelectorAll('.tl-item').forEach(item => {
@@ -367,9 +708,10 @@ while ($row = mysqli_fetch_assoc($time_q)) {
                 // Pastikan yang di-clone terlihat (berjaga-jaga jika tersembunyi karena filter)
                 container.querySelectorAll('.tl-item').forEach(el => el.style.display = 'block');
             }
-            
+
             document.getElementById('modalDetail').style.display = 'flex';
         }
     </script>
 </body>
+
 </html>

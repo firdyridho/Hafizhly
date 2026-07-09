@@ -1,0 +1,22 @@
+name: Deploy to Staging (Develop)
+
+on:
+  push:
+    branches:
+      - develop  # Trigger hanya berjalan saat push ke branch develop
+
+jobs:
+  web-deploy:
+    name: Deploy Develop to Staging
+    runs-on: ubuntu-latest
+    steps:
+    - name: 🚚 Get latest code
+      uses: actions/checkout@v4
+    
+    - name: 📂 Sync files to InfinityFree Staging
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+      with:
+        server: ${{ secrets.FTP_SERVER_DEVELOP }}
+        username: ${{ secrets.FTP_USERNAME_DEVELOP }}
+        password: ${{ secrets.FTP_PASSWORD_DEVELOP }}
+        server-dir: htdocs/  # Sesuaikan dengan folder root domain staging Anda

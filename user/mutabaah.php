@@ -44,7 +44,7 @@ while ($row = mysqli_fetch_assoc($stat_q)) {
 $hari_aktif_q = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(DISTINCT activity_date) as aktif FROM mutabaah WHERE user_id = '$user_id' AND MONTH(activity_date) = $m AND YEAR(activity_date) = $y"));
 $hari_aktif = $hari_aktif_q['aktif'];
 
-// Hitung Streak (Berjalan mundur dari hari ini)
+// Hitung Streak
 $streak = 0;
 $cek_tgl = date('Y-m-d');
 while (true) {
@@ -53,7 +53,6 @@ while (true) {
         $streak++;
         $cek_tgl = date('Y-m-d', strtotime("-1 day", strtotime($cek_tgl)));
     } else {
-        // Cek jika kemarin ada aktivitas, tapi hari ini belum (streak belum putus total)
         if ($streak == 0 && $cek_tgl == date('Y-m-d')) {
             $cek_tgl = date('Y-m-d', strtotime("-1 day", strtotime($cek_tgl)));
             continue;
@@ -89,7 +88,7 @@ while ($row = mysqli_fetch_assoc($time_q)) {
             --primary: #059669;
             --primary-light: #d1fae5;
             --dark: #1f2937;
-            --bg: #f9fafb;
+            --bg: #f3f4f6;
             --card-bg: #ffffff;
             --text-muted: #6b7280;
             --border: #e5e7eb;
@@ -102,186 +101,214 @@ while ($row = mysqli_fetch_assoc($time_q)) {
             font-family: 'Segoe UI', sans-serif;
         }
 
+        /* Padding untuk mobile (memberi ruang footer nav) */
         body {
             background-color: var(--bg);
             color: var(--dark);
             padding-bottom: 90px;
         }
 
-        .header {
+        /* Header Navigasi Bulan */
+        .month-header {
             background: var(--card-bg);
-            padding: 20px;
+            padding: 15px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 10;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
         }
 
-        .header h2 {
+        .month-header h2 {
             font-size: 1.2rem;
             color: var(--primary);
+            font-weight: bold;
         }
 
         .month-nav a {
             text-decoration: none;
             color: var(--dark);
             font-weight: bold;
-            padding: 5px 10px;
+            padding: 8px 15px;
             background: var(--bg);
-            border-radius: 6px;
+            border-radius: 8px;
+            transition: 0.2s;
+        }
+
+        .month-nav a:hover {
+            background: var(--border);
         }
 
         .container {
-            padding: 15px;
-            max-width: 600px;
+            padding: 0 20px;
+            max-width: 1100px;
             margin: 0 auto;
         }
 
         .alert {
-            padding: 10px;
-            border-radius: 6px;
-            margin-bottom: 15px;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
             text-align: center;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             background-color: var(--primary-light);
             color: #065f46;
+            border: 1px solid #a7f3d0;
         }
 
-        /* Summary Card */
-        .summary-card {
+        /* Grid Layout Utama */
+        .mutabaah-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Gaya Card Umum */
+        .card {
             background: var(--card-bg);
-            border-radius: 12px;
+            border-radius: 16px;
             padding: 20px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
             margin-bottom: 20px;
         }
 
-        .summary-header {
-            text-align: center;
+        .card-title {
+            font-size: 1.1rem;
             font-weight: bold;
             margin-bottom: 15px;
+            color: var(--dark);
             border-bottom: 1px solid var(--border);
             padding-bottom: 10px;
         }
 
+        /* Summary Grid */
         .stat-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            font-size: 0.9rem;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
         }
 
         .stat-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px;
             background: var(--bg);
-            border-radius: 6px;
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary);
         }
 
         .streak {
             grid-column: span 2;
-            background: #fffbeb;
-            color: #b45309;
-            text-align: center;
-            font-weight: bold;
-            font-size: 1rem;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
         }
 
-        /* Calendar GitHub Style */
-        .calendar-section {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-            margin-bottom: 20px;
-            overflow-x: auto;
+        .streak .stat-label {
+            color: rgba(255, 255, 255, 0.8);
         }
 
+        .streak .stat-value {
+            color: white;
+        }
+
+        /* Calendar */
         .cal-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            gap: 5px;
+            gap: 6px;
         }
 
         .cal-day-label {
             text-align: center;
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             color: var(--text-muted);
+            font-weight: 600;
             margin-bottom: 5px;
         }
 
         .cal-box {
             aspect-ratio: 1;
-            border-radius: 4px;
-            background-color: var(--border);
+            border-radius: 6px;
+            background-color: #ebedf0;
             position: relative;
             cursor: pointer;
             transition: 0.2s;
+            border: 1px solid rgba(27, 31, 35, 0.06);
         }
 
         .cal-box.active {
             background-color: var(--primary);
+            border-color: rgba(27, 31, 35, 0.1);
         }
 
         .cal-box:hover {
             transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            z-index: 2;
         }
 
         .cal-badge {
             position: absolute;
-            top: -4px;
-            right: -4px;
-            font-size: 0.6rem;
-            background: white;
-            color: var(--primary);
+            top: -5px;
+            right: -5px;
+            font-size: 0.65rem;
+            background: #ef4444;
+            color: white;
             border-radius: 50%;
-            width: 14px;
-            height: 14px;
+            width: 16px;
+            height: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
-        /* Export Button */
-        .btn-export {
-            width: 100%;
-            padding: 12px;
-            background: white;
-            border: 1px solid var(--primary);
-            color: var(--primary);
-            border-radius: 8px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            cursor: pointer;
-        }
-
-        .btn-export:hover {
-            background: var(--primary-light);
-        }
-
-        /* Filter & Timeline */
+        /* Timeline & Filter */
         .filter-scroll {
             display: flex;
             gap: 10px;
             overflow-x: auto;
-            margin-bottom: 15px;
-            padding-bottom: 5px;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+        }
+
+        .filter-scroll::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .filter-scroll::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 4px;
         }
 
         .filter-btn {
-            padding: 6px 15px;
+            padding: 8px 16px;
             border-radius: 20px;
             border: 1px solid var(--border);
-            background: var(--card-bg);
+            background: var(--bg);
             font-size: 0.85rem;
             cursor: pointer;
             white-space: nowrap;
+            transition: 0.3s;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .filter-btn:hover {
+            background: #e5e7eb;
         }
 
         .filter-btn.active {
@@ -293,15 +320,19 @@ while ($row = mysqli_fetch_assoc($time_q)) {
         .timeline {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
         }
 
         .tl-card {
-            background: var(--card-bg);
+            background: var(--bg);
             padding: 15px;
-            border-radius: 10px;
-            border-left: 4px solid var(--primary);
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            border-radius: 12px;
+            border-left: 5px solid var(--primary);
+            transition: 0.2s;
+        }
+
+        .tl-card:hover {
+            transform: translateX(5px);
         }
 
         .tl-header {
@@ -310,54 +341,97 @@ while ($row = mysqli_fetch_assoc($time_q)) {
             font-size: 0.8rem;
             color: var(--text-muted);
             margin-bottom: 8px;
-            border-bottom: 1px dashed var(--border);
-            padding-bottom: 5px;
         }
 
         .tl-title {
             font-weight: bold;
-            font-size: 1rem;
+            font-size: 1.05rem;
             color: var(--dark);
-            margin-bottom: 3px;
+            margin-bottom: 4px;
         }
 
         .tl-type {
-            font-size: 0.75rem;
-            padding: 2px 8px;
-            border-radius: 10px;
+            font-size: 0.7rem;
+            padding: 3px 10px;
+            border-radius: 12px;
             background: var(--primary-light);
             color: var(--primary);
             text-transform: uppercase;
             font-weight: bold;
             display: inline-block;
-            margin-bottom: 5px;
+            margin-bottom: 6px;
         }
 
         /* FAB */
         .fab {
             position: fixed;
-            bottom: 80px;
+            bottom: 90px;
             right: 20px;
-            width: 56px;
-            height: 56px;
+            width: 60px;
+            height: 60px;
             background: var(--primary);
             color: white;
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 24px;
-            box-shadow: 0 4px 10px rgba(5, 150, 105, 0.4);
+            font-size: 28px;
+            box-shadow: 0 4px 15px rgba(5, 150, 105, 0.4);
             cursor: pointer;
             z-index: 100;
             transition: 0.3s;
         }
 
-        .fab:active {
-            transform: scale(0.9);
+        .fab:hover {
+            transform: scale(1.05);
         }
 
-        /* Modal Base */
+        /* Export Button */
+        .btn-export {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background: white;
+            border: 2px dashed var(--primary);
+            color: var(--primary);
+            border-radius: 12px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: 0.3s;
+            text-align: center;
+        }
+
+        .btn-export:hover {
+            background: var(--primary-light);
+        }
+
+        /* RESPONSIVE DESKTOP (Grid 2 Kolom) */
+        @media (min-width: 768px) {
+            .month-header {
+                border-radius: 16px;
+                margin-top: 20px;
+            }
+
+            .mutabaah-grid {
+                display: grid;
+                grid-template-columns: 1fr 1.2fr;
+                gap: 30px;
+                align-items: start;
+            }
+
+            .fab {
+                bottom: 40px;
+                right: 40px;
+            }
+
+            /* Sesuaikan FAB karena tidak ada footer nav */
+            .filter-scroll {
+                flex-wrap: wrap;
+            }
+        }
+
+        /* Modal Settings */
         .modal {
             display: none;
             position: fixed;
@@ -365,8 +439,9 @@ while ($row = mysqli_fetch_assoc($time_q)) {
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1050;
             align-items: center;
             justify-content: center;
             padding: 20px;
@@ -376,8 +451,9 @@ while ($row = mysqli_fetch_assoc($time_q)) {
             background: var(--card-bg);
             width: 100%;
             max-width: 500px;
-            border-radius: 12px;
-            padding: 20px;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
             max-height: 90vh;
             overflow-y: auto;
         }
@@ -386,96 +462,80 @@ while ($row = mysqli_fetch_assoc($time_q)) {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             font-weight: bold;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
         }
 
         .close-btn {
             font-size: 1.5rem;
             cursor: pointer;
             color: var(--text-muted);
+            transition: 0.2s;
         }
 
-        /* Form elements */
+        .close-btn:hover {
+            color: red;
+        }
+
         .form-group {
-            margin-bottom: 12px;
+            margin-bottom: 15px;
         }
 
         .form-group label {
             display: block;
-            font-size: 0.85rem;
-            margin-bottom: 4px;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
             font-weight: 600;
+            color: var(--dark);
         }
 
         .form-control {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             border: 1px solid var(--border);
-            border-radius: 6px;
+            border-radius: 8px;
             font-size: 0.95rem;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
         }
 
         .btn-submit {
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             background: var(--primary);
             color: white;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             font-weight: bold;
             margin-top: 10px;
             cursor: pointer;
+            font-size: 1rem;
+            transition: 0.3s;
         }
 
-        /* Bottom Nav */
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: var(--card-bg);
-            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
-            display: flex;
-            justify-content: space-around;
-            padding: 12px 0;
-            z-index: 90;
+        .btn-submit:hover {
+            background: #047857;
         }
 
-        .nav-item {
-            text-align: center;
-            color: var(--text-muted);
-            text-decoration: none;
-            font-size: 0.75rem;
-            font-weight: 500;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .nav-item.active {
-            color: var(--primary);
-        }
-
-        .nav-icon {
-            font-size: 1.4rem;
-        }
-
-        /* Print Media for Report Export */
         @media print {
             body {
+                padding: 0 !important;
                 background: white;
-                padding: 0;
             }
 
-            .header,
-            .bottom-nav,
+            .app-nav,
             .fab,
             .filter-scroll,
             .btn-export,
-            .calendar-section {
+            .month-nav {
                 display: none !important;
             }
 
@@ -484,10 +544,15 @@ while ($row = mysqli_fetch_assoc($time_q)) {
                 padding: 0;
             }
 
-            .tl-card {
+            .card {
+                box-shadow: none;
                 border: 1px solid #ccc;
-                break-inside: avoid;
                 margin-bottom: 10px;
+                break-inside: avoid;
+            }
+
+            .tl-card {
+                border-left: 2px solid #ccc;
             }
         }
     </style>
@@ -495,104 +560,119 @@ while ($row = mysqli_fetch_assoc($time_q)) {
 
 <body>
 
-    <div class="header">
-        <?php
-        $prev_m = $m - 1;
-        $prev_y = $y;
-        if ($prev_m < 1) {
-            $prev_m = 12;
-            $prev_y--;
-        }
-        $next_m = $m + 1;
-        $next_y = $y;
-        if ($next_m > 12) {
-            $next_m = 1;
-            $next_y++;
-        }
-        ?>
-        <a href="?m=<?= $prev_m ?>&y=<?= $prev_y ?>" class="month-nav">❮</a>
-        <h2><?= $month_name ?></h2>
-        <a href="?m=<?= $next_m ?>&y=<?= $next_y ?>" class="month-nav">❯</a>
-    </div>
+    <!-- Navigasi Utama (Include) -->
+    <?php include '../components/nav.php'; ?>
 
     <div class="container">
+        <!-- Header Bulan -->
+        <div class="month-header">
+            <?php
+            $prev_m = $m - 1;
+            $prev_y = $y;
+            if ($prev_m < 1) {
+                $prev_m = 12;
+                $prev_y--;
+            }
+            $next_m = $m + 1;
+            $next_y = $y;
+            if ($next_m > 12) {
+                $next_m = 1;
+                $next_y++;
+            }
+            ?>
+            <a href="?m=<?= $prev_m ?>&y=<?= $prev_y ?>" class="month-nav">❮ Prev</a>
+            <h2><?= $month_name ?></h2>
+            <a href="?m=<?= $next_m ?>&y=<?= $next_y ?>" class="month-nav">Next ❯</a>
+        </div>
+
         <?= $pesan; ?>
 
-        <!-- 1. Monthly Summary -->
-        <div class="summary-card">
-            <div class="summary-header">Ringkasan Aktivitas</div>
-            <div class="stat-grid">
-                <div class="stat-item"><span>Hari Aktif</span> <strong><?= $hari_aktif ?> Hari</strong></div>
-                <div class="stat-item"><span>Tilawah</span> <strong><?= $stats['tilawah'] ?>x</strong></div>
-                <div class="stat-item"><span>Murojaah</span> <strong><?= $stats['murojaah'] ?>x</strong></div>
-                <div class="stat-item"><span>Hafalan Baru</span> <strong><?= $stats['hafalan_baru'] ?>x</strong></div>
-                <div class="stat-item"><span>Setoran</span> <strong><?= $stats['setoran'] ?>x</strong></div>
-                <div class="stat-item streak">🔥 Streak: <?= $streak ?> Hari</div>
-            </div>
-        </div>
+        <!-- Grid Responsif -->
+        <div class="mutabaah-grid">
 
-        <!-- 2. Activity Calendar -->
-        <div class="calendar-section">
-            <div class="cal-grid">
-                <div class="cal-day-label">Min</div>
-                <div class="cal-day-label">Sen</div>
-                <div class="cal-day-label">Sel</div>
-                <div class="cal-day-label">Rab</div>
-                <div class="cal-day-label">Kam</div>
-                <div class="cal-day-label">Jum</div>
-                <div class="cal-day-label">Sab</div>
-                <?php
-                $days_in_month = cal_days_in_month(CAL_GREGORIAN, $m, $y);
-                $first_day = date('w', mktime(0, 0, 0, $m, 1, $y)); // 0 (Sun) to 6 (Sat)
-
-                // Empty slots before first day
-                for ($i = 0; $i < $first_day; $i++) echo "<div></div>";
-
-                // Days of the month
-                for ($d = 1; $d <= $days_in_month; $d++) {
-                    $date_str = sprintf("%04d-%02d-%02d", $y, $m, $d);
-                    $count = isset($cal_data[$date_str]) ? $cal_data[$date_str] : 0;
-                    $class = $count > 0 ? 'active' : '';
-                    $badge = $count > 1 ? "<div class='cal-badge'>$count</div>" : "";
-
-                    echo "<div class='cal-box $class' onclick='showDaily(\"$date_str\")'>$badge</div>";
-                }
-                ?>
-            </div>
-        </div>
-
-        <!-- Export Button -->
-        <button class="btn-export" onclick="window.print()">📥 Export Monthly Report (PDF)</button>
-
-        <!-- 4 & 5. Filter & Timeline -->
-        <div class="filter-scroll">
-            <button class="filter-btn active" onclick="filterTimeline('all', this)">Semua</button>
-            <button class="filter-btn" onclick="filterTimeline('tilawah', this)">Tilawah</button>
-            <button class="filter-btn" onclick="filterTimeline('murojaah', this)">Murojaah</button>
-            <button class="filter-btn" onclick="filterTimeline('hafalan_baru', this)">Hafalan Baru</button>
-            <button class="filter-btn" onclick="filterTimeline('setoran', this)">Setoran</button>
-        </div>
-
-        <div class="timeline" id="timeline-container">
-            <?php foreach ($timeline as $tl):
-                $type_label = str_replace('_', ' ', $tl['activity_type']);
-            ?>
-                <div class="tl-card tl-item" data-type="<?= $tl['activity_type'] ?>" data-date="<?= $tl['activity_date'] ?>">
-                    <div class="tl-header">
-                        <span><?= date('d M Y', strtotime($tl['activity_date'])) ?></span>
-                        <span><?= date('H:i', strtotime($tl['activity_time'])) ?> WIB</span>
+            <!-- KOLOM KIRI (Summary & Calendar) -->
+            <div class="left-panel">
+                <div class="card">
+                    <div class="card-title">Ringkasan Bulan Ini</div>
+                    <div class="stat-grid">
+                        <div class="stat-item"><span class="stat-label">Hari Aktif</span><span class="stat-value"><?= $hari_aktif ?></span></div>
+                        <div class="stat-item"><span class="stat-label">Tilawah</span><span class="stat-value"><?= $stats['tilawah'] ?></span></div>
+                        <div class="stat-item"><span class="stat-label">Murojaah</span><span class="stat-value"><?= $stats['murojaah'] ?></span></div>
+                        <div class="stat-item"><span class="stat-label">Setoran</span><span class="stat-value"><?= $stats['setoran'] ?></span></div>
+                        <div class="stat-item streak"><span class="stat-label">🔥 Streak Saat Ini</span><span class="stat-value"><?= $streak ?> Hari</span></div>
                     </div>
-                    <div class="tl-type"><?= $type_label ?></div>
-                    <div class="tl-title">Surah <?= htmlspecialchars($tl['surah']) ?></div>
-                    <div style="font-size:0.85rem; color:#4b5563;">Ayat <?= $tl['ayah_start'] ?> - <?= $tl['ayah_end'] ?></div>
-                    <?php if ($tl['notes']): ?>
-                        <div style="font-size:0.8rem; margin-top:5px; font-style:italic;">"<?= htmlspecialchars($tl['notes']) ?>"</div>
-                    <?php endif; ?>
                 </div>
-            <?php endforeach; ?>
-            <?php if (empty($timeline)): ?>
-                <p style="text-align:center; color:#6b7280; font-size:0.9rem; padding: 20px;">Belum ada aktivitas di bulan ini.</p>
-            <?php endif; ?>
+
+                <div class="card">
+                    <div class="card-title">Kalender Aktivitas</div>
+                    <div class="cal-grid">
+                        <div class="cal-day-label">Min</div>
+                        <div class="cal-day-label">Sen</div>
+                        <div class="cal-day-label">Sel</div>
+                        <div class="cal-day-label">Rab</div>
+                        <div class="cal-day-label">Kam</div>
+                        <div class="cal-day-label">Jum</div>
+                        <div class="cal-day-label">Sab</div>
+                        <?php
+                        $days_in_month = cal_days_in_month(CAL_GREGORIAN, $m, $y);
+                        $first_day = date('w', mktime(0, 0, 0, $m, 1, $y));
+
+                        for ($i = 0; $i < $first_day; $i++) echo "<div></div>";
+
+                        for ($d = 1; $d <= $days_in_month; $d++) {
+                            $date_str = sprintf("%04d-%02d-%02d", $y, $m, $d);
+                            $count = isset($cal_data[$date_str]) ? $cal_data[$date_str] : 0;
+                            $class = $count > 0 ? 'active' : '';
+                            $badge = $count > 1 ? "<div class='cal-badge'>$count</div>" : "";
+
+                            echo "<div class='cal-box $class' onclick='showDaily(\"$date_str\")'>$badge</div>";
+                        }
+                        ?>
+                    </div>
+                </div>
+
+                <button class="btn-export" onclick="window.print()">📥 Download Laporan (PDF)</button>
+            </div>
+
+            <!-- KOLOM KANAN (Filter & Timeline) -->
+            <div class="right-panel">
+                <div class="card">
+                    <div class="card-title">Jejak Langkah (Timeline)</div>
+
+                    <div class="filter-scroll">
+                        <button class="filter-btn active" onclick="filterTimeline('all', this)">Semua</button>
+                        <button class="filter-btn" onclick="filterTimeline('tilawah', this)">Tilawah</button>
+                        <button class="filter-btn" onclick="filterTimeline('murojaah', this)">Murojaah</button>
+                        <button class="filter-btn" onclick="filterTimeline('hafalan_baru', this)">Hafalan Baru</button>
+                        <button class="filter-btn" onclick="filterTimeline('setoran', this)">Setoran</button>
+                    </div>
+
+                    <div class="timeline" id="timeline-container">
+                        <?php foreach ($timeline as $tl):
+                            $type_label = str_replace('_', ' ', $tl['activity_type']);
+                        ?>
+                            <div class="tl-card tl-item" data-type="<?= $tl['activity_type'] ?>" data-date="<?= $tl['activity_date'] ?>">
+                                <div class="tl-header">
+                                    <span>📅 <?= date('d M Y', strtotime($tl['activity_date'])) ?></span>
+                                    <span>⏱️ <?= date('H:i', strtotime($tl['activity_time'])) ?></span>
+                                </div>
+                                <div class="tl-type"><?= $type_label ?></div>
+                                <div class="tl-title">Surah <?= htmlspecialchars($tl['surah']) ?></div>
+                                <div style="font-size:0.9rem; color:#4b5563;">Ayat <?= $tl['ayah_start'] ?> - <?= $tl['ayah_end'] ?></div>
+                                <?php if ($tl['notes']): ?>
+                                    <div style="font-size:0.85rem; margin-top:8px; font-style:italic; border-top:1px dashed #d1d5db; padding-top:8px;">"<?= htmlspecialchars($tl['notes']) ?>"</div>
+                                <?php endif; ?>
+                            </div>
+                        <?php endforeach; ?>
+                        <?php if (empty($timeline)): ?>
+                            <div style="text-align:center; padding: 40px 20px; color:var(--text-muted); background:var(--bg); border-radius:12px;">
+                                <div style="font-size:3rem; margin-bottom:10px;">🍃</div>
+                                <p>Belum ada catatan aktivitas di bulan ini.</p>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -603,12 +683,12 @@ while ($row = mysqli_fetch_assoc($time_q)) {
     <div class="modal" id="modalAdd">
         <div class="modal-content">
             <div class="modal-header">
-                <span>Tambah Aktivitas Manual</span>
+                <span>Catat Aktivitas Manual</span>
                 <span class="close-btn" onclick="document.getElementById('modalAdd').style.display='none'">&times;</span>
             </div>
             <form method="POST">
                 <div class="form-group">
-                    <label>Jenis Aktivitas</label>
+                    <label>Kategori Aktivitas</label>
                     <select name="activity_type" class="form-control" required>
                         <option value="tilawah">Tilawah</option>
                         <option value="murojaah">Murojaah</option>
@@ -616,7 +696,7 @@ while ($row = mysqli_fetch_assoc($time_q)) {
                         <option value="setoran">Setoran</option>
                     </select>
                 </div>
-                <div style="display: flex; gap: 10px;">
+                <div style="display: flex; gap: 15px;">
                     <div class="form-group" style="flex:1;">
                         <label>Tanggal</label>
                         <input type="date" name="activity_date" class="form-control" value="<?= date('Y-m-d') ?>" required>
@@ -630,7 +710,7 @@ while ($row = mysqli_fetch_assoc($time_q)) {
                     <label>Nama Surah</label>
                     <input type="text" name="surah" class="form-control" placeholder="Contoh: Al-Mulk" required>
                 </div>
-                <div style="display: flex; gap: 10px;">
+                <div style="display: flex; gap: 15px;">
                     <div class="form-group" style="flex:1;">
                         <label>Ayat Awal</label>
                         <input type="number" name="ayah_start" class="form-control" required min="1">
@@ -642,9 +722,9 @@ while ($row = mysqli_fetch_assoc($time_q)) {
                 </div>
                 <div class="form-group">
                     <label>Catatan (Opsional)</label>
-                    <textarea name="notes" class="form-control" rows="2" placeholder="Catatan progress..."></textarea>
+                    <textarea name="notes" class="form-control" rows="2" placeholder="Tuliskan catatan atau refleksi progresmu di sini..."></textarea>
                 </div>
-                <button type="submit" name="simpan_aktivitas" class="btn-submit">Simpan</button>
+                <button type="submit" name="simpan_aktivitas" class="btn-submit">Simpan Catatan</button>
             </form>
         </div>
     </div>
@@ -653,30 +733,20 @@ while ($row = mysqli_fetch_assoc($time_q)) {
     <div class="modal" id="modalDetail">
         <div class="modal-content">
             <div class="modal-header">
-                <span id="detail-date-title">Detail Aktivitas</span>
+                <span id="detail-date-title">Aktivitas Harian</span>
                 <span class="close-btn" onclick="document.getElementById('modalDetail').style.display='none'">&times;</span>
             </div>
             <div class="timeline" id="daily-timeline-container">
-                <!-- Diisi via JS -->
+                <!-- Konten akan diisi oleh JavaScript -->
             </div>
         </div>
     </div>
 
-    <div class="bottom-nav">
-        <a href="dashboard.php" class="nav-item"><span class="nav-icon">📖</span><span>Qur'an</span></a>
-        <a href="mutabaah.php" class="nav-item active"><span class="nav-icon">📊</span><span>Mutabaah</span></a>
-        <a href="#" class="nav-item"><span class="nav-icon">🏆</span><span>Target</span></a>
-        <a href="../logout.php" class="nav-item"><span class="nav-icon">🚪</span><span>Keluar</span></a>
-    </div>
-
     <script>
-        // 5. Activity Filter Logic
         function filterTimeline(type, btn) {
-            // Update Active Button Style
             document.querySelectorAll('.filter-btn').forEach(el => el.classList.remove('active'));
             btn.classList.add('active');
 
-            // Filter Timeline Cards
             const items = document.querySelectorAll('.tl-item');
             items.forEach(item => {
                 if (type === 'all' || item.getAttribute('data-type') === type) {
@@ -687,26 +757,26 @@ while ($row = mysqli_fetch_assoc($time_q)) {
             });
         }
 
-        // 3. Daily Activity Detail Logic (klik dari Kalender)
         function showDaily(dateStr) {
-            document.getElementById('detail-date-title').innerText = "Aktivitas: " + dateStr;
+            document.getElementById('detail-date-title').innerText = "Catatan: " + dateStr;
             const container = document.getElementById('daily-timeline-container');
-            container.innerHTML = ""; // Bersihkan kontainer
+            container.innerHTML = "";
 
             let found = false;
-            // Ambil semua data dari timeline yang ada di DOM dan filter berdasarkan tanggal kalender
             document.querySelectorAll('.tl-item').forEach(item => {
                 if (item.getAttribute('data-date') === dateStr) {
-                    container.appendChild(item.cloneNode(true));
+                    const clone = item.cloneNode(true);
+                    clone.style.display = 'block'; // Paksa tampil walau sedang difilter
+                    container.appendChild(clone);
                     found = true;
                 }
             });
 
             if (!found) {
-                container.innerHTML = "<p style='text-align:center; font-size:0.9rem;'>Tidak ada aktivitas pada tanggal ini.</p>";
-            } else {
-                // Pastikan yang di-clone terlihat (berjaga-jaga jika tersembunyi karena filter)
-                container.querySelectorAll('.tl-item').forEach(el => el.style.display = 'block');
+                container.innerHTML = `
+                    <div style="text-align:center; padding: 20px; color:#6b7280; background:#f9fafb; border-radius:8px;">
+                        Tidak ada aktivitas yang tercatat pada tanggal ini.
+                    </div>`;
             }
 
             document.getElementById('modalDetail').style.display = 'flex';

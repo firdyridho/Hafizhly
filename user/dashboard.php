@@ -17,37 +17,25 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-    <!-- Google Fonts: Inter + Amiri (untuk teks arab) -->
+    <!-- Google Fonts: Inter + Amiri -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
 
     <style>
         :root {
             --emerald-50: #ecfdf5;
             --emerald-100: #d1fae5;
-            --emerald-200: #a7f3d0;
-            --emerald-300: #6ee7b7;
-            --emerald-400: #34d399;
             --emerald-500: #10b981;
             --emerald-600: #059669;
             --emerald-700: #047857;
-            --emerald-800: #065f46;
-            --emerald-900: #064e3b;
             --surface: #ffffff;
-            --surface-alt: #f9fafb;
             --text-primary: #111827;
-            --text-secondary: #6b7280;
             --text-muted: #9ca3af;
-            --border: #e5e7eb;
             --border-light: #f3f4f6;
             --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
             --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
             --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.08);
-            --shadow-xl: 0 20px 50px rgba(0, 0, 0, 0.1);
-            --shadow-emerald: 0 8px 30px rgba(5, 150, 105, 0.2);
-            --radius-sm: 10px;
             --radius: 16px;
             --radius-lg: 20px;
-            --radius-xl: 24px;
             --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
@@ -58,14 +46,79 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-family: 'Inter', sans-serif;
             background: #f8fafb;
             color: var(--text-primary);
             min-height: 100vh;
-            padding-bottom: 100px;
+            padding-bottom: 90px;
+            /* ruang untuk bottom nav di mobile */
             -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* ========== NAVBAR DESKTOP (d-none d-md-flex) ========== */
+        .navbar-desktop {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+            box-shadow: var(--shadow-sm);
+            padding: 0.6rem 1.2rem;
+            position: sticky;
+            top: 0;
+            z-index: 1020;
+            display: none;
+            /* default hidden, ditampilkan di md */
+        }
+
+        @media (min-width: 768px) {
+            .navbar-desktop {
+                display: flex;
+            }
+
+            body {
+                padding-bottom: 20px;
+                /* kurangi padding bawah karena pakai navbar atas */
+            }
+        }
+
+        .navbar-desktop .navbar-brand {
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--emerald-700);
+            letter-spacing: -0.02em;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+        }
+
+        .navbar-desktop .nav-link {
+            font-weight: 500;
+            color: var(--text-primary);
+            margin: 0 0.15rem;
+            padding: 0.5rem 0.9rem;
+            border-radius: 10px;
+            transition: var(--transition);
+            font-size: 0.9rem;
             letter-spacing: -0.01em;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .navbar-desktop .nav-link:hover {
+            background: var(--emerald-50);
+            color: var(--emerald-700);
+        }
+
+        .navbar-desktop .nav-link.active {
+            background: var(--emerald-50);
+            color: var(--emerald-700);
+            font-weight: 600;
+        }
+
+        .navbar-desktop .navbar-nav {
+            margin-left: auto;
         }
 
         /* ========== HEADER PREMIUM ========== */
@@ -79,7 +132,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             box-shadow: 0 10px 40px rgba(5, 150, 105, 0.25);
         }
 
-        /* Ornamen dekoratif */
         .header-wrapper::before {
             content: '';
             position: absolute;
@@ -110,64 +162,56 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            max-width: 600px;
+            max-width: 650px;
             margin: 0 auto;
         }
 
         .greeting-salam {
             font-size: 0.85rem;
-            font-weight: 400;
             color: rgba(255, 255, 255, 0.8);
-            letter-spacing: 0.02em;
             margin-bottom: 2px;
         }
 
         .greeting-name {
             font-size: 1.55rem;
             font-weight: 700;
-            color: #ffffff;
+            color: #fff;
             line-height: 1.2;
-            letter-spacing: -0.02em;
         }
 
         .greeting-subtitle {
             font-size: 0.78rem;
             color: rgba(255, 255, 255, 0.7);
             margin-top: 4px;
-            font-weight: 400;
         }
 
-        /* Avatar Premium */
         .avatar-premium {
             width: 54px;
             height: 54px;
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.18);
             backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
             border: 2.5px solid rgba(255, 255, 255, 0.4);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 1.4rem;
             font-weight: 700;
-            color: #ffffff;
+            color: #fff;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
             transition: var(--transition);
             cursor: pointer;
-            flex-shrink: 0;
             text-decoration: none;
         }
 
         .avatar-premium:hover {
             transform: scale(1.05);
             border-color: rgba(255, 255, 255, 0.7);
-            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.2);
         }
 
         /* ========== MAIN CONTAINER ========== */
         .main-container {
-            max-width: 600px;
+            max-width: 650px;
             margin: -28px auto 0;
             padding: 0 16px;
             position: relative;
@@ -182,11 +226,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             box-shadow: var(--shadow-lg);
             margin-bottom: 22px;
             border: 1px solid var(--border-light);
-            transition: var(--transition);
-        }
-
-        .prayer-card-premium:hover {
-            box-shadow: var(--shadow-xl);
         }
 
         .prayer-top {
@@ -201,11 +240,9 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
         .prayer-label {
             font-weight: 700;
             font-size: 0.95rem;
-            color: var(--text-primary);
             display: flex;
             align-items: center;
             gap: 7px;
-            letter-spacing: -0.01em;
         }
 
         .prayer-label i {
@@ -214,20 +251,14 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
         }
 
         .prayer-location-badge {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            background: #f9fafb;
+            padding: 6px 12px;
+            border-radius: 20px;
             display: flex;
             align-items: center;
             gap: 5px;
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            background: var(--surface-alt);
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-weight: 500;
-        }
-
-        .prayer-location-badge i {
-            font-size: 0.7rem;
-            color: var(--emerald-500);
         }
 
         .prayer-times-row {
@@ -240,10 +271,8 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
         .prayer-time-block {
             flex: 1;
             padding: 6px 2px;
-            border-radius: var(--radius-sm);
+            border-radius: 10px;
             transition: var(--transition);
-            cursor: default;
-            min-width: 0;
         }
 
         .prayer-time-block:hover {
@@ -259,7 +288,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             font-weight: 600;
             color: var(--text-muted);
             text-transform: uppercase;
-            letter-spacing: 0.04em;
             margin-bottom: 4px;
         }
 
@@ -267,7 +295,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             font-size: 0.9rem;
             font-weight: 700;
             color: var(--text-primary);
-            letter-spacing: -0.02em;
         }
 
         .prayer-time-block.active .prayer-time-name {
@@ -276,7 +303,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
 
         .prayer-time-block.active .prayer-time-value {
             color: var(--emerald-700);
-            font-size: 1rem;
         }
 
         /* ========== SECTION TITLE ========== */
@@ -291,8 +317,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
         .section-title {
             font-size: 1.05rem;
             font-weight: 700;
-            color: var(--text-primary);
-            letter-spacing: -0.01em;
         }
 
         .section-link {
@@ -300,12 +324,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             color: var(--emerald-600);
             text-decoration: none;
             font-weight: 600;
-            transition: var(--transition);
-        }
-
-        .section-link:hover {
-            color: var(--emerald-700);
-            text-decoration: underline;
         }
 
         /* ========== MENU GRID ========== */
@@ -314,13 +332,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             grid-template-columns: 1fr 1fr;
             gap: 12px;
             margin-bottom: 24px;
-        }
-
-        @media (min-width: 480px) {
-            .menu-grid-premium {
-                grid-template-columns: 1fr 1fr;
-                gap: 14px;
-            }
         }
 
         .menu-card-premium {
@@ -337,8 +348,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             border: 1.5px solid transparent;
             position: relative;
             overflow: hidden;
-            cursor: pointer;
-            -webkit-tap-highlight-color: transparent;
         }
 
         .menu-card-premium:hover {
@@ -347,21 +356,9 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             border-color: var(--emerald-200);
         }
 
-        .menu-card-premium:active {
-            transform: scale(0.96);
-            transition: 0.1s ease;
-        }
-
-        /* Aksen khusus Smart Murojaah */
         .menu-card-premium.featured {
             background: linear-gradient(135deg, #f0fdf6 0%, #ecfdf5 100%);
             border-color: var(--emerald-300);
-            box-shadow: 0 2px 12px rgba(5, 150, 105, 0.08);
-        }
-
-        .menu-card-premium.featured:hover {
-            border-color: var(--emerald-400);
-            box-shadow: 0 6px 25px rgba(5, 150, 105, 0.15);
         }
 
         .menu-card-premium.featured .menu-icon-circle {
@@ -380,33 +377,21 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             justify-content: center;
             font-size: 1.6rem;
             color: var(--emerald-600);
-            transition: var(--transition);
-            flex-shrink: 0;
-        }
-
-        .menu-card-premium:hover .menu-icon-circle {
-            transform: scale(1.08);
         }
 
         .menu-label {
             font-size: 0.88rem;
             font-weight: 600;
-            color: var(--text-primary);
-            letter-spacing: -0.01em;
             text-align: center;
-            line-height: 1.3;
         }
 
         .menu-sub {
             font-size: 0.7rem;
             color: var(--text-muted);
-            font-weight: 400;
-            text-align: center;
-            line-height: 1.2;
             margin-top: -6px;
+            text-align: center;
         }
 
-        /* Badge "Baru" */
         .badge-new {
             position: absolute;
             top: 10px;
@@ -417,10 +402,9 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             font-weight: 700;
             padding: 3px 8px;
             border-radius: 20px;
-            letter-spacing: 0.03em;
         }
 
-        /* ========== QUICK STATS ROW ========== */
+        /* ========== STATS ========== */
         .stats-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -437,11 +421,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             display: flex;
             align-items: center;
             gap: 12px;
-            transition: var(--transition);
-        }
-
-        .stat-card:hover {
-            box-shadow: var(--shadow-md);
         }
 
         .stat-icon {
@@ -465,20 +444,18 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             color: #3b82f6;
         }
 
-        .stat-info .stat-value {
+        .stat-value {
             font-size: 1.1rem;
             font-weight: 700;
-            color: var(--text-primary);
-            letter-spacing: -0.02em;
         }
 
-        .stat-info .stat-label {
+        .stat-label {
             font-size: 0.7rem;
             color: var(--text-muted);
             font-weight: 500;
         }
 
-        /* ========== BOTTOM NAVIGATION ========== */
+        /* ========== BOTTOM NAV (MOBILE ONLY) ========== */
         .bottom-nav {
             position: fixed;
             bottom: 16px;
@@ -490,19 +467,24 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             padding: 8px 10px;
             display: flex;
             gap: 4px;
-            box-shadow: 0 8px 35px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+            box-shadow: 0 8px 35px rgba(0, 0, 0, 0.12);
             border: 1px solid rgba(0, 0, 0, 0.04);
             width: fit-content;
             max-width: 95vw;
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            display: none;
+            /* default hidden, tampil di mobile */
+        }
+
+        @media (max-width: 767.98px) {
+            .bottom-nav {
+                display: flex;
+            }
         }
 
         .bottom-nav a {
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
             gap: 3px;
             padding: 10px 16px;
             border-radius: 14px;
@@ -510,15 +492,13 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             color: var(--text-muted);
             font-size: 0.68rem;
             font-weight: 500;
-            transition: all var(--transition);
+            transition: var(--transition);
             white-space: nowrap;
             min-width: 56px;
-            letter-spacing: -0.01em;
         }
 
         .bottom-nav a i {
             font-size: 1.4rem;
-            transition: var(--transition);
         }
 
         .bottom-nav a.active {
@@ -535,100 +515,38 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             color: var(--emerald-600);
             background: var(--emerald-50);
         }
-
-        .bottom-nav a:active {
-            transform: scale(0.92);
-        }
-
-        /* ========== RESPONSIVE ========== */
-        @media (max-width: 380px) {
-            .header-wrapper {
-                padding: 20px 14px 40px 14px;
-                border-bottom-left-radius: 24px;
-                border-bottom-right-radius: 24px;
-            }
-
-            .greeting-name {
-                font-size: 1.3rem;
-            }
-
-            .avatar-premium {
-                width: 44px;
-                height: 44px;
-                font-size: 1.1rem;
-            }
-
-            .prayer-time-value {
-                font-size: 0.78rem;
-            }
-
-            .prayer-time-name {
-                font-size: 0.62rem;
-            }
-
-            .menu-card-premium {
-                padding: 14px 10px;
-                gap: 8px;
-            }
-
-            .menu-icon-circle {
-                width: 42px;
-                height: 42px;
-                font-size: 1.3rem;
-                border-radius: 12px;
-            }
-
-            .menu-label {
-                font-size: 0.78rem;
-            }
-
-            .bottom-nav a {
-                padding: 8px 10px;
-                font-size: 0.62rem;
-                min-width: 44px;
-            }
-
-            .bottom-nav a i {
-                font-size: 1.2rem;
-            }
-
-            .bottom-nav {
-                padding: 6px 6px;
-                border-radius: 16px;
-                gap: 1px;
-            }
-        }
-
-        @media (min-width: 768px) {
-            .main-container {
-                max-width: 650px;
-            }
-
-            .header-content {
-                max-width: 650px;
-            }
-
-            .menu-grid-premium {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 16px;
-            }
-
-            .bottom-nav {
-                gap: 8px;
-                padding: 10px 16px;
-            }
-
-            .bottom-nav a {
-                padding: 10px 20px;
-                font-size: 0.72rem;
-            }
-        }
     </style>
 </head>
 
 <body>
 
-    <!-- ==================== HEADER ==================== -->
+    <!-- ==================== NAVBAR DESKTOP (Header untuk desktop) ==================== -->
+    <nav class="navbar-desktop navbar navbar-expand">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="dashboard.php">
+                <i class="bi bi-bookmark-heart-fill"></i> Hifzly
+            </a>
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link active" href="dashboard.php"><i class="bi bi-house-door-fill"></i> Beranda</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="alquran.php"><i class="bi bi-book"></i> Al-Qur'an</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#"><i class="bi bi-mic-fill"></i> Murojaah</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="mutabaah.php"><i class="bi bi-bar-chart-fill"></i> Mutabaah</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="profil.php"><i class="bi bi-person"></i> Profil</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- ==================== HEADER PROFILE ==================== -->
     <div class="header-wrapper">
         <div class="header-content">
             <div>
@@ -636,7 +554,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
                 <div class="greeting-name"><?= htmlspecialchars($_SESSION['nama_lengkap']) ?></div>
                 <div class="greeting-subtitle">Semoga hari ini penuh berkah ✨</div>
             </div>
-            <a href="profil.php" class="avatar-premium" title="Lihat Profil">
+            <a href="profil.php" class="avatar-premium">
                 <?= strtoupper(substr($_SESSION['nama_lengkap'], 0, 1)) ?>
             </a>
         </div>
@@ -644,21 +562,17 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
 
     <!-- ==================== MAIN CONTENT ==================== -->
     <div class="main-container">
-
         <!-- Jadwal Sholat -->
         <div class="prayer-card-premium">
             <div class="prayer-top">
-                <div class="prayer-label">
-                    <i class="bi bi-clock"></i> Jadwal Sholat
-                </div>
+                <div class="prayer-label"><i class="bi bi-clock"></i> Jadwal Sholat</div>
                 <div class="prayer-location-badge">
-                    <i class="bi bi-geo-alt-fill"></i>
-                    <span id="loc-text">Memuat...</span>
+                    <i class="bi bi-geo-alt-fill"></i> <span id="loc-text">Memuat...</span>
                 </div>
             </div>
             <div class="prayer-times-row" id="prayer-container">
                 <div style="text-align:center;width:100%;font-size:0.82rem;color:#9ca3af;padding:10px 0;">
-                    <span class="spinner-border spinner-border-sm text-emerald-500 me-2" role="status"></span>
+                    <span class="spinner-border spinner-border-sm text-emerald-500 me-2"></span>
                     Mengambil jadwal...
                 </div>
             </div>
@@ -688,110 +602,68 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             <a href="#" class="section-link">Lihat Semua →</a>
         </div>
         <div class="menu-grid-premium">
-            <!-- Al-Qur'an -->
             <a href="alquran.php" class="menu-card-premium">
-                <div class="menu-icon-circle">
-                    <i class="bi bi-book"></i>
-                </div>
+                <div class="menu-icon-circle"><i class="bi bi-book"></i></div>
                 <div class="menu-label">Al-Qur'an</div>
                 <div class="menu-sub">Baca & tadabbur</div>
             </a>
-
-            <!-- Smart Murojaah (Featured) -->
             <a href="#" class="menu-card-premium featured">
                 <span class="badge-new">AI</span>
-                <div class="menu-icon-circle">
-                    <i class="bi bi-mic"></i>
-                </div>
+                <div class="menu-icon-circle"><i class="bi bi-mic"></i></div>
                 <div class="menu-label">Smart Murojaah</div>
                 <div class="menu-sub">Setor hafalan pakai AI</div>
             </a>
-
-            <!-- Mutabaah -->
             <a href="mutabaah.php" class="menu-card-premium">
-                <div class="menu-icon-circle">
-                    <i class="bi bi-graph-up"></i>
-                </div>
+                <div class="menu-icon-circle"><i class="bi bi-graph-up"></i></div>
                 <div class="menu-label">Mutabaah</div>
                 <div class="menu-sub">Pantau progress harian</div>
             </a>
-
-            <!-- Doa Harian -->
             <a href="#" class="menu-card-premium">
-                <div class="menu-icon-circle">
-                    <i class="bi bi-heart"></i>
-                </div>
+                <div class="menu-icon-circle"><i class="bi bi-heart"></i></div>
                 <div class="menu-label">Doa Harian</div>
                 <div class="menu-sub">Kumpulan doa pilihan</div>
             </a>
         </div>
 
-        <!-- Section Tambahan: Menu Lainnya -->
+        <!-- Lainnya -->
         <div class="section-header">
             <div class="section-title">🔧 Lainnya</div>
         </div>
         <div class="menu-grid-premium" style="margin-bottom: 10px;">
             <a href="#" class="menu-card-premium">
-                <div class="menu-icon-circle">
-                    <i class="bi bi-gear"></i>
-                </div>
+                <div class="menu-icon-circle"><i class="bi bi-gear"></i></div>
                 <div class="menu-label">Pengaturan</div>
                 <div class="menu-sub">Atur preferensi</div>
             </a>
             <a href="../logout.php" class="menu-card-premium" style="border-color: #fee2e2;">
-                <div class="menu-icon-circle" style="background:#fef2f2;color:#ef4444;">
-                    <i class="bi bi-box-arrow-right"></i>
-                </div>
+                <div class="menu-icon-circle" style="background:#fef2f2;color:#ef4444;"><i class="bi bi-box-arrow-right"></i></div>
                 <div class="menu-label" style="color:#dc2626;">Keluar</div>
                 <div class="menu-sub">Logout akun</div>
             </a>
         </div>
-
     </div>
 
-    <!-- ==================== BOTTOM NAVIGATION ==================== -->
+    <!-- ==================== BOTTOM NAV (Footer untuk mobile) ==================== -->
     <nav class="bottom-nav" id="bottomNav">
-        <a href="dashboard.php" class="active">
-            <i class="bi bi-house-door-fill"></i>
-            <span>Beranda</span>
-        </a>
-        <a href="alquran.php">
-            <i class="bi bi-book"></i>
-            <span>Al-Qur'an</span>
-        </a>
-        <a href="#">
-            <i class="bi bi-mic-fill"></i>
-            <span>Murojaah</span>
-        </a>
-        <a href="mutabaah.php">
-            <i class="bi bi-bar-chart-fill"></i>
-            <span>Mutabaah</span>
-        </a>
-        <a href="profil.php">
-            <i class="bi bi-person"></i>
-            <span>Profil</span>
-        </a>
+        <a href="dashboard.php" class="active"><i class="bi bi-house-door-fill"></i><span>Beranda</span></a>
+        <a href="alquran.php"><i class="bi bi-book"></i><span>Al-Qur'an</span></a>
+        <a href="#"><i class="bi bi-mic-fill"></i><span>Murojaah</span></a>
+        <a href="mutabaah.php"><i class="bi bi-bar-chart-fill"></i><span>Mutabaah</span></a>
+        <a href="profil.php"><i class="bi bi-person"></i><span>Profil</span></a>
     </nav>
 
     <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js">
-    </script>
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // ========== FETCH PRAYER TIMES ==========
+        // Fetch jadwal sholat
         async function fetchPrayerTimes() {
             const container = document.getElementById('prayer-container');
             const locText = document.getElementById('loc-text');
-
             try {
-                // Default: Jakarta — bisa diganti dengan geolokasi nanti
-                const response = await fetch(
-                    'https://api.aladhan.com/v1/timingsByCity?city=Jakarta&country=Indonesia&method=11');
+                const response = await fetch('https://api.aladhan.com/v1/timingsByCity?city=Jakarta&country=Indonesia&method=11');
                 const result = await response.json();
                 const timings = result.data.timings;
-
                 locText.innerText = 'Jakarta, ID';
-
                 const prayerData = [{
                         name: 'Subuh',
                         time: timings.Fajr,
@@ -816,16 +688,10 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
                         name: 'Isya',
                         time: timings.Isha,
                         key: 'isha'
-                    },
+                    }
                 ];
-
-                // Tentukan waktu aktif (perkiraan sederhana)
                 const now = new Date();
-                const currentHour = now.getHours();
-                const currentMinute = now.getMinutes();
-                const currentTotal = currentHour * 60 + currentMinute;
-
-                let activeKey = null;
+                const currentTotal = now.getHours() * 60 + now.getMinutes();
                 const prayerMinutes = prayerData.map(p => {
                     const [h, m] = p.time.split(':').map(Number);
                     return {
@@ -833,51 +699,38 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
                         total: h * 60 + m
                     };
                 });
-
-                // Cari waktu sholat terdekat yang baru saja lewat atau sedang
+                let activeKey = prayerMinutes[prayerMinutes.length - 1].key;
                 for (let i = prayerMinutes.length - 1; i >= 0; i--) {
                     if (currentTotal >= prayerMinutes[i].total) {
                         activeKey = prayerMinutes[i].key;
                         break;
                     }
                 }
-                if (activeKey === null && prayerMinutes.length > 0) {
-                    activeKey = prayerMinutes[prayerMinutes.length - 1].key; // isya jika malam
-                }
-
                 let html = '';
                 prayerData.forEach(p => {
                     const isActive = p.key === activeKey ? ' active' : '';
-                    html += `
-                                <div class="prayer-time-block${isActive}">
-                                    <div class="prayer-time-name">${p.name}</div>
-                                    <div class="prayer-time-value">${p.time}</div>
-                                </div>`;
+                    html += `<div class="prayer-time-block${isActive}">
+                                <div class="prayer-time-name">${p.name}</div>
+                                <div class="prayer-time-value">${p.time}</div>
+                            </div>`;
                 });
                 container.innerHTML = html;
             } catch (error) {
-                container.innerHTML =
-                    "<div style='font-size:0.78rem;color:#ef4444;text-align:center;width:100%;'>⚠️ Gagal memuat jadwal sholat</div>";
-                locText.innerText = 'Tidak tersedia';
+                container.innerHTML = "<div style='font-size:0.78rem;color:#ef4444;text-align:center;'>⚠️ Gagal memuat jadwal</div>";
             }
         }
-
         fetchPrayerTimes();
 
-        // ========== BOTTOM NAV ACTIVE STATE ==========
+        // Active state bottom nav (mobile)
         document.addEventListener('DOMContentLoaded', function() {
             const navLinks = document.querySelectorAll('#bottomNav a');
             const currentPath = window.location.pathname;
-
             navLinks.forEach(link => {
                 link.classList.remove('active');
-                const href = link.getAttribute('href');
-                if (href && currentPath.includes(href.replace(/\/$/, '').split('/').pop())) {
+                if (link.getAttribute('href') && currentPath.includes(link.getAttribute('href').replace(/\/$/, '').split('/').pop())) {
                     link.classList.add('active');
                 }
-                // Fallback: jika di dashboard.php
-                if (currentPath.includes('dashboard.php') && link.getAttribute('href') ===
-                    'dashboard.php') {
+                if (currentPath.includes('dashboard.php') && link.getAttribute('href') === 'dashboard.php') {
                     link.classList.add('active');
                 }
             });

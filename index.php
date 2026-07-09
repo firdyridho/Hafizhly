@@ -16,7 +16,7 @@ if (isset($_SESSION['user_id'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hifzhly - AI Quran Companion</title>
+    <title>Hafizhly - AI Quran Companion</title>
 
     <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -80,13 +80,14 @@ if (isset($_SESSION['user_id'])) {
             position: fixed;
             inset: 0;
             z-index: 9999;
-            background: var(--dark);
+            background: #ffffff;
             display: flex;
             flex-direction: column;
-            gap: 18px;
+            gap: 22px;
             align-items: center;
             justify-content: center;
             transition: opacity 0.6s ease, visibility 0.6s ease;
+            overflow: hidden;
         }
 
         #preloader.hide {
@@ -94,25 +95,101 @@ if (isset($_SESSION['user_id'])) {
             visibility: hidden;
         }
 
-        .preloader-mark {
-            width: 64px;
-            height: 64px;
-            border-radius: 18px 6px 18px 18px;
-            background: linear-gradient(135deg, var(--gold-light), var(--gold));
+        .preloader-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            animation: drift 7s ease-in-out infinite;
+        }
+
+        .preloader-orb.o1 {
+            width: 280px;
+            height: 280px;
+            background: radial-gradient(circle, rgba(52, 211, 153, 0.4), transparent 70%);
+            top: -70px;
+            left: -60px;
+        }
+
+        .preloader-orb.o2 {
+            width: 260px;
+            height: 260px;
+            background: radial-gradient(circle, rgba(5, 150, 105, 0.3), transparent 70%);
+            bottom: -80px;
+            right: -50px;
+            animation-delay: -3.5s;
+        }
+
+        .preloader-ring-wrap {
+            position: relative;
+            width: 92px;
+            height: 92px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.6rem;
-            color: var(--dark);
-            animation: markPulse 1.1s ease-in-out infinite;
-            box-shadow: 0 0 40px rgba(201, 162, 39, 0.4);
+        }
+
+        .preloader-ring {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            border: 3px solid rgba(5, 150, 105, 0.14);
+            border-top-color: var(--primary);
+            border-right-color: var(--primary-light);
+            animation: spin 1s linear infinite;
+        }
+
+        .preloader-mark {
+            width: 60px;
+            height: 60px;
+            border-radius: 17px 6px 17px 17px;
+            background: linear-gradient(135deg, var(--primary-light), var(--primary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: #fff;
+            animation: markPulse 1.3s ease-in-out infinite;
+            box-shadow: 0 12px 30px rgba(5, 150, 105, 0.3);
         }
 
         .preloader-text {
-            color: rgba(255, 255, 255, 0.55);
-            font-size: 0.8rem;
+            color: var(--primary-dark);
+            font-size: 0.78rem;
+            font-weight: 700;
             letter-spacing: 3px;
             text-transform: uppercase;
+        }
+
+        .preloader-bar {
+            width: 160px;
+            height: 4px;
+            border-radius: 4px;
+            background: rgba(5, 150, 105, 0.12);
+            overflow: hidden;
+        }
+
+        .preloader-bar-fill {
+            height: 100%;
+            width: 40%;
+            border-radius: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--gold));
+            animation: loadBar 1.4s ease-in-out infinite;
+        }
+
+        @keyframes loadBar {
+            0% {
+                transform: translateX(-100%);
+            }
+
+            100% {
+                transform: translateX(250%);
+            }
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         @keyframes markPulse {
@@ -123,7 +200,7 @@ if (isset($_SESSION['user_id'])) {
             }
 
             50% {
-                transform: scale(0.88);
+                transform: scale(0.9);
             }
         }
 
@@ -188,6 +265,35 @@ if (isset($_SESSION['user_id'])) {
             }
         }
 
+        /* ===== Scroll progress ===== */
+        #scrollProgress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            width: 0%;
+            background: linear-gradient(90deg, var(--primary), var(--gold));
+            z-index: 1101;
+            transition: width 0.1s linear;
+        }
+
+        /* ===== Ripple ===== */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.55);
+            transform: scale(0);
+            animation: rippleAnim 0.6s ease-out;
+            pointer-events: none;
+        }
+
+        @keyframes rippleAnim {
+            to {
+                transform: scale(3);
+                opacity: 0;
+            }
+        }
+
         /* ===== Navbar ===== */
         .navbar-custom {
             position: fixed;
@@ -229,17 +335,40 @@ if (isset($_SESSION['user_id'])) {
         }
 
         .nav-link-custom {
+            position: relative;
             color: var(--ink) !important;
             font-weight: 600;
             font-size: 0.95rem;
             padding: 8px 18px !important;
         }
 
-        .nav-link-custom:hover {
+        .nav-link-custom::after {
+            content: '';
+            position: absolute;
+            left: 18px;
+            right: 18px;
+            bottom: 2px;
+            height: 2px;
+            border-radius: 2px;
+            background: var(--primary);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease;
+        }
+
+        .nav-link-custom:hover,
+        .nav-link-custom.active {
             color: var(--primary) !important;
         }
 
+        .nav-link-custom:hover::after,
+        .nav-link-custom.active::after {
+            transform: scaleX(1);
+        }
+
         .btn-gold {
+            position: relative;
+            overflow: hidden;
             background: var(--dark);
             color: #fff;
             font-weight: 600;
@@ -302,6 +431,8 @@ if (isset($_SESSION['user_id'])) {
         }
 
         .btn-primary-custom {
+            position: relative;
+            overflow: hidden;
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: #fff;
             font-weight: 600;
@@ -319,6 +450,8 @@ if (isset($_SESSION['user_id'])) {
         }
 
         .btn-outline-custom {
+            position: relative;
+            overflow: hidden;
             background: rgba(255, 255, 255, 0.7);
             color: var(--dark);
             font-weight: 600;
@@ -357,6 +490,8 @@ if (isset($_SESSION['user_id'])) {
             padding: 32px 28px;
             box-shadow: 0 24px 60px rgba(15, 23, 42, 0.1);
             position: relative;
+            transition: transform 0.25s ease;
+            will-change: transform;
         }
 
         .listening-header {
@@ -519,7 +654,8 @@ if (isset($_SESSION['user_id'])) {
             padding: 34px 28px;
             height: 100%;
             box-shadow: 0 10px 30px rgba(15, 23, 42, 0.03);
-            transition: transform 0.35s ease, box-shadow 0.35s ease;
+            transition: transform 0.3s ease, box-shadow 0.35s ease;
+            will-change: transform;
         }
 
         .feature-card:hover {
@@ -721,13 +857,132 @@ if (isset($_SESSION['user_id'])) {
             color: #fff;
         }
 
+        /* ===== Mobile menu panel ===== */
+        @media (max-width: 991px) {
+            #navMenu {
+                background: rgba(255, 255, 255, 0.97);
+                backdrop-filter: blur(10px);
+                border-radius: 18px;
+                padding: 14px;
+                margin-top: 10px;
+                box-shadow: 0 16px 40px rgba(15, 23, 42, 0.1);
+                border: 1px solid var(--border-soft);
+            }
+
+            .nav-link-custom::after {
+                display: none;
+            }
+
+            .nav-item.ms-lg-3 {
+                margin-top: 8px;
+            }
+
+            .nav-item.ms-lg-3 .btn-gold {
+                display: block;
+                text-align: center;
+            }
+        }
+
         @media (max-width: 767px) {
             .arabic-deco {
                 display: none;
             }
 
             .hero {
-                padding-top: 110px;
+                min-height: auto;
+                padding: 100px 0 50px;
+                text-align: center;
+            }
+
+            .hero .lead-custom {
+                max-width: 100%;
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .hero .btn-group,
+            .hero .d-flex.flex-wrap {
+                justify-content: center;
+            }
+
+            .listening-card {
+                padding: 24px 20px;
+                margin-top: 10px;
+            }
+
+            .ayat-box {
+                font-size: 1.2rem;
+                padding: 16px;
+                line-height: 2.1;
+            }
+
+            .waveform {
+                height: 38px;
+            }
+
+            .score-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+
+            .section-pad {
+                padding: 64px 0;
+            }
+
+            .feature-card {
+                padding: 26px 22px;
+            }
+
+            .cta-section {
+                padding: 46px 22px;
+                border-radius: 24px;
+            }
+
+            .phone-mock {
+                max-width: 260px;
+            }
+
+            .phone-mock-screen {
+                min-height: 400px;
+                padding: 18px 14px;
+            }
+
+            footer .container {
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 575px) {
+            .hero h1 {
+                font-size: 2.1rem;
+            }
+
+            .btn-primary-custom,
+            .btn-outline-custom {
+                width: 100%;
+                justify-content: center;
+                padding: 13px 22px;
+            }
+
+            .hero .d-flex.flex-wrap {
+                flex-direction: column;
+            }
+
+            .ayat-box {
+                font-size: 1.05rem;
+            }
+
+            .preloader-orb {
+                filter: blur(45px);
+            }
+        }
+
+        @media (hover: none) {
+
+            .feature-card:hover,
+            .listening-card:hover {
+                transform: none;
             }
         }
     </style>
@@ -736,9 +991,19 @@ if (isset($_SESSION['user_id'])) {
 <body>
 
     <div id="preloader">
-        <div class="preloader-mark"><i class="fa-solid fa-book-quran"></i></div>
-        <div class="preloader-text">Menyiapkan Hifzly</div>
+        <div class="preloader-orb o1"></div>
+        <div class="preloader-orb o2"></div>
+        <div class="preloader-ring-wrap">
+            <div class="preloader-ring"></div>
+            <div class="preloader-mark"><i class="fa-solid fa-book-quran"></i></div>
+        </div>
+        <div class="preloader-text">Menyiapkan Hafizhly</div>
+        <div class="preloader-bar">
+            <div class="preloader-bar-fill"></div>
+        </div>
     </div>
+
+    <div id="scrollProgress"></div>
 
     <div class="aurora"><span></span><span></span><span></span></div>
 
@@ -747,13 +1012,14 @@ if (isset($_SESSION['user_id'])) {
         <div class="container d-flex align-items-center justify-content-between">
             <a class="d-flex align-items-center gap-2 text-decoration-none" href="#">
                 <span class="brand-mark"><i class="fa-solid fa-book-quran"></i></span>
-                <span class="brand-text">Hifzly</span>
+                <span class="brand-text">Hafizhly</span>
             </a>
             <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
                 <i class="fa-solid fa-bars fs-4"></i>
             </button>
             <div class="collapse navbar-collapse flex-grow-0" id="navMenu">
                 <ul class="navbar-nav align-items-lg-center gap-lg-1 mt-3 mt-lg-0">
+                    <li class="nav-item"><a class="nav-link nav-link-custom" href="#beranda">Beranda</a></li>
                     <li class="nav-item"><a class="nav-link nav-link-custom" href="#fitur">Fitur</a></li>
                     <li class="nav-item"><a class="nav-link nav-link-custom" href="#cara-kerja">Cara Kerja</a></li>
                     <li class="nav-item ms-lg-3">
@@ -767,7 +1033,7 @@ if (isset($_SESSION['user_id'])) {
     </nav>
 
     <!-- Hero -->
-    <section class="hero">
+    <section class="hero" id="beranda">
         <div class="arabic-deco">القرآن الكريم</div>
         <div class="container">
             <div class="row align-items-center g-5">
@@ -775,7 +1041,7 @@ if (isset($_SESSION['user_id'])) {
                     <span class="hero-badge"><i class="fa-solid fa-sparkles"></i>Teknologi AI Generasi Baru</span>
                     <h1>Revolusi Cara Kamu <span class="text-gradient">Menjaga Hafalan</span></h1>
                     <p class="lead-custom">
-                        Hifzly menggunakan teknologi Voice Recognition dan Smart AI Coach untuk mendengarkan, mengoreksi, dan membantu murajaahmu menjadi lebih interaktif setiap hari.
+                        Hafizhly menggunakan teknologi Voice Recognition dan Smart AI Coach untuk mendengarkan, mengoreksi, dan membantu murajaahmu menjadi lebih interaktif setiap hari.
                     </p>
                     <div class="d-flex flex-wrap gap-3">
                         <a href="register.php" class="btn btn-primary-custom">
@@ -827,7 +1093,7 @@ if (isset($_SESSION['user_id'])) {
                     <div class="feature-card">
                         <div class="feature-icon"><i class="fa-solid fa-microphone-lines"></i></div>
                         <h3>Smart Murojaah dengan Suara</h3>
-                        <p>Ayat di layar akan disembunyikan dan hanya muncul saat sistem mendeteksi bacaanmu benar. Teknologi Voice Recognition Hifzly memastikan hafalanmu akurat dan lancar secara real-time.</p>
+                        <p>Ayat di layar akan disembunyikan dan hanya muncul saat sistem mendeteksi bacaanmu benar. Teknologi Voice Recognition Hafizhly memastikan hafalanmu akurat dan lancar secara real-time.</p>
                     </div>
                 </div>
 
@@ -933,7 +1199,7 @@ if (isset($_SESSION['user_id'])) {
         <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
             <div class="d-flex align-items-center gap-2">
                 <span class="brand-mark" style="width:32px;height:32px;font-size:0.9rem;"><i class="fa-solid fa-book-quran"></i></span>
-                <span>&copy; <?= date('Y'); ?> Hifzly. Pendamping Murojaah Al-Qur'an Berbasis AI.</span>
+                <span>&copy; <?= date('Y'); ?> Hafizhly. Pendamping Murojaah Al-Qur'an Berbasis AI.</span>
             </div>
             <div class="footer-social">
                 <a href="#"><i class="fa-brands fa-instagram"></i></a>
@@ -963,6 +1229,76 @@ if (isset($_SESSION['user_id'])) {
         const nav = document.getElementById('mainNav');
         window.addEventListener('scroll', function() {
             nav.classList.toggle('scrolled', window.scrollY > 30);
+        });
+
+        // Scroll progress bar
+        const scrollProgress = document.getElementById('scrollProgress');
+        window.addEventListener('scroll', function() {
+            const h = document.documentElement;
+            const percent = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+            scrollProgress.style.width = percent + '%';
+        });
+
+        // Active nav-link tracking while scrolling
+        const navLinks = document.querySelectorAll('.nav-link-custom');
+        const trackedSections = document.querySelectorAll('section[id]');
+        const sectionObserver = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    navLinks.forEach((l) => l.classList.remove('active'));
+                    const activeLink = document.querySelector('.nav-link-custom[href="#' + entry.target.id + '"]');
+                    if (activeLink) activeLink.classList.add('active');
+                }
+            });
+        }, {
+            rootMargin: '-35% 0px -55% 0px'
+        });
+        trackedSections.forEach((s) => sectionObserver.observe(s));
+
+        // Auto-close mobile menu after tapping a link
+        const navMenuEl = document.getElementById('navMenu');
+        navMenuEl.querySelectorAll('a').forEach((link) => {
+            link.addEventListener('click', () => {
+                if (navMenuEl.classList.contains('show')) {
+                    new bootstrap.Collapse(navMenuEl).hide();
+                }
+            });
+        });
+
+        // 3D tilt effect for interactive cards (desktop/mouse only)
+        if (window.matchMedia('(hover: hover)').matches) {
+            const addTilt = (selector, intensity) => {
+                document.querySelectorAll(selector).forEach((card) => {
+                    card.addEventListener('mousemove', (e) => {
+                        const r = card.getBoundingClientRect();
+                        const x = e.clientX - r.left;
+                        const y = e.clientY - r.top;
+                        const rotateX = ((y / r.height) - 0.5) * -intensity;
+                        const rotateY = ((x / r.width) - 0.5) * intensity;
+                        card.style.transform = 'perspective(900px) rotateX(' + rotateX + 'deg) rotateY(' + rotateY + 'deg) translateY(-4px)';
+                    });
+                    card.addEventListener('mouseleave', () => {
+                        card.style.transform = '';
+                    });
+                });
+            };
+            addTilt('.feature-card', 6);
+            addTilt('.listening-card', 4);
+        }
+
+        // Ripple effect on buttons
+        document.querySelectorAll('.btn-primary-custom, .btn-outline-custom, .btn-gold').forEach((btn) => {
+            btn.addEventListener('click', function(e) {
+                const rect = this.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const ripple = document.createElement('span');
+                ripple.className = 'ripple';
+                ripple.style.width = ripple.style.height = size + 'px';
+                ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
+                ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
+                this.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 650);
+            });
         });
 
         // Waveform bars generator

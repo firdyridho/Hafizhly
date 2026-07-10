@@ -93,6 +93,12 @@ if (isset($_POST['login'])) {
             color: var(--dark);
             min-height: 100vh;
             overflow-x: hidden;
+            transition: opacity 0.32s ease, transform 0.32s ease;
+        }
+
+        body.leaving {
+            opacity: 0;
+            transform: translateY(-8px) scale(0.99);
         }
 
         /* ===== Ambient aurora background ===== */
@@ -583,7 +589,7 @@ if (isset($_POST['login'])) {
                 </form>
 
                 <div class="link">
-                    Belum punya akun? <a href="register.php">Daftar sekarang</a>
+                    Belum punya akun? <a href="register.php" class="auth-transition-link">Daftar sekarang</a>
                 </div>
             </div>
         </div>
@@ -633,6 +639,19 @@ if (isset($_POST['login'])) {
             ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
             this.appendChild(ripple);
             setTimeout(() => ripple.remove(), 650);
+        });
+
+        // Transisi halus saat pindah ke halaman register
+        document.querySelectorAll('.auth-transition-link').forEach((link) => {
+            link.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                if (!href || href.startsWith('#')) return;
+                e.preventDefault();
+                document.body.classList.add('leaving');
+                setTimeout(() => {
+                    window.location.href = href;
+                }, 300);
+            });
         });
     </script>
 

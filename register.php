@@ -596,7 +596,7 @@ if (isset($_POST['register'])) {
             <div class="auth-side-arabic">اقرأ</div>
 
             <div class="auth-side-brand">
-                <i class="fa-solid fa-book-quran"></i> Hafizhly
+                Hafizhly
             </div>
 
             <div class="auth-side-content">

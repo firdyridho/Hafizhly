@@ -388,7 +388,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             <div class="fc-arrow"><i class="fas fa-chevron-right"></i></div>
         </div>
 
-        <h3 class="section-title">Akses Cepat</h3>
+        <h3 class="section-title">Menu</h3>
         <div class="quick-grid">
             <a href="alquran.php" class="q-item">
                 <div class="q-icon" style="color: #059669;"><i class="fas fa-book-open"></i></div>

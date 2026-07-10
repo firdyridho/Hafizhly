@@ -163,7 +163,7 @@ if (isset($_POST['action']) && $_POST['action'] == 'save_srs') {
         }
 
         .session-header {
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
 
         .sh-title {
@@ -171,6 +171,19 @@ if (isset($_POST['action']) && $_POST['action'] == 'save_srs') {
             font-weight: 700;
             color: var(--primary);
             font-family: 'Scheherazade New', serif;
+        }
+
+        /* Hint Skip */
+        .skip-hint {
+            background: #fef3c7;
+            color: #d97706;
+            padding: 10px 15px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            margin-bottom: 20px;
+            display: inline-block;
+            font-weight: 500;
+            border: 1px dashed #f59e0b;
         }
 
         /* Kotak Ayat */
@@ -200,25 +213,27 @@ if (isset($_POST['action']) && $_POST['action'] == 'save_srs') {
             gap: 8px;
         }
 
-        /* Kata per Kata (Hidden & Revealed) */
+        /* Kata per Kata */
         .word {
             color: transparent;
             text-shadow: 0 0 15px rgba(17, 24, 39, 0.4);
-            /* Efek Blur seperti Tarteel */
             transition: 0.3s ease;
             position: relative;
             user-select: none;
+            cursor: pointer;
+            /* Kursor pointer agar tau bisa diklik */
         }
 
         .word.revealed {
             color: var(--primary);
             text-shadow: none;
             font-weight: bold;
+            cursor: default;
         }
 
         .word.active-listen {
             border-bottom: 3px solid #f59e0b;
-            /* Garis bawah kuning penanda kata yang ditunggu */
+            padding-bottom: 5px;
         }
 
         /* Mic Button Animasi */
@@ -367,6 +382,11 @@ if (isset($_POST['action']) && $_POST['action'] == 'save_srs') {
                 <div style="font-size:0.9rem; color:var(--text-muted);" id="ses-surah-info">...</div>
             </div>
 
+            <!-- Petunjuk baru agar user tidak frustrasi -->
+            <div class="skip-hint">
+                <i class="fas fa-lightbulb"></i> <strong>Tips:</strong> Jika AI nyangkut, sentuh kata yang bergaris kuning untuk melewatinya.
+            </div>
+
             <div class="ayat-display">
                 <div style="font-weight:700; color:var(--primary); margin-bottom:15px; font-size:1.1rem;">Ayat <span id="ayat-counter">1</span></div>
                 <div class="ayat-text" id="ayat-text-container">
@@ -430,7 +450,7 @@ if (isset($_POST['action']) && $_POST['action'] == 'save_srs') {
             renderList(allSurah.filter(s => s.namaLatin.toLowerCase().includes(q)));
         });
 
-        // --- WEB SPEECH AI ENGINE (Tarteel Clone) ---
+        // --- WEB SPEECH AI ENGINE ---
         let recognition;
         let isListening = false;
         let verses = [];
@@ -438,22 +458,23 @@ if (isset($_POST['action']) && $_POST['action'] == 'save_srs') {
         let wordsArray = [];
         let currentWordIndex = 0;
 
-        // Inisialisasi Web Speech API (Hanya jalan di Chrome/Edge)
         if ('webkitSpeechRecognition' in window) {
             recognition = new webkitSpeechRecognition();
-            recognition.lang = 'ar-SA'; // Set bahasa deteksi ke Bahasa Arab murni
-            recognition.continuous = true; // Dengar terus menerus
-            recognition.interimResults = true; // Tangkap hasil sementara
+            recognition.lang = 'ar-SA';
+            recognition.continuous = true;
+            recognition.interimResults = true;
         } else {
             alert("Browser Anda tidak mendukung fitur AI Suara. Harap gunakan Google Chrome.");
         }
 
-        // Fungsi normalisasi huruf Arab (membuang harakat agar mudah dicocokkan dengan suara user)
+        // FUNGSI NORMALISASI SUPER LONGGAR (Agar lebih peka)
         function normalizeArabic(text) {
-            return text.replace(/[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED\u06DF-\u06E8]/g, '') // Hapus Harakat & Tanda Waqaf
-                .replace(/[أإآ]/g, 'ا') // Samakan variasi Alif
-                .replace(/ة/g, 'ه') // Samakan Ta Marbuthah dan Ha
-                .replace(/ى/g, 'ي') // Samakan Alif Maqsurah
+            if (!text) return '';
+            return text.replace(/[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED\u06DF-\u06E8]/g, '') // Hapus Harakat & Waqaf
+                .replace(/[أإآءئؤ]/g, 'ا') // Jadikan semua bentuk Hamzah/Alif sama
+                .replace(/ة/g, 'ه') // Samakan Ta Marbuthah & Ha
+                .replace(/ى/g, 'ي') // Samakan Alif Maqsurah & Ya
+                .replace(/[^ا-ي]/g, '') // Bersihkan semua karakter selain huruf Arab murni
                 .trim();
         }
 
@@ -472,7 +493,6 @@ if (isset($_POST['action']) && $_POST['action'] == 'save_srs') {
                 verses = json.data.ayat;
                 currentVerseIndex = 0;
 
-                // Jika bukan Al-Fatihah, hapus bismillah dari ayat 1 (karena API sering menyatukannya)
                 if (surahNo !== 1 && verses[0].teksArab.includes('بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ')) {
                     verses[0].teksArab = verses[0].teksArab.replace('بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ', '').trim();
                 }
@@ -485,7 +505,6 @@ if (isset($_POST['action']) && $_POST['action'] == 'save_srs') {
 
         function loadVerse(index) {
             if (index >= verses.length) {
-                // Selesai 1 Surah -> Masuk Mode Evaluasi SRS
                 if (isListening) toggleMic();
                 document.getElementById('session-screen').style.display = 'none';
                 document.getElementById('srs-screen').style.display = 'block';
@@ -494,21 +513,46 @@ if (isset($_POST['action']) && $_POST['action'] == 'save_srs') {
 
             document.getElementById('ayat-counter').innerText = verses[index].nomorAyat;
 
-            // Pecah teks arab menjadi array kata demi kata
             let rawText = verses[index].teksArab;
             wordsArray = rawText.split(' ').filter(w => w.trim() !== '');
             currentWordIndex = 0;
 
             let html = '';
             wordsArray.forEach((word, i) => {
-                // Tambahkan class khusus untuk kata yang sedang ditarget
                 let activeCls = (i === 0) ? 'active-listen' : '';
-                html += `<span class="word ${activeCls}" id="word-${i}">${word}</span>`;
+                // Tambahkan event onclick pada kata untuk fitur "TAP TO SKIP"
+                html += `<span class="word ${activeCls}" id="word-${i}" onclick="skipWord(${i})">${word}</span>`;
             });
             document.getElementById('ayat-text-container').innerHTML = html;
         }
 
-        // LOGIKA PENCOCOKAN SUARA
+        // FITUR BARU: TAP TO SKIP
+        // Jika AI tidak bisa mendeteksi kata yang diucapkan user, user bisa tap kata tersebut di layar
+        window.skipWord = function(index) {
+            if (index === currentWordIndex) {
+                revealWord(); // Langsung buka
+            }
+        };
+
+        // Fungsi Membuka Kata dan Pindah Target
+        function revealWord() {
+            let wEl = document.getElementById(`word-${currentWordIndex}`);
+            wEl.classList.remove('active-listen');
+            wEl.classList.add('revealed');
+
+            currentWordIndex++;
+
+            if (currentWordIndex < wordsArray.length) {
+                document.getElementById(`word-${currentWordIndex}`).classList.add('active-listen');
+            } else {
+                setTimeout(() => {
+                    currentVerseIndex++;
+                    loadVerse(currentVerseIndex);
+                }, 400);
+            }
+        }
+
+        // PENCOCOKAN AI (Sekarang Jauh Lebih Longgar)
         if (recognition) {
             recognition.onresult = function(event) {
                 let interimTranscript = '';
@@ -518,44 +562,30 @@ if (isset($_POST['action']) && $_POST['action'] == 'save_srs') {
 
                 if (interimTranscript.trim() === '') return;
 
-                // Ambil kata dari suara user dan bersihkan
-                let spokenWords = normalizeArabic(interimTranscript).split(' ');
-
-                // Cek kata yang harus ditebak
                 let targetWordRaw = wordsArray[currentWordIndex];
-                if (!targetWordRaw) return; // Udah habis
+                if (!targetWordRaw) return;
 
-                let targetWordNormal = normalizeArabic(targetWordRaw);
+                let targetNormal = normalizeArabic(targetWordRaw);
+                let spokenWords = interimTranscript.split(' ');
 
-                // Cek apakah suara user mengandung kata target
+                // Pengecekan: Apakah kata yang diucapkan mirip dengan target
                 let isMatch = spokenWords.some(w => {
-                    // Berikan toleransi jika mirip (karena voice recognition kadang salah ketik huruf sedikit)
-                    return w === targetWordNormal || w.includes(targetWordNormal) || targetWordNormal.includes(w);
+                    let spokenNormal = normalizeArabic(w);
+                    if (spokenNormal.length === 0) return false;
+
+                    // Lolos jika: Sama persis, atau salah satu string mengandung string lainnya
+                    // Contoh: AI nangkep "بسمالله", Target "بسم". Pasti lolos karena ada kesamaan huruf.
+                    return spokenNormal === targetNormal ||
+                        spokenNormal.includes(targetNormal) ||
+                        targetNormal.includes(spokenNormal);
                 });
 
                 if (isMatch) {
-                    // MATCH! Buka kata tersebut (hilangkan blur)
-                    let wEl = document.getElementById(`word-${currentWordIndex}`);
-                    wEl.classList.remove('active-listen');
-                    wEl.classList.add('revealed');
-
-                    currentWordIndex++;
-
-                    // Highlight kata berikutnya
-                    if (currentWordIndex < wordsArray.length) {
-                        document.getElementById(`word-${currentWordIndex}`).classList.add('active-listen');
-                    } else {
-                        // Ayat Selesai, Lanjut ke Ayat berikutnya
-                        setTimeout(() => {
-                            currentVerseIndex++;
-                            loadVerse(currentVerseIndex);
-                        }, 500); // jeda sedikit agar nyaman
-                    }
+                    revealWord();
                 }
             };
 
             recognition.onend = function() {
-                // Autorestart jika user diam lama tapi status masih listening
                 if (isListening) recognition.start();
             };
         }

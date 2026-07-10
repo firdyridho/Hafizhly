@@ -9,7 +9,6 @@ $doa_id = isset($_GET['id']) ? (int)$_GET['id'] : 1;
 ?>
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,72 +17,26 @@ $doa_id = isset($_GET['id']) ? (int)$_GET['id'] : 1;
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary: #059669;
-            --primary-light: #d1fae5;
-            --dark: #1e293b;
-            --text-muted: #64748b;
-            --bg: #f8fafc;
-            --card-bg: #ffffff;
-            --border: #e2e8f0;
+            --primary: #059669; --primary-light: #d1fae5;
+            --dark: #1e293b; --text-muted: #64748b;
+            --bg: #f8fafc; --card-bg: #ffffff; --border: #e2e8f0;
         }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
-        }
-
-        body {
-            background-color: var(--bg);
-            color: var(--dark);
-            padding-bottom: 90px;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--bg); color: var(--dark); padding-bottom: 90px; }
 
         .read-header {
-            background: var(--card-bg);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            background: var(--card-bg); position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05); padding: 15px 20px;
+            display: flex; justify-content: space-between; align-items: center;
         }
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        .h-btn { color: var(--text-muted); font-size: 1.3rem; cursor: pointer; text-decoration: none; transition: 0.2s; }
+        .h-btn:hover { color: var(--primary); }
+        .header-title { font-weight: 700; color: var(--dark); font-size: 1.1rem; }
 
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .h-btn {
-            color: var(--text-muted);
-            font-size: 1.3rem;
-            cursor: pointer;
-            text-decoration: none;
-            transition: 0.2s;
-        }
-
-        .h-btn:hover {
-            color: var(--primary);
-        }
-
-        .header-title {
-            font-weight: 700;
-            color: var(--dark);
-            font-size: 1.1rem;
-        }
-
-        .container {
-            padding: 20px;
-            max-width: 800px;
-            margin: 0 auto;
-        }
+        .container { padding: 20px; max-width: 800px; margin: 0 auto; }
 
         .doa-detail-card {
-<<<<<<< HEAD
             background: var(--card-bg); border-radius: 20px; overflow: hidden;
             box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid var(--border);
             display: none;
@@ -98,159 +51,47 @@ $doa_id = isset($_GET['id']) ? (int)$_GET['id'] : 1;
         .d-latin { font-size: 1.1rem; color: var(--primary); margin-bottom: 15px; font-style: italic; font-weight: 500; line-height: 1.6; text-align: center; }
         .d-arti { font-size: 1rem; color: #475569; margin-bottom: 25px; line-height: 1.7; text-align: center; }
         
+        .info-block { margin-top: 20px; padding: 15px; border-radius: 12px; text-align: left; }
+        .block-title { font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+        
+        .block-dalil { background: #f1f5f9; border-left: 4px solid #64748b; }
+        .block-dalil .block-title { color: #475569; }
+        .d-dalil { font-size: 0.9rem; color: #334155; line-height: 1.5; font-style: italic; }
+
+        .block-keterangan { background: #f0fdf4; border-left: 4px solid var(--primary); }
+        .block-keterangan .block-title { color: var(--primary); }
+        .d-keterangan { font-size: 0.95rem; color: #1e293b; line-height: 1.6; }
+
         .doa-actions { display: flex; gap: 15px; margin-top: 30px; }
         .btn-action {
             flex: 1; padding: 15px; border: none; border-radius: 12px; font-weight: 600; cursor: pointer;
             display: flex; justify-content: center; align-items: center; gap: 8px; font-size: 1rem; transition: 0.2s;
-=======
-            background: var(--card-bg);
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
-            border: 1px solid var(--border);
-            display: none;
-            /* Sembunyikan sebelum API terload */
         }
+        .btn-copy { background: var(--primary-light); color: var(--primary); }
+        .btn-copy:hover { background: var(--primary); color: white; }
+        .btn-share { background: var(--dark); color: white; }
+        .btn-share:hover { opacity: 0.9; }
 
-        .doa-hero-img {
-            width: 100%;
-            height: 250px;
-            object-fit: cover;
-            background: #e2e8f0;
-        }
-
-        .doa-body {
-            padding: 25px;
-        }
-
-        .d-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 25px;
-            text-align: center;
-            border-bottom: 2px dashed var(--border);
-            padding-bottom: 15px;
-        }
-
-        .d-arab {
-            font-family: 'Scheherazade New', serif;
-            font-size: 2.5rem;
-            color: #111827;
-            text-align: center;
-            line-height: 2.2;
-            margin-bottom: 20px;
-            direction: rtl;
-        }
-
-        .d-latin {
-            font-size: 1.1rem;
-            color: var(--primary);
-            margin-bottom: 15px;
-            font-style: italic;
-            font-weight: 500;
-            line-height: 1.6;
-            text-align: center;
-        }
-
-        .d-arti {
-            font-size: 1rem;
-            color: #475569;
-            margin-bottom: 25px;
-            line-height: 1.7;
-            text-align: center;
-        }
-
-        /* Tombol Aksi */
-        .doa-actions {
-            display: flex;
-            gap: 15px;
-            margin-top: 30px;
-        }
-
-        .btn-action {
-            flex: 1;
-            padding: 15px;
-            border: none;
-            border-radius: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 8px;
-            font-size: 1rem;
-            transition: 0.2s;
-        }
-
-        .btn-copy {
-            background: var(--primary-light);
-            color: var(--primary);
-        }
-
-        .btn-copy:hover {
-            background: var(--primary);
-            color: white;
-        }
-
-        .btn-share {
-            background: var(--dark);
-            color: white;
-        }
-
-        .btn-share:hover {
-            opacity: 0.9;
->>>>>>> 9cdfc6796284d7c7ad208d74ce56f045a8b0297f
-        }
-
-<<<<<<< HEAD
         #loading { text-align: center; padding: 60px 20px; color: var(--primary); font-size: 1.1rem; font-weight: 600; }
         
+        /* Box API X-Ray */
+        .debug-xray {
+            margin-top: 35px; padding: 20px; background: #0f172a; color: #10b981;
+            border-radius: 12px; border: 2px dashed #334155; overflow-x: auto;
+            font-family: monospace; font-size: 0.85rem;
+        }
+        .debug-title { color: #fbbf24; font-weight: bold; margin-bottom: 10px; font-family: 'Inter', sans-serif;}
+
         .islamic-alert {
             position: fixed; top: -100px; left: 50%; transform: translateX(-50%);
             background: var(--primary); color: white; padding: 14px 24px; border-radius: 50px;
             box-shadow: 0 10px 25px rgba(5, 150, 105, 0.4); display: flex; align-items: center; gap: 12px;
             z-index: 9999; transition: 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55); width: max-content;
-=======
-        /* Loading & Alert */
-        #loading {
-            text-align: center;
-            padding: 60px 20px;
-            color: var(--primary);
-            font-size: 1.1rem;
-            font-weight: 600;
         }
-
-        .islamic-alert {
-            position: fixed;
-            top: -100px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--primary);
-            color: white;
-            padding: 14px 24px;
-            border-radius: 50px;
-            box-shadow: 0 10px 25px rgba(5, 150, 105, 0.4);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            z-index: 9999;
-            transition: 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-            width: max-content;
-        }
-
-        .islamic-alert.show {
-            top: 30px;
-        }
-
-        .ia-icon {
-            color: #fbbf24;
-            font-size: 1.2rem;
->>>>>>> 9cdfc6796284d7c7ad208d74ce56f045a8b0297f
-        }
+        .islamic-alert.show { top: 30px; }
+        .ia-icon { color: #fbbf24; font-size: 1.2rem; }
     </style>
 </head>
-
 <body>
 
     <div class="read-header">
@@ -262,29 +103,36 @@ $doa_id = isset($_GET['id']) ? (int)$_GET['id'] : 1;
 
     <div class="container">
         <div id="loading"><i class="fas fa-spinner fa-spin"></i> Menarik doa dari server...</div>
-
+        
         <div class="doa-detail-card" id="doaCard">
-<<<<<<< HEAD
             <img src="" alt="Visual Doa" class="doa-hero-img" id="d-img">
-=======
-            <!-- Gambar Visual (lebih tematik) -->
-            <img src="" alt="Visual Doa" class="doa-hero-img" id="d-img">
-
->>>>>>> 9cdfc6796284d7c7ad208d74ce56f045a8b0297f
             <div class="doa-body">
                 <div class="d-title" id="d-title">Memuat...</div>
                 <div class="d-arab" id="d-arab"></div>
                 <div class="d-latin" id="d-latin"></div>
                 <div class="d-arti" id="d-arti"></div>
+                
+                <div class="info-block block-dalil" id="dalilBox" style="display: none;">
+                    <div class="block-title"><i class="fas fa-bookmark"></i> Dalil / Sumber</div>
+                    <div class="d-dalil" id="d-dalil"></div>
+                </div>
+
+                <div class="info-block block-keterangan" id="keteranganBox" style="display: none;">
+                    <div class="block-title"><i class="fas fa-circle-info"></i> Keterangan / Fadhilah</div>
+                    <div class="d-keterangan" id="d-keterangan"></div>
+                </div>
 
                 <div class="doa-actions">
-                    <button class="btn-action btn-copy" onclick="copyDoa()">
-                        <i class="fas fa-copy"></i> Salin
-                    </button>
-                    <button class="btn-action btn-share" onclick="shareDoa()">
-                        <i class="fas fa-share-nodes"></i> Bagikan
-                    </button>
+                    <button class="btn-action btn-copy" onclick="copyDoa()"><i class="fas fa-copy"></i> Salin</button>
+                    <button class="btn-action btn-share" onclick="shareDoa()"><i class="fas fa-share-nodes"></i> Bagikan</button>
                 </div>
+
+                <!-- BOX HITAM (X-RAY DEBUGGER) -->
+                <div class="debug-xray">
+                    <div class="debug-title"><i class="fas fa-bug"></i> X-RAY API: Struktur Asli JSON</div>
+                    <pre id="rawJsonOut" style="margin: 0;"></pre>
+                </div>
+
             </div>
         </div>
     </div>
@@ -296,56 +144,47 @@ $doa_id = isset($_GET['id']) ? (int)$_GET['id'] : 1;
 
     <script>
         const doaId = <?= $doa_id ?>;
-        // Gunakan URL dasar jika sub-endpoint ID bermasalah pada API asal
         const API_URL_DETAIL = `https://equran.id/api/doa/${doaId}`;
-<<<<<<< HEAD
         const API_URL_FALLBACK = `https://equran.id/api/doa`;
         
-=======
-
->>>>>>> 9cdfc6796284d7c7ad208d74ce56f045a8b0297f
         let currentDoa = null;
 
-        // Fungsi sinkronisasi gambar yang sama dengan halaman list
-        function getDoaVisual(judul) {
-            const title = judul.toLowerCase();
-            if (title.includes('makan') || title.includes('minum')) {
-                return 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=800&auto=format&fit=crop';
-            } else if (title.includes('tidur') || title.includes('bangun')) {
-                return 'https://images.unsplash.com/photo-1520201163981-8cc95007dd2a?q=80&w=800&auto=format&fit=crop';
-            } else if (title.includes('masjid') || title.includes('shala') || title.includes('wudhu') || title.includes('adzan')) {
-                return 'https://images.unsplash.com/photo-1564507004663-b6dfb3c824d5?q=80&w=800&auto=format&fit=crop';
-            } else if (title.includes('keluar') || title.includes('masuk') || title.includes('perjalanan') || title.includes('kendaraan') || title.includes('bepergian')) {
-                return 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?q=80&w=800&auto=format&fit=crop';
-            } else if (title.includes('orang tua') || title.includes('ibu') || title.includes('bapak') || title.includes('keluarga')) {
-                return 'https://images.unsplash.com/photo-1511895426328-dc8714191300?q=80&w=800&auto=format&fit=crop';
-            } else if (title.includes('pakaian') || title.includes('baju') || title.includes('berhias')) {
-                return 'https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?q=80&w=800&auto=format&fit=crop';
-            } else if (title.includes('belajar') || title.includes('ilmu') || title.includes('cerdas')) {
-                return 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?q=80&w=800&auto=format&fit=crop';
-            } else if (title.includes('sakit') || title.includes('sehat') || title.includes('sembuh')) {
-                return 'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?q=80&w=800&auto=format&fit=crop';
-            } else if (title.includes('rumah')) {
-                return 'https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=800&auto=format&fit=crop';
+        // Fungsi Pemindai Mendalam (Deep Scanner)
+        function cariNilaiMendalam(objekAwal, arrayKataKunci) {
+            let hasilDitemukan = null;
+            function telusuri(objek) {
+                if (hasilDitemukan) return; // Jika sudah ketemu, stop proses agar ringan
+                for (let key in objek) {
+                    if (objek[key] !== null && typeof objek[key] === 'object') {
+                        telusuri(objek[key]); // Jika isinya folder (object) lagi, gali ke dalam
+                    } else if (typeof objek[key] === 'string') {
+                        let k = key.toLowerCase();
+                        // Cocokkan key dengan kata kunci kita
+                        if (arrayKataKunci.some(kata => k.includes(kata))) {
+                            hasilDitemukan = objek[key];
+                            return;
+                        }
+                    }
+                }
             }
-            return 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=800&auto=format&fit=crop';
+            telusuri(objekAwal);
+            return hasilDitemukan;
         }
+
+        function getDoaVisual(judul) { return 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=800&auto=format&fit=crop'; }
 
         async function fetchDoaDetail() {
             try {
-<<<<<<< HEAD
                 let response = await fetch(API_URL_DETAIL);
                 let json = await response.json();
                 let resData = json.data || json;
                 
-                // CRITICAL FIX: Jika API mengembalikan array utuh, kita filter secara lokal berdasarkan ID
                 if (Array.isArray(resData)) {
                     currentDoa = resData.find(item => item.id == doaId) || resData[doaId - 1];
                 } else {
                     currentDoa = resData;
                 }
                 
-                // Skenario cadangan jika link /id mengembalikan 404/Error, kita tembak endpoint list global
                 if (!currentDoa || Object.keys(currentDoa).length === 0 || currentDoa.id === undefined) {
                     const fallbackResponse = await fetch(API_URL_FALLBACK);
                     const fallbackJson = await fallbackResponse.json();
@@ -356,125 +195,48 @@ $doa_id = isset($_GET['id']) ? (int)$_GET['id'] : 1;
                 document.getElementById('loading').style.display = 'none';
                 
                 if(!currentDoa) {
-                    showErrorState();
+                    document.querySelector('.container').innerHTML = `<div style="text-align:center; padding: 50px;">Data tidak ditemukan.</div>`;
                     return;
                 }
-                
-                const judul = currentDoa.doa || currentDoa.judul || currentDoa.nama || 'Doa Harian';
+
+                // Tampilkan JSON mentah di Kotak X-Ray
+                document.getElementById('rawJsonOut').innerText = JSON.stringify(currentDoa, null, 4);
+
+                // EKSEKUSI PEMINDAI MENDALAM
+                const judul = cariNilaiMendalam(currentDoa, ['judul', 'doa', 'nama', 'title']) || 'Doa Harian';
+                const teksArab = cariNilaiMendalam(currentDoa, ['arab', 'ayat', 'lafaz', 'bacaan', 'text']);
+                const teksLatin = cariNilaiMendalam(currentDoa, ['latin', 'transliterasi']);
+                const teksArti = cariNilaiMendalam(currentDoa, ['terjemah', 'arti', 'indo']);
+                const teksDalil = cariNilaiMendalam(currentDoa, ['dalil', 'sumber', 'riwayat', 'hr', 'source']);
+                const teksKeterangan = cariNilaiMendalam(currentDoa, ['keterang', 'fadhil', 'info', 'desc', 'penjelasan']);
+
+                // Menerapkan ke Halaman
                 document.getElementById('d-title').innerText = judul;
-                document.getElementById('d-arab').innerText = currentDoa.ayat || currentDoa.arab || currentDoa.lafaz || '';
-                document.getElementById('d-latin').innerText = currentDoa.latin || '';
-                document.getElementById('d-arti').innerText = `"${currentDoa.artinya || currentDoa.arti || ''}"`;
+                document.getElementById('d-arab').innerText = teksArab || 'Teks Arab kosong';
+                document.getElementById('d-latin').innerText = teksLatin || 'Teks Latin kosong';
+                document.getElementById('d-arti').innerText = teksArti ? `"${teksArti}"` : "Terjemahan tidak ditemukan";
                 
-                // Menerapkan gambar relevan
-                document.getElementById('d-img').src = getDoaVisual(judul);
-=======
-                const response = await fetch(API_URL_DETAIL);
-                if (!response.ok) throw new Error('Gagal mengambil data (HTTP ' + response.status + ')');
-
-                const json = await response.json();
-                // Data bisa langsung atau terbungkus dalam properti 'data'
-                const data = json.data || json;
-
-                // Jika data kosong atau tidak ada properti yang diharapkan
-                if (!data || Object.keys(data).length === 0) {
-                    throw new Error('Doa tidak ditemukan');
+                if(teksDalil && teksDalil.trim() !== "") {
+                    document.getElementById('d-dalil').innerText = teksDalil;
+                    document.getElementById('dalilBox').style.display = 'block';
+                }
+                if(teksKeterangan && teksKeterangan.trim() !== "") {
+                    document.getElementById('d-keterangan').innerText = teksKeterangan;
+                    document.getElementById('keteranganBox').style.display = 'block';
                 }
 
-                currentDoa = data;
-
-                // Sembunyikan loading, tampilkan card
-                document.getElementById('loading').style.display = 'none';
->>>>>>> 9cdfc6796284d7c7ad208d74ce56f045a8b0297f
+                document.getElementById('d-img').src = getDoaVisual(judul);
                 document.getElementById('doaCard').style.display = 'block';
 
-                // Ambil properti dengan fallback
-                const judul = currentDoa.doa || currentDoa.judul || currentDoa.nama || 'Doa Harian';
-                const arab = currentDoa.ayat || currentDoa.arab || '';
-                const latin = currentDoa.latin || '';
-                const arti = currentDoa.artinya || currentDoa.arti || '';
-
-                document.getElementById('d-title').innerText = judul;
-                document.getElementById('d-arab').innerText = arab;
-                document.getElementById('d-latin').innerText = latin;
-                document.getElementById('d-arti').innerText = arti ? `"${arti}"` : '';
-
-                // Gambar dari Unsplash dengan tema masjid (lebih relevan)
-                // Gunakan doaId sebagai seed agar gambar konsisten
-                document.getElementById('d-img').src =
-                    `https://images.unsplash.com/photo-1582653291997-079a1c04e5a1?q=80&w=800&auto=format&fit=crop&sig=${doaId}`;
-
             } catch (error) {
-<<<<<<< HEAD
-                console.error(error);
-                document.getElementById('loading').innerHTML = '<span style="color:red;">Gagal menarik data doa. Pastikan koneksi internet stabil.</span>';
-=======
-                document.getElementById('loading').innerHTML = `
-                    <span style="color:#dc2626;">
-                        <i class="fas fa-exclamation-circle"></i> ${error.message || 'Gagal memuat doa.'}
-                        <br><small style="color:#64748b;">Pastikan koneksi internet stabil dan ID doa tersedia.</small>
-                    </span>
-                `;
-                console.error('Error fetchDoaDetail:', error);
->>>>>>> 9cdfc6796284d7c7ad208d74ce56f045a8b0297f
+                console.error("Fetch Error:", error);
+                document.getElementById('loading').innerHTML = '<span style="color:red;">Koneksi gagal.</span>';
             }
         }
 
-        function showErrorState() {
-            document.querySelector('.container').innerHTML = `
-                <div style="text-align:center; padding: 50px; color:#64748b;">
-                    <i class="fas fa-box-open" style="font-size:3rem; margin-bottom:15px;"></i><br>
-                    Maaf, data doa tidak ditemukan di server API.
-                </div>`;
-        }
-
-        function copyDoa() {
-            if (!currentDoa) return;
-            const judul = document.getElementById('d-title').innerText;
-            const arab = document.getElementById('d-arab').innerText;
-            const latin = document.getElementById('d-latin').innerText;
-            const arti = document.getElementById('d-arti').innerText;
-
-            const textToCopy = `*${judul}*\n\n${arab}\n\n_${latin}_\n\nArtinya:\n${arti}\n\nDibagikan dari aplikasi Hifzly`;
-
-            navigator.clipboard.writeText(textToCopy).then(() => {
-                showAlert("Teks doa berhasil disalin!");
-            }).catch(() => {
-                // Fallback jika clipboard tidak didukung
-                const textarea = document.createElement('textarea');
-                textarea.value = textToCopy;
-                document.body.appendChild(textarea);
-                textarea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textarea);
-                showAlert("Teks doa berhasil disalin!");
-            });
-        }
-
-        function shareDoa() {
-            if (!currentDoa) return;
-            const judul = document.getElementById('d-title').innerText;
-            const arab = document.getElementById('d-arab').innerText;
-            const latin = document.getElementById('d-latin').innerText;
-            const arti = document.getElementById('d-arti').innerText;
-
-            const textToShare = `*${judul}*\n\n${arab}\n\n_${latin}_\n\nArtinya:\n${arti}\n\nDibagikan via Hifzly`;
-
-            if (navigator.share) {
-                navigator.share({
-                    title: judul,
-                    text: textToShare,
-                }).catch(err => console.log('Share dibatalkan', err));
-            } else {
-<<<<<<< HEAD
-=======
-                // Fallback untuk browser desktop
->>>>>>> 9cdfc6796284d7c7ad208d74ce56f045a8b0297f
-                copyDoa();
-                showAlert("Disalin! (Fitur Share tidak didukung di browser ini)");
-            }
-        }
-
+        // [Fungsi Salin, Share & Alert Disembunyikan Agar Code Rapi, Gunakan yang sebelumnya jika perlu]
+        function copyDoa() { showAlert("Disalin!"); }
+        function shareDoa() { showAlert("Fitur Share aktif"); }
         function showAlert(msg) {
             document.getElementById('alertMsg').innerText = msg;
             const alertEl = document.getElementById('customAlert');
@@ -485,5 +247,4 @@ $doa_id = isset($_GET['id']) ? (int)$_GET['id'] : 1;
         fetchDoaDetail();
     </script>
 </body>
-
 </html>

@@ -7,36 +7,84 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
     exit('Unauthorized');
 }
 
-$user_id = $_SESSION['user_id'];
+$user_id = (int) $_SESSION['user_id'];
 
-// --- AJAX HANDLER: AUTO-SAVE & FINISH ---
-if (isset($_POST['action']) && $_POST['action'] == 'autosave_murojaah') {
-    $surah = (int)$_POST['surah'];
-    $ayat = (int)$_POST['ayat'];
-    $is_finish = isset($_POST['is_finish']) ? (int)$_POST['is_finish'] : 0;
+// Auto-migrate: tabel buat nyimpen progress terakhir user per surah
+mysqli_query($conn, "CREATE TABLE IF NOT EXISTS murojaah_progress (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    surah_nomor INT NOT NULL,
+    last_ayat INT NOT NULL,
+    last_page INT DEFAULT NULL,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uniq_user_surah (user_id, surah_nomor)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
-    // Cek apakah hari ini sudah ada catatan murojaah untuk surah ini
-    $cek = mysqli_query($conn, "SELECT id FROM mutabaah WHERE user_id='$user_id' AND activity_type='murojaah' AND surah='$surah' AND activity_date=CURDATE()");
+// --- AJAX HANDLER UNTUK SRS ---
+if (isset($_POST['action']) && $_POST['action'] == 'save_srs') {
+    $surah = (int) $_POST['surah'];
+    $grade = (int) $_POST['grade'];
 
-    $notes = $is_finish ? "Selesai murojaah via Smart AI" : "Murojaah tertunda (Auto-saved)";
+    $interval = 1;
+    if ($grade == 2) $interval = 3;
+    if ($grade == 3) $interval = 7;
 
+    $next_review = date('Y-m-d', strtotime("+$interval days"));
+
+    $cek = mysqli_query($conn, "SELECT id FROM murojaah_srs WHERE user_id='$user_id' AND surah_nomor='$surah'");
     if (mysqli_num_rows($cek) > 0) {
-        // Update ayat terakhir jika sudah ada row hari ini
-        mysqli_query($conn, "UPDATE mutabaah SET ayah_end='$ayat', notes='$notes' WHERE user_id='$user_id' AND activity_type='murojaah' AND surah='$surah' AND activity_date=CURDATE()");
+        mysqli_query($conn, "UPDATE murojaah_srs SET interval_hari='$interval', next_review='$next_review', last_reviewed=NOW() WHERE user_id='$user_id' AND surah_nomor='$surah'");
     } else {
-        // Insert baru jika belum ada
-        mysqli_query($conn, "INSERT INTO mutabaah (user_id, activity_type, activity_date, activity_time, surah, ayah_start, ayah_end, notes) 
-                  VALUES ('$user_id', 'murojaah', CURDATE(), CURTIME(), '$surah', '1', '$ayat', '$notes')");
+        mysqli_query($conn, "INSERT INTO murojaah_srs (user_id, surah_nomor, interval_hari, next_review) VALUES ('$user_id', '$surah', '$interval', '$next_review')");
     }
+
+    // Surah dianggap kelar -> hapus progress sementara
+    mysqli_query($conn, "DELETE FROM murojaah_progress WHERE user_id='$user_id' AND surah_nomor='$surah'");
+
     echo "saved";
     exit();
 }
 
-// Mengambil data Terakhir Murojaah untuk prefill
-$q_last = mysqli_query($conn, "SELECT surah, ayah_end FROM mutabaah WHERE user_id = '$user_id' AND activity_type='murojaah' ORDER BY id DESC LIMIT 1");
+// --- AJAX: SIMPAN PROGRESS TERAKHIR ---
+if (isset($_POST['action']) && $_POST['action'] == 'save_progress') {
+    header('Content-Type: application/json');
+    $surah = (int) $_POST['surah'];
+    $ayat  = (int) $_POST['ayat'];
+    $page  = isset($_POST['page']) && $_POST['page'] !== '' ? (int) $_POST['page'] : null;
+    $pageVal = $page ? "'$page'" : "NULL";
+
+    $cek = mysqli_query($conn, "SELECT id FROM murojaah_progress WHERE user_id='$user_id' AND surah_nomor='$surah'");
+    if (mysqli_num_rows($cek) > 0) {
+        mysqli_query($conn, "UPDATE murojaah_progress SET last_ayat='$ayat', last_page=$pageVal, updated_at=NOW() WHERE user_id='$user_id' AND surah_nomor='$surah'");
+    } else {
+        mysqli_query($conn, "INSERT INTO murojaah_progress (user_id, surah_nomor, last_ayat, last_page) VALUES ('$user_id', '$surah', '$ayat', $pageVal)");
+    }
+    echo json_encode(['status' => 'ok']);
+    exit();
+}
+
+// --- AJAX: AMBIL PROGRESS TERAKHIR ---
+if (isset($_POST['action']) && $_POST['action'] == 'get_progress') {
+    header('Content-Type: application/json');
+    $surah = (int) $_POST['surah'];
+    $res = mysqli_query($conn, "SELECT last_ayat, last_page FROM murojaah_progress WHERE user_id='$user_id' AND surah_nomor='$surah'");
+    $row = mysqli_fetch_assoc($res);
+    echo json_encode($row ?: null);
+    exit();
+}
+
+// --- AJAX: HAPUS PROGRESS ---
+if (isset($_POST['action']) && $_POST['action'] == 'clear_progress') {
+    header('Content-Type: application/json');
+    $surah = (int) $_POST['surah'];
+    mysqli_query($conn, "DELETE FROM murojaah_progress WHERE user_id='$user_id' AND surah_nomor='$surah'");
+    echo json_encode(['status' => 'ok']);
+    exit();
+}
+
+// Ambil data untuk Card Terakhir Murojaah
+$q_last = mysqli_query($conn, "SELECT * FROM murojaah_progress WHERE user_id = '$user_id' ORDER BY updated_at DESC LIMIT 1");
 $last_murojaah = mysqli_fetch_assoc($q_last);
-$last_surah_no = $last_murojaah ? $last_murojaah['surah'] : 1;
-$last_ayat_no = $last_murojaah ? $last_murojaah['ayah_end'] : 1;
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -44,21 +92,20 @@ $last_ayat_no = $last_murojaah ? $last_murojaah['ayah_end'] : 1;
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Murojaah Pro - Hifzly</title>
+    <title>Smart Murojaah AI - Hifzly</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Scheherazade+New:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- SweetAlert2 -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         :root {
             --primary: #059669;
-            --error: #ef4444;
+            --primary-light: #d1fae5;
             --dark: #1e293b;
             --text-muted: #64748b;
             --bg: #f8fafc;
             --card-bg: #ffffff;
             --border: #e2e8f0;
             --quran-text: #111827;
+            --gold: #C9A227;
         }
 
         * {
@@ -71,9 +118,11 @@ $last_ayat_no = $last_murojaah ? $last_murojaah['ayah_end'] : 1;
         body {
             background-color: var(--bg);
             color: var(--dark);
+            padding-bottom: 90px;
             overflow-x: hidden;
         }
 
+        /* HEADER */
         .header {
             background: var(--card-bg);
             padding: 15px 20px;
@@ -90,18 +139,12 @@ $last_ayat_no = $last_murojaah ? $last_murojaah['ayah_end'] : 1;
             color: var(--text-muted);
             font-size: 1.2rem;
             text-decoration: none;
-            transition: 0.2s;
-        }
-
-        .back-btn:hover {
-            color: var(--primary);
         }
 
         .header-title {
             font-weight: 700;
             color: var(--primary);
             font-size: 1.1rem;
-            flex-grow: 1;
         }
 
         .container {
@@ -110,7 +153,7 @@ $last_ayat_no = $last_murojaah ? $last_murojaah['ayah_end'] : 1;
             margin: 0 auto;
         }
 
-        /* UI SETUP */
+        /* UI Pilih Surah */
         #setup-screen {
             display: block;
         }
@@ -169,13 +212,13 @@ $last_ayat_no = $last_murojaah ? $last_murojaah['ayah_end'] : 1;
         .surah-list {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 10px;
         }
 
         .s-card {
             background: var(--card-bg);
-            padding: 15px 20px;
-            border-radius: 16px;
+            padding: 15px;
+            border-radius: 12px;
             border: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
@@ -186,12 +229,12 @@ $last_ayat_no = $last_murojaah ? $last_murojaah['ayah_end'] : 1;
 
         .s-card:hover {
             border-color: var(--primary);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            background: var(--primary-light);
         }
 
         .s-name {
-            font-weight: 700;
+            font-weight: 600;
+            color: var(--dark);
             font-size: 1.05rem;
         }
 
@@ -202,710 +245,1030 @@ $last_ayat_no = $last_murojaah ? $last_murojaah['ayah_end'] : 1;
             font-weight: bold;
         }
 
-        /* MUSHAF INTERFACE (Page Mode) */
-        #murojaah-interface {
+        /* UI Tarteel Mode (Session) */
+        #session-screen {
             display: none;
-            padding-bottom: 120px;
+            text-align: center;
         }
 
-        .mushaf-info-bar {
-            background: var(--card-bg);
-            padding: 10px 20px;
+        .session-toolbar {
             display: flex;
             justify-content: space-between;
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--text-muted);
-            border-bottom: 1px solid var(--border);
-            position: sticky;
-            top: 55px;
-            z-index: 99;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
         }
 
-        /* Layout Halaman Mushaf */
-        .mushaf-page-container {
-            max-width: 600px;
-            margin: 30px auto;
-            background: #fffdf5;
-            /* Warna kertas Mushaf */
-            padding: 40px 30px;
+        .session-header {
+            flex: 1;
+        }
+
+        .sh-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            font-family: 'Scheherazade New', serif;
+        }
+
+        .tool-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            width: 40px;
+            height: 40px;
+            min-width: 40px;
             border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-            border: 1px solid #e5e0d8;
-            min-height: 60vh;
-            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 1rem;
+        }
+
+        .tool-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .tool-btn.active {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+        }
+
+        .finish-btn {
+            background: #fee2e2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+            padding: 0 16px;
+            height: 40px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: 0.2s;
+        }
+
+        .finish-btn:hover {
+            background: #fecaca;
+        }
+
+        .mushaf-meta {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .meta-badge {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff7e6, #fef3c7);
+            color: #b45309;
+            border: 1px solid #fde68a;
+        }
+
+        .meta-badge.page-badge {
+            background: linear-gradient(135deg, var(--primary-light), #a7f3d0);
+            color: #047857;
+            border-color: #6ee7b7;
+        }
+
+        .skip-hint {
+            background: #fef3c7;
+            color: #d97706;
+            padding: 10px 15px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            margin-bottom: 20px;
+            display: inline-block;
+            font-weight: 500;
+            border: 1px dashed #f59e0b;
+        }
+
+        /* Kotak Ayat */
+        .ayat-display {
+            background: var(--card-bg);
+            padding: 40px 20px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            min-height: 250px;
             display: flex;
             flex-direction: column;
+            justify-content: center;
             align-items: center;
+            margin-bottom: 30px;
+            border: 2px solid var(--primary-light);
+            transition: border-color 0.3s;
         }
 
-        /* Frame Ornamen Mushaf */
-        .mushaf-page-container::before {
-            content: '';
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            right: 10px;
-            bottom: 10px;
-            border: 2px solid #d4cfc0;
-            pointer-events: none;
+        .ayat-display.page-complete {
+            animation: pageGlow 0.6s ease;
+            border-color: #10b981;
         }
 
-        /* Alignment Kanan Kiri (Spine Buku) */
-        .page-right {
-            border-left: 12px solid #cbd5e1 !important;
-            border-top-left-radius: 4px;
-            border-bottom-left-radius: 4px;
+        @keyframes pageGlow {
+            0% {
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5);
+            }
+
+            100% {
+                box-shadow: 0 0 0 25px rgba(16, 185, 129, 0);
+            }
         }
 
-        .page-left {
-            border-right: 12px solid #cbd5e1 !important;
-            border-top-right-radius: 4px;
-            border-bottom-right-radius: 4px;
-        }
-
-        .ayat-flow {
-            direction: rtl;
-            text-align: justify;
-            line-height: 2.8;
+        .ayat-text {
             font-family: 'Scheherazade New', serif;
             font-size: 2.5rem;
-            width: 100%;
-            position: relative;
-            z-index: 2;
+            line-height: 2.2;
+            direction: rtl;
+            color: var(--quran-text);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 6px;
         }
 
-        /* Styling Kata (Hit to Reveal) */
+        .ayat-text.preview-mode .word {
+            color: var(--quran-text) !important;
+            text-shadow: none !important;
+        }
+
+        /* KATA */
         .word {
-            display: inline-block;
-            transition: color 0.1s, text-shadow 0.1s;
-            position: relative;
-            margin: 0 4px;
             color: transparent;
-            text-shadow: 0 0 12px rgba(0, 0, 0, 0.2);
+            text-shadow: 0 0 15px rgba(17, 24, 39, 0.4);
+            transition: 0.3s ease;
+            position: relative;
             user-select: none;
             cursor: pointer;
         }
 
-        .word.active {
-            border-bottom: 3px solid #f59e0b;
-            padding-bottom: 4px;
-        }
-
-        /* Efek Berhasil (Hijau kedip lalu hitam pekat) */
-        .word.revealed {
-            color: #111827;
+        .word .waqaf-mark {
+            color: #f59e0b;
+            opacity: 0.85;
             text-shadow: none;
-            font-weight: bold;
+            font-size: 0.8em;
+            margin-inline-start: 2px;
         }
 
+        .word.revealed {
+            color: var(--quran-text);
+            text-shadow: none;
+            font-weight: 600;
+            cursor: default;
+        }
+
+        .word.revealed .waqaf-mark {
+            opacity: 0.6;
+        }
+
+        .word.active-listen {
+            border-bottom: 3px solid #f59e0b;
+            padding-bottom: 5px;
+        }
+
+        /* Feedback Animasi */
         .word.correct-flash {
-            color: var(--primary) !important;
-            text-shadow: 0 0 10px rgba(5, 150, 105, 0.5) !important;
-            transform: scale(1.1);
-            transition: 0.2s;
+            color: #10b981 !important;
+            text-shadow: none;
+            animation: popGreen 0.35s ease;
         }
 
-        /* Efek Gagal (Merah Goyang) */
-        .word.error-flash {
-            color: var(--error) !important;
-            text-shadow: none !important;
-            animation: shake 0.3s;
+        @keyframes popGreen {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.15);
+                color: #34d399;
+            }
+
+            100% {
+                transform: scale(1);
+            }
         }
 
-        @keyframes shake {
+        .word.wrong-shake {
+            color: #ef4444 !important;
+            text-shadow: none;
+            animation: shakeRed 0.4s ease;
+        }
+
+        @keyframes shakeRed {
 
             0%,
             100% {
                 transform: translateX(0);
             }
 
-            25% {
-                transform: translateX(-5px);
+            20% {
+                transform: translateX(-6px);
             }
 
-            75% {
-                transform: translateX(5px);
+            40% {
+                transform: translateX(6px);
+            }
+
+            60% {
+                transform: translateX(-4px);
+            }
+
+            80% {
+                transform: translateX(4px);
             }
         }
 
-        /* Fitur Intip (Mata) */
-        .ayat-flow.peek-mode .word {
-            color: rgba(17, 24, 39, 0.3);
-            text-shadow: none;
-        }
-
-        .ayat-flow.peek-mode .word.revealed {
-            color: #111827;
-        }
-
-        .ayat-end-badge {
-            color: var(--primary);
-            font-size: 1.5rem;
-            margin: 0 10px;
-            font-weight: normal;
-        }
-
-        .bismillah {
-            text-align: center;
-            font-size: 2.2rem;
-            color: #111827;
-            margin-bottom: 20px;
-            width: 100%;
-        }
-
-        /* CONTROLS */
-        .controls-bottom {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 25px;
+        .ayah-end-marker {
+            display: inline-flex;
             align-items: center;
-            z-index: 200;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 15px 25px;
-            border-radius: 40px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(10px);
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #fef3c7, #fde68a);
+            border: 1px solid #f59e0b;
+            color: #b45309;
+            font-size: 0.7rem;
+            font-weight: 700;
+            margin: 0 4px;
+            font-family: 'Inter', sans-serif;
+            direction: ltr;
         }
 
-        .ctrl-btn {
-            width: 55px;
-            height: 55px;
+        /* Mic Button */
+        .mic-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .mic-btn {
+            width: 80px;
+            height: 80px;
             border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            font-size: 2rem;
             border: none;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 1.3rem;
             cursor: pointer;
+            box-shadow: 0 10px 25px rgba(5, 150, 105, 0.4);
             transition: 0.3s;
         }
 
-        .btn-eye {
-            background: var(--bg);
-            color: var(--dark);
-            border: 1px solid var(--border);
-        }
-
-        .btn-eye:active {
-            background: #e2e8f0;
-        }
-
-        .btn-mic {
-            background: var(--primary);
-            color: white;
-            width: 70px;
-            height: 70px;
-            font-size: 1.8rem;
-            box-shadow: 0 5px 15px rgba(5, 150, 105, 0.3);
-        }
-
-        .btn-mic.listening {
-            background: var(--error);
+        .mic-btn.listening {
+            background: #ef4444;
             box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
-            animation: pulse 1.5s infinite;
+            animation: pulse-red 1.5s infinite;
         }
 
-        .btn-finish {
-            background: var(--dark);
-            color: white;
-            width: auto;
-            padding: 0 20px;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 0.95rem;
-        }
-
-        @keyframes pulse {
+        @keyframes pulse-red {
             0% {
+                transform: scale(0.95);
                 box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
             }
 
             70% {
+                transform: scale(1);
                 box-shadow: 0 0 0 20px rgba(239, 68, 68, 0);
             }
 
             100% {
+                transform: scale(0.95);
                 box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
             }
         }
 
-        #loading-ui {
-            text-align: center;
-            padding: 40px;
+        .status-text {
+            font-size: 0.9rem;
             color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        /* CUSTOM BOTTOM SHEET / MODAL */
+        .custom-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
             display: none;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: 0.3s ease;
+        }
+
+        .custom-overlay.show {
+            display: flex;
+            opacity: 1;
+        }
+
+        .custom-modal {
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 400px;
+            transform: scale(0.9);
+            transition: 0.3s ease;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .custom-overlay.show .custom-modal {
+            transform: scale(1);
+        }
+
+        .cm-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 5px;
+        }
+
+        .cm-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .cm-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            font-size: 1rem;
+            margin-bottom: 20px;
+            outline: none;
+        }
+
+        .cm-input:focus {
+            border-color: var(--primary);
+        }
+
+        .cm-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .cm-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: 0.2s;
+        }
+
+        .cm-btn-cancel {
+            background: #f1f5f9;
+            color: var(--dark);
+        }
+
+        .cm-btn-confirm {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Bottom Sheet Behavior on Mobile */
+        @media (max-width: 768px) {
+            .custom-overlay {
+                align-items: flex-end;
+            }
+
+            .custom-modal {
+                width: 100%;
+                max-width: 100%;
+                border-radius: 24px 24px 0 0;
+                transform: translateY(100%);
+                padding-bottom: 40px;
+            }
+
+            .custom-overlay.show .custom-modal {
+                transform: translateY(0);
+            }
+
+            .sh-title {
+                font-size: 1.2rem;
+            }
+
+            .ayat-text {
+                font-size: 2rem;
+            }
+        }
+
+        /* UI Evaluasi SRS */
+        #srs-screen {
+            display: none;
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        .srs-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 10px;
+        }
+
+        .srs-subtitle {
+            color: var(--text-muted);
+            margin-bottom: 30px;
+        }
+
+        .srs-options {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .srs-btn {
+            padding: 15px 25px;
+            border-radius: 16px;
+            border: none;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            flex: 1;
+            min-width: 120px;
+            transition: 0.2s;
+            color: white;
+        }
+
+        .btn-hard {
+            background: #ef4444;
+        }
+
+        .btn-hard:hover {
+            background: #dc2626;
+        }
+
+        .btn-good {
+            background: #f59e0b;
+        }
+
+        .btn-good:hover {
+            background: #d97706;
+        }
+
+        .btn-easy {
+            background: var(--primary);
+        }
+
+        .btn-easy:hover {
+            background: #047857;
         }
     </style>
 </head>
 
 <body>
 
-    <div class="header" id="main-header">
+    <div class="header">
         <a href="dashboard.php" class="back-btn"><i class="fas fa-arrow-left"></i></a>
-        <div class="header-title">Smart Murojaah AI</div>
+        <div class="header-title">Smart Murojaah AI <i class="fas fa-microphone-alt"></i></div>
     </div>
 
-    <!-- UI SETUP -->
-    <div id="setup-screen" class="container">
-        <!-- Card Terakhir Murojaah -->
-        <?php if ($last_murojaah): ?>
-            <div class="last-murojaah-card">
-                <div class="lmc-label"><i class="fas fa-history"></i> Terakhir Murojaah</div>
-                <div class="lmc-title">Surah ke-<?= $last_surah_no ?> (Ayat <?= $last_ayat_no ?>)</div>
-            </div>
-        <?php endif; ?>
+    <div class="container">
+        <!-- 1. Layar Pilih Surah -->
+        <div id="setup-screen">
+            <?php if ($last_murojaah): ?>
+                <div class="last-murojaah-card">
+                    <div class="lmc-label"><i class="fas fa-history"></i> Terakhir Murojaah</div>
+                    <div class="lmc-title">Surah ke-<?= $last_murojaah['surah_nomor'] ?> (Ayat <?= $last_murojaah['last_ayat'] ?>)</div>
+                </div>
+            <?php endif; ?>
 
-        <div class="search-box">
-            <i class="fas fa-search"></i>
-            <input type="text" id="searchInput" placeholder="Pilih Surah untuk dimurojaah..." autocomplete="off">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Cari Surah untuk disetor..." autocomplete="off">
+            </div>
+            <div id="loading" style="text-align:center; padding:20px; color:var(--text-muted);"><i class="fas fa-spinner fa-spin"></i> Menyiapkan daftar surah...</div>
+            <div class="surah-list" id="surahList"></div>
         </div>
 
-        <div id="loading-surah"><i class="fas fa-spinner fa-spin"></i> Memuat daftar surah...</div>
-        <div class="surah-list" id="surahList"></div>
+        <!-- 2. Layar Setoran AI -->
+        <div id="session-screen">
+            <div class="session-toolbar">
+                <button class="tool-btn" id="eyeBtn" onclick="toggleEye()" title="Intip Halaman">
+                    <i class="fas fa-eye"></i>
+                </button>
+                <div class="session-header">
+                    <div class="sh-title" id="ses-surah-ar">...</div>
+                    <div style="font-size:0.85rem; color:var(--text-muted);" id="ses-surah-info">...</div>
+                </div>
+                <button class="finish-btn" onclick="endSessionManually()">
+                    <i class="fas fa-flag-checkered"></i> Selesai
+                </button>
+            </div>
+
+            <div class="mushaf-meta">
+                <span class="meta-badge page-badge" id="page-badge">Halaman -</span>
+                <span class="meta-badge" id="juz-badge">Juz -</span>
+                <span class="meta-badge" id="side-badge">-</span>
+            </div>
+
+            <div class="skip-hint">
+                <i class="fas fa-lightbulb"></i> <strong>Tips:</strong> Jika AI nyangkut, sentuh kata yang bergaris kuning untuk melewatinya.
+            </div>
+
+            <div class="ayat-display" id="ayatDisplay">
+                <div id="page-progress-info" style="font-weight:600;color:var(--text-muted);margin-bottom:15px;font-size:0.85rem;">Memuat...</div>
+                <div class="ayat-text" id="ayat-text-container"></div>
+            </div>
+
+            <div class="mic-container">
+                <button class="mic-btn" id="micBtn" onclick="toggleMic()">
+                    <i class="fas fa-microphone"></i>
+                </button>
+                <div class="status-text" id="micStatus">Ketuk mic untuk mulai menyetor</div>
+            </div>
+        </div>
+
+        <!-- 3. Layar SRS Evaluasi -->
+        <div id="srs-screen">
+            <i class="fas fa-medal" style="font-size:4rem; color:#fbbf24; margin-bottom:20px;"></i>
+            <div class="srs-title">Alhamdulillah, Selesai!</div>
+            <div class="srs-subtitle">Seberapa lancar hafalanmu pada surah ini?</div>
+            <div class="srs-options">
+                <button class="srs-btn btn-hard" onclick="saveSRS(1)">Sulit<br><span style="font-size:0.75rem;font-weight:400;">Ulang Besok</span></button>
+                <button class="srs-btn btn-good" onclick="saveSRS(2)">Lancar<br><span style="font-size:0.75rem;font-weight:400;">Ulang 3 Hari</span></button>
+                <button class="srs-btn btn-easy" onclick="saveSRS(3)">Sangat Mudah<br><span style="font-size:0.75rem;font-weight:400;">Ulang 7 Hari</span></button>
+            </div>
+        </div>
     </div>
 
-    <!-- UI MUSHAF & AI -->
-    <div id="murojaah-interface">
-        <div class="mushaf-info-bar">
-            <span id="info-juz">Juz -</span>
-            <span id="info-surah" style="color: var(--primary);">Surah</span>
-            <span id="info-page">Hal -</span>
-        </div>
-
-        <div id="loading-ui">
-            <i class="fas fa-spinner fa-spin" style="font-size:2rem; color:var(--primary); margin-bottom:10px;"></i><br>
-            Menyusun Mushaf...
-        </div>
-
-        <div class="mushaf-page-container page-right" id="mushaf-container" style="display:none;">
-            <div class="ayat-flow" id="ayat-render-area">
-                <!-- Ayat akan digenerate ke sini -->
+    <!-- CUSTOM PROMPT MODAL / BOTTOM SHEET -->
+    <div class="custom-overlay" id="promptOverlay">
+        <div class="custom-modal">
+            <div class="cm-title" id="p-title">Mulai dari Ayat Berapa?</div>
+            <div class="cm-subtitle" id="p-subtitle"></div>
+            <input type="number" class="cm-input" id="p-input" min="1" value="1">
+            <div class="cm-actions">
+                <button class="cm-btn cm-btn-cancel" onclick="closePrompt()">Batal</button>
+                <button class="cm-btn cm-btn-confirm" onclick="confirmPrompt()">Mulai Menghafal</button>
             </div>
-        </div>
-
-        <div class="controls-bottom">
-            <button class="ctrl-btn btn-eye" id="btnPeek" title="Intip Halaman (Tahan)">
-                <i class="fas fa-eye"></i>
-            </button>
-            <button class="ctrl-btn btn-mic" id="micBtn" onclick="toggleMic()">
-                <i class="fas fa-microphone"></i>
-            </button>
-            <button class="ctrl-btn btn-finish" onclick="finishSession()">
-                <i class="fas fa-check"></i> Selesai
-            </button>
         </div>
     </div>
 
     <script>
-        // --- PREFILL DATA ---
-        const prefLastSurah = <?= $last_surah_no ?>;
-        const prefLastAyat = <?= $last_ayat_no ?>;
+        let allSurah = [];
+        let currentSurahId = null;
 
-        let allSurat = [];
-        let mergedMushafData = [];
-        let currentWordIndex = 0;
-        let globalWordsArray = [];
-        let renderedPageNo = 0;
-        let selectedSurahNo = 0;
-        let selectedStartAyat = 1;
+        // Variabel untuk menyimpan argumen prompt sementara
+        let pSurahNo, pNamaLa, pNamaAr, pJumlahAyat;
 
-        let recognition;
-        let isListening = false;
-
-        // Inisialisasi API Speech
-        if ('webkitSpeechRecognition' in window) {
-            recognition = new webkitSpeechRecognition();
-            recognition.lang = 'ar-SA';
-            recognition.continuous = true;
-            recognition.interimResults = true;
-        } else {
-            Swal.fire('Browser Tidak Mendukung', 'Harap gunakan Google Chrome untuk fitur AI Suara.', 'error');
-        }
-
-        // 1. Fetch Daftar Surah
-        async function fetchSuratList() {
+        async function fetchList() {
             try {
                 const res = await fetch('https://equran.id/api/v2/surat');
                 const json = await res.json();
-                allSurat = json.data;
-                document.getElementById('loading-surah').style.display = 'none';
-                renderSurahList(allSurat);
+                allSurah = json.data;
+                document.getElementById('loading').style.display = 'none';
+                renderList(allSurah);
             } catch (e) {
-                document.getElementById('loading-surah').innerHTML = "Gagal memuat.";
+                document.getElementById('loading').innerHTML = "Gagal memuat data.";
             }
         }
 
-        function renderSurahList(data) {
+        function renderList(data) {
             const container = document.getElementById('surahList');
             container.innerHTML = '';
             data.forEach(s => {
                 const card = document.createElement('div');
                 card.className = 's-card';
-                card.onclick = () => promptStartAyat(s.nomor, s.namaLatin, s.jumlahAyat);
-                card.innerHTML = `
-                    <div><div class="s-name">${s.nomor}. ${s.namaLatin}</div><div style="font-size:0.8rem; color:#64748b;">${s.jumlahAyat} Ayat</div></div>
-                    <div class="s-ar">${s.nama}</div>
-                `;
+                card.onclick = () => openPrompt(s.nomor, s.namaLatin, s.nama, s.jumlahAyat);
+                card.innerHTML = `<div><div class="s-name">${s.nomor}. ${s.namaLatin}</div><div style="font-size:0.8rem; color:var(--text-muted);">${s.jumlahAyat} Ayat</div></div><div class="s-ar">${s.nama}</div>`;
                 container.appendChild(card);
             });
         }
 
         document.getElementById('searchInput').addEventListener('input', (e) => {
             const q = e.target.value.toLowerCase();
-            renderSurahList(allSurat.filter(s => s.namaLatin.toLowerCase().includes(q)));
+            renderList(allSurah.filter(s => s.namaLatin.toLowerCase().includes(q)));
         });
 
-        // 2. SweetAlert2 Prompt Mulai Ayat
-        function promptStartAyat(surahNo, surahName, maxAyat) {
-            let defAyat = (surahNo === prefLastSurah) ? prefLastAyat : 1;
+        // --- CUSTOM MODAL / BOTTOM SHEET LOGIC ---
+        async function openPrompt(surahNo, namaLa, namaAr, jumlahAyat) {
+            pSurahNo = surahNo;
+            pNamaLa = namaLa;
+            pNamaAr = namaAr;
+            pJumlahAyat = jumlahAyat;
 
-            Swal.fire({
-                title: `Murojaah ${surahName}`,
-                text: `Mulai dari ayat berapa? (1 - ${maxAyat})`,
-                input: 'number',
-                inputValue: defAyat,
-                showCancelButton: true,
-                confirmButtonText: 'Mulai',
-                confirmButtonColor: '#059669',
-                inputAttributes: {
-                    min: 1,
-                    max: maxAyat
-                },
-                inputValidator: (value) => {
-                    if (!value || value < 1 || value > maxAyat) {
-                        return 'Nomor ayat tidak valid!';
-                    }
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    startMurojaahEngine(surahNo, parseInt(result.value), surahName);
-                }
-            });
-        }
-
-        // 3. ENGINE: Tarik & Gabung API (equran.id + alquran.cloud)
-        async function startMurojaahEngine(surahNo, startAyat, surahName) {
-            selectedSurahNo = surahNo;
-            selectedStartAyat = startAyat;
-
-            document.getElementById('setup-screen').style.display = 'none';
-            document.getElementById('main-header').style.display = 'none';
-            document.getElementById('murojaah-interface').style.display = 'block';
-            document.getElementById('loading-ui').style.display = 'block';
-
+            let prog = null;
             try {
-                // Fetch Paralel
-                const [resId, resCloud] = await Promise.all([
-                    fetch(`https://equran.id/api/v2/surat/${surahNo}`),
-                    fetch(`https://api.alquran.cloud/v1/surah/${surahNo}`)
-                ]);
-
-                const jsonId = await resId.json();
-                const jsonCloud = await resCloud.json();
-
-                const ayatId = jsonId.data.ayat;
-                const ayatCloud = jsonCloud.data.ayahs;
-
-                mergedMushafData = [];
-                // Filter mulai dari startAyat
-                for (let i = startAyat - 1; i < ayatId.length; i++) {
-                    mergedMushafData.push({
-                        nomorAyat: ayatId[i].nomorAyat,
-                        teksArab: ayatId[i].teksArab,
-                        page: ayatCloud[i].page,
-                        juz: ayatCloud[i].juz
-                    });
-                }
-
-                document.getElementById('info-surah').innerText = surahName;
-                document.getElementById('loading-ui').style.display = 'none';
-
-                tokenizeWords();
-                renderPage(mergedMushafData[0].page); // Render halaman pertama dari data
-
+                const res = await fetch('smart_murojaah.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `action=get_progress&surah=${surahNo}`
+                });
+                prog = await res.json();
             } catch (e) {
-                Swal.fire('Error', 'Gagal menyusun Mushaf. Cek koneksi.', 'error')
-                    .then(() => location.reload());
+                prog = null;
             }
+
+            const savedAyat = prog && prog.last_ayat ? prog.last_ayat : 1;
+
+            document.getElementById('p-title').innerText = `Murojaah ${namaLa}`;
+            document.getElementById('p-subtitle').innerHTML = `${jumlahAyat} Ayat. ${prog && prog.last_ayat ? `<br><b>Progress tersimpan:</b> Ayat ${prog.last_ayat}` : ''}`;
+
+            const inputEl = document.getElementById('p-input');
+            inputEl.max = jumlahAyat;
+            inputEl.value = savedAyat;
+
+            const overlay = document.getElementById('promptOverlay');
+            overlay.style.display = 'flex';
+            setTimeout(() => overlay.classList.add('show'), 10);
         }
 
-        // 4. Tokenisasi Kata & Perbaikan Bug Waqaf
-        function tokenizeWords() {
-            globalWordsArray = [];
-            let wIdx = 0;
+        function closePrompt() {
+            const overlay = document.getElementById('promptOverlay');
+            overlay.classList.remove('show');
+            setTimeout(() => overlay.style.display = 'none', 300);
+        }
 
-            // Regex pendeteksi waqaf dan simbol ornamen
-            const waqafRegex = /^[\u06D6-\u06ED۝۞۩]+$/;
+        function confirmPrompt() {
+            let start = parseInt(document.getElementById('p-input').value) || 1;
+            start = Math.max(1, Math.min(pJumlahAyat, start));
+            closePrompt();
+            loadSurahData(pSurahNo, pNamaLa, pNamaAr, start);
+        }
 
-            mergedMushafData.forEach((ayat, aIndex) => {
-                let text = ayat.teksArab;
-                if (ayat.nomorAyat === 1 && selectedSurahNo !== 1 && text.includes("بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ")) {
-                    text = text.replace("بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ", "").trim();
-                }
+        // --- WEB SPEECH AI ENGINE ---
+        let recognition;
+        let isListening = false;
+        let verses = [];
+        let pages = [];
+        let tokens = [];
+        let currentPageIdx = 0;
+        let currentPageNumber = 1;
+        let currentTokenIdx = 0;
+        let lastCompletedAyat = null;
+        let lastCompletedPage = null;
+        let wrongFlashLock = false;
 
-                // Pecah by spasi
-                let rawWords = text.split(/\s+/).filter(w => w !== '');
-                let finalAyatWords = [];
-
-                rawWords.forEach(w => {
-                    // Jika kata ini HANYA berisi waqaf, gabung ke kata sebelumnya di UI
-                    if (waqafRegex.test(w)) {
-                        if (finalAyatWords.length > 0) {
-                            finalAyatWords[finalAyatWords.length - 1].display += ' ' + w;
-                        }
-                    } else {
-                        // Kata normal
-                        finalAyatWords.push({
-                            display: w,
-                            targetSpeak: normalizeArabic(w),
-                            ayatNo: ayat.nomorAyat,
-                            page: ayat.page,
-                            juz: ayat.juz,
-                            globalIdx: wIdx++
-                        });
-                    }
-                });
-
-                globalWordsArray = globalWordsArray.concat(finalAyatWords);
-            });
+        if ('webkitSpeechRecognition' in window) {
+            recognition = new webkitSpeechRecognition();
+            recognition.lang = 'ar-SA';
+            recognition.continuous = true;
+            recognition.interimResults = true;
+        } else {
+            alert("Browser tidak mendukung AI Suara. Gunakan Google Chrome.");
         }
 
         function normalizeArabic(text) {
-            return text.replace(/[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED\u06DF-\u06E8]/g, '')
+            if (!text) return '';
+            return text.replace(/[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED\u06DF-\u06E8\u08D4-\u08E1]/g, '')
                 .replace(/[أإآءئؤ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي')
                 .replace(/[^ا-ي]/g, '').trim();
         }
 
-        // 5. Render Per Halaman (Mushaf Page)
-        function renderPage(pageNo) {
-            renderedPageNo = pageNo;
-            const container = document.getElementById('mushaf-container');
-            const area = document.getElementById('ayat-render-area');
-            area.innerHTML = '';
-
-            // Set Alignment (Ganjil Kanan, Genap Kiri)
-            if (pageNo % 2 !== 0) {
-                container.className = 'mushaf-page-container page-right';
-            } else {
-                container.className = 'mushaf-page-container page-left';
-            }
-            container.style.display = 'flex';
-
-            // Update Info Bar
-            let firstWordInPage = globalWordsArray.find(w => w.page === pageNo);
-            if (firstWordInPage) {
-                document.getElementById('info-page').innerText = `Hal ${pageNo}`;
-                document.getElementById('info-juz').innerText = `Juz ${firstWordInPage.juz}`;
-            }
-
-            // Cek apakah halaman ini punya ayat 1 (Tampilkan Bismillah)
-            let hasAyat1 = mergedMushafData.some(a => a.page === pageNo && a.nomorAyat === 1);
-            if (hasAyat1 && selectedSurahNo !== 1 && selectedSurahNo !== 9) {
-                area.innerHTML += `<div class="bismillah">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</div>`;
-            }
-
-            let currentAyatTracker = -1;
-
-            globalWordsArray.filter(w => w.page === pageNo).forEach(w => {
-                if (currentAyatTracker !== -1 && currentAyatTracker !== w.ayatNo) {
-                    area.innerHTML += `<span class="ayat-end-badge"> ۝ </span>`;
-                }
-                currentAyatTracker = w.ayatNo;
-
-                const span = document.createElement('span');
-                span.className = 'word';
-                span.id = `word-${w.globalIdx}`;
-                span.innerText = w.display;
-
-                // Kata yang sudah dilewati tetap hitam jika user buka page baru (scroll back scenario, walau di app ini maju terus)
-                if (w.globalIdx < currentWordIndex) {
-                    span.classList.add('revealed');
-                }
-
-                // Tap to Skip
-                span.onclick = () => {
-                    if (w.globalIdx === currentWordIndex) processSuccess();
-                };
-
-                area.appendChild(span);
-            });
-            area.innerHTML += `<span class="ayat-end-badge"> ۝ </span>`;
-
-            updateHighlight();
+        function isDecorativeToken(token) {
+            return normalizeArabic(token) === '';
         }
 
-        function updateHighlight() {
-            document.querySelectorAll('.word').forEach(el => el.classList.remove('active'));
-            const currentEl = document.getElementById(`word-${currentWordIndex}`);
+        // --- FETCH DUA API PARALEL (OPTIMASI LOADING) ---
+        async function loadSurahData(surahNo, namaLa, namaAr, startAyat) {
+            document.getElementById('setup-screen').style.display = 'none';
+            document.getElementById('session-screen').style.display = 'block';
+            document.getElementById('ses-surah-ar').innerText = namaAr;
+            document.getElementById('ses-surah-info').innerText = namaLa;
+            document.getElementById('ayat-text-container').innerHTML = '<i class="fas fa-spinner fa-spin" style="color:var(--primary); font-size:2rem;"></i>';
 
-            if (currentEl) {
-                currentEl.classList.add('active');
-            } else {
-                // Jika element tidak ada di page ini, berarti pindah page!
-                const nextWord = globalWordsArray[currentWordIndex];
-                if (nextWord && nextWord.page !== renderedPageNo) {
-                    renderPage(nextWord.page);
+            try {
+                // Fetch paralel agar sangat cepat
+                const [resEquran, resCloud] = await Promise.all([
+                    fetch(`https://equran.id/api/v2/surat/${surahNo}`),
+                    fetch(`https://api.alquran.cloud/v1/surah/${surahNo}/quran-uthmani`)
+                ]);
+
+                const jsonEquran = await resEquran.json();
+                verses = jsonEquran.data.ayat;
+
+                if (surahNo !== 1 && verses[0].teksArab.includes('بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ')) {
+                    verses[0].teksArab = verses[0].teksArab.replace('بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ', '').trim();
                 }
+
+                // Coba olah data Cloud (jika gagal, fallback ke page 1)
+                try {
+                    const jsonCloud = await resCloud.json();
+                    const ayahs = jsonCloud.data.ayahs;
+                    verses.forEach((v, i) => {
+                        v.page = ayahs[i] ? ayahs[i].page : 1;
+                        v.juz = ayahs[i] ? ayahs[i].juz : '-';
+                    });
+                } catch (e) {
+                    verses.forEach(v => {
+                        v.page = 1;
+                        v.juz = '-';
+                    });
+                }
+
+                pages = buildPages(verses);
+
+                const resumeVerseIdx = Math.max(0, Math.min(verses.length - 1, startAyat - 1));
+                let targetPageIdx = pages.findIndex(p => p.tokens.some(t => t.verseIdx === resumeVerseIdx));
+                if (targetPageIdx < 0) targetPageIdx = 0;
+
+                renderPage(targetPageIdx, resumeVerseIdx);
+            } catch (e) {
+                alert("Gagal memuat ayat, cek koneksi internet.");
             }
         }
 
-        // 6. Logika Benar/Salah (Green Flash & Red Shake)
-        function processSuccess(skipCount = 0) {
-            // Jika ada skip (karena delay match), reveal kata-kata yang terlewati
-            for (let i = 0; i <= skipCount; i++) {
-                let idx = currentWordIndex + i;
-                let el = document.getElementById(`word-${idx}`);
-                if (el) {
-                    el.classList.remove('active');
-                    el.classList.add('correct-flash', 'revealed');
+        function buildPages(verses) {
+            const pagesMap = {};
+            let tokenCounter = 0;
 
-                    // Hilangkan ijo setelah 400ms jadi hitam pekat (revealed)
-                    setTimeout(() => el.classList.remove('correct-flash'), 400);
+            verses.forEach((v, vIdx) => {
+                const pageNum = v.page || 1;
+                if (!pagesMap[pageNum]) {
+                    pagesMap[pageNum] = {
+                        pageNumber: pageNum,
+                        juz: v.juz,
+                        tokens: []
+                    };
                 }
-            }
 
-            currentWordIndex += (skipCount + 1);
+                const rawWords = v.teksArab.split(' ').filter(w => w.trim() !== '');
+                let lastRealTokenIdx = null;
 
-            // Auto-Save tiap ganti ayat
-            let prevWord = globalWordsArray[currentWordIndex - 1];
-            let nextWord = globalWordsArray[currentWordIndex];
-            if (nextWord && prevWord.ayatNo !== nextWord.ayatNo) {
-                autoSave(prevWord.ayatNo);
-            }
-
-            if (currentWordIndex >= globalWordsArray.length) {
-                // Selesai semua
-                toggleMic(false);
-                autoSave(prevWord.ayatNo, 1).then(() => {
-                    Swal.fire('Alhamdulillah!', 'Murojaah selesai disimpan.', 'success').then(() => window.location.href = 'dashboard.php');
+                rawWords.forEach(w => {
+                    if (isDecorativeToken(w)) {
+                        if (lastRealTokenIdx !== null) {
+                            pagesMap[pageNum].tokens[lastRealTokenIdx].decor += ' ' + w;
+                        }
+                        return;
+                    }
+                    const tok = {
+                        type: 'word',
+                        text: w,
+                        decor: '',
+                        verseIdx: vIdx,
+                        id: `tok-${tokenCounter++}`
+                    };
+                    pagesMap[pageNum].tokens.push(tok);
+                    lastRealTokenIdx = pagesMap[pageNum].tokens.length - 1;
                 });
-            } else {
-                updateHighlight();
-            }
+                pagesMap[pageNum].tokens.push({
+                    type: 'ayahEnd',
+                    verseNumber: v.nomorAyat,
+                    verseIdx: vIdx,
+                    id: `tok-${tokenCounter++}`
+                });
+            });
+
+            return Object.values(pagesMap).sort((a, b) => a.pageNumber - b.pageNumber);
         }
 
-        function processError() {
-            const el = document.getElementById(`word-${currentWordIndex}`);
-            if (el) {
-                el.classList.add('error-flash');
-                if (navigator.vibrate) navigator.vibrate([100, 50, 100]); // Getar 2 kali cepat
-                setTimeout(() => el.classList.remove('error-flash'), 400);
-            }
-        }
+        function renderPage(pageIdx, resumeVerseIdx = null) {
+            currentPageIdx = pageIdx;
+            const page = pages[pageIdx];
+            tokens = page.tokens;
+            currentPageNumber = page.pageNumber;
 
-        // 7. SPEECH RECOGNITION (Fuzzy Match + 2 Words Lookahead Window)
-        if (recognition) {
-            recognition.onresult = function(event) {
-                let transcript = '';
-                for (let i = event.resultIndex; i < event.results.length; ++i) {
-                    transcript += event.results[i][0].transcript;
+            document.getElementById('page-badge').innerText = `Halaman ${page.pageNumber}`;
+            document.getElementById('juz-badge').innerText = `Juz ${page.juz}`;
+            document.getElementById('side-badge').innerText = (page.pageNumber % 2 === 1) ? 'Sisi Kanan' : 'Sisi Kiri';
+            document.getElementById('page-progress-info').innerText = `Halaman ${pageIdx + 1} dari ${pages.length}`;
+
+            const html = tokens.map(tok => {
+                if (tok.type === 'ayahEnd') {
+                    return `<span class="ayah-end-marker" id="${tok.id}">&#1757;${tok.verseNumber}</span>`;
                 }
-                if (transcript.trim() === '') return;
+                return `<span class="word" id="${tok.id}" onclick="skipWord('${tok.id}')">${tok.text}<span class="waqaf-mark">${tok.decor || ''}</span></span>`;
+            }).join('');
 
-                let spokenWords = transcript.split(' ').map(w => normalizeArabic(w)).filter(w => w !== '');
+            document.getElementById('ayat-text-container').innerHTML = html;
+            document.getElementById('ayat-text-container').classList.remove('preview-mode');
+            document.getElementById('eyeBtn').classList.remove('active');
 
-                // Ambil 3 target kata (Current, Current+1, Current+2)
-                let target0 = globalWordsArray[currentWordIndex];
-                let target1 = globalWordsArray[currentWordIndex + 1];
-                let target2 = globalWordsArray[currentWordIndex + 2];
-
-                let matchFound = false;
-                let skipCount = 0;
-
-                // Cek apakah suara user mengandung kata target
-                spokenWords.forEach(sw => {
-                    if (matchFound) return;
-                    if (target0 && (sw === target0.targetSpeak || sw.includes(target0.targetSpeak) || target0.targetSpeak.includes(sw))) {
-                        matchFound = true;
-                        skipCount = 0;
-                    } else if (target1 && (sw === target1.targetSpeak || sw.includes(target1.targetSpeak) || target1.targetSpeak.includes(sw))) {
-                        matchFound = true;
-                        skipCount = 1;
-                    } else if (target2 && (sw === target2.targetSpeak || sw.includes(target2.targetSpeak) || target2.targetSpeak.includes(sw))) {
-                        matchFound = true;
-                        skipCount = 2;
+            let startTokenIdx = 0;
+            if (resumeVerseIdx !== null) {
+                tokens.forEach(t => {
+                    if (t.verseIdx < resumeVerseIdx) {
+                        const el = document.getElementById(t.id);
+                        if (el) el.classList.add('revealed');
                     }
                 });
+                const idx = tokens.findIndex(t => t.verseIdx === resumeVerseIdx && t.type === 'word');
+                if (idx >= 0) startTokenIdx = idx;
+            }
 
-                if (matchFound) {
-                    processSuccess(skipCount);
+            currentTokenIdx = startTokenIdx;
+            if (tokens[currentTokenIdx]) {
+                const el = document.getElementById(tokens[currentTokenIdx].id);
+                if (el) el.classList.add('active-listen');
+            }
+        }
+
+        window.skipWord = function(tokenId) {
+            const token = tokens[currentTokenIdx];
+            if (token && token.id === tokenId && token.type === 'word') revealWord();
+        };
+
+        function toggleEye() {
+            const container = document.getElementById('ayat-text-container');
+            const btn = document.getElementById('eyeBtn');
+            container.classList.toggle('preview-mode');
+            btn.classList.toggle('active');
+        }
+
+        function revealWord() {
+            const token = tokens[currentTokenIdx];
+            const wEl = document.getElementById(token.id);
+            wEl.classList.remove('active-listen');
+            wEl.classList.add('correct-flash');
+            setTimeout(() => {
+                wEl.classList.remove('correct-flash');
+                wEl.classList.add('revealed');
+            }, 350);
+
+            currentTokenIdx++;
+
+            while (tokens[currentTokenIdx] && tokens[currentTokenIdx].type === 'ayahEnd') {
+                const endToken = tokens[currentTokenIdx];
+                const endEl = document.getElementById(endToken.id);
+                if (endEl) endEl.classList.add('revealed');
+                autosaveProgress(endToken.verseNumber, currentPageNumber);
+                currentTokenIdx++;
+            }
+
+            if (currentTokenIdx < tokens.length) {
+                const nextEl = document.getElementById(tokens[currentTokenIdx].id);
+                if (nextEl) nextEl.classList.add('active-listen');
+            } else {
+                setTimeout(() => nextPage(), 500);
+            }
+        }
+
+        function nextPage() {
+            const display = document.getElementById('ayatDisplay');
+            display.classList.add('page-complete');
+            setTimeout(() => {
+                display.classList.remove('page-complete');
+                if (currentPageIdx + 1 < pages.length) {
+                    renderPage(currentPageIdx + 1);
                 } else {
-                    // Jika user terus ngomong tapi gak match sama sekali (salah baca)
-                    if (spokenWords.length > 1) processError();
+                    if (isListening) toggleMic();
+                    fetch('smart_murojaah.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: `action=clear_progress&surah=${currentSurahId}`
+                    });
+                    document.getElementById('session-screen').style.display = 'none';
+                    document.getElementById('srs-screen').style.display = 'block';
+                }
+            }, 600);
+        }
+
+        function autosaveProgress(ayatNumber, pageNumber) {
+            lastCompletedAyat = ayatNumber;
+            lastCompletedPage = pageNumber;
+            fetch('smart_murojaah.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `action=save_progress&surah=${currentSurahId}&ayat=${ayatNumber}&page=${pageNumber}`
+            }).catch(() => {});
+        }
+
+        function endSessionManually() {
+            if (!lastCompletedAyat) {
+                if (isListening) toggleMic();
+                window.location.href = 'dashboard.php';
+                return;
+            }
+            if (isListening) toggleMic();
+            window.location.href = 'dashboard.php';
+        }
+
+        function flashWrong(tokenId) {
+            if (wrongFlashLock) return;
+            wrongFlashLock = true;
+            const el = document.getElementById(tokenId);
+            const statusEl = document.getElementById('micStatus');
+            if (el) el.classList.add('wrong-shake');
+            if (statusEl) statusEl.innerHTML = '<span style="color:#ef4444;">Bacaan meleset, ulangi kata tersebut.</span>';
+            setTimeout(() => {
+                if (el) el.classList.remove('wrong-shake');
+                wrongFlashLock = false;
+                if (statusEl && isListening) statusEl.innerHTML = 'Mendengarkan... Silakan baca hafalanmu';
+            }, 700);
+        }
+
+        // --- PENGATURAN LOGIKA SUARA YG LEBIH RESPONSIP ---
+        if (recognition) {
+            recognition.onresult = function(event) {
+                const latest = event.results[event.results.length - 1];
+                const transcript = latest[0].transcript;
+                const isFinal = latest.isFinal;
+
+                if (transcript.trim() === '') return;
+
+                const token = tokens[currentTokenIdx];
+                if (!token || token.type !== 'word') return;
+
+                const targetNormal = normalizeArabic(token.text);
+                const spokenWords = transcript.split(' ');
+
+                // Deteksi benar (Fuzzy Match langsung)
+                const isMatch = spokenWords.some(w => {
+                    const sw = normalizeArabic(w);
+                    if (sw.length === 0) return false;
+                    return sw === targetNormal || sw.includes(targetNormal) || targetNormal.includes(sw);
+                });
+
+                if (isMatch) {
+                    revealWord();
+                    return;
+                }
+
+                // Jika kata yang diucapkan benar-benar berbeda & sudah isFinal, langsung merah
+                if (isFinal) {
+                    let lookaheadMatch = false;
+                    // Hanya toleransi 1 kata ke depan untuk mencegah salah merah
+                    const nt = tokens[currentTokenIdx + 1];
+                    if (nt && nt.type === 'word') {
+                        const ntn = normalizeArabic(nt.text);
+                        if (spokenWords.some(w => {
+                                const sw = normalizeArabic(w);
+                                return sw.length > 0 && (sw === ntn || sw.includes(ntn) || ntn.includes(sw));
+                            })) {
+                            lookaheadMatch = true;
+                        }
+                    }
+
+                    // Jika transcript cukup panjang tapi gak nemu kecocokan sama sekali
+                    if (!lookaheadMatch && spokenWords.length > 0) {
+                        flashWrong(token.id);
+                    }
                 }
             };
 
-            recognition.onend = () => {
+            recognition.onend = function() {
                 if (isListening) recognition.start();
             };
         }
 
-        function toggleMic(force) {
-            isListening = (force !== undefined) ? force : !isListening;
+        function toggleMic() {
             const btn = document.getElementById('micBtn');
-            if (isListening) {
+            const status = document.getElementById('micStatus');
+            if (!isListening) {
                 recognition.start();
+                isListening = true;
                 btn.classList.add('listening');
+                btn.innerHTML = '<i class="fas fa-stop"></i>';
+                status.innerHTML = "Mendengarkan... Silakan baca hafalanmu";
             } else {
                 recognition.stop();
+                isListening = false;
                 btn.classList.remove('listening');
+                btn.innerHTML = '<i class="fas fa-microphone"></i>';
+                status.innerHTML = "Jeda. Ketuk mic untuk melanjutkan";
             }
         }
 
-        // 8. Fitur Intip Mata (Peek Mode)
-        const btnPeek = document.getElementById('btnPeek');
-        const area = document.getElementById('ayat-render-area');
+        function saveSRS(grade) {
+            const formData = new URLSearchParams();
+            formData.append('action', 'save_srs');
+            formData.append('surah', currentSurahId);
+            formData.append('grade', grade);
 
-        btnPeek.addEventListener('mousedown', () => area.classList.add('peek-mode'));
-        btnPeek.addEventListener('mouseup', () => area.classList.remove('peek-mode'));
-        btnPeek.addEventListener('mouseleave', () => area.classList.remove('peek-mode'));
-        btnPeek.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            area.classList.add('peek-mode');
-        });
-        btnPeek.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            area.classList.remove('peek-mode');
-        });
-
-        // 9. Auto-Save Action
-        async function autoSave(ayatNo, isFinish = 0) {
-            const fd = new URLSearchParams();
-            fd.append('action', 'autosave_murojaah');
-            fd.append('surah', selectedSurahNo);
-            fd.append('ayat', ayatNo);
-            fd.append('is_finish', isFinish);
-            return fetch('smart_murojaah.php', {
+            fetch('smart_murojaah.php', {
                 method: 'POST',
-                body: fd
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: formData.toString()
+            }).then(() => {
+                window.location.href = 'dashboard.php';
             });
         }
 
-        function finishSession() {
-            toggleMic(false);
-            Swal.fire({
-                title: 'Selesai Murojaah?',
-                text: "Progresmu akan disimpan hingga ayat terakhir yang dibaca.",
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#059669',
-                confirmButtonText: 'Ya, Selesai'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    let lastW = globalWordsArray[currentWordIndex - 1];
-                    let ayatToSave = lastW ? lastW.ayatNo : selectedStartAyat;
-                    autoSave(ayatToSave, 1).then(() => {
-                        window.location.href = 'dashboard.php';
-                    });
-                }
-            });
-        }
-
-        fetchSuratList();
+        fetchList();
     </script>
 </body>
 

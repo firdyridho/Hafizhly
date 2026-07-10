@@ -75,7 +75,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
         </div>
     </div>
 
-    <!-- Panggil Navigasi Bawah -->
     <?php include '../components/nav.php'; ?>
 
     <script>
@@ -87,18 +86,43 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
         const emptyState = document.getElementById('empty-state');
         const searchInput = document.getElementById('searchInput');
 
+        // Fungsi mencocokkan gambar Unsplash berdasarkan tema kata kunci pada judul doa
+        function getDoaVisual(judul) {
+            const title = judul.toLowerCase();
+            if (title.includes('makan') || title.includes('minum')) {
+                return 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=400&auto=format&fit=crop';
+            } else if (title.includes('tidur') || title.includes('bangun')) {
+                return 'https://images.unsplash.com/photo-1520201163981-8cc95007dd2a?q=80&w=400&auto=format&fit=crop';
+            } else if (title.includes('masjid') || title.includes('shala') || title.includes('wudhu') || title.includes('adzan')) {
+                return 'https://images.unsplash.com/photo-1564507004663-b6dfb3c824d5?q=80&w=400&auto=format&fit=crop';
+            } else if (title.includes('keluar') || title.includes('masuk') || title.includes('perjalanan') || title.includes('kendaraan') || title.includes('bepergian')) {
+                return 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?q=80&w=400&auto=format&fit=crop';
+            } else if (title.includes('orang tua') || title.includes('ibu') || title.includes('bapak') || title.includes('keluarga')) {
+                return 'https://images.unsplash.com/photo-1511895426328-dc8714191300?q=80&w=400&auto=format&fit=crop';
+            } else if (title.includes('pakaian') || title.includes('baju' ) || title.includes('berhias')) {
+                return 'https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?q=80&w=400&auto=format&fit=crop';
+            } else if (title.includes('belajar') || title.includes('ilmu') || title.includes('cerdas')) {
+                return 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?q=80&w=400&auto=format&fit=crop';
+            } else if (title.includes('sakit') || title.includes('sehat') || title.includes('sembuh')) {
+                return 'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?q=80&w=400&auto=format&fit=crop';
+            } else if (title.includes('rumah')) {
+                return 'https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=400&auto=format&fit=crop';
+            }
+            // Gambar default bertema Islami jika tidak ada kata kunci yang cocok
+            return 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=400&auto=format&fit=crop';
+        }
+
         async function fetchAllDoa() {
             try {
                 const response = await fetch(API_URL); 
                 const json = await response.json();
                 
-                // Menyesuaikan struktur balasan API
                 allDoaList = json.data || json; 
                 
                 loadingState.style.display = 'none';
                 renderList(allDoaList);
             } catch (error) {
-                loadingState.innerHTML = '<span style="color:red;">Gagal terhubung ke API EQuran.id. Periksa koneksi internet Anda.</span>';
+                loadingState.innerHTML = '<span style="color:red;">Gagal terhubung ke API. Periksa koneksi internet Anda.</span>';
             }
         }
 
@@ -112,18 +136,17 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             emptyState.style.display = 'none';
 
             data.forEach((doa, index) => {
-                // Ekstrak data yang fleksibel
                 const judul = doa.doa || doa.judul || doa.nama || 'Doa Harian';
-                const doaId = doa.id ? doa.id : (index + 1); // Fallback ID jika tidak ada properti ID
+                const doaId = doa.id ? doa.id : (index + 1);
                 
-                // Generate gambar acak untuk visual
-                const randomImg = `https://images.unsplash.com/photo-1564507004663-b6dfb3c824d5?q=80&w=400&auto=format&fit=crop&sig=${doaId}`;
+                // Mengambil gambar relevan dari fungsi mapper
+                const relevantImg = getDoaVisual(judul);
 
-                const card = document.createElement('a'); // Gunakan A tag agar langsung pindah halaman
+                const card = document.createElement('a');
                 card.href = `baca-doa.php?id=${doaId}`;
                 card.className = 'doa-card';
                 card.innerHTML = `
-                    <img src="${randomImg}" alt="Visual Doa" class="doa-img" loading="lazy">
+                    <img src="${relevantImg}" alt="${judul}" class="doa-img" loading="lazy">
                     <div class="doa-title-card">${judul}</div>
                 `;
                 container.appendChild(card);

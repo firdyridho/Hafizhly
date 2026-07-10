@@ -1204,6 +1204,11 @@ if (isset($_SESSION['user_id'])) {
                 <span class="brand-mark" style="width:32px;height:32px;font-size:0.9rem;"><i class="fa-solid fa-book-quran"></i></span>
                 <span>&copy; <?= date('Y'); ?> Hafizhly. Pendamping Murojaah Al-Qur'an Berbasis AI.</span>
             </div>
+            <div style="margin-top: 15px; display: flex; justify-content: center; gap: 15px;">
+                <a href="privacy.php" style="color: var(--text-gray); text-decoration: none; font-size: 0.85rem;">Kebijakan Privasi</a>
+                <span style="color: #cbd5e1;">|</span>
+                <a href="terms.php" style="color: var(--text-gray); text-decoration: none; font-size: 0.85rem;">Syarat & Ketentuan</a>
+            </div>
             <div class="footer-social">
                 <a href="#"><i class="fa-brands fa-instagram"></i></a>
                 <a href="#"><i class="fa-brands fa-tiktok"></i></a>

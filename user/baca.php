@@ -2,18 +2,18 @@
 session_start();
 require_once '../config/database.php';
 
+/** @var mysqli $conn */
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
     exit('Unauthorized');
 }
 
 $user_id = $_SESSION['user_id'];
 
-// --- AJAX HANDLER UNTUK BOOKMARK (Berjalan tanpa reload) ---
+// --- AJAX HANDLER UNTUK BOOKMARK ---
 if (isset($_POST['action']) && $_POST['action'] == 'bookmark') {
     $surah = (int)$_POST['surah'];
     $ayat = (int)$_POST['ayat'];
 
-    // Cek apakah sudah ada
     $cek = mysqli_query($conn, "SELECT id FROM bookmark WHERE user_id='$user_id' AND surah_nomor='$surah' AND ayat='$ayat'");
     if (mysqli_num_rows($cek) == 0) {
         mysqli_query($conn, "INSERT INTO bookmark (user_id, surah_nomor, ayat, catatan) VALUES ('$user_id', '$surah', '$ayat', 'Disimpan otomatis')");
@@ -21,7 +21,7 @@ if (isset($_POST['action']) && $_POST['action'] == 'bookmark') {
     } else {
         echo "exist";
     }
-    exit(); // Hentikan eksekusi PHP agar tidak merender HTML
+    exit();
 }
 
 $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
@@ -33,12 +33,12 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Baca Al-Qur'an</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary: #8b5cf6;
-            --primary-light: #ede9fe;
+            --primary: #059669;
+            --primary-light: #d1fae5;
             --dark: #1e293b;
             --text-muted: #64748b;
             --bg: #f8fafc;
@@ -61,89 +61,104 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             scroll-behavior: smooth;
         }
 
-        /* CUSTOM HEADER (TIDAK PAKAI nav.php) */
+        /* Custom Header - Berisi Ikon Saja */
         .read-header {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
+            background: var(--card-bg);
             position: sticky;
             top: 0;
             z-index: 100;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
             padding: 15px 20px;
             display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .header-top {
-            display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
-        .back-btn {
-            color: var(--dark);
-            font-size: 1.2rem;
-            cursor: pointer;
-            text-decoration: none;
-        }
-
-        .surah-title-head {
-            font-weight: 700;
-            font-size: 1.2rem;
-            color: var(--primary);
-        }
-
-        .info-btn {
-            color: var(--text-muted);
-            cursor: pointer;
-            font-size: 1.2rem;
-        }
-
-        /* Audio Player Full Surah */
-        .audio-player-full {
+        .header-left {
             display: flex;
             align-items: center;
             gap: 15px;
-            background: var(--bg);
-            padding: 10px 15px;
-            border-radius: 12px;
-            border: 1px solid var(--border);
         }
 
-        .play-full-btn {
-            width: 35px;
-            height: 35px;
-            background: var(--primary);
-            color: white;
-            border-radius: 50%;
+        .header-right {
             display: flex;
-            justify-content: center;
             align-items: center;
-            border: none;
+            gap: 20px;
+        }
+
+        .h-btn {
+            color: var(--text-muted);
+            font-size: 1.3rem;
             cursor: pointer;
-            font-size: 0.9rem;
+            text-decoration: none;
+            transition: 0.2s;
         }
 
-        .audio-progress {
-            flex-grow: 1;
-            height: 6px;
-            background: #cbd5e1;
-            border-radius: 3px;
-            position: relative;
-            overflow: hidden;
+        .h-btn:hover,
+        .h-btn.active {
+            color: var(--primary);
         }
 
-        .progress-bar {
-            width: 0%;
-            height: 100%;
-            background: var(--primary);
+        .surah-name-mini {
+            font-weight: 700;
+            color: var(--dark);
+            font-size: 1.1rem;
         }
 
         .container {
             padding: 20px;
             max-width: 800px;
             margin: 0 auto;
+        }
+
+        /* Surah Info Card (Hero) */
+        .surah-info-card {
+            background: linear-gradient(135deg, var(--primary), #10b981);
+            border-radius: 20px;
+            padding: 30px 20px;
+            color: white;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(5, 150, 105, 0.2);
+            margin-bottom: 25px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .surah-info-card::before {
+            content: '۞';
+            position: absolute;
+            font-size: 10rem;
+            opacity: 0.1;
+            right: -20px;
+            bottom: -40px;
+            color: white;
+        }
+
+        .sic-ar {
+            font-family: 'Amiri', serif;
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .sic-la {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .sic-details {
+            font-size: 0.85rem;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: inline-flex;
+            gap: 10px;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
         }
 
         /* Bismillah */
@@ -156,6 +171,7 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             padding-bottom: 20px;
             border-bottom: 1px solid var(--border);
             line-height: 1.5;
+            display: none;
         }
 
         /* AYAT CARD */
@@ -167,60 +183,65 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
 
         .ayat-card {
             background: var(--card-bg);
-            padding: 25px;
+            padding: 25px 20px;
             border-radius: 20px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
-            position: relative;
-            transition: background 0.3s;
-            user-select: none;
-            /* Penting untuk long press */
+            border: 1px solid var(--border);
+            transition: 0.3s;
         }
 
         .ayat-card.playing {
-            border: 1px solid var(--primary);
-            background: var(--primary-light);
+            border-color: var(--primary);
+            background: #f0fdf4;
+            box-shadow: 0 5px 15px rgba(5, 150, 105, 0.1);
         }
 
-        /* Barisan atas Ayat: Nomor & Aksi */
+        /* Action Bar per Ayat */
         .ayat-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
+            background: var(--bg);
+            padding: 8px 12px;
+            border-radius: 12px;
         }
 
         .ayat-number-badge {
-            width: 35px;
-            height: 35px;
-            background: var(--primary-light);
-            color: var(--primary);
+            width: 30px;
+            height: 30px;
+            background: var(--primary);
+            color: white;
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
             font-weight: 700;
+            font-size: 0.9rem;
         }
 
         .ayat-actions {
             display: flex;
-            gap: 15px;
+            gap: 20px;
+            align-items: center;
         }
 
         .ayat-action-btn {
             color: var(--text-muted);
-            font-size: 1.1rem;
+            font-size: 1.15rem;
             cursor: pointer;
             transition: 0.2s;
         }
 
         .ayat-action-btn:hover {
             color: var(--primary);
+            transform: scale(1.1);
         }
 
-        /* Tipografi Arab & Waqaf */
+        /* Arab Text */
         .teks-arab {
-            font-family: 'Amiri', 'Traditional Arabic', serif;
-            font-size: 2.4rem;
+            font-family: 'Amiri', serif;
+            font-size: 2.3rem;
             text-align: right;
             line-height: 2.2;
             color: var(--quran-text);
@@ -228,28 +249,19 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             direction: rtl;
         }
 
-        /* Simbol End of Ayah */
-        .ayah-end {
-            display: inline-flex;
-            justify-content: center;
-            align-items: center;
-            width: 40px;
-            height: 40px;
-            font-size: 1rem;
-            color: var(--primary);
-            background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path fill="none" stroke="%238b5cf6" stroke-width="4" d="M50 5 L60 20 L80 20 L85 40 L100 50 L85 60 L80 80 L60 80 L50 95 L40 80 L20 80 L15 60 L0 50 L15 40 L20 20 L40 20 Z"/></svg>') no-repeat center;
-            background-size: contain;
-            margin-right: 10px;
-            font-family: 'Inter', sans-serif;
-            font-weight: bold;
-            position: relative;
-            top: -5px;
+        /* Latin & Terjemah Container */
+        .teks-container {
+            transition: 0.3s;
+        }
+
+        .body-no-terjemah .teks-container {
+            display: none;
         }
 
         .teks-latin {
             font-size: 1rem;
             color: var(--primary);
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             font-weight: 500;
             line-height: 1.5;
         }
@@ -260,74 +272,30 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             line-height: 1.6;
         }
 
-        /* HUKUM TAJWID & TOOLTIP (Bubble Chat) */
-        .tajwid {
-            position: relative;
-            display: inline-block;
-            cursor: pointer;
-            border-bottom: 2px dashed;
-        }
-
-        .t-ikhfa {
-            color: #d97706;
-            border-color: #d97706;
-        }
-
-        .t-idgham {
-            color: #059669;
-            border-color: #059669;
-        }
-
-        .t-qalqalah {
-            color: #2563eb;
-            border-color: #2563eb;
-        }
-
-        .t-ghunnah {
-            color: #db2777;
-            border-color: #db2777;
-        }
-
-        /* Tooltip Bubble */
-        .tajwid::after {
-            content: attr(data-hukum);
-            position: absolute;
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%) translateY(-10px);
-            background: var(--dark);
-            color: white;
-            padding: 5px 10px;
+        /* Tafsir Box (Muncul di bawah terjemahan) */
+        .tafsir-box {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            background: var(--bg);
+            border-left: 4px solid var(--primary);
             border-radius: 8px;
-            font-size: 0.75rem;
-            white-space: nowrap;
-            font-family: 'Inter', sans-serif;
-            opacity: 0;
-            visibility: hidden;
-            transition: 0.3s;
-            z-index: 10;
+            font-size: 0.9rem;
+            color: var(--dark);
+            line-height: 1.6;
+            text-align: justify;
         }
 
-        .tajwid::before {
-            /* Segitiga panah */
-            content: '';
-            position: absolute;
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            border: 6px solid transparent;
-            border-top-color: var(--dark);
-            opacity: 0;
-            visibility: hidden;
-            transition: 0.3s;
-            z-index: 10;
+        .tafsir-box.show {
+            display: block;
         }
 
-        .tajwid:hover::after,
-        .tajwid:hover::before {
-            opacity: 1;
-            visibility: visible;
-            transform: translateX(-50%) translateY(0);
+        .t-title {
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 5px;
+            font-size: 0.85rem;
+            text-transform: uppercase;
         }
 
         /* ALERT ISLAMI */
@@ -338,26 +306,27 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             transform: translateX(-50%);
             background: var(--card-bg);
             border-left: 5px solid var(--primary);
-            padding: 15px 25px;
+            padding: 12px 20px;
             border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 12px;
             z-index: 9999;
-            transition: 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            transition: 0.4s;
+            width: max-content;
         }
 
         .islamic-alert.show {
-            top: 30px;
+            top: 80px;
         }
 
         .ia-icon {
-            font-size: 1.5rem;
+            font-size: 1.2rem;
             color: var(--primary);
         }
 
-        /* MODAL TAFSIR */
+        /* MODAL ASBABUN NUZUL */
         .modal {
             display: none;
             position: fixed;
@@ -389,96 +358,119 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
         }
 
         .modal-title {
-            font-size: 1.3rem;
+            font-size: 1.2rem;
             font-weight: 700;
             margin-bottom: 15px;
             color: var(--primary);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
         }
 
         #loading {
             text-align: center;
             margin-top: 50px;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             color: var(--primary);
+            font-weight: 600;
         }
     </style>
 </head>
 
-<body>
+<body id="baca-body">
 
     <audio id="audioFull"></audio>
     <audio id="audioAyat"></audio>
 
     <div class="read-header">
-        <div class="header-top">
-            <a href="alquran.php" class="back-btn"><i class="fas fa-arrow-left"></i></a>
-            <div class="surah-title-head" id="head-title">Memuat...</div>
-            <div class="info-btn" onclick="openInfoModal()"><i class="fas fa-info-circle"></i></div>
+        <div class="header-left">
+            <a href="alquran.php" class="h-btn"><i class="fas fa-arrow-left"></i></a>
+            <div class="surah-name-mini" id="mini-title">Memuat...</div>
         </div>
-        <div class="audio-player-full">
-            <button class="play-full-btn" id="btn-play-full" onclick="togglePlayFull()"><i class="fas fa-play"></i></button>
-            <div class="audio-progress">
-                <div class="progress-bar" id="progress-full"></div>
-            </div>
-            <div style="font-size:0.75rem; color:var(--text-muted);" id="time-full">00:00</div>
+        <div class="header-right">
+            <div class="h-btn active" id="btn-terjemah" onclick="toggleTerjemah()" title="Tampilkan/Sembunyikan Terjemahan"><i class="fas fa-language"></i></div>
+            <div class="h-btn" id="btn-play-full" onclick="togglePlayFull()" title="Putar Murottal Full"><i class="fas fa-play-circle"></i></div>
+            <div class="h-btn" onclick="openInfoModal()" title="Info & Asbabun Nuzul"><i class="fas fa-info-circle"></i></div>
         </div>
     </div>
 
     <div class="container">
-        <div class="bismillah-img" id="bismillah" style="display:none;">
-            بِسْمِ اللَّهِ <span class="tajwid t-idgham" data-hukum="Alif Lam Syamsiyah">الرَّحْمَنِ</span> <span class="tajwid t-idgham" data-hukum="Alif Lam Syamsiyah">الرَّحِيمِ</span>
+
+        <div class="surah-info-card" id="hero-card" style="display:none;">
+            <div class="sic-ar" id="hero-ar">--</div>
+            <div class="sic-la" id="hero-la">--</div>
+            <div class="sic-details" id="hero-det">--</div>
         </div>
 
-        <div id="loading"><i class="fas fa-spinner fa-spin"></i> Menyiapkan mushaf...</div>
+        <div class="bismillah-img" id="bismillah">
+            بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ
+        </div>
+
+        <div id="loading"><i class="fas fa-spinner fa-spin"></i> Menyiapkan Mushaf & Tafsir...</div>
         <div class="ayat-list" id="ayatList"></div>
     </div>
 
     <div class="islamic-alert" id="customAlert">
-        <i class="fas fa-bookmark ia-icon"></i>
-        <div>
-            <div style="font-weight:700; color:var(--dark);">Masya Allah!</div>
-            <div style="font-size:0.85rem; color:var(--text-muted);" id="alertMsg">Ayat berhasil disimpan.</div>
-        </div>
+        <i class="fas fa-check-circle ia-icon"></i>
+        <div style="font-size:0.9rem; font-weight:600; color:var(--dark);" id="alertMsg">Berhasil!</div>
     </div>
 
     <div class="modal" id="infoModal" onclick="closeInfoModal(event)">
         <div class="modal-content" id="infoContent">
-            <h2 class="modal-title" id="m-title">Info Surah</h2>
-            <div style="font-size:0.95rem; line-height:1.6; color:#475569;" id="m-desc"></div>
+            <h2 class="modal-title" id="m-title">Asbabun Nuzul</h2>
+            <div style="font-size:0.95rem; line-height:1.7; color:#475569;" id="m-desc"></div>
         </div>
     </div>
 
     <script>
         const noSurat = <?= $nomor_surat ?>;
         let surahData = null;
+        let tafsirData = null;
         let audioFullEl = document.getElementById('audioFull');
         let audioAyatEl = document.getElementById('audioAyat');
 
-        async function fetchBacaan() {
+        async function fetchAlQuranData() {
             try {
-                const res = await fetch(`https://equran.id/api/v2/surat/${noSurat}`);
-                const json = await res.json();
-                surahData = json.data;
+                // Fetch Surat dan Tafsir secara bersamaan (Paralel)
+                const [resSurat, resTafsir] = await Promise.all([
+                    fetch(`https://equran.id/api/v2/surat/${noSurat}`),
+                    fetch(`https://equran.id/api/v2/tafsir/${noSurat}`)
+                ]);
 
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('head-title').innerText = surahData.namaLatin;
+                const jsonSurat = await resSurat.json();
+                const jsonTafsir = await resTafsir.json();
 
-                // Audio Full Setup
-                audioFullEl.src = surahData.audioFull['05']; // Pilih Qari Misyari Rasyid Al-Afasi
+                surahData = jsonSurat.data;
+                tafsirData = jsonTafsir.data.tafsir; // Array of tafsir per ayat
 
-                // Tampilkan Bismillah jika bukan surah 1 dan 9
-                if (noSurat !== 1 && noSurat !== 9) {
-                    document.getElementById('bismillah').style.display = 'block';
-                }
-
-                // Render Deskripsi (Asbabun Nuzul) ke Modal
-                document.getElementById('m-title').innerText = `Tafsir Singkat & Asbabun Nuzul: ${surahData.namaLatin}`;
-                document.getElementById('m-desc').innerHTML = surahData.deskripsi; // API return HTML string
-
+                setupUI();
                 renderAyat(surahData.ayat);
             } catch (e) {
-                document.getElementById('loading').innerHTML = "Gagal memuat ayat.";
+                document.getElementById('loading').innerHTML = "Gagal memuat ayat. Periksa koneksi internet.";
             }
+        }
+
+        function setupUI() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('mini-title').innerText = surahData.namaLatin;
+
+            // Setup Hero Card
+            document.getElementById('hero-card').style.display = 'block';
+            document.getElementById('hero-ar').innerText = surahData.nama;
+            document.getElementById('hero-la').innerText = surahData.namaLatin;
+            let tmpt = surahData.tempatTurun === 'Mekah' ? 'Makiyyah' : 'Madaniyyah';
+            document.getElementById('hero-det').innerHTML = `<span>${surahData.arti}</span> • <span>${tmpt}</span> • <span>${surahData.jumlahAyat} Ayat</span>`;
+
+            // Audio Full
+            audioFullEl.src = surahData.audioFull['05'];
+
+            // Bismillah
+            if (noSurat !== 1 && noSurat !== 9) {
+                document.getElementById('bismillah').style.display = 'block';
+            }
+
+            // Info Modal
+            document.getElementById('m-title').innerText = `Info & Asbabun Nuzul: ${surahData.namaLatin}`;
+            document.getElementById('m-desc').innerHTML = surahData.deskripsi;
         }
 
         function renderAyat(ayatList) {
@@ -486,25 +478,39 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             let html = '';
 
             ayatList.forEach(a => {
+                // Cari teks tafsir yang sesuai dengan nomor ayat ini
+                let txtTafsir = "Tafsir tidak tersedia.";
+                let findTafsir = tafsirData.find(t => t.ayat == a.nomorAyat);
+                if (findTafsir) txtTafsir = findTafsir.teks;
+
                 html += `
-                <div class="ayat-card" id="ayat-${a.nomorAyat}" 
-                     onmousedown="startPress(${a.nomorAyat})" onmouseup="endPress()" onmouseleave="endPress()"
-                     ontouchstart="startPress(${a.nomorAyat})" ontouchend="endPress()">
+                <div class="ayat-card" id="ayat-${a.nomorAyat}">
+                    
                     <div class="ayat-header">
                         <div class="ayat-number-badge">${a.nomorAyat}</div>
                         <div class="ayat-actions">
-                            <i class="fas fa-play-circle ayat-action-btn" onclick="playAyat('${a.audio['05']}', ${a.nomorAyat})"></i>
-                            <i class="far fa-bookmark ayat-action-btn" onclick="saveBookmark(${a.nomorAyat})"></i>
+                            <i class="fas fa-book-open ayat-action-btn" onclick="toggleTafsir(${a.nomorAyat})" title="Baca Tafsir"></i>
+                            <i class="fas fa-bookmark ayat-action-btn" onclick="saveBookmark(${a.nomorAyat})" title="Tandai Terakhir Baca"></i>
+                            <i class="fas fa-play ayat-action-btn" id="btn-play-ayat-${a.nomorAyat}" onclick="playAyat('${a.audio['05']}', ${a.nomorAyat})" title="Putar Audio"></i>
                         </div>
                     </div>
-                    <div class="teks-arab">${a.teksArab} <span class="ayah-end">${a.nomorAyat}</span></div>
-                    <div class="teks-latin">${a.teksLatin}</div>
-                    <div class="teks-indo">${a.teksIndonesia}</div>
+
+                    <div class="teks-arab">${a.teksArab}</div>
+                    
+                    <div class="teks-container">
+                        <div class="teks-latin">${a.teksLatin}</div>
+                        <div class="teks-indo">${a.teksIndonesia}</div>
+                        
+                        <div class="tafsir-box" id="tafsir-${a.nomorAyat}">
+                            <div class="t-title">Tafsir Kemenag RI</div>
+                            ${txtTafsir}
+                        </div>
+                    </div>
                 </div>`;
             });
             container.innerHTML = html;
 
-            // Check if URL has hash (e.g. #ayat-5) and scroll to it
+            // Auto scroll ke bookmark jika ada hash url #ayat-x
             if (window.location.hash) {
                 setTimeout(() => {
                     const el = document.querySelector(window.location.hash);
@@ -513,74 +519,105 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
                             behavior: "smooth",
                             block: "center"
                         });
-                        el.style.background = "var(--primary-light)";
-                        setTimeout(() => el.style.background = "var(--card-bg)", 2000);
+                        el.classList.add('playing');
+                        setTimeout(() => el.classList.remove('playing'), 2000);
                     }
                 }, 500);
             }
         }
 
-        // --- AUDIO PLAYER FULL ---
-        let isFullPlaying = false;
+        // --- TOGGLE TERJEMAHAN GLOBALLY ---
+        let isTerjemahTampil = true;
 
+        function toggleTerjemah() {
+            isTerjemahTampil = !isTerjemahTampil;
+            const bodyEl = document.getElementById('baca-body');
+            const btn = document.getElementById('btn-terjemah');
+
+            if (isTerjemahTampil) {
+                bodyEl.classList.remove('body-no-terjemah');
+                btn.classList.add('active');
+            } else {
+                bodyEl.classList.add('body-no-terjemah');
+                btn.classList.remove('active');
+            }
+        }
+
+        // --- TOGGLE TAFSIR PER AYAT ---
+        function toggleTafsir(no) {
+            // Pastikan terjemahan aktif dulu jika user klik tafsir tapi terjemahan disembunyikan
+            if (!isTerjemahTampil) toggleTerjemah();
+
+            const box = document.getElementById(`tafsir-${no}`);
+            box.classList.toggle('show');
+        }
+
+        // --- AUDIO PLAYER FULL ---
         function togglePlayFull() {
             const btn = document.getElementById('btn-play-full');
             if (audioFullEl.paused) {
-                // Pause ayat jika sedang jalan
-                audioAyatEl.pause();
+                audioAyatEl.pause(); // matikan audio per ayat jika jalan
+                resetAyatIcons();
+
                 audioFullEl.play();
-                btn.innerHTML = '<i class="fas fa-pause"></i>';
+                btn.innerHTML = '<i class="fas fa-pause-circle"></i>';
+                btn.classList.add('active');
             } else {
                 audioFullEl.pause();
-                btn.innerHTML = '<i class="fas fa-play"></i>';
+                btn.innerHTML = '<i class="fas fa-play-circle"></i>';
+                btn.classList.remove('active');
             }
         }
-        audioFullEl.ontimeupdate = () => {
-            const progress = (audioFullEl.currentTime / audioFullEl.duration) * 100;
-            document.getElementById('progress-full').style.width = progress + '%';
-
-            let curMins = Math.floor(audioFullEl.currentTime / 60);
-            let curSecs = Math.floor(audioFullEl.currentTime - curMins * 60);
-            document.getElementById('time-full').innerText = `${curMins < 10 ? '0'+curMins : curMins}:${curSecs < 10 ? '0'+curSecs : curSecs}`;
+        audioFullEl.onended = () => {
+            document.getElementById('btn-play-full').innerHTML = '<i class="fas fa-play-circle"></i>';
+            document.getElementById('btn-play-full').classList.remove('active');
         };
-        audioFullEl.onended = () => document.getElementById('btn-play-full').innerHTML = '<i class="fas fa-play"></i>';
 
         // --- AUDIO PER AYAT ---
         let currentAyatCard = null;
+        let currentAyatNo = null;
 
         function playAyat(url, nomor) {
-            // Pause full audio
+            // Stop Full Audio
             audioFullEl.pause();
-            document.getElementById('btn-play-full').innerHTML = '<i class="fas fa-play"></i>';
+            document.getElementById('btn-play-full').innerHTML = '<i class="fas fa-play-circle"></i>';
+            document.getElementById('btn-play-full').classList.remove('active');
 
-            if (currentAyatCard) currentAyatCard.classList.remove('playing');
+            // Reset previously playing ayat
+            if (currentAyatCard) {
+                currentAyatCard.classList.remove('playing');
+                document.getElementById(`btn-play-ayat-${currentAyatNo}`).className = "fas fa-play ayat-action-btn";
+            }
+
+            // Jika klik ayat yang sama, berarti fungsi pause
+            if (currentAyatNo === nomor && !audioAyatEl.paused) {
+                audioAyatEl.pause();
+                currentAyatNo = null;
+                return;
+            }
 
             audioAyatEl.src = url;
             audioAyatEl.play();
 
+            currentAyatNo = nomor;
             currentAyatCard = document.getElementById(`ayat-${nomor}`);
             currentAyatCard.classList.add('playing');
+            document.getElementById(`btn-play-ayat-${nomor}`).className = "fas fa-pause ayat-action-btn";
         }
+
+        function resetAyatIcons() {
+            if (currentAyatCard) {
+                currentAyatCard.classList.remove('playing');
+                document.getElementById(`btn-play-ayat-${currentAyatNo}`).className = "fas fa-play ayat-action-btn";
+                currentAyatNo = null;
+            }
+        }
+
         audioAyatEl.onended = () => {
-            if (currentAyatCard) currentAyatCard.classList.remove('playing');
+            resetAyatIcons();
         };
 
-        // --- LONG PRESS TO BOOKMARK ---
-        let pressTimer;
-
-        function startPress(ayatNo) {
-            pressTimer = window.setTimeout(() => {
-                saveBookmark(ayatNo);
-                // Get haptic feedback if supported
-                if (navigator.vibrate) navigator.vibrate(50);
-            }, 800); // Tahan 0.8 detik
-        }
-
-        function endPress() {
-            clearTimeout(pressTimer);
-        }
-
-        // --- AJAX SAVE BOOKMARK ---
+        // --- AJAX SAVE BOOKMARK (TOMBOL) ---
         function saveBookmark(ayatNo) {
             const formData = new URLSearchParams();
             formData.append('action', 'bookmark');
@@ -597,9 +634,9 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
                 .then(res => res.text())
                 .then(res => {
                     if (res.trim() === 'saved') {
-                        showAlert(`Ayat ${ayatNo} berhasil ditandai!`);
+                        showAlert(`Ayat ${ayatNo} berhasil disimpan ke Terakhir Baca!`);
                     } else {
-                        showAlert(`Ayat ${ayatNo} sudah ada di penanda.`);
+                        showAlert(`Ayat ${ayatNo} sudah ada di daftar.`);
                     }
                 });
         }
@@ -625,8 +662,8 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             }
         }
 
-        // Load data
-        fetchBacaan();
+        // Eksekusi Muat Data
+        fetchAlQuranData();
     </script>
 </body>
 

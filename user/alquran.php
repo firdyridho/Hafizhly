@@ -2,6 +2,7 @@
 session_start();
 require_once '../config/database.php';
 
+/** @var mysqli $conn */
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
     header("Location: ../login.php");
     exit();
@@ -9,7 +10,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
 
 $user_id = $_SESSION['user_id'];
 
-// Mengambil data Terakhir Baca (Bookmark terakhir) dari database
+// Mengambil data Terakhir Baca
 $q_last = mysqli_query($conn, "SELECT * FROM bookmark WHERE user_id = '$user_id' ORDER BY id DESC LIMIT 1");
 $last_read = mysqli_fetch_assoc($q_last);
 ?>
@@ -24,9 +25,9 @@ $last_read = mysqli_fetch_assoc($q_last);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary: #8b5cf6;
-            /* Mengikuti referensi desain warna ungu modern */
-            --primary-light: #ede9fe;
+            --primary: #059669;
+            /* Hijau Utama */
+            --primary-light: #d1fae5;
             --dark: #1e293b;
             --text-muted: #64748b;
             --bg: #f8fafc;
@@ -53,31 +54,27 @@ $last_read = mysqli_fetch_assoc($q_last);
             margin: 0 auto;
         }
 
-        /* Header & Last Read Card */
         .page-header {
             margin-bottom: 20px;
+            text-align: center;
         }
 
         .page-title {
             font-size: 1.5rem;
             font-weight: 700;
-            color: var(--dark);
+            color: var(--primary);
         }
 
-        .page-subtitle {
-            font-size: 0.9rem;
-            color: var(--text-muted);
-        }
-
+        /* Last Read Card */
         .last-read-card {
-            background: linear-gradient(135deg, var(--primary), #6d28d9);
+            background: linear-gradient(135deg, var(--primary), #10b981);
             border-radius: 20px;
-            padding: 25px;
+            padding: 20px 25px;
             color: white;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);
+            box-shadow: 0 10px 20px rgba(5, 150, 105, 0.2);
             margin-bottom: 25px;
             position: relative;
             overflow: hidden;
@@ -94,14 +91,15 @@ $last_read = mysqli_fetch_assoc($q_last);
             text-transform: uppercase;
             letter-spacing: 1px;
             margin-bottom: 8px;
-            opacity: 0.8;
+            opacity: 0.9;
             display: flex;
             align-items: center;
             gap: 5px;
+            font-weight: 600;
         }
 
         .lrc-surah {
-            font-size: 1.4rem;
+            font-size: 1.3rem;
             font-weight: 700;
             margin-bottom: 4px;
         }
@@ -112,29 +110,54 @@ $last_read = mysqli_fetch_assoc($q_last);
         }
 
         .lrc-icon {
-            font-size: 4rem;
-            opacity: 0.2;
+            font-size: 4.5rem;
+            opacity: 0.15;
             position: absolute;
-            right: -10px;
-            bottom: -10px;
+            right: -5px;
+            bottom: -15px;
             z-index: 1;
+        }
+
+        /* Main Tabs (Surah / Juz) */
+        .main-tabs {
+            display: flex;
+            background: var(--border);
+            border-radius: 12px;
+            padding: 4px;
+            margin-bottom: 20px;
+        }
+
+        .m-tab {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-radius: 10px;
+            transition: 0.3s;
+        }
+
+        .m-tab.active {
+            background: var(--card-bg);
+            color: var(--primary);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
         }
 
         /* Search Bar */
         .search-box {
             position: relative;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .search-box input {
             width: 100%;
-            padding: 15px 15px 15px 45px;
-            border-radius: 16px;
+            padding: 14px 15px 14px 45px;
+            border-radius: 14px;
             border: 1px solid var(--border);
             font-size: 0.95rem;
             outline: none;
             transition: 0.3s;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
         }
 
         .search-box input:focus {
@@ -150,90 +173,83 @@ $last_read = mysqli_fetch_assoc($q_last);
             color: var(--text-muted);
         }
 
-        /* Tabs */
-        .tabs {
+        /* Sub Tabs Filter (Semua, Makiyyah, Madaniyyah) */
+        .sub-tabs {
             display: flex;
             gap: 10px;
             margin-bottom: 20px;
-            border-bottom: 2px solid var(--border);
-            padding-bottom: 10px;
             overflow-x: auto;
+            padding-bottom: 5px;
         }
 
-        .tab-btn {
-            background: none;
-            border: none;
-            font-size: 0.95rem;
+        .s-tab {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            font-size: 0.85rem;
             font-weight: 600;
             color: var(--text-muted);
             cursor: pointer;
-            padding: 5px 10px;
-            position: relative;
+            padding: 6px 16px;
+            border-radius: 20px;
             white-space: nowrap;
+            transition: 0.2s;
         }
 
-        .tab-btn.active {
-            color: var(--primary);
-        }
-
-        .tab-btn.active::after {
-            content: '';
-            position: absolute;
-            bottom: -12px;
-            left: 0;
-            width: 100%;
-            height: 3px;
+        .s-tab.active {
             background: var(--primary);
-            border-radius: 3px;
+            color: white;
+            border-color: var(--primary);
         }
 
-        /* List Surah */
-        .surah-list {
+        /* Lists */
+        .surah-list,
+        .juz-list {
             display: flex;
             flex-direction: column;
             gap: 12px;
         }
 
-        .surah-card {
+        .juz-list {
+            display: none;
+            /* Sembunyikan default */
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .list-card {
             background: var(--card-bg);
             border-radius: 16px;
-            padding: 16px;
+            padding: 15px;
             display: flex;
             align-items: center;
             gap: 15px;
             cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
             border: 1px solid var(--border);
             transition: 0.2s;
         }
 
-        .surah-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-            border-color: var(--primary-light);
+        .list-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.1);
         }
 
         .s-number {
-            width: 45px;
-            height: 45px;
-            background: var(--primary-light);
-            color: var(--primary);
+            width: 42px;
+            height: 42px;
+            background: var(--bg);
+            color: var(--dark);
             border-radius: 12px;
             display: flex;
             justify-content: center;
             align-items: center;
             font-weight: 700;
-            font-size: 1rem;
+            font-size: 0.95rem;
             flex-shrink: 0;
-            position: relative;
         }
 
-        /* Motif bintang oktagon kecil */
-        .s-number::before {
-            content: '۞';
-            position: absolute;
-            font-size: 2.5rem;
-            opacity: 0.1;
+        .list-card:hover .s-number {
+            background: var(--primary-light);
+            color: var(--primary);
         }
 
         .s-details {
@@ -256,15 +272,34 @@ $last_read = mysqli_fetch_assoc($q_last);
 
         .s-name-ar {
             font-family: 'Amiri', serif;
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             color: var(--primary);
             font-weight: bold;
+        }
+
+        /* Style for Juz Card */
+        .juz-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .juz-card:hover {
+            background: var(--primary-light);
+            color: var(--primary);
+            border-color: var(--primary);
         }
 
         #loading {
             text-align: center;
             padding: 40px;
-            color: var(--text-muted);
+            color: var(--primary);
+            font-weight: 600;
         }
     </style>
 </head>
@@ -274,42 +309,56 @@ $last_read = mysqli_fetch_assoc($q_last);
     <div class="container">
         <div class="page-header">
             <h1 class="page-title">Al-Qur'an</h1>
-            <p class="page-subtitle">Lanjutkan perjalanan spiritualmu</p>
         </div>
 
         <?php if ($last_read): ?>
             <div class="last-read-card" onclick="window.location.href='baca.php?nomor=<?= $last_read['surah_nomor'] ?>#ayat-<?= $last_read['ayat'] ?>'">
                 <div class="lrc-content">
-                    <div class="lrc-label"><i class="fas fa-book-open"></i> Terakhir Baca</div>
+                    <div class="lrc-label"><i class="fas fa-bookmark"></i> Terakhir Baca</div>
                     <div class="lrc-surah">Surah ke-<?= $last_read['surah_nomor'] ?></div>
-                    <div class="lrc-ayat">Ayat No: <?= $last_read['ayat'] ?></div>
+                    <div class="lrc-ayat">Berhenti di Ayat <?= $last_read['ayat'] ?></div>
                 </div>
-                <i class="fas fa-quran lrc-icon"></i>
+                <i class="fas fa-book-open lrc-icon"></i>
             </div>
         <?php else: ?>
             <div class="last-read-card" onclick="window.location.href='baca.php?nomor=1'">
                 <div class="lrc-content">
-                    <div class="lrc-label"><i class="fas fa-book-open"></i> Mulai Membaca</div>
+                    <div class="lrc-label"><i class="fas fa-play-circle"></i> Mulai Membaca</div>
                     <div class="lrc-surah">Al-Fatihah</div>
-                    <div class="lrc-ayat">Ayat No: 1</div>
+                    <div class="lrc-ayat">Ayat ke-1</div>
                 </div>
-                <i class="fas fa-quran lrc-icon"></i>
+                <i class="fas fa-book-open lrc-icon"></i>
             </div>
         <?php endif; ?>
 
-        <div class="search-box">
-            <i class="fas fa-search"></i>
-            <input type="text" id="searchInput" placeholder="Cari nama surah (contoh: Mulk)..." autocomplete="off">
+        <div class="main-tabs">
+            <div class="m-tab active" onclick="switchMainTab('surah')">Surah</div>
+            <div class="m-tab" onclick="switchMainTab('juz')">Juz</div>
         </div>
 
-        <div class="tabs">
-            <button class="tab-btn active" onclick="filterData('all', this)">Semua</button>
-            <button class="tab-btn" onclick="filterData('Makkiyah', this)">Makiyyah</button>
-            <button class="tab-btn" onclick="filterData('Madaniyah', this)">Madaniyyah</button>
+        <div id="surah-section">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Cari nama surah..." autocomplete="off">
+            </div>
+
+            <div class="sub-tabs">
+                <button class="s-tab active" onclick="filterSurah('all', this)">Semua</button>
+                <button class="s-tab" onclick="filterSurah('Mekah', this)">Makiyyah</button>
+                <button class="s-tab" onclick="filterSurah('Madinah', this)">Madaniyyah</button>
+            </div>
+
+            <div id="loading"><i class="fas fa-spinner fa-spin"></i> Memuat Data...</div>
+            <div class="surah-list" id="surahList"></div>
         </div>
 
-        <div id="loading"><i class="fas fa-spinner fa-spin"></i> Memuat Al-Qur'an...</div>
-        <div class="surah-list" id="surahList"></div>
+        <div class="juz-list" id="juz-section">
+            <?php for ($i = 1; $i <= 30; $i++): ?>
+                <div class="juz-card" onclick="alert('Fitur Baca Per Juz akan segera hadir!')">
+                    Juz <?= $i ?>
+                </div>
+            <?php endfor; ?>
+        </div>
     </div>
 
     <?php include '../components/nav.php'; ?>
@@ -325,7 +374,7 @@ $last_read = mysqli_fetch_assoc($q_last);
                 document.getElementById('loading').style.display = 'none';
                 renderList(allSurah);
             } catch (error) {
-                document.getElementById('loading').innerHTML = "Gagal memuat data. Periksa koneksi internet.";
+                document.getElementById('loading').innerHTML = "Gagal memuat data.";
             }
         }
 
@@ -340,7 +389,7 @@ $last_read = mysqli_fetch_assoc($q_last);
 
             data.forEach(surah => {
                 const card = document.createElement('div');
-                card.className = 'surah-card';
+                card.className = 'list-card';
                 card.onclick = () => {
                     window.location.href = 'baca.php?nomor=' + surah.nomor;
                 };
@@ -348,7 +397,7 @@ $last_read = mysqli_fetch_assoc($q_last);
                     <div class="s-number">${surah.nomor}</div>
                     <div class="s-details">
                         <div class="s-name-id">${surah.namaLatin}</div>
-                        <div class="s-info">${surah.tempatTurun} • ${surah.jumlahAyat} AYAT</div>
+                        <div class="s-info">${surah.tempatTurun === 'Mekah' ? 'Makiyyah' : 'Madaniyyah'} • ${surah.jumlahAyat} AYAT</div>
                     </div>
                     <div class="s-name-ar">${surah.nama}</div>
                 `;
@@ -358,32 +407,41 @@ $last_read = mysqli_fetch_assoc($q_last);
 
         // Live Search
         document.getElementById('searchInput').addEventListener('input', function(e) {
-            const query = e.target.value.toLowerCase();
-            const activeTab = document.querySelector('.tab-btn.active').innerText;
-
-            let filtered = allSurah.filter(s => s.namaLatin.toLowerCase().includes(query));
-
-            if (activeTab === 'Makiyyah') {
-                filtered = filtered.filter(s => s.tempatTurun === 'Makkiyah');
-            } else if (activeTab === 'Madaniyyah') {
-                filtered = filtered.filter(s => s.tempatTurun === 'Madaniyah');
-            }
-
-            renderList(filtered);
+            applyFilters();
         });
 
         // Filter Tabs
-        function filterData(type, btn) {
-            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-            btn.classList.add('active');
+        let currentFilter = 'all';
 
+        function filterSurah(type, btn) {
+            document.querySelectorAll('.s-tab').forEach(el => el.classList.remove('active'));
+            btn.classList.add('active');
+            currentFilter = type;
+            applyFilters();
+        }
+
+        function applyFilters() {
             const query = document.getElementById('searchInput').value.toLowerCase();
             let filtered = allSurah.filter(s => s.namaLatin.toLowerCase().includes(query));
 
-            if (type !== 'all') {
-                filtered = filtered.filter(s => s.tempatTurun === type);
+            if (currentFilter !== 'all') {
+                filtered = filtered.filter(s => s.tempatTurun === currentFilter);
             }
             renderList(filtered);
+        }
+
+        // Switch Surah / Juz
+        function switchMainTab(tab) {
+            document.querySelectorAll('.m-tab').forEach(el => el.classList.remove('active'));
+            if (tab === 'surah') {
+                document.querySelector('.m-tab:nth-child(1)').classList.add('active');
+                document.getElementById('surah-section').style.display = 'block';
+                document.getElementById('juz-section').style.display = 'none';
+            } else {
+                document.querySelector('.m-tab:nth-child(2)').classList.add('active');
+                document.getElementById('surah-section').style.display = 'none';
+                document.getElementById('juz-section').style.display = 'grid';
+            }
         }
 
         fetchSurah();

@@ -390,35 +390,35 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
         <h3 class="section-title">Akses Cepat</h3>
         <div class="quick-grid">
             <a href="alquran.php" class="q-item">
-                <div class="q-icon"><i class="fas fa-book-open"></i></div>
+                <div class="q-icon" style="color: #059669;"><i class="fas fa-book-open"></i></div>
                 <div class="q-text">Qur'an</div>
             </a>
             <a href="#" class="q-item">
-                <div class="q-icon" style="color: #f59e0b;"><i class="fas fa-microphone-alt"></i></div>
+                <div class="q-icon" style="color: #059669;"><i class="fas fa-microphone-alt"></i></div>
                 <div class="q-text">Murojaah</div>
             </a>
             <a href="mutabaah.php" class="q-item">
-                <div class="q-icon" style="color: #3b82f6;"><i class="fas fa-chart-line"></i></div>
+                <div class="q-icon" style="color: #059669;"><i class="fas fa-chart-line"></i></div>
                 <div class="q-text">Mutabaah</div>
             </a>
             <a href="doa.php" class="q-item">
-                <div class="q-icon" style="color: #8b5cf6;"><i class="fas fa-hands-praying"></i></div>
+                <div class="q-icon" style="color: #059669;"><i class="fas fa-hands-praying"></i></div>
                 <div class="q-text">Doa</div>
             </a>
             <a href="#" class="q-item">
-                <div class="q-icon" style="color: #ef4444;"><i class="fas fa-bullseye"></i></div>
+                <div class="q-icon" style="color: #059669;"><i class="fas fa-bullseye"></i></div>
                 <div class="q-text">Target</div>
             </a>
             <a href="#" class="q-item">
-                <div class="q-icon" style="color: #10b981;"><i class="fas fa-medal"></i></div>
+                <div class="q-icon" style="color: #059669;"><i class="fas fa-medal"></i></div>
                 <div class="q-text">Pencapaian</div>
             </a>
             <a href="#" class="q-item">
-                <div class="q-icon" style="color: #6366f1;"><i class="fas fa-robot"></i></div>
+                <div class="q-icon" style="color: #059669;"><i class="fas fa-robot"></i></div>
                 <div class="q-text">AI Coach</div>
             </a>
             <a href="#" class="q-item">
-                <div class="q-icon" style="color: #6b7280;"><i class="fas fa-cog"></i></div>
+                <div class="q-icon" style="color: #059669;"><i class="fas fa-cog"></i></div>
                 <div class="q-text">Pengaturan</div>
             </a>
         </div>

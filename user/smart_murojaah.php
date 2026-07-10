@@ -2,13 +2,13 @@
 session_start();
 require_once '../config/database.php';
 
-/** @var mysqli $conn */
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
     exit('Unauthorized');
 }
-
+/** @var mysqli $conn */
 $user_id = (int) $_SESSION['user_id'];
 
+// Pastikan tabel progress ada
 mysqli_query($conn, "CREATE TABLE IF NOT EXISTS murojaah_progress (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
@@ -19,66 +19,52 @@ mysqli_query($conn, "CREATE TABLE IF NOT EXISTS murojaah_progress (
     UNIQUE KEY uniq_user_surah (user_id, surah_nomor)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
-// --- AJAX HANDLER UNTUK SRS ---
-if (isset($_POST['action']) && $_POST['action'] == 'save_srs') {
-    $surah = (int) $_POST['surah'];
-    $grade = (int) $_POST['grade'];
+// --- AJAX HANDLERS ---
+if (isset($_POST['action'])) {
+    if ($_POST['action'] == 'save_srs') {
+        $surah = (int) $_POST['surah'];
+        $grade = (int) $_POST['grade'];
+        $interval = ($grade == 2) ? 3 : (($grade == 3) ? 7 : 1);
+        $next_review = date('Y-m-d', strtotime("+$interval days"));
 
-    $interval = 1;
-    if ($grade == 2) $interval = 3;
-    if ($grade == 3) $interval = 7;
-
-    $next_review = date('Y-m-d', strtotime("+$interval days"));
-
-    $cek = mysqli_query($conn, "SELECT id FROM murojaah_srs WHERE user_id='$user_id' AND surah_nomor='$surah'");
-    if (mysqli_num_rows($cek) > 0) {
-        mysqli_query($conn, "UPDATE murojaah_srs SET interval_hari='$interval', next_review='$next_review', last_reviewed=NOW() WHERE user_id='$user_id' AND surah_nomor='$surah'");
-    } else {
-        mysqli_query($conn, "INSERT INTO murojaah_srs (user_id, surah_nomor, interval_hari, next_review) VALUES ('$user_id', '$surah', '$interval', '$next_review')");
+        $cek = mysqli_query($conn, "SELECT id FROM murojaah_srs WHERE user_id='$user_id' AND surah_nomor='$surah'");
+        if (mysqli_num_rows($cek) > 0) {
+            mysqli_query($conn, "UPDATE murojaah_srs SET interval_hari='$interval', next_review='$next_review', last_reviewed=NOW() WHERE user_id='$user_id' AND surah_nomor='$surah'");
+        } else {
+            mysqli_query($conn, "INSERT INTO murojaah_srs (user_id, surah_nomor, interval_hari, next_review) VALUES ('$user_id', '$surah', '$interval', '$next_review')");
+        }
+        mysqli_query($conn, "DELETE FROM murojaah_progress WHERE user_id='$user_id' AND surah_nomor='$surah'");
+        exit('saved');
     }
 
-    mysqli_query($conn, "DELETE FROM murojaah_progress WHERE user_id='$user_id' AND surah_nomor='$surah'");
-    echo "saved";
-    exit();
-}
+    if ($_POST['action'] == 'save_progress') {
+        $surah = (int) $_POST['surah'];
+        $ayat  = (int) $_POST['ayat'];
+        $page  = !empty($_POST['page']) ? (int) $_POST['page'] : 'NULL';
 
-// --- AJAX: SIMPAN PROGRESS ---
-if (isset($_POST['action']) && $_POST['action'] == 'save_progress') {
-    header('Content-Type: application/json');
-    $surah = (int) $_POST['surah'];
-    $ayat  = (int) $_POST['ayat'];
-    $page  = isset($_POST['page']) && $_POST['page'] !== '' ? (int) $_POST['page'] : null;
-    $pageVal = $page ? "'$page'" : "NULL";
-
-    $cek = mysqli_query($conn, "SELECT id FROM murojaah_progress WHERE user_id='$user_id' AND surah_nomor='$surah'");
-    if (mysqli_num_rows($cek) > 0) {
-        mysqli_query($conn, "UPDATE murojaah_progress SET last_ayat='$ayat', last_page=$pageVal, updated_at=NOW() WHERE user_id='$user_id' AND surah_nomor='$surah'");
-    } else {
-        mysqli_query($conn, "INSERT INTO murojaah_progress (user_id, surah_nomor, last_ayat, last_page) VALUES ('$user_id', '$surah', '$ayat', $pageVal)");
+        $cek = mysqli_query($conn, "SELECT id FROM murojaah_progress WHERE user_id='$user_id' AND surah_nomor='$surah'");
+        if (mysqli_num_rows($cek) > 0) {
+            mysqli_query($conn, "UPDATE murojaah_progress SET last_ayat='$ayat', last_page=$page, updated_at=NOW() WHERE user_id='$user_id' AND surah_nomor='$surah'");
+        } else {
+            mysqli_query($conn, "INSERT INTO murojaah_progress (user_id, surah_nomor, last_ayat, last_page) VALUES ('$user_id', '$surah', '$ayat', $page)");
+        }
+        exit(json_encode(['status' => 'ok']));
     }
-    echo json_encode(['status' => 'ok']);
-    exit();
+
+    if ($_POST['action'] == 'get_progress') {
+        $surah = (int) $_POST['surah'];
+        $res = mysqli_query($conn, "SELECT last_ayat, last_page FROM murojaah_progress WHERE user_id='$user_id' AND surah_nomor='$surah'");
+        exit(json_encode(mysqli_fetch_assoc($res) ?: null));
+    }
+
+    if ($_POST['action'] == 'clear_progress') {
+        $surah = (int) $_POST['surah'];
+        mysqli_query($conn, "DELETE FROM murojaah_progress WHERE user_id='$user_id' AND surah_nomor='$surah'");
+        exit(json_encode(['status' => 'ok']));
+    }
 }
 
-// --- AJAX: AMBIL PROGRESS ---
-if (isset($_POST['action']) && $_POST['action'] == 'get_progress') {
-    header('Content-Type: application/json');
-    $surah = (int) $_POST['surah'];
-    $res = mysqli_query($conn, "SELECT last_ayat, last_page FROM murojaah_progress WHERE user_id='$user_id' AND surah_nomor='$surah'");
-    $row = mysqli_fetch_assoc($res);
-    echo json_encode($row ?: null);
-    exit();
-}
-
-// --- AJAX: HAPUS PROGRESS ---
-if (isset($_POST['action']) && $_POST['action'] == 'clear_progress') {
-    header('Content-Type: application/json');
-    $surah = (int) $_POST['surah'];
-    mysqli_query($conn, "DELETE FROM murojaah_progress WHERE user_id='$user_id' AND surah_nomor='$surah'");
-    echo json_encode(['status' => 'ok']);
-    exit();
-}
-
+// Ambil data Terakhir Murojaah
 $q_last = mysqli_query($conn, "SELECT * FROM murojaah_progress WHERE user_id = '$user_id' ORDER BY updated_at DESC LIMIT 1");
 $last_murojaah = mysqli_fetch_assoc($q_last);
 ?>
@@ -102,7 +88,7 @@ $last_murojaah = mysqli_fetch_assoc($q_last);
             --border: #e2e8f0;
             --quran-text: #111827;
             --mushaf-bg: #fdf8e7;
-            /* Warna Kertas Mushaf Madinah */
+            /* Kertas Mushaf */
             --mushaf-border: #2c3e50;
             --mushaf-gold: #c6a87c;
         }
@@ -117,10 +103,11 @@ $last_murojaah = mysqli_fetch_assoc($q_last);
         body {
             background-color: var(--bg);
             color: var(--dark);
-            padding-bottom: 90px;
+            padding-bottom: 100px;
             overflow-x: hidden;
         }
 
+        /* HEADER (Fixed & Rapi) */
         .header {
             background: var(--card-bg);
             padding: 15px 20px;
@@ -157,8 +144,32 @@ $last_murojaah = mysqli_fetch_assoc($q_last);
             margin: 0 auto;
         }
 
+        /* SETUP SCREEN & CARDS */
         #setup-screen {
             display: block;
+        }
+
+        .last-murojaah-card {
+            background: linear-gradient(135deg, var(--primary), #10b981);
+            color: white;
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(5, 150, 105, 0.2);
+        }
+
+        .lmc-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .lmc-title {
+            font-size: 1.2rem;
+            font-weight: 700;
         }
 
         .search-box {
@@ -173,7 +184,6 @@ $last_murojaah = mysqli_fetch_assoc($q_last);
             border: 1px solid var(--border);
             font-size: 1rem;
             outline: none;
-            transition: 0.3s;
         }
 
         .search-box input:focus {
@@ -225,6 +235,7 @@ $last_murojaah = mysqli_fetch_assoc($q_last);
             font-weight: bold;
         }
 
+        /* SESSION SCREEN */
         #session-screen {
             display: none;
             text-align: center;
@@ -235,7 +246,7 @@ $last_murojaah = mysqli_fetch_assoc($q_last);
             justify-content: space-between;
             align-items: center;
             gap: 10px;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
 
         .sh-title {
@@ -249,13 +260,15 @@ $last_murojaah = mysqli_fetch_assoc($q_last);
             background: var(--card-bg);
             border: 1px solid var(--border);
             color: var(--text-muted);
-            width: 40px;
-            height: 40px;
+            width: 45px;
+            height: 45px;
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
+            font-size: 1.2rem;
+            transition: 0.2s;
         }
 
         .tool-btn.active {
@@ -269,10 +282,10 @@ $last_murojaah = mysqli_fetch_assoc($q_last);
             color: #dc2626;
             border: 1px solid #fecaca;
             padding: 0 16px;
-            height: 40px;
+            height: 45px;
             border-radius: 12px;
             font-weight: 700;
-            font-size: 0.8rem;
+            font-size: 0.9rem;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -282,81 +295,78 @@ $last_murojaah = mysqli_fetch_assoc($q_last);
         .skip-hint {
             background: #fef3c7;
             color: #d97706;
-            padding: 10px 15px;
+            padding: 12px;
             border-radius: 12px;
             font-size: 0.85rem;
             margin-bottom: 20px;
-            display: inline-block;
             font-weight: 500;
             border: 1px dashed #f59e0b;
         }
 
-        /* MUSHAF REALISTIS LAYOUT */
+        /* MUSHAF DISPLAY - DIPERBAIKI AGAR TIDAK KETUTUPAN */
         .ayat-display {
             background: var(--mushaf-bg);
-            padding: 45px 35px;
-            border-radius: 4px;
+            padding: 50px 30px 40px 30px;
+            /* Padding atas dibesarkan */
+            border-radius: 8px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1), inset 0 0 60px rgba(198, 168, 124, 0.15);
-            min-height: 60vh;
-            display: flex;
-            flex-direction: column;
+            min-height: 50vh;
             margin-bottom: 30px;
             position: relative;
-            /* Bingkai Luar */
             border: 2px solid var(--mushaf-border);
             outline: 6px solid var(--mushaf-gold);
-            outline-offset: -12px;
+            outline-offset: -10px;
+            margin-top: 10px;
         }
 
-        /* Bingkai Dalam */
         .ayat-display::after {
             content: '';
             position: absolute;
-            top: 15px;
-            bottom: 15px;
-            left: 15px;
-            right: 15px;
+            top: 13px;
+            bottom: 13px;
+            left: 13px;
+            right: 13px;
             border: 1px solid var(--mushaf-border);
             pointer-events: none;
         }
 
-        /* Label Halaman di atas bingkai */
         .mushaf-header-label {
             position: absolute;
-            top: -14px;
+            top: 18px;
             left: 50%;
             transform: translateX(-50%);
-            background: var(--mushaf-bg);
-            padding: 0 15px;
+            background: transparent;
             font-family: 'Scheherazade New', serif;
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             font-weight: bold;
             color: var(--mushaf-border);
             z-index: 10;
+            width: 100%;
+            text-align: center;
         }
 
         .ayat-text {
             font-family: 'Scheherazade New', serif;
-            font-size: 2.2rem;
-            line-height: 2.4;
+            font-size: 2.3rem;
+            line-height: 2.3;
             direction: rtl;
             color: var(--quran-text);
             text-align: justify;
-            /* Rata Kiri Kanan agar rapi seperti Mushaf */
             text-justify: kashida;
             text-align-last: center;
-            /* Baris terakhir di tengah */
             z-index: 2;
+            position: relative;
+            margin-top: 20px;
         }
 
         .word {
             color: transparent;
-            text-shadow: 0 0 15px rgba(17, 24, 39, 0.35);
-            transition: 0.3s ease;
+            text-shadow: 0 0 12px rgba(17, 24, 39, 0.25);
+            transition: 0.2s ease;
             position: relative;
             user-select: none;
             cursor: pointer;
-            padding: 0 2px;
+            padding: 0 3px;
         }
 
         .word .waqaf-mark {
@@ -372,7 +382,7 @@ $last_murojaah = mysqli_fetch_assoc($q_last);
         .word.revealed {
             color: var(--quran-text);
             text-shadow: none;
-            font-weight: 600;
+            font-weight: bold;
             cursor: default;
         }
 
@@ -385,30 +395,24 @@ $last_murojaah = mysqli_fetch_assoc($q_last);
             padding-bottom: 2px;
         }
 
-        .word.correct-flash {
-            color: #10b981 !important;
-            text-shadow: none;
-            animation: popGreen 0.3s ease;
+        /* FITUR MATA - MUNCULKAN TEKS TRANSPARAN */
+        .ayat-text.preview-mode .word {
+            color: rgba(17, 24, 39, 0.3) !important;
+            text-shadow: none !important;
         }
 
-        @keyframes popGreen {
-            0% {
-                transform: scale(1);
-            }
+        .ayat-text.preview-mode .word.revealed {
+            color: var(--quran-text) !important;
+        }
 
-            50% {
-                transform: scale(1.15);
-                color: #34d399;
-            }
-
-            100% {
-                transform: scale(1);
-            }
+        .word.correct-flash {
+            color: #10b981 !important;
+            text-shadow: none !important;
         }
 
         .word.wrong-shake {
             color: #ef4444 !important;
-            text-shadow: none;
+            text-shadow: none !important;
             animation: shakeRed 0.4s ease;
         }
 
@@ -419,20 +423,12 @@ $last_murojaah = mysqli_fetch_assoc($q_last);
                 transform: translateX(0);
             }
 
-            20% {
-                transform: translateX(-6px);
+            25% {
+                transform: translateX(-5px);
             }
 
-            40% {
-                transform: translateX(6px);
-            }
-
-            60% {
-                transform: translateX(-4px);
-            }
-
-            80% {
-                transform: translateX(4px);
+            75% {
+                transform: translateX(5px);
             }
         }
 
@@ -440,36 +436,37 @@ $last_murojaah = mysqli_fetch_assoc($q_last);
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 35px;
-            height: 35px;
+            width: 38px;
+            height: 38px;
             background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="none" stroke="%23c6a87c" stroke-width="4"/><circle cx="50" cy="50" r="38" fill="none" stroke="%23c6a87c" stroke-width="2" stroke-dasharray="2,2"/></svg>') no-repeat center;
             background-size: cover;
             color: var(--mushaf-border);
-            font-size: 0.9rem;
+            font-size: 1rem;
             font-weight: 700;
             margin: 0 6px;
             font-family: 'Inter', sans-serif;
             direction: ltr;
         }
 
-        .ayat-text.preview-mode .word {
-            color: var(--quran-text) !important;
-            text-shadow: none !important;
-        }
-
-        /* Mic Button */
+        /* MIC BUTTON */
         .mic-container {
             display: flex;
             justify-content: center;
             align-items: center;
-            margin-top: 10px;
             flex-direction: column;
             gap: 15px;
+            position: fixed;
+            bottom: 20px;
+            left: 0;
+            width: 100%;
+            z-index: 200;
+            background: linear-gradient(to top, var(--bg) 60%, transparent);
+            padding-bottom: 20px;
         }
 
         .mic-btn {
-            width: 80px;
-            height: 80px;
+            width: 75px;
+            height: 75px;
             border-radius: 50%;
             background: var(--primary);
             color: white;
@@ -506,10 +503,14 @@ $last_murojaah = mysqli_fetch_assoc($q_last);
         .status-text {
             font-size: 0.9rem;
             color: var(--text-muted);
-            font-weight: 500;
+            font-weight: 600;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 5px 15px;
+            border-radius: 20px;
         }
 
-        /* CUSTOM BOTTOM SHEET */
+        /* BOTTOM SHEET */
         .custom-overlay {
             position: fixed;
             top: 0;
@@ -519,7 +520,7 @@ $last_murojaah = mysqli_fetch_assoc($q_last);
             background: rgba(0, 0, 0, 0.5);
             z-index: 1000;
             display: none;
-            align-items: center;
+            align-items: flex-end;
             justify-content: center;
             opacity: 0;
             transition: 0.3s ease;
@@ -533,37 +534,37 @@ $last_murojaah = mysqli_fetch_assoc($q_last);
         .custom-modal {
             background: white;
             padding: 25px;
-            border-radius: 20px;
-            width: 90%;
-            max-width: 400px;
-            transform: scale(0.9);
+            width: 100%;
+            max-width: 500px;
+            border-radius: 24px 24px 0 0;
+            transform: translateY(100%);
             transition: 0.3s ease;
+            padding-bottom: 40px;
         }
 
         .custom-overlay.show .custom-modal {
-            transform: scale(1);
+            transform: translateY(0);
         }
 
         .cm-title {
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             font-weight: 700;
             color: var(--dark);
             margin-bottom: 5px;
         }
 
         .cm-subtitle {
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             color: var(--text-muted);
             margin-bottom: 20px;
-            line-height: 1.5;
         }
 
         .cm-input {
             width: 100%;
-            padding: 12px;
+            padding: 15px;
             border: 1px solid var(--border);
             border-radius: 12px;
-            font-size: 1rem;
+            font-size: 1.1rem;
             margin-bottom: 20px;
             outline: none;
         }
@@ -575,11 +576,12 @@ $last_murojaah = mysqli_fetch_assoc($q_last);
 
         .cm-btn {
             flex: 1;
-            padding: 12px;
+            padding: 15px;
             border-radius: 12px;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
             border: none;
+            font-size: 1rem;
         }
 
         .cm-btn-cancel {
@@ -590,33 +592,6 @@ $last_murojaah = mysqli_fetch_assoc($q_last);
         .cm-btn-confirm {
             background: var(--primary);
             color: white;
-        }
-
-        @media (max-width: 768px) {
-            .custom-overlay {
-                align-items: flex-end;
-            }
-
-            .custom-modal {
-                width: 100%;
-                max-width: 100%;
-                border-radius: 24px 24px 0 0;
-                transform: translateY(100%);
-                padding-bottom: 40px;
-            }
-
-            .custom-overlay.show .custom-modal {
-                transform: translateY(0);
-            }
-
-            .ayat-text {
-                font-size: 1.8rem;
-                line-height: 2.2;
-            }
-
-            .ayat-display {
-                padding: 30px 20px;
-            }
         }
 
         #srs-screen {
@@ -647,6 +622,7 @@ $last_murojaah = mysqli_fetch_assoc($q_last);
             cursor: pointer;
             flex: 1;
             color: white;
+            font-size: 1rem;
         }
     </style>
 </head>
@@ -661,36 +637,36 @@ $last_murojaah = mysqli_fetch_assoc($q_last);
     <div class="container">
         <!-- 1. SETUP SCREEN -->
         <div id="setup-screen">
+            <?php if ($last_murojaah): ?>
+                <div class="last-murojaah-card">
+                    <div class="lmc-label"><i class="fas fa-history"></i> Lanjutkan Murojaah</div>
+                    <div class="lmc-title">Surah ke-<?= $last_murojaah['surah_nomor'] ?> (Ayat <?= $last_murojaah['last_ayat'] ?>)</div>
+                </div>
+            <?php endif; ?>
+
             <div class="search-box">
                 <i class="fas fa-search"></i>
                 <input type="text" id="searchInput" placeholder="Cari Surah..." autocomplete="off">
             </div>
-            <div id="loading" style="text-align:center; padding:20px; color:var(--text-muted);"><i class="fas fa-spinner fa-spin"></i> Menyiapkan daftar surah...</div>
+            <div id="loading" style="text-align:center; padding:20px; color:var(--text-muted);"><i class="fas fa-spinner fa-spin"></i> Menyiapkan mushaf...</div>
             <div class="surah-list" id="surahList"></div>
         </div>
 
         <!-- 2. SESSION SCREEN -->
         <div id="session-screen">
             <div class="session-toolbar">
-                <button class="tool-btn" id="eyeBtn" onclick="toggleEye()" title="Intip Halaman"><i class="fas fa-eye"></i></button>
-                <div class="session-header">
-                    <div class="sh-title" id="ses-surah-ar">...</div>
-                </div>
-                <button class="finish-btn" onclick="endSessionManually()"><i class="fas fa-flag-checkered"></i> Selesai</button>
+                <button class="tool-btn" id="eyeBtn" onclick="toggleEye()" title="Intip Teks"><i class="fas fa-eye"></i></button>
+                <div class="sh-title" id="ses-surah-ar">...</div>
+                <button class="finish-btn" onclick="endSessionManually()"><i class="fas fa-check"></i> Selesai</button>
             </div>
 
             <div class="skip-hint">
-                <i class="fas fa-lightbulb"></i> <strong>Tips:</strong> Ketuk kata bergaris kuning untuk skip jika AI nyangkut.
+                <i class="fas fa-info-circle"></i> Jika AI kurang akurat/nyangkut, <strong>klik kata bergaris kuning</strong> untuk melewatinya.
             </div>
 
             <div class="ayat-display" id="ayatDisplay">
                 <div class="mushaf-header-label" id="mushaf-page-label">الجزء - صفحة</div>
                 <div class="ayat-text" id="ayat-text-container"></div>
-            </div>
-
-            <div class="mic-container">
-                <button class="mic-btn" id="micBtn" onclick="toggleMic()"><i class="fas fa-microphone"></i></button>
-                <div class="status-text" id="micStatus">Ketuk mic untuk mulai menyetor</div>
             </div>
         </div>
 
@@ -707,6 +683,12 @@ $last_murojaah = mysqli_fetch_assoc($q_last);
         </div>
     </div>
 
+    <!-- MIC CONTROL (Fixed Bottom) -->
+    <div class="mic-container" id="micArea" style="display:none;">
+        <div class="status-text" id="micStatus">Ketuk mic untuk mulai menyetor</div>
+        <button class="mic-btn" id="micBtn" onclick="toggleMic()"><i class="fas fa-microphone"></i></button>
+    </div>
+
     <!-- BOTTOM SHEET -->
     <div class="custom-overlay" id="promptOverlay">
         <div class="custom-modal">
@@ -715,13 +697,13 @@ $last_murojaah = mysqli_fetch_assoc($q_last);
             <input type="number" class="cm-input" id="p-input" min="1" value="1">
             <div class="cm-actions">
                 <button class="cm-btn cm-btn-cancel" onclick="closePrompt()">Batal</button>
-                <button class="cm-btn cm-btn-confirm" onclick="confirmPrompt()">Mulai</button>
+                <button class="cm-btn cm-btn-confirm" onclick="confirmPrompt()">Mulai Sekarang</button>
             </div>
         </div>
     </div>
 
     <script>
-        // --- KAMUS MUQATTA'AT (MENCEGAH BUG ALIF LAM MIM) ---
+        // Kamus Muqatta'at untuk memperbaiki bug Alif Lam Mim
         const phoneticMap = {
             "الم": "الف لام ميم",
             "المص": "الف لام ميم صاد",
@@ -786,13 +768,11 @@ $last_murojaah = mysqli_fetch_assoc($q_last);
                     body: `action=get_progress&surah=${surahNo}`
                 });
                 prog = await res.json();
-            } catch (e) {
-                prog = null;
-            }
+            } catch (e) {}
 
             const savedAyat = prog && prog.last_ayat ? prog.last_ayat : 1;
             document.getElementById('p-title').innerText = `Murojaah ${namaLa}`;
-            document.getElementById('p-subtitle').innerHTML = `${jumlahAyat} Ayat. ${prog && prog.last_ayat ? `<br><b>Lanjut dari:</b> Ayat ${prog.last_ayat}` : ''}`;
+            document.getElementById('p-subtitle').innerHTML = `${jumlahAyat} Ayat. ${prog && prog.last_ayat ? `Lanjut dari ayat ke-${prog.last_ayat}?` : ''}`;
 
             const inputEl = document.getElementById('p-input');
             inputEl.max = jumlahAyat;
@@ -816,15 +796,15 @@ $last_murojaah = mysqli_fetch_assoc($q_last);
             loadSurahData(pSurahNo, pNamaLa, pNamaAr, start);
         }
 
-        // --- SPEECH AI ENGINE & MUSHAF LOGIC ---
+        // --- CORE AI & MUSHAF ---
         let recognition;
         let isListening = false;
-        let pages = [];
-        let tokens = [];
-        let currentPageIdx = 0,
+        let pages = [],
+            tokens = [],
+            currentPageIdx = 0,
             currentPageNumber = 1,
             currentTokenIdx = 0;
-        let wrongStrikes = 0; // Toleransi 3 kali salah
+        let wrongStrikes = 0;
 
         if ('webkitSpeechRecognition' in window) {
             recognition = new webkitSpeechRecognition();
@@ -842,13 +822,14 @@ $last_murojaah = mysqli_fetch_assoc($q_last);
 
         function getPhonetic(rawWord) {
             let clean = rawWord.replace(/[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED\u06DF-\u06E8]/g, '').trim();
-            if (phoneticMap[clean]) return normalizeArabic(phoneticMap[clean]);
-            return normalizeArabic(rawWord);
+            return phoneticMap[clean] ? normalizeArabic(phoneticMap[clean]) : normalizeArabic(rawWord);
         }
 
         async function loadSurahData(surahNo, namaLa, namaAr, startAyat) {
+            currentSurahId = surahNo;
             document.getElementById('setup-screen').style.display = 'none';
             document.getElementById('session-screen').style.display = 'block';
+            document.getElementById('micArea').style.display = 'flex'; // Munculkan Mic
             document.getElementById('ses-surah-ar').innerText = namaAr;
             document.getElementById('ayat-text-container').innerHTML = '<i class="fas fa-spinner fa-spin" style="color:var(--primary); font-size:2rem;"></i>';
 
@@ -891,7 +872,6 @@ $last_murojaah = mysqli_fetch_assoc($q_last);
         function buildPages(verses) {
             const pagesMap = {};
             let tokenCounter = 0;
-
             verses.forEach((v, vIdx) => {
                 const pageNum = v.page || 1;
                 if (!pagesMap[pageNum]) pagesMap[pageNum] = {
@@ -899,7 +879,6 @@ $last_murojaah = mysqli_fetch_assoc($q_last);
                     juz: v.juz,
                     tokens: []
                 };
-
                 const rawWords = v.teksArab.split(' ').filter(w => w.trim() !== '');
                 let lastRealTokenIdx = null;
 
@@ -908,15 +887,14 @@ $last_murojaah = mysqli_fetch_assoc($q_last);
                         if (lastRealTokenIdx !== null) pagesMap[pageNum].tokens[lastRealTokenIdx].decor += ' ' + w;
                         return;
                     }
-                    const tok = {
+                    pagesMap[pageNum].tokens.push({
                         type: 'word',
                         text: w,
                         decor: '',
                         phonetic: getPhonetic(w),
                         verseIdx: vIdx,
                         id: `tok-${tokenCounter++}`
-                    };
-                    pagesMap[pageNum].tokens.push(tok);
+                    });
                     lastRealTokenIdx = pagesMap[pageNum].tokens.length - 1;
                 });
                 pagesMap[pageNum].tokens.push({
@@ -934,7 +912,7 @@ $last_murojaah = mysqli_fetch_assoc($q_last);
             const page = pages[pageIdx];
             tokens = page.tokens;
             currentPageNumber = page.pageNumber;
-            wrongStrikes = 0; // Reset kesalahan saat ganti halaman
+            wrongStrikes = 0;
 
             document.getElementById('mushaf-page-label').innerText = `الجزء ${page.juz} - صفحة ${page.pageNumber}`;
 
@@ -943,8 +921,11 @@ $last_murojaah = mysqli_fetch_assoc($q_last);
                 return `<span class="word" id="${tok.id}" onclick="skipWord('${tok.id}')">${tok.text}<span class="waqaf-mark">${tok.decor||''}</span></span>`;
             }).join('');
 
-            document.getElementById('ayat-text-container').innerHTML = html;
-            document.getElementById('ayat-text-container').classList.remove('preview-mode');
+            const container = document.getElementById('ayat-text-container');
+            container.innerHTML = html;
+
+            // Pastikan Mode Intip Tertutup saat ganti halaman
+            container.classList.remove('preview-mode');
             document.getElementById('eyeBtn').classList.remove('active');
 
             let startTokenIdx = 0;
@@ -970,13 +951,16 @@ $last_murojaah = mysqli_fetch_assoc($q_last);
             if (token && token.id === tokenId && token.type === 'word') revealWord();
         };
 
+        // FUNGSI INTIP AYAT (MATA) DIPERBAIKI
         function toggleEye() {
-            document.getElementById('ayat-text-container').classList.toggle('preview-mode');
-            document.getElementById('eyeBtn').classList.toggle('active');
+            const container = document.getElementById('ayat-text-container');
+            const btn = document.getElementById('eyeBtn');
+            container.classList.toggle('preview-mode');
+            btn.classList.toggle('active');
         }
 
         function revealWord() {
-            wrongStrikes = 0; // Reset jika benar
+            wrongStrikes = 0;
             const token = tokens[currentTokenIdx];
             const wEl = document.getElementById(token.id);
             wEl.classList.remove('active-listen');
@@ -984,7 +968,7 @@ $last_murojaah = mysqli_fetch_assoc($q_last);
             setTimeout(() => {
                 wEl.classList.remove('correct-flash');
                 wEl.classList.add('revealed');
-            }, 300);
+            }, 200);
 
             currentTokenIdx++;
 
@@ -1002,6 +986,7 @@ $last_murojaah = mysqli_fetch_assoc($q_last);
                     renderPage(currentPageIdx + 1);
                 } else {
                     if (isListening) toggleMic();
+                    document.getElementById('micArea').style.display = 'none';
                     fetch('smart_murojaah.php', {
                         method: 'POST',
                         headers: {
@@ -1034,52 +1019,70 @@ $last_murojaah = mysqli_fetch_assoc($q_last);
             const el = document.getElementById(tokenId);
             if (el) {
                 el.classList.add('wrong-shake');
-                if (navigator.vibrate) navigator.vibrate(100);
+                if (navigator.vibrate) navigator.vibrate(50);
                 setTimeout(() => el.classList.remove('wrong-shake'), 400);
             }
         }
 
-        // --- PENCOCOKAN DENGAN TOLERANSI (3 STRIKES) ---
+        // --- PENCOCOKAN AI YANG SUPER LONGGAR (FUZZY MATCH) ---
+        function fuzzyMatch(spokenWord, targetWord) {
+            let s = normalizeArabic(spokenWord);
+            let t = normalizeArabic(targetWord);
+            if (s.length < 2 || t.length < 2) return s === t;
+            // Jika suara mengandung kata target atau sebaliknya
+            return s.includes(t) || t.includes(s);
+        }
+
         if (recognition) {
             recognition.onresult = function(event) {
-                const latest = event.results[event.results.length - 1];
-                const transcript = latest[0].transcript;
-                const isFinal = latest.isFinal;
+                let transcript = '';
+                // Menggabungkan semua hasil (interim & final)
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    transcript += event.results[i][0].transcript;
+                }
+
                 if (transcript.trim() === '') return;
 
                 const token = tokens[currentTokenIdx];
                 if (!token || token.type !== 'word') return;
 
-                const targetSpeak = token.phonetic; // Gunakan Phonetic
+                const targetSpeak = token.phonetic;
                 const spokenWords = transcript.split(' ').map(w => normalizeArabic(w)).filter(w => w !== '');
 
-                const isMatch = spokenWords.some(sw => sw === targetSpeak || sw.includes(targetSpeak) || targetSpeak.includes(sw));
+                // Cek dengan Fuzzy Match
+                const isMatch = spokenWords.some(sw => fuzzyMatch(sw, targetSpeak));
 
                 if (isMatch) {
                     revealWord();
                     return;
                 }
 
-                if (isFinal) {
+                // Cek Toleransi Jika Final
+                if (event.results[event.results.length - 1].isFinal) {
                     wrongStrikes++;
                     if (wrongStrikes >= 3) {
                         flashWrong(token.id);
-                        wrongStrikes = 0; // Reset setelah merah
+                        wrongStrikes = 0;
                     }
                 }
             };
 
             recognition.onend = function() {
-                // Beri jeda 300ms sebelum restart untuk mencegah mic loop/beeping terus-menerus
+                // Jangan paksa nyala jika di-stop manual
                 if (isListening) {
+                    // Beri jeda agak lama (800ms) agar tidak memicu "ting-tung" berulang cepat
                     setTimeout(() => {
                         if (isListening) recognition.start();
-                    }, 300);
+                    }, 800);
                 }
             };
         }
 
         function toggleMic() {
+            if (!recognition) {
+                alert("Browser tidak mendukung AI Suara. Pakai Chrome Android.");
+                return;
+            }
             const btn = document.getElementById('micBtn');
             const status = document.getElementById('micStatus');
             if (!isListening) {
@@ -1087,13 +1090,13 @@ $last_murojaah = mysqli_fetch_assoc($q_last);
                 recognition.start();
                 btn.classList.add('listening');
                 btn.innerHTML = '<i class="fas fa-stop"></i>';
-                status.innerHTML = "Mendengarkan... Silakan baca hafalanmu";
+                status.innerHTML = "Mendengarkan... Silakan baca";
             } else {
                 isListening = false;
                 recognition.stop();
                 btn.classList.remove('listening');
                 btn.innerHTML = '<i class="fas fa-microphone"></i>';
-                status.innerHTML = "Jeda. Ketuk mic untuk melanjutkan";
+                status.innerHTML = "Jeda. Ketuk mic untuk lanjut";
             }
         }
 

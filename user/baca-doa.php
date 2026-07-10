@@ -5,7 +5,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
     exit();
 }
 
-// Ambil parameter ID dari URL (default 1 jika kosong)
 $doa_id = isset($_GET['id']) ? (int)$_GET['id'] : 1;
 ?>
 <!DOCTYPE html>
@@ -15,7 +14,6 @@ $doa_id = isset($_GET['id']) ? (int)$_GET['id'] : 1;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Baca Doa - Hifzly</title>
-    <!-- Font Arab -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Scheherazade+New:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -42,7 +40,6 @@ $doa_id = isset($_GET['id']) ? (int)$_GET['id'] : 1;
             padding-bottom: 90px;
         }
 
-        /* Custom Header Baca */
         .read-header {
             background: var(--card-bg);
             position: sticky;
@@ -85,7 +82,6 @@ $doa_id = isset($_GET['id']) ? (int)$_GET['id'] : 1;
             margin: 0 auto;
         }
 
-        /* Card Visual & Detail Doa */
         .doa-detail-card {
             background: var(--card-bg);
             border-radius: 20px;
@@ -93,7 +89,6 @@ $doa_id = isset($_GET['id']) ? (int)$_GET['id'] : 1;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
             border: 1px solid var(--border);
             display: none;
-            /* Sembunyikan sebelum API terload */
         }
 
         .doa-hero-img {
@@ -145,7 +140,6 @@ $doa_id = isset($_GET['id']) ? (int)$_GET['id'] : 1;
             text-align: center;
         }
 
-        /* Tombol Aksi */
         .doa-actions {
             display: flex;
             gap: 15px;
@@ -186,7 +180,6 @@ $doa_id = isset($_GET['id']) ? (int)$_GET['id'] : 1;
             opacity: 0.9;
         }
 
-        /* Loading & Alert */
         #loading {
             text-align: center;
             padding: 60px 20px;
@@ -237,15 +230,12 @@ $doa_id = isset($_GET['id']) ? (int)$_GET['id'] : 1;
         <div id="loading"><i class="fas fa-spinner fa-spin"></i> Menarik doa dari server...</div>
 
         <div class="doa-detail-card" id="doaCard">
-            <!-- Gambar Visual (lebih tematik) -->
             <img src="" alt="Visual Doa" class="doa-hero-img" id="d-img">
-
             <div class="doa-body">
                 <div class="d-title" id="d-title">Memuat...</div>
                 <div class="d-arab" id="d-arab"></div>
                 <div class="d-latin" id="d-latin"></div>
                 <div class="d-arti" id="d-arti"></div>
-
                 <div class="doa-actions">
                     <button class="btn-action btn-copy" onclick="copyDoa()">
                         <i class="fas fa-copy"></i> Salin
@@ -258,7 +248,6 @@ $doa_id = isset($_GET['id']) ? (int)$_GET['id'] : 1;
         </div>
     </div>
 
-    <!-- Alert Kapsul -->
     <div class="islamic-alert" id="customAlert">
         <i class="fas fa-check-circle ia-icon"></i>
         <div style="font-size:0.95rem; font-weight:600;" id="alertMsg">Berhasil disalin!</div>
@@ -266,54 +255,35 @@ $doa_id = isset($_GET['id']) ? (int)$_GET['id'] : 1;
 
     <script>
         const doaId = <?= $doa_id ?>;
-        const API_URL_DETAIL = `https://equran.id/api/doa/${doaId}`;
-
+        const API_URL = `https://doa-doa-api-ahmadramadhan.fly.dev/api/doa/${doaId}`;
         let currentDoa = null;
 
         async function fetchDoaDetail() {
             try {
-                const response = await fetch(API_URL_DETAIL);
-                if (!response.ok) throw new Error('Gagal mengambil data (HTTP ' + response.status + ')');
-
-                const json = await response.json();
-                // Data bisa langsung atau terbungkus dalam properti 'data'
-                const data = json.data || json;
-
-                // Jika data kosong atau tidak ada properti yang diharapkan
-                if (!data || Object.keys(data).length === 0) {
-                    throw new Error('Doa tidak ditemukan');
-                }
-
+                const res = await fetch(API_URL);
+                if (!res.ok) throw new Error('Doa tidak ditemukan');
+                const data = await res.json();
                 currentDoa = data;
 
-                // Sembunyikan loading, tampilkan card
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('doaCard').style.display = 'block';
 
-                // Ambil properti dengan fallback
-                const judul = currentDoa.doa || currentDoa.judul || currentDoa.nama || 'Doa Harian';
-                const arab = currentDoa.ayat || currentDoa.arab || '';
-                const latin = currentDoa.latin || '';
-                const arti = currentDoa.artinya || currentDoa.arti || '';
+                document.getElementById('d-title').innerText = currentDoa.judul || currentDoa.nama || 'Doa';
+                document.getElementById('d-arab').innerText = currentDoa.arab || '';
+                document.getElementById('d-latin').innerText = currentDoa.latin || '';
+                document.getElementById('d-arti').innerText = currentDoa.artinya || currentDoa.arti || '';
 
-                document.getElementById('d-title').innerText = judul;
-                document.getElementById('d-arab').innerText = arab;
-                document.getElementById('d-latin').innerText = latin;
-                document.getElementById('d-arti').innerText = arti ? `"${arti}"` : '';
-
-                // Gambar dari Unsplash dengan tema masjid (lebih relevan)
-                // Gunakan doaId sebagai seed agar gambar konsisten
+                // Gambar tematik dari Unsplash
                 document.getElementById('d-img').src =
                     `https://images.unsplash.com/photo-1582653291997-079a1c04e5a1?q=80&w=800&auto=format&fit=crop&sig=${doaId}`;
 
             } catch (error) {
                 document.getElementById('loading').innerHTML = `
-                    <span style="color:#dc2626;">
-                        <i class="fas fa-exclamation-circle"></i> ${error.message || 'Gagal memuat doa.'}
-                        <br><small style="color:#64748b;">Pastikan koneksi internet stabil dan ID doa tersedia.</small>
-                    </span>
-                `;
-                console.error('Error fetchDoaDetail:', error);
+                <span style="color:#dc2626;">
+                    <i class="fas fa-exclamation-circle"></i> ${error.message}
+                    <br><small style="color:#64748b;">Pastikan ID doa benar dan koneksi internet stabil.</small>
+                </span>
+            `;
             }
         }
 
@@ -324,20 +294,18 @@ $doa_id = isset($_GET['id']) ? (int)$_GET['id'] : 1;
             const latin = document.getElementById('d-latin').innerText;
             const arti = document.getElementById('d-arti').innerText;
 
-            const textToCopy = `*${judul}*\n\n${arab}\n\n_${latin}_\n\nArtinya:\n${arti}\n\nDibagikan dari aplikasi Hifzly`;
-
-            navigator.clipboard.writeText(textToCopy).then(() => {
-                showAlert("Teks doa berhasil disalin!");
-            }).catch(() => {
-                // Fallback jika clipboard tidak didukung
-                const textarea = document.createElement('textarea');
-                textarea.value = textToCopy;
-                document.body.appendChild(textarea);
-                textarea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textarea);
-                showAlert("Teks doa berhasil disalin!");
-            });
+            const text = `*${judul}*\n\n${arab}\n\n_${latin}_\n\nArtinya:\n${arti}\n\nDibagikan dari Hifzly`;
+            navigator.clipboard.writeText(text).then(() => showAlert('Teks doa berhasil disalin!'))
+                .catch(() => {
+                    // Fallback
+                    const ta = document.createElement('textarea');
+                    ta.value = text;
+                    document.body.appendChild(ta);
+                    ta.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(ta);
+                    showAlert('Teks doa berhasil disalin!');
+                });
         }
 
         function shareDoa() {
@@ -347,28 +315,26 @@ $doa_id = isset($_GET['id']) ? (int)$_GET['id'] : 1;
             const latin = document.getElementById('d-latin').innerText;
             const arti = document.getElementById('d-arti').innerText;
 
-            const textToShare = `*${judul}*\n\n${arab}\n\n_${latin}_\n\nArtinya:\n${arti}\n\nDibagikan via Hifzly`;
+            const text = `*${judul}*\n\n${arab}\n\n_${latin}_\n\nArtinya:\n${arti}\n\nDibagikan via Hifzly`;
 
             if (navigator.share) {
                 navigator.share({
                     title: judul,
-                    text: textToShare,
-                }).catch(err => console.log('Share dibatalkan', err));
+                    text: text
+                }).catch(() => {});
             } else {
-                // Fallback untuk browser desktop
                 copyDoa();
-                showAlert("Disalin! (Fitur Share tidak didukung di browser ini)");
+                showAlert('Disalin! (Browser tidak mendukung share)');
             }
         }
 
         function showAlert(msg) {
             document.getElementById('alertMsg').innerText = msg;
-            const alertEl = document.getElementById('customAlert');
-            alertEl.classList.add('show');
-            setTimeout(() => alertEl.classList.remove('show'), 3000);
+            const el = document.getElementById('customAlert');
+            el.classList.add('show');
+            setTimeout(() => el.classList.remove('show'), 3000);
         }
 
-        // Panggil fungsi
         fetchDoaDetail();
     </script>
 </body>

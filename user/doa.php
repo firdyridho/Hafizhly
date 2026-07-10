@@ -1,7 +1,5 @@
 <?php
 session_start();
-require_once '../config/database.php';
-
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
     header("Location: ../login.php");
     exit();
@@ -9,137 +7,236 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
 ?>
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Doa Harian - Hifzly</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Kumpulan Doa - Hifzly</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Scheherazade+New:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary: #059669; --primary-light: #d1fae5;
-            --dark: #1e293b; --text-muted: #64748b;
-            --bg: #f8fafc; --card-bg: #ffffff; --border: #e2e8f0;
+            --primary: #059669;
+            --primary-light: #d1fae5;
+            --dark: #1e293b;
+            --text-muted: #64748b;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --border: #e2e8f0;
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background-color: var(--bg); color: var(--dark); padding-bottom: 90px; }
 
-        .container { padding: 20px; max-width: 900px; margin: 0 auto; }
-        
-        .page-header { text-align: center; margin-bottom: 25px; }
-        .page-title { font-size: 1.8rem; font-weight: 700; color: var(--primary); margin-bottom: 8px; }
-        .page-subtitle { color: var(--text-muted); font-size: 0.95rem; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
 
-        .search-box { position: relative; margin-bottom: 30px; }
+        body {
+            background-color: var(--bg);
+            color: var(--dark);
+            padding-bottom: 90px;
+        }
+
+        .header {
+            background: var(--card-bg);
+            padding: 20px 20px 15px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-title i {
+            color: var(--primary);
+        }
+
+        .back-btn {
+            color: var(--text-muted);
+            font-size: 1.3rem;
+            text-decoration: none;
+        }
+
+        .back-btn:hover {
+            color: var(--primary);
+        }
+
+        .search-box {
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            background: var(--bg);
+            border-radius: 12px;
+            padding: 0 15px;
+            border: 1px solid var(--border);
+        }
+
+        .search-box i {
+            color: var(--text-muted);
+        }
+
         .search-box input {
-            width: 100%; padding: 15px 20px 15px 50px; border-radius: 16px;
-            border: 1px solid var(--border); font-size: 1rem; outline: none; transition: 0.3s;
+            border: none;
+            background: transparent;
+            padding: 12px 10px;
+            width: 100%;
+            font-size: 1rem;
+            outline: none;
         }
-        .search-box input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px var(--primary-light); }
-        .search-box i { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
 
-        .doa-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
-        
+        .container {
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .doa-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
         .doa-card {
-            background: var(--card-bg); border-radius: 16px; overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid var(--border);
-            text-decoration: none; display: block; transition: 0.3s; position: relative;
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 18px 15px;
+            border: 1px solid var(--border);
+            transition: 0.2s;
+            text-decoration: none;
+            color: var(--dark);
+            display: block;
         }
-        .doa-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(5,150,105,0.1); border-color: var(--primary-light); }
-        .doa-img { width: 100%; height: 140px; object-fit: cover; background-color: var(--border); }
-        .doa-title-card { padding: 18px; font-weight: 700; font-size: 1.1rem; color: var(--dark); text-align: center; }
 
-        #loading-state, #empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
-        #empty-state { display: none; }
+        .doa-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .doa-card .doa-nama {
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        .doa-card .doa-arab {
+            font-family: 'Scheherazade New', serif;
+            font-size: 1.2rem;
+            direction: rtl;
+            color: var(--dark);
+            margin-bottom: 5px;
+        }
+
+        .doa-card .doa-arti {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        #loading {
+            text-align: center;
+            padding: 50px 0;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .not-found {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 30px 0;
+        }
+
+        @media (max-width: 500px) {
+            .doa-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
+
 <body>
 
-    <div class="container">
-        <div class="page-header">
-            <h1 class="page-title">Doa Harian</h1>
-            <p class="page-subtitle">Senjata utama seorang mukmin</p>
+    <div class="header">
+        <div class="header-top">
+            <a href="../dashboard.php" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+            <div class="header-title"><i class="fas fa-hands-praying"></i> Kumpulan Doa</div>
+            <div style="width: 28px;"></div>
         </div>
-
         <div class="search-box">
             <i class="fas fa-search"></i>
-            <input type="text" id="searchInput" placeholder="Cari doa (contoh: makan, tidur)..." autocomplete="off">
-        </div>
-
-        <div id="loading-state"><i class="fas fa-spinner fa-spin"></i> Mengambil daftar doa...</div>
-        <div class="doa-grid" id="doa-container"></div>
-        
-        <div id="empty-state">
-            <i class="fas fa-box-open" style="font-size:3rem; margin-bottom:10px; color:#cbd5e1;"></i><br>
-            Doa tidak ditemukan.
+            <input type="text" id="searchDoa" placeholder="Cari doa..." onkeyup="filterDoa()">
         </div>
     </div>
 
-    <!-- Panggil Navigasi Bawah -->
-    <?php include '../components/nav.php'; ?>
+    <div class="container">
+        <div id="loading"><i class="fas fa-spinner fa-spin"></i> Memuat daftar doa...</div>
+        <div class="doa-grid" id="doaGrid"></div>
+    </div>
 
     <script>
-        const API_URL = 'https://equran.id/api/doa';
-        let allDoaList = [];
+        let semuaDoa = [];
 
-        const container = document.getElementById('doa-container');
-        const loadingState = document.getElementById('loading-state');
-        const emptyState = document.getElementById('empty-state');
-        const searchInput = document.getElementById('searchInput');
-
-        async function fetchAllDoa() {
+        async function fetchDoaList() {
             try {
-                const response = await fetch(API_URL); 
-                const json = await response.json();
-                
-                // Menyesuaikan struktur balasan API
-                allDoaList = json.data || json; 
-                
-                loadingState.style.display = 'none';
-                renderList(allDoaList);
+                const res = await fetch('https://doa-doa-api-ahmadramadhan.fly.dev/api/doa');
+                if (!res.ok) throw new Error('Gagal mengambil data');
+                const data = await res.json();
+                semuaDoa = data; // array of doa objects
+                renderDoa(semuaDoa);
             } catch (error) {
-                loadingState.innerHTML = '<span style="color:red;">Gagal terhubung ke API EQuran.id. Periksa koneksi internet Anda.</span>';
+                document.getElementById('loading').innerHTML = 'Gagal memuat doa. Periksa koneksi.';
             }
         }
 
-        function renderList(data) {
-            container.innerHTML = '';
-            
-            if(data.length === 0) {
-                emptyState.style.display = 'block';
+        function renderDoa(list) {
+            const grid = document.getElementById('doaGrid');
+            const loading = document.getElementById('loading');
+            loading.style.display = 'none';
+
+            if (list.length === 0) {
+                grid.innerHTML = `<div class="not-found">Tidak ada doa yang cocok</div>`;
                 return;
             }
-            emptyState.style.display = 'none';
 
-            data.forEach((doa, index) => {
-                // Ekstrak data yang fleksibel
-                const judul = doa.doa || doa.judul || doa.nama || 'Doa Harian';
-                const doaId = doa.id ? doa.id : (index + 1); // Fallback ID jika tidak ada properti ID
-                
-                // Generate gambar acak untuk visual
-                const randomImg = `https://images.unsplash.com/photo-1564507004663-b6dfb3c824d5?q=80&w=400&auto=format&fit=crop&sig=${doaId}`;
-
-                const card = document.createElement('a'); // Gunakan A tag agar langsung pindah halaman
-                card.href = `baca-doa.php?id=${doaId}`;
-                card.className = 'doa-card';
-                card.innerHTML = `
-                    <img src="${randomImg}" alt="Visual Doa" class="doa-img" loading="lazy">
-                    <div class="doa-title-card">${judul}</div>
-                `;
-                container.appendChild(card);
-            });
+            grid.innerHTML = list.map(doa => `
+            <a href="baca-doa.php?id=${doa.id}" class="doa-card">
+                <div class="doa-nama">${doa.judul || doa.nama || 'Doa'}</div>
+                <div class="doa-arab">${doa.arab || ''}</div>
+                <div class="doa-arti">${doa.artinya || doa.arti || ''}</div>
+            </a>
+        `).join('');
         }
 
-        searchInput.addEventListener('input', function(e) {
-            const query = e.target.value.toLowerCase();
-            const filtered = allDoaList.filter(doa => {
-                const judul = (doa.doa || doa.judul || doa.nama || '').toLowerCase();
-                return judul.includes(query);
+        function filterDoa() {
+            const keyword = document.getElementById('searchDoa').value.toLowerCase();
+            const filtered = semuaDoa.filter(doa => {
+                const judul = (doa.judul || doa.nama || '').toLowerCase();
+                const arti = (doa.artinya || doa.arti || '').toLowerCase();
+                return judul.includes(keyword) || arti.includes(keyword);
             });
-            renderList(filtered);
-        });
+            renderDoa(filtered);
+        }
 
-        fetchAllDoa();
+        fetchDoaList();
     </script>
 </body>
+
 </html>

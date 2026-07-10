@@ -401,7 +401,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
                 <div class="q-icon" style="color: #3b82f6;"><i class="fas fa-chart-line"></i></div>
                 <div class="q-text">Mutabaah</div>
             </a>
-            <a href="#" class="q-item">
+            <a href="doa.php" class="q-item">
                 <div class="q-icon" style="color: #8b5cf6;"><i class="fas fa-hands-praying"></i></div>
                 <div class="q-text">Doa</div>
             </a>

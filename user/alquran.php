@@ -354,7 +354,7 @@ $last_read = mysqli_fetch_assoc($q_last);
 
         <div class="juz-list" id="juz-section">
             <?php for ($i = 1; $i <= 30; $i++): ?>
-                <div class="juz-card" onclick="alert('Fitur Baca Per Juz akan segera hadir!')">
+                <div class="juz-card" onclick="window.location.href='baca-juz.php?juz=<?= $i ?>'">
                     Juz <?= $i ?>
                 </div>
             <?php endfor; ?>

@@ -33,7 +33,8 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Baca Al-Qur'an</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+    <!-- MENGGUNAKAN FONT SCHEHERAZADE NEW UNTUK WAQAF SEMPURNA -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Scheherazade+New:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -61,7 +62,6 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             scroll-behavior: smooth;
         }
 
-        /* Custom Header - Berisi Ikon Saja */
         .read-header {
             background: var(--card-bg);
             position: sticky;
@@ -111,7 +111,6 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             margin: 0 auto;
         }
 
-        /* Surah Info Card (Hero) */
         .surah-info-card {
             background: linear-gradient(135deg, var(--primary), #10b981);
             border-radius: 20px;
@@ -134,8 +133,9 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             color: white;
         }
 
+        /* Font Arab diganti ke Scheherazade New */
         .sic-ar {
-            font-family: 'Amiri', serif;
+            font-family: 'Scheherazade New', serif;
             font-size: 2.5rem;
             font-weight: bold;
             margin-bottom: 5px;
@@ -161,10 +161,9 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             border-radius: 20px;
         }
 
-        /* Bismillah */
         .bismillah-img {
             text-align: center;
-            font-family: 'Amiri', serif;
+            font-family: 'Scheherazade New', serif;
             font-size: 2.2rem;
             color: var(--dark);
             margin: 10px 0 30px;
@@ -174,7 +173,6 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             display: none;
         }
 
-        /* AYAT CARD */
         .ayat-list {
             display: flex;
             flex-direction: column;
@@ -196,7 +194,6 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             box-shadow: 0 5px 15px rgba(5, 150, 105, 0.1);
         }
 
-        /* Action Bar per Ayat */
         .ayat-header {
             display: flex;
             justify-content: space-between;
@@ -238,9 +235,12 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             transform: scale(1.1);
         }
 
-        /* Arab Text */
+        .ayat-action-btn.playing {
+            color: #f59e0b;
+        }
+
         .teks-arab {
-            font-family: 'Amiri', serif;
+            font-family: 'Scheherazade New', serif;
             font-size: 2.3rem;
             text-align: right;
             line-height: 2.2;
@@ -249,7 +249,6 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             direction: rtl;
         }
 
-        /* Latin & Terjemah Container */
         .teks-container {
             transition: 0.3s;
         }
@@ -272,7 +271,6 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             line-height: 1.6;
         }
 
-        /* Tafsir Box (Muncul di bawah terjemahan) */
         .tafsir-box {
             display: none;
             margin-top: 15px;
@@ -298,35 +296,36 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             text-transform: uppercase;
         }
 
-        /* ALERT ISLAMI */
+        /* ALERT DESAIN BARU (Kapsul Elegan) */
         .islamic-alert {
             position: fixed;
             top: -100px;
             left: 50%;
             transform: translateX(-50%);
-            background: var(--card-bg);
-            border-left: 5px solid var(--primary);
-            padding: 12px 20px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            background: var(--primary);
+            color: white;
+            padding: 14px 24px;
+            border-radius: 50px;
+            box-shadow: 0 10px 25px rgba(5, 150, 105, 0.4);
             display: flex;
             align-items: center;
             gap: 12px;
             z-index: 9999;
-            transition: 0.4s;
+            transition: 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
             width: max-content;
         }
 
         .islamic-alert.show {
-            top: 80px;
+            top: 30px;
         }
 
         .ia-icon {
             font-size: 1.2rem;
-            color: var(--primary);
+            color: #fbbf24;
         }
 
-        /* MODAL ASBABUN NUZUL */
+        /* Warna Emas */
+
         .modal {
             display: none;
             position: fixed;
@@ -378,6 +377,7 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
 
 <body id="baca-body">
 
+    <!-- Audio Elements tanpa autoplay/src di awal -->
     <audio id="audioFull"></audio>
     <audio id="audioAyat"></audio>
 
@@ -387,14 +387,13 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             <div class="surah-name-mini" id="mini-title">Memuat...</div>
         </div>
         <div class="header-right">
-            <div class="h-btn active" id="btn-terjemah" onclick="toggleTerjemah()" title="Tampilkan/Sembunyikan Terjemahan"><i class="fas fa-language"></i></div>
-            <div class="h-btn" id="btn-play-full" onclick="togglePlayFull()" title="Putar Murottal Full"><i class="fas fa-play-circle"></i></div>
-            <div class="h-btn" onclick="openInfoModal()" title="Info & Asbabun Nuzul"><i class="fas fa-info-circle"></i></div>
+            <div class="h-btn active" id="btn-terjemah" onclick="toggleTerjemah()" title="Terjemahan"><i class="fas fa-language"></i></div>
+            <div class="h-btn" id="btn-play-full" onclick="togglePlayFull()" title="Putar Murottal"><i class="fas fa-play-circle"></i></div>
+            <div class="h-btn" onclick="openInfoModal()" title="Asbabun Nuzul"><i class="fas fa-info-circle"></i></div>
         </div>
     </div>
 
     <div class="container">
-
         <div class="surah-info-card" id="hero-card" style="display:none;">
             <div class="sic-ar" id="hero-ar">--</div>
             <div class="sic-la" id="hero-la">--</div>
@@ -405,13 +404,14 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ
         </div>
 
-        <div id="loading"><i class="fas fa-spinner fa-spin"></i> Menyiapkan Mushaf & Tafsir...</div>
+        <div id="loading"><i class="fas fa-spinner fa-spin"></i> Menyiapkan Mushaf...</div>
         <div class="ayat-list" id="ayatList"></div>
     </div>
 
+    <!-- Alert Custom -->
     <div class="islamic-alert" id="customAlert">
         <i class="fas fa-check-circle ia-icon"></i>
-        <div style="font-size:0.9rem; font-weight:600; color:var(--dark);" id="alertMsg">Berhasil!</div>
+        <div style="font-size:0.95rem; font-weight:600;" id="alertMsg">Berhasil!</div>
     </div>
 
     <div class="modal" id="infoModal" onclick="closeInfoModal(event)">
@@ -430,7 +430,6 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
 
         async function fetchAlQuranData() {
             try {
-                // Fetch Surat dan Tafsir secara bersamaan (Paralel)
                 const [resSurat, resTafsir] = await Promise.all([
                     fetch(`https://equran.id/api/v2/surat/${noSurat}`),
                     fetch(`https://equran.id/api/v2/tafsir/${noSurat}`)
@@ -440,7 +439,7 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
                 const jsonTafsir = await resTafsir.json();
 
                 surahData = jsonSurat.data;
-                tafsirData = jsonTafsir.data.tafsir; // Array of tafsir per ayat
+                tafsirData = jsonTafsir.data.tafsir;
 
                 setupUI();
                 renderAyat(surahData.ayat);
@@ -453,22 +452,16 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             document.getElementById('loading').style.display = 'none';
             document.getElementById('mini-title').innerText = surahData.namaLatin;
 
-            // Setup Hero Card
             document.getElementById('hero-card').style.display = 'block';
             document.getElementById('hero-ar').innerText = surahData.nama;
             document.getElementById('hero-la').innerText = surahData.namaLatin;
             let tmpt = surahData.tempatTurun === 'Mekah' ? 'Makiyyah' : 'Madaniyyah';
             document.getElementById('hero-det').innerHTML = `<span>${surahData.arti}</span> • <span>${tmpt}</span> • <span>${surahData.jumlahAyat} Ayat</span>`;
 
-            // Audio Full
-            audioFullEl.src = surahData.audioFull['05'];
-
-            // Bismillah
             if (noSurat !== 1 && noSurat !== 9) {
                 document.getElementById('bismillah').style.display = 'block';
             }
 
-            // Info Modal
             document.getElementById('m-title').innerText = `Info & Asbabun Nuzul: ${surahData.namaLatin}`;
             document.getElementById('m-desc').innerHTML = surahData.deskripsi;
         }
@@ -478,14 +471,12 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             let html = '';
 
             ayatList.forEach(a => {
-                // Cari teks tafsir yang sesuai dengan nomor ayat ini
                 let txtTafsir = "Tafsir tidak tersedia.";
                 let findTafsir = tafsirData.find(t => t.ayat == a.nomorAyat);
                 if (findTafsir) txtTafsir = findTafsir.teks;
 
                 html += `
                 <div class="ayat-card" id="ayat-${a.nomorAyat}">
-                    
                     <div class="ayat-header">
                         <div class="ayat-number-badge">${a.nomorAyat}</div>
                         <div class="ayat-actions">
@@ -494,13 +485,10 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
                             <i class="fas fa-play ayat-action-btn" id="btn-play-ayat-${a.nomorAyat}" onclick="playAyat('${a.audio['05']}', ${a.nomorAyat})" title="Putar Audio"></i>
                         </div>
                     </div>
-
                     <div class="teks-arab">${a.teksArab}</div>
-                    
                     <div class="teks-container">
                         <div class="teks-latin">${a.teksLatin}</div>
                         <div class="teks-indo">${a.teksIndonesia}</div>
-                        
                         <div class="tafsir-box" id="tafsir-${a.nomorAyat}">
                             <div class="t-title">Tafsir Kemenag RI</div>
                             ${txtTafsir}
@@ -509,31 +497,14 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
                 </div>`;
             });
             container.innerHTML = html;
-
-            // Auto scroll ke bookmark jika ada hash url #ayat-x
-            if (window.location.hash) {
-                setTimeout(() => {
-                    const el = document.querySelector(window.location.hash);
-                    if (el) {
-                        el.scrollIntoView({
-                            behavior: "smooth",
-                            block: "center"
-                        });
-                        el.classList.add('playing');
-                        setTimeout(() => el.classList.remove('playing'), 2000);
-                    }
-                }, 500);
-            }
         }
 
-        // --- TOGGLE TERJEMAHAN GLOBALLY ---
         let isTerjemahTampil = true;
 
         function toggleTerjemah() {
             isTerjemahTampil = !isTerjemahTampil;
             const bodyEl = document.getElementById('baca-body');
             const btn = document.getElementById('btn-terjemah');
-
             if (isTerjemahTampil) {
                 bodyEl.classList.remove('body-no-terjemah');
                 btn.classList.add('active');
@@ -543,22 +514,25 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             }
         }
 
-        // --- TOGGLE TAFSIR PER AYAT ---
         function toggleTafsir(no) {
-            // Pastikan terjemahan aktif dulu jika user klik tafsir tapi terjemahan disembunyikan
             if (!isTerjemahTampil) toggleTerjemah();
-
-            const box = document.getElementById(`tafsir-${no}`);
-            box.classList.toggle('show');
+            document.getElementById(`tafsir-${no}`).classList.toggle('show');
         }
 
-        // --- AUDIO PLAYER FULL ---
+        let isFullAudioLoaded = false;
+
         function togglePlayFull() {
             const btn = document.getElementById('btn-play-full');
-            if (audioFullEl.paused) {
-                audioAyatEl.pause(); // matikan audio per ayat jika jalan
-                resetAyatIcons();
 
+            // Muat audio saat pertama kali ditekan saja
+            if (!isFullAudioLoaded) {
+                audioFullEl.src = surahData.audioFull['05'];
+                isFullAudioLoaded = true;
+            }
+
+            if (audioFullEl.paused) {
+                audioAyatEl.pause();
+                resetAyatIcons();
                 audioFullEl.play();
                 btn.innerHTML = '<i class="fas fa-pause-circle"></i>';
                 btn.classList.add('active');
@@ -573,28 +547,22 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             document.getElementById('btn-play-full').classList.remove('active');
         };
 
-        // --- AUDIO PER AYAT ---
+        // --- BUG AUDIO PER AYAT DIPERBAIKI DI SINI ---
         let currentAyatCard = null;
         let currentAyatNo = null;
 
         function playAyat(url, nomor) {
-            // Stop Full Audio
             audioFullEl.pause();
             document.getElementById('btn-play-full').innerHTML = '<i class="fas fa-play-circle"></i>';
             document.getElementById('btn-play-full').classList.remove('active');
 
-            // Reset previously playing ayat
-            if (currentAyatCard) {
-                currentAyatCard.classList.remove('playing');
-                document.getElementById(`btn-play-ayat-${currentAyatNo}`).className = "fas fa-play ayat-action-btn";
-            }
-
-            // Jika klik ayat yang sama, berarti fungsi pause
             if (currentAyatNo === nomor && !audioAyatEl.paused) {
                 audioAyatEl.pause();
-                currentAyatNo = null;
+                resetAyatIcons();
                 return;
             }
+
+            resetAyatIcons(); // Bersihkan yang lama sebelum putar yang baru
 
             audioAyatEl.src = url;
             audioAyatEl.play();
@@ -602,14 +570,19 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             currentAyatNo = nomor;
             currentAyatCard = document.getElementById(`ayat-${nomor}`);
             currentAyatCard.classList.add('playing');
-            document.getElementById(`btn-play-ayat-${nomor}`).className = "fas fa-pause ayat-action-btn";
+            document.getElementById(`btn-play-ayat-${nomor}`).className = "fas fa-pause ayat-action-btn playing";
         }
 
         function resetAyatIcons() {
             if (currentAyatCard) {
                 currentAyatCard.classList.remove('playing');
-                document.getElementById(`btn-play-ayat-${currentAyatNo}`).className = "fas fa-play ayat-action-btn";
+                if (currentAyatNo) {
+                    const btn = document.getElementById(`btn-play-ayat-${currentAyatNo}`);
+                    if (btn) btn.className = "fas fa-play ayat-action-btn";
+                }
+                // PENTING: Keduanya harus di-null-kan agar tidak bentrok
                 currentAyatNo = null;
+                currentAyatCard = null;
             }
         }
 
@@ -617,7 +590,6 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             resetAyatIcons();
         };
 
-        // --- AJAX SAVE BOOKMARK (TOMBOL) ---
         function saveBookmark(ayatNo) {
             const formData = new URLSearchParams();
             formData.append('action', 'bookmark');
@@ -634,14 +606,13 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
                 .then(res => res.text())
                 .then(res => {
                     if (res.trim() === 'saved') {
-                        showAlert(`Ayat ${ayatNo} berhasil disimpan ke Terakhir Baca!`);
+                        showAlert(`Ayat ${ayatNo} berhasil disimpan!`);
                     } else {
-                        showAlert(`Ayat ${ayatNo} sudah ada di daftar.`);
+                        showAlert(`Ayat ${ayatNo} sudah tersimpan.`);
                     }
                 });
         }
 
-        // --- CUSTOM ALERT ---
         function showAlert(msg) {
             document.getElementById('alertMsg').innerText = msg;
             const alertEl = document.getElementById('customAlert');
@@ -649,7 +620,6 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             setTimeout(() => alertEl.classList.remove('show'), 3000);
         }
 
-        // --- MODAL INFO ---
         function openInfoModal() {
             document.getElementById('infoModal').style.display = 'flex';
             setTimeout(() => document.getElementById('infoModal').classList.add('show'), 10);
@@ -662,7 +632,6 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             }
         }
 
-        // Eksekusi Muat Data
         fetchAlQuranData();
     </script>
 </body>

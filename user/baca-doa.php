@@ -18,18 +18,20 @@ $src = isset($_GET['src']) && $_GET['src'] === 'legacy' ? 'legacy' : 'equran';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Baca Doa - Hifzly</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Scheherazade+New:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Scheherazade+New:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --primary: #059669;
             --primary-dark: #047857;
             --primary-light: #d1fae5;
-            --dark: #1e293b;
+            --accent: #10b981;
+            --dark: #0f172a;
             --text-muted: #64748b;
             --bg: #f8fafc;
             --card-bg: #ffffff;
             --border: #e2e8f0;
+            --ease: cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         * {
@@ -37,62 +39,51 @@ $src = isset($_GET['src']) && $_GET['src'] === 'legacy' ? 'legacy' : 'equran';
             padding: 0;
             box-sizing: border-box;
             font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
             background-color: var(--bg);
             color: var(--dark);
-            padding-bottom: 90px;
+            padding-bottom: calc(90px + env(safe-area-inset-bottom));
         }
 
-        .read-header {
-            background: var(--card-bg);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .h-btn {
-            color: var(--text-muted);
-            font-size: 1.3rem;
-            cursor: pointer;
-            text-decoration: none;
-            transition: 0.2s;
-        }
-
-        .h-btn:hover {
-            color: var(--primary);
-        }
-
-        .header-title {
-            font-weight: 700;
-            color: var(--dark);
-            font-size: 1.1rem;
-        }
-
-        .container {
-            padding: 20px;
+        .doa-page {
             max-width: 800px;
             margin: 0 auto;
+            padding: 20px 18px 0;
         }
 
-        /* ============ Skeleton loading ============ */
+        /* ============ Breadcrumb back link (bukan header, cuma navigasi konten) ============ */
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 600;
+            margin-bottom: 18px;
+            transition: 0.2s var(--ease);
+            opacity: 0;
+            animation: fadeSlide 0.4s var(--ease) forwards;
+        }
+
+        .back-link:hover {
+            color: var(--primary);
+            gap: 12px;
+        }
+
+        .back-link i {
+            font-size: 0.8rem;
+        }
+
+        /* ============ Skeleton ============ */
         .skeleton-detail {
             background: var(--card-bg);
-            border-radius: 20px;
+            border-radius: 22px;
             border: 1px solid var(--border);
-            padding: 25px;
+            padding: 28px 22px;
         }
 
         .sk-line {
@@ -114,19 +105,7 @@ $src = isset($_GET['src']) && $_GET['src'] === 'legacy' ? 'legacy' : 'equran';
             }
         }
 
-        /* ============ Detail card ============ */
-        .doa-detail-card {
-            background: var(--card-bg);
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
-            border: 1px solid var(--border);
-            display: none;
-            opacity: 0;
-            animation: fadeUp 0.45s ease forwards;
-        }
-
-        @keyframes fadeUp {
+        @keyframes fadeSlide {
             from {
                 opacity: 0;
                 transform: translateY(14px);
@@ -138,46 +117,81 @@ $src = isset($_GET['src']) && $_GET['src'] === 'legacy' ? 'legacy' : 'equran';
             }
         }
 
+        /* ============ Detail card ============ */
+        .doa-detail-card {
+            background: var(--card-bg);
+            border-radius: 22px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px -20px rgba(15, 23, 42, 0.15);
+            border: 1px solid var(--border);
+            display: none;
+            opacity: 0;
+            animation: fadeSlide 0.5s var(--ease) forwards;
+            position: relative;
+        }
+
+        .doa-detail-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+        }
+
         .doa-body {
-            padding: 25px;
+            padding: 30px 24px;
         }
 
         .d-grup {
-            display: inline-block;
+            display: table;
+            margin: 0 auto 16px;
             font-size: 0.72rem;
             font-weight: 700;
             color: var(--primary);
             background: var(--primary-light);
-            padding: 4px 12px;
+            padding: 5px 14px;
             border-radius: 20px;
-            margin: 0 auto 14px;
-            display: table;
         }
 
         .d-title {
-            font-size: 1.5rem;
+            font-size: clamp(1.3rem, 5vw, 1.6rem);
             font-weight: 800;
-            color: var(--primary);
-            margin-bottom: 25px;
+            letter-spacing: -0.01em;
+            color: var(--dark);
+            margin-bottom: 26px;
             text-align: center;
-            border-bottom: 2px dashed var(--border);
-            padding-bottom: 15px;
+            padding-bottom: 18px;
+            position: relative;
+        }
+
+        .d-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 48px;
+            height: 3px;
+            border-radius: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
         }
 
         .d-arab {
             font-family: 'Scheherazade New', serif;
-            font-size: 2.5rem;
+            font-size: clamp(1.8rem, 7vw, 2.5rem);
             color: #111827;
             text-align: center;
-            line-height: 2.2;
-            margin-bottom: 20px;
+            line-height: 2.1;
+            margin-bottom: 22px;
             direction: rtl;
         }
 
         .d-latin {
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             color: var(--primary);
-            margin-bottom: 15px;
+            margin-bottom: 16px;
             font-style: italic;
             font-weight: 500;
             line-height: 1.6;
@@ -185,7 +199,7 @@ $src = isset($_GET['src']) && $_GET['src'] === 'legacy' ? 'legacy' : 'equran';
         }
 
         .d-arti {
-            font-size: 1rem;
+            font-size: 0.98rem;
             color: #475569;
             margin-bottom: 10px;
             line-height: 1.7;
@@ -193,33 +207,33 @@ $src = isset($_GET['src']) && $_GET['src'] === 'legacy' ? 'legacy' : 'equran';
         }
 
         .d-sumber {
-            font-size: 0.82rem;
+            font-size: 0.8rem;
             color: var(--text-muted);
             text-align: center;
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid var(--border);
+            margin-top: 18px;
+            padding-top: 16px;
+            border-top: 1px dashed var(--border);
         }
 
         .doa-actions {
             display: flex;
-            gap: 15px;
-            margin-top: 30px;
+            gap: 12px;
+            margin-top: 28px;
         }
 
         .btn-action {
             flex: 1;
             padding: 15px;
             border: none;
-            border-radius: 12px;
+            border-radius: 14px;
             font-weight: 600;
             cursor: pointer;
             display: flex;
             justify-content: center;
             align-items: center;
             gap: 8px;
-            font-size: 1rem;
-            transition: 0.2s;
+            font-size: 0.95rem;
+            transition: 0.2s var(--ease);
         }
 
         .btn-copy {
@@ -230,6 +244,7 @@ $src = isset($_GET['src']) && $_GET['src'] === 'legacy' ? 'legacy' : 'equran';
         .btn-copy:hover {
             background: var(--primary);
             color: white;
+            transform: translateY(-2px);
         }
 
         .btn-share {
@@ -238,7 +253,12 @@ $src = isset($_GET['src']) && $_GET['src'] === 'legacy' ? 'legacy' : 'equran';
         }
 
         .btn-share:hover {
-            opacity: 0.9;
+            opacity: 0.88;
+            transform: translateY(-2px);
+        }
+
+        .btn-action:active {
+            transform: scale(0.96);
         }
 
         /* ============ Error state ============ */
@@ -257,20 +277,21 @@ $src = isset($_GET['src']) && $_GET['src'] === 'legacy' ? 'legacy' : 'equran';
 
         .retry-btn,
         .back-list-btn {
-            margin-top: 14px;
+            margin-top: 16px;
             display: inline-flex;
             align-items: center;
             gap: 8px;
             background: var(--primary);
             color: #fff;
             border: none;
-            padding: 10px 20px;
-            border-radius: 10px;
+            padding: 11px 20px;
+            border-radius: 12px;
             font-weight: 600;
             cursor: pointer;
             font-size: 0.9rem;
             text-decoration: none;
             margin-right: 8px;
+            transition: 0.2s var(--ease);
         }
 
         .back-list-btn {
@@ -307,24 +328,41 @@ $src = isset($_GET['src']) && $_GET['src'] === 'legacy' ? 'legacy' : 'equran';
             color: #fbbf24;
             font-size: 1.2rem;
         }
+
+        /* ============ Responsive ============ */
+        @media (max-width: 560px) {
+            .doa-page {
+                padding: 16px 14px 0;
+            }
+
+            .doa-body {
+                padding: 24px 18px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
     </style>
 </head>
 
 <body>
 
     <?php
-    // TODO: sesuaikan path ini kalau lokasi nav.php di project kamu beda.
-    @include '../includes/nav.php';
+    // Header & footer/bottom-nav sudah otomatis dari nav.php (auto detect halaman aktif).
+    // Sesuaikan path ini kalau lokasi nav.php di project kamu beda.
+    include '../includes/nav.php';
     ?>
 
-    <div class="read-header">
-        <div class="header-left">
-            <a href="doa.php" class="h-btn"><i class="fas fa-arrow-left"></i></a>
-            <div class="header-title">Detail Doa</div>
-        </div>
-    </div>
+    <div class="doa-page">
 
-    <div class="container">
+        <a href="doa.php" class="back-link"><i class="fas fa-arrow-left"></i> Kembali ke Daftar Doa</a>
 
         <div id="skeletonBox" class="skeleton-detail">
             <div class="sk-line" style="width:50%;height:18px;"></div>

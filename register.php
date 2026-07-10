@@ -616,7 +616,6 @@ if (isset($_POST['register'])) {
         <!-- Panel form -->
         <div class="auth-form-panel">
             <div class="card">
-                <div class="brand-mark-wrap"><i class="fa-solid fa-book-quran"></i></div>
                 <h2>Buat Akun Baru</h2>
                 <div class="subtitle">Gratis untuk memulai, cukup niat dan konsistensi</div>
 

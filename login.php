@@ -529,7 +529,8 @@ if (isset($_POST['login'])) {
             <div class="auth-side-arabic">القرآن</div>
 
             <div class="auth-side-brand">
-                <i class="fa-solid fa-book-quran"></i> Hafizhly
+                <img src="assets/icon/logo_kecil.png" alt="Logo Hafizhly" id="app-logo">
+                Hafizhly
             </div>
 
             <div class="auth-side-content">

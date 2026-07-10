@@ -394,7 +394,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
                 <div class="q-icon" style="color: #059669;"><i class="fas fa-book-open"></i></div>
                 <div class="q-text">Qur'an</div>
             </a>
-            <a href="#" class="q-item">
+            <a href="smart_murojaah.php" class="q-item">
                 <div class="q-icon" style="color: #059669;"><i class="fas fa-microphone-alt"></i></div>
                 <div class="q-text">Murojaah</div>
             </a>

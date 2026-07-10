@@ -392,7 +392,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
     <?php
     // Header & footer/bottom-nav sudah otomatis dari nav.php (auto detect halaman aktif).
     // Sesuaikan path ini kalau lokasi nav.php di project kamu beda.
-    include '../includes/nav.php';
+    include '../components/nav.php';
     ?>
 
     <div class="doa-page">

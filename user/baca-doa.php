@@ -357,7 +357,7 @@ $src = isset($_GET['src']) && $_GET['src'] === 'legacy' ? 'legacy' : 'equran';
     <?php
     // Header & footer/bottom-nav sudah otomatis dari nav.php (auto detect halaman aktif).
     // Sesuaikan path ini kalau lokasi nav.php di project kamu beda.
-    include '../includes/nav.php';
+    include '../components/nav.php';
     ?>
 
     <div class="doa-page">
@@ -462,12 +462,10 @@ $src = isset($_GET['src']) && $_GET['src'] === 'legacy' ? 'legacy' : 'equran';
             try {
                 let raw = null;
 
-                const attempts = preferredSrc === 'legacy' ?
-                    [() => findInList(API_LEGACY_LIST), () => findInList(API_EQURAN_LIST)] :
-                    [async () => {
-                        const json = await fetchJson(API_EQURAN_DETAIL);
-                        return extractObject(json) || (extractArray(json)[0] ?? null);
-                    }, () => findInList(API_EQURAN_LIST), () => findInList(API_LEGACY_LIST)];
+                const attempts = preferredSrc === 'legacy' ? [() => findInList(API_LEGACY_LIST), () => findInList(API_EQURAN_LIST)] : [async () => {
+                    const json = await fetchJson(API_EQURAN_DETAIL);
+                    return extractObject(json) || (extractArray(json)[0] ?? null);
+                }, () => findInList(API_EQURAN_LIST), () => findInList(API_LEGACY_LIST)];
 
                 for (const attempt of attempts) {
                     try {

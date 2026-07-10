@@ -33,6 +33,7 @@ $juz_nomor = isset($_GET['juz']) ? (int)$_GET['juz'] : 1;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Baca Juz <?= $juz_nomor ?> - Hifzly</title>
+    <link rel="icon" type="image/png" href="../assets/icon/logo.png">
     <!-- Font Arab Scheherazade New untuk Waqaf Sempurna -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Scheherazade+New:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">

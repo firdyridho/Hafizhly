@@ -151,9 +151,6 @@
 
             <h2>5. Hukum yang Berlaku</h2>
             <p>Syarat dan Ketentuan ini diatur dan ditafsirkan sesuai dengan hukum yang berlaku di Indonesia.</p>
-
-            <h2>6. Kontak</h2>
-            <p>Jika ada keluhan atau pertanyaan, Anda dapat menghubungi kami melalui halaman bantuan di dalam aplikasi atau mengirimkan email kepada kami.</p>
         </div>
     </div>
 

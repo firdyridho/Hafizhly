@@ -155,9 +155,6 @@
 
             <h2>5. Perubahan Kebijakan</h2>
             <p>Kami dapat memperbarui Kebijakan Privasi ini dari waktu ke waktu. Kami akan memberi tahu pengguna tentang perubahan material melalui pengumuman di dalam aplikasi.</p>
-
-            <h2>6. Hubungi Kami</h2>
-            <p>Jika Anda memiliki pertanyaan tentang Kebijakan Privasi ini, silakan hubungi kami di: <strong>support@hifzly.com</strong> (Ini adalah contoh email, silakan sesuaikan nanti).</p>
         </div>
     </div>
 

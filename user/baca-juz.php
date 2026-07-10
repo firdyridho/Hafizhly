@@ -7,7 +7,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
     exit('Unauthorized');
 }
 
-$user_id = $_SESSION['user_id'];
 $juz_nomor = isset($_GET['juz']) ? (int)$_GET['juz'] : 1;
 ?>
 <!DOCTYPE html>
@@ -16,7 +15,8 @@ $juz_nomor = isset($_GET['juz']) ? (int)$_GET['juz'] : 1;
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Baca Juz <?= $juz_nomor ?></title>
+    <title>Baca Juz <?= $juz_nomor ?> - Hifzly</title>
+    <!-- Font Arab Scheherazade New untuk Waqaf Sempurna -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Scheherazade+New:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -96,11 +96,17 @@ $juz_nomor = isset($_GET['juz']) ? (int)$_GET['juz'] : 1;
 
         .surah-divider {
             text-align: center;
-            margin: 40px 0 20px;
-            font-weight: bold;
-            color: var(--primary);
-            border-bottom: 2px dashed var(--primary-light);
-            padding-bottom: 10px;
+            margin: 30px 0 15px;
+            font-weight: 700;
+            color: white;
+            background: var(--primary);
+            padding: 10px 20px;
+            border-radius: 30px;
+            display: inline-block;
+            left: 50%;
+            position: relative;
+            transform: translateX(-50%);
+            box-shadow: 0 4px 10px rgba(5, 150, 105, 0.3);
         }
 
         .ayat-list {
@@ -233,13 +239,21 @@ $juz_nomor = isset($_GET['juz']) ? (int)$_GET['juz'] : 1;
     <script>
         const noJuz = <?= $juz_nomor ?>;
         let audioAyatEl = document.getElementById('audioAyat');
+        let listSemuaSurah = [];
 
         async function fetchJuzData() {
             try {
-                const res = await fetch(`https://equran.id/api/v2/juz/${noJuz}`);
+                // Ambil daftar surah untuk mencocokkan nama
+                const resSurah = await fetch('https://equran.id/api/v2/surat');
+                const jsonSurah = await resSurah.json();
+                listSemuaSurah = jsonSurah.data;
+
+                // API Khusus Juz Gading Dev
+                const res = await fetch(`https://api.quran.gading.dev/juz/${noJuz}`);
                 const json = await res.json();
+
                 document.getElementById('loading').style.display = 'none';
-                renderAyat(json.data.ayat);
+                renderAyat(json.data.verses);
             } catch (e) {
                 document.getElementById('loading').innerHTML = "Gagal memuat ayat. Periksa koneksi internet.";
             }
@@ -248,27 +262,29 @@ $juz_nomor = isset($_GET['juz']) ? (int)$_GET['juz'] : 1;
         function renderAyat(ayatList) {
             const container = document.getElementById('ayatList');
             let html = '';
-            let currentSurah = '';
+            let currentSurahNo = 0;
 
             ayatList.forEach(a => {
-                // Tampilkan pembatas jika surah berganti di tengah juz
-                if (a.surah.namaLatin !== currentSurah) {
-                    html += `<div class="surah-divider">Surah ${a.surah.namaLatin}</div>`;
-                    currentSurah = a.surah.namaLatin;
+                // Pembatas jika surah berganti di tengah Juz (misal Juz 30)
+                if (a.meta.surah !== currentSurahNo) {
+                    const surahObj = listSemuaSurah.find(s => s.nomor === a.meta.surah);
+                    const namaSurah = surahObj ? surahObj.namaLatin : `Surah ${a.meta.surah}`;
+                    html += `<div class="surah-divider">Surah ${namaSurah}</div>`;
+                    currentSurahNo = a.meta.surah;
                 }
 
                 html += `
-                <div class="ayat-card" id="ayat-${a.nomorAyat}">
+                <div class="ayat-card" id="ayat-${a.number.inQuran}">
                     <div class="ayat-header">
-                        <div class="ayat-number-badge">${a.nomorAyat}</div>
+                        <div class="ayat-number-badge">${a.number.inSurah}</div>
                         <div class="ayat-actions">
-                            <i class="fas fa-play ayat-action-btn" id="btn-play-ayat-${a.nomorAyat}" onclick="playAyat('${a.audio['05']}', ${a.nomorAyat})" title="Putar Audio"></i>
+                            <i class="fas fa-play ayat-action-btn" id="btn-play-ayat-${a.number.inQuran}" onclick="playAyat('${a.audio.primary}', ${a.number.inQuran})" title="Putar Audio"></i>
                         </div>
                     </div>
-                    <div class="teks-arab">${a.teksArab}</div>
+                    <div class="teks-arab">${a.text.arab}</div>
                     <div class="teks-container">
-                        <div class="teks-latin">${a.teksLatin}</div>
-                        <div class="teks-indo">${a.teksIndonesia}</div>
+                        <div class="teks-latin">${a.text.transliteration.en}</div>
+                        <div class="teks-indo">${a.translation.id}</div>
                     </div>
                 </div>`;
             });
@@ -294,6 +310,7 @@ $juz_nomor = isset($_GET['juz']) ? (int)$_GET['juz'] : 1;
         let currentAyatNo = null;
 
         function playAyat(url, nomor) {
+            // Jika memutar ayat yang sedang dimainkan
             if (currentAyatNo === nomor && !audioAyatEl.paused) {
                 audioAyatEl.pause();
                 resetAyatIcons();

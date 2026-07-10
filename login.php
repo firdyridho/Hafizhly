@@ -546,7 +546,7 @@ if (isset($_POST['login'])) {
         <div class="auth-form-panel">
             <div class="card">
                 <div class="logo-frame">
-                    <img src="assets/images/logo.png" alt="Logo Hafizhly" id="app-logo">
+                    <img src="assets/icon/logo_kecil.png" alt="Logo Hafizhly" id="app-logo">
                 </div>
                 <h2>Selamat Datang Kembali</h2>
                 <div class="subtitle">Masuk untuk melanjutkan murojaahmu</div>

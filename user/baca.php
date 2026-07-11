@@ -34,7 +34,6 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Baca Al-Qur'an</title>
     <link rel="icon" type="image/png" href="../assets/icon/logo.png">
-    <!-- MENGGUNAKAN FONT SCHEHERAZADE NEW UNTUK WAQAF SEMPURNA -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Scheherazade+New:wght@400;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -119,7 +118,6 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             text-overflow: ellipsis;
         }
 
-        /* --- MODE TOGGLE (di header, sejajar tombol lain) --- */
         .mode-toggle {
             display: flex;
             background: var(--bg);
@@ -381,7 +379,6 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             text-transform: uppercase;
         }
 
-        /* ALERT DESAIN BARU (Kapsul Elegan) */
         .islamic-alert {
             position: fixed;
             top: -100px;
@@ -631,20 +628,19 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             font-size: 0.9rem;
         }
 
-        /* BARIS PERSIS CETAKAN MUSHAF */
+        /* Baris teks mushaf: rata kanan alami, TIDAK justify */
         .mushaf-line-text {
             direction: rtl;
             font-family: 'Scheherazade New', serif;
-            /* ukuran hanya untuk teks ayat, ikuti variabel skala */
             font-size: calc(clamp(1.55rem, 5vw, 2.05rem) * var(--arabic-scale));
             line-height: 2.3;
             color: var(--quran-text);
-            text-align: justify;
-            text-align-last: right;
+            text-align: right;
+            /* <-- tidak dipaksa justify */
             margin-bottom: 2px;
         }
 
-        /* Header surah & basmala TIDAK ikut skala font */
+        /* Header surah & basmala tidak terpengaruh skala font */
         .line-surah-header {
             display: flex;
             justify-content: center;
@@ -696,6 +692,7 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             background: rgba(245, 158, 11, 0.18);
         }
 
+        /* Nomor ayat menempel tanpa jarak */
         .ayah-end-badge {
             display: inline-flex;
             align-items: center;
@@ -708,7 +705,8 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             border-radius: 50%;
             width: 1.7em;
             height: 1.7em;
-            margin: 0 2px;
+            margin: 0;
+            /* <-- margin dihapus agar benar-benar menempel */
             vertical-align: middle;
         }
 
@@ -889,7 +887,6 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
 
 <body id="baca-body">
 
-    <!-- Audio Elements tanpa autoplay/src di awal -->
     <audio id="audioFull"></audio>
     <audio id="audioAyat"></audio>
 
@@ -907,7 +904,8 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
                     <i class="fas fa-book-open"></i><span class="mode-label">Mushaf</span>
                 </div>
             </div>
-            <div class="font-toggle" title="Ukuran teks arab (hanya per baris ayat)">
+            <!-- Tombol pengatur font, hanya muncul di mode list (dikontrol via JS) -->
+            <div class="font-toggle" id="fontToggleContainer" title="Ukuran teks arab (hanya mode daftar)">
                 <div class="h-btn" onclick="changeFontSize(-1)"><i class="fas fa-minus"></i></div>
                 <span class="ft-label">Aa</span>
                 <div class="h-btn" onclick="changeFontSize(1)"><i class="fas fa-plus"></i></div>
@@ -1020,7 +1018,6 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
                 surahData = jsonSurat.data;
                 tafsirData = jsonTafsir.data.tafsir;
 
-                // Simpan juga ke cache global supaya Mode Mushaf tidak fetch ulang
                 equranCache[noSurat] = {
                     surah: surahData,
                     tafsir: tafsirData
@@ -1132,7 +1129,6 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             document.getElementById('btn-play-full').classList.remove('active');
         };
 
-        // --- AUDIO PER AYAT (MODE DAFTAR) ---
         let currentAyatCard = null;
         let currentAyatNo = null;
 
@@ -1224,12 +1220,6 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
 
         /* ================================================================ */
         /* ========================  MODE MUSHAF  ========================== */
-        /* Sumber teks Arab, terjemah, tafsir & audio TETAP dari equran.id.  */
-        /* Sumber layout halaman (pembagian baris/halaman/juz) diambil dari  */
-        /* dataset mushaf 604-halaman (zonetecde/mushaf-layout via jsDelivr) */
-        /* karena API resmi quran.com/quran.foundation kini butuh OAuth      */
-        /* backend (client_id/secret) dan tidak bisa dipanggil langsung dari */
-        /* browser seperti equran.id.                                       */
         /* ================================================================ */
 
         let currentMode = 'list';
@@ -1243,7 +1233,6 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
 
         const MUSHAF_BASE = 'https://cdn.jsdelivr.net/gh/zonetecde/mushaf-layout@main/mushaf/page-';
 
-        // Batas awal tiap Juz: [nomor surat, nomor ayat]
         const JUZ_START = [
             [1, 1],
             [2, 142],
@@ -1377,11 +1366,6 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             };
         }
 
-        /** 
-         * Render satu baris persis mushaf cetakan.
-         * Setiap group ayat diberi span .ayah-word dengan data-verse,
-         * dan nomor ayat ditampilkan SEBAGAI BADGE di akhir ayat jika selesai di baris ini.
-         */
         function renderLineWords(words) {
             let html = '';
             let currentKey = null;
@@ -1552,7 +1536,10 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             currentMode = mode;
             document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
 
+            // Sembunyikan/tampilkan tombol pengatur font
+            const fontToggler = document.getElementById('fontToggleContainer');
             if (mode === 'page') {
+                fontToggler.style.display = 'none';
                 document.getElementById('listView').style.display = 'none';
                 document.getElementById('mushafView').style.display = 'block';
                 if (currentPageNum === null) {
@@ -1566,6 +1553,7 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
                     }
                 }
             } else {
+                fontToggler.style.display = 'flex';
                 document.getElementById('mushafView').style.display = 'none';
                 document.getElementById('listView').style.display = 'block';
                 document.getElementById('mini-title').innerText = surahData ? surahData.namaLatin : 'Memuat...';
@@ -1646,7 +1634,6 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             saveBookmarkGeneric(sheet.dataset.surah, sheet.dataset.ayat);
         }
 
-        // --- INTERAKSI AYAT DI MODE MUSHAF (tap = mainkan, tahan = lembar aksi) ---
         function tapPlayAyahWord(verseKey) {
             const [s, a] = verseKey.split(':').map(Number);
             const data = equranCache[s];
@@ -1701,7 +1688,7 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             });
         })();
 
-        // --- KONTROL UKURAN FONT ARAB (hanya teks ayat, tidak pengaruhi header/basmala) ---
+        // --- KONTROL UKURAN FONT ARAB (hanya mode daftar, tapi tetap bisa diakses via tombol) ---
         let arabicScale = parseFloat(localStorage.getItem('arabicScale')) || 1;
         document.documentElement.style.setProperty('--arabic-scale', arabicScale);
 

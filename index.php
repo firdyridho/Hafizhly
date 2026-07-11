@@ -17,7 +17,7 @@ if (isset($_SESSION['user_id'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hafizhly - AI Quran Companion</title>
-
+    <link rel="icon" type="image/png" href="assets/icon/logo.png">
     <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
@@ -1204,11 +1204,16 @@ if (isset($_SESSION['user_id'])) {
                 <span class="brand-mark" style="width:32px;height:32px;font-size:0.9rem;"><i class="fa-solid fa-book-quran"></i></span>
                 <span>&copy; <?= date('Y'); ?> Hafizhly. Pendamping Murojaah Al-Qur'an Berbasis AI.</span>
             </div>
-            <div class="footer-social">
+            <div style="margin-top: 5px; display: flex; justify-content: center; gap: 15px;">
+                <a href="privacy.php" style="color: var(--text-gray); text-decoration: none; font-size: 0.85rem;">Kebijakan Privasi</a>
+                <span style="color: #cbd5e1;">|</span>
+                <a href="terms.php" style="color: var(--text-gray); text-decoration: none; font-size: 0.85rem;">Syarat & Ketentuan</a>
+            </div>
+            <!-- <div class="footer-social">
                 <a href="#"><i class="fa-brands fa-instagram"></i></a>
                 <a href="#"><i class="fa-brands fa-tiktok"></i></a>
                 <a href="#"><i class="fa-brands fa-youtube"></i></a>
-            </div>
+            </div> -->
         </div>
     </footer>
 

@@ -12,6 +12,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Hifzly</title>
+    <link rel="icon" type="image/png" href="../assets/icon/logo.png">
     <!-- FontAwesome sudah ditarik otomatis dari nav.php nanti, tapi kita pastikan styling utamanya aman -->
     <style>
         :root {
@@ -387,13 +388,13 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             <div class="fc-arrow"><i class="fas fa-chevron-right"></i></div>
         </div>
 
-        <h3 class="section-title">Akses Cepat</h3>
+        <h3 class="section-title">Menu</h3>
         <div class="quick-grid">
             <a href="alquran.php" class="q-item">
                 <div class="q-icon" style="color: #059669;"><i class="fas fa-book-open"></i></div>
                 <div class="q-text">Qur'an</div>
             </a>
-            <a href="#" class="q-item">
+            <a href="smart_murojaah.php" class="q-item">
                 <div class="q-icon" style="color: #059669;"><i class="fas fa-microphone-alt"></i></div>
                 <div class="q-text">Murojaah</div>
             </a>

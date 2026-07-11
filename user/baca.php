@@ -585,12 +585,12 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             font-weight: 600;
         }
 
-        /* Kotak mushaf bersih */
+        /* Mushaf page TANPA KOTAK, hanya garis-garis tipis antar baris */
         .mushaf-page {
-            background: #ffffff;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 24px clamp(8px, 3vw, 24px) 32px;
+            background: transparent;
+            border: none;
+            border-radius: 0;
+            padding: 8px clamp(4px, 2vw, 16px) 30px;
             box-shadow: none;
             min-height: 400px;
             position: relative;
@@ -628,7 +628,7 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             font-size: 0.9rem;
         }
 
-        /* Baris teks mushaf: JUSTIFY penuh, ukuran font pas */
+        /* Baris teks mushaf: JUSTIFY penuh + garis bawah tipis */
         .mushaf-line-text {
             direction: rtl;
             font-family: 'Scheherazade New', serif;
@@ -638,9 +638,12 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             text-align: justify;
             text-align-last: justify;
             margin-bottom: 2px;
+            border-bottom: 1px solid #e0dbcd;
+            /* Garis tipis warna krem keemasan */
+            padding-bottom: 2px;
         }
 
-        /* Header surah & basmala tidak terpengaruh */
+        /* Header surah & basmala tidak memiliki garis bawah */
         .line-surah-header {
             display: flex;
             justify-content: center;
@@ -654,6 +657,7 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             font-size: clamp(1.3rem, 4.5vw, 1.7rem);
             color: var(--gold-deep);
             font-weight: 700;
+            /* Tidak ada border-bottom dari .mushaf-line-text, karena ini bukan teks ayat */
         }
 
         .lsh-orn {
@@ -668,6 +672,7 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             color: var(--primary);
             margin: 4px 0 14px;
             font-weight: 700;
+            /* Tidak ada border-bottom */
         }
 
         .ayah-word {

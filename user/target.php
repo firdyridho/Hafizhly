@@ -48,22 +48,25 @@ mysqli_query($conn, "CREATE TABLE IF NOT EXISTS user_todos (
     task_name VARCHAR(255) NOT NULL,
     task_time TIME NOT NULL,
     task_date DATE NOT NULL,
-    kategori VARCHAR(50) DEFAULT 'Tilawah',
-    catatan TEXT,
     is_completed TINYINT(1) DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
-// NOTE: Tabel bookmark memakai nama & kolom YANG SAMA dengan baca.php
-// (tabel "bookmark", kolom surah_nomor & ayat) supaya setiap ayat yang
-// ditandai lewat baca.php otomatis kebaca & tersinkron di halaman ini.
+// Tabel user_todos di database kamu sudah ada tapi belum punya kolom kategori & catatan
+// (dipakai untuk kategori aktivitas & catatan opsional di planner). ADD COLUMN IF NOT EXISTS
+// aman dijalankan berkali-kali setiap load halaman, tidak akan error walau kolomnya sudah ada.
+mysqli_query($conn, "ALTER TABLE user_todos ADD COLUMN IF NOT EXISTS kategori VARCHAR(50) DEFAULT 'Tilawah'");
+mysqli_query($conn, "ALTER TABLE user_todos ADD COLUMN IF NOT EXISTS catatan TEXT NULL");
+
+// NOTE: Tabel bookmark memakai nama & kolom YANG SAMA dengan baca.php dan skema
+// database kamu (tabel "bookmark", kolom surah_nomor & ayat) supaya setiap ayat
+// yang ditandai lewat baca.php otomatis kebaca & tersinkron di halaman ini.
 mysqli_query($conn, "CREATE TABLE IF NOT EXISTS bookmark (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     surah_nomor INT NOT NULL,
     ayat INT NOT NULL,
-    catatan VARCHAR(255) DEFAULT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    catatan VARCHAR(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
 // --- 2. AJAX HANDLERS ---

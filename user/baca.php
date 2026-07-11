@@ -50,7 +50,7 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             --gold-deep: #8f6f1f;
             --gold-soft: #f6ecc9;
             --arabic-scale: 1;
-            /* hanya untuk mode daftar */
+            --mushaf-zoom: 1;
         }
 
         * {
@@ -470,6 +470,7 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             justify-content: space-between;
             gap: 10px;
             margin-bottom: 14px;
+            flex-wrap: wrap;
         }
 
         .mtb-btn {
@@ -585,17 +586,18 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             font-weight: 600;
         }
 
-        /* Kotak mushaf seperti Quran.com */
+        /* Kotak mushaf */
         .mushaf-page {
             background: #fffdf5;
-            /* warna krem lembut */
             border: 1px solid #d4c9a8;
             border-radius: 12px;
-            padding: 20px clamp(10px, 4vw, 28px) 30px;
+            padding: 20px clamp(4px, 2vw, 28px) 30px;
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
             min-height: 400px;
             position: relative;
             transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: scale(var(--mushaf-zoom));
+            transform-origin: top center;
         }
 
         .mushaf-page.no-transition {
@@ -603,22 +605,22 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
         }
 
         .mushaf-page.anim-out-next {
-            transform: translateX(-36px) rotateY(-6deg);
+            transform: translateX(-36px) rotateY(-6deg) scale(var(--mushaf-zoom));
             opacity: 0;
         }
 
         .mushaf-page.anim-out-prev {
-            transform: translateX(36px) rotateY(6deg);
+            transform: translateX(36px) rotateY(6deg) scale(var(--mushaf-zoom));
             opacity: 0;
         }
 
         .mushaf-page.anim-in-fromright {
-            transform: translateX(36px) rotateY(6deg);
+            transform: translateX(36px) rotateY(6deg) scale(var(--mushaf-zoom));
             opacity: 0;
         }
 
         .mushaf-page.anim-in-fromleft {
-            transform: translateX(-36px) rotateY(-6deg);
+            transform: translateX(-36px) rotateY(-6deg) scale(var(--mushaf-zoom));
             opacity: 0;
         }
 
@@ -629,16 +631,16 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             font-size: 0.9rem;
         }
 
-        /* Baris teks mushaf: JUSTIFY + rata kanan baris terakhir, ukuran font responsif */
+        /* Baris teks mushaf: JUSTIFY penuh, rata kanan-kiri */
         .mushaf-line-text {
             direction: rtl;
             font-family: 'Scheherazade New', serif;
-            /* Ukuran font mengecil di mobile, cukup kecil untuk menjaga tata letak baris tetap */
-            font-size: clamp(0.9rem, 3.8vw, 2.2rem);
+            /* Ukuran font lebih kecil di mobile agar tata letak presisi */
+            font-size: clamp(0.8rem, 3.5vw, 2.2rem);
             line-height: 2.2;
             color: var(--quran-text);
             text-align: justify;
-            text-align-last: right;
+            text-align-last: justify;
             margin-bottom: 2px;
         }
 
@@ -805,6 +807,43 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             line-height: 1.5;
         }
 
+        /* Zoom control di toolbar mushaf */
+        .zoom-control {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 3px;
+        }
+
+        .zoom-control .zoom-btn {
+            font-size: 0.85rem;
+            width: 26px;
+            height: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: 0.2s;
+        }
+
+        .zoom-control .zoom-btn:hover {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .zoom-control .zoom-label {
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            padding: 0 4px;
+            white-space: nowrap;
+        }
+
         /* Ayah action sheet (mode mushaf) */
         .sheet-close {
             position: absolute;
@@ -905,8 +944,8 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
                     <i class="fas fa-book-open"></i><span class="mode-label">Mushaf</span>
                 </div>
             </div>
-            <!-- Tombol pengatur font, hanya muncul di mode list -->
-            <div class="font-toggle" id="fontToggleContainer" title="Ukuran teks arab (hanya mode daftar)">
+            <!-- Tombol pengatur font untuk mode daftar -->
+            <div class="font-toggle" id="fontToggleContainer" title="Ukuran teks arab (mode daftar)">
                 <div class="h-btn" onclick="changeFontSize(-1)"><i class="fas fa-minus"></i></div>
                 <span class="ft-label">Aa</span>
                 <div class="h-btn" onclick="changeFontSize(1)"><i class="fas fa-plus"></i></div>
@@ -949,6 +988,12 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
                 </div>
                 <div class="mtb-nav" onclick="goNextPage()" title="Halaman berikutnya"><i class="fas fa-chevron-right"></i></div>
             </div>
+            <!-- Zoom control khusus mushaf -->
+            <div class="zoom-control" id="zoomControl" title="Perbesar tampilan mushaf">
+                <div class="zoom-btn" onclick="changeMushafZoom(-0.1)"><i class="fas fa-minus"></i></div>
+                <span class="zoom-label">Zoom</span>
+                <div class="zoom-btn" onclick="changeMushafZoom(0.1)"><i class="fas fa-plus"></i></div>
+            </div>
             <div class="mtb-btn" id="btn-mushaf-terjemah" onclick="toggleMushafTerjemah()" title="Tampilkan terjemah halaman ini">
                 <i class="fas fa-language"></i>
             </div>
@@ -957,11 +1002,12 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
         <div class="mushaf-stage" id="mushaf-stage">
             <div class="mushaf-loading" id="mushaf-loading"><i class="fas fa-spinner fa-spin"></i>&nbsp; Memuat halaman...</div>
             <div class="mushaf-page" id="mushaf-page"></div>
-            <div class="mushaf-arrow left" onclick="goNextPage()" title="Lanjut"><i class="fas fa-chevron-left"></i></div>
-            <div class="mushaf-arrow right" onclick="goPrevPage()" title="Mundur"><i class="fas fa-chevron-right"></i></div>
+            <!-- Panah navigasi: kiri = prev, kanan = next -->
+            <div class="mushaf-arrow left" onclick="goPrevPage()" title="Halaman sebelumnya"><i class="fas fa-chevron-left"></i></div>
+            <div class="mushaf-arrow right" onclick="goNextPage()" title="Halaman berikutnya"><i class="fas fa-chevron-right"></i></div>
         </div>
 
-        <div class="mushaf-hint"><i class="fas fa-hand-pointer"></i> Geser layar / ketuk tepi untuk pindah halaman &bull; Ketuk ayat untuk audio &bull; Tahan ayat untuk tafsir, terjemah &amp; simpan</div>
+        <div class="mushaf-hint"><i class="fas fa-hand-pointer"></i> Geser layar / ketuk tepi untuk pindah halaman &bull; Tahan ayat untuk audio, tafsir, &amp; simpan</div>
 
         <div class="mushaf-translation-panel" id="mushaf-translation-panel"></div>
     </div>
@@ -1532,14 +1578,28 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             document.getElementById('btn-mushaf-terjemah').classList.toggle('active', mushafTerjemahShown);
         }
 
+        // --- ZOOM MUSHAF (skala tanpa mengubah layout) ---
+        let mushafZoom = parseFloat(localStorage.getItem('mushafZoom')) || 1;
+        document.documentElement.style.setProperty('--mushaf-zoom', mushafZoom);
+
+        function changeMushafZoom(delta) {
+            mushafZoom = Math.min(1.5, Math.max(0.7, +(mushafZoom + delta).toFixed(2)));
+            document.documentElement.style.setProperty('--mushaf-zoom', mushafZoom);
+            try {
+                localStorage.setItem('mushafZoom', mushafZoom);
+            } catch (e) {}
+        }
+
         async function switchMode(mode) {
             if (mode === currentMode) return;
             currentMode = mode;
             document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
 
             const fontToggler = document.getElementById('fontToggleContainer');
+            const zoomCtrl = document.getElementById('zoomControl');
             if (mode === 'page') {
                 fontToggler.style.display = 'none';
+                zoomCtrl.style.display = 'flex';
                 document.getElementById('listView').style.display = 'none';
                 document.getElementById('mushafView').style.display = 'block';
                 if (currentPageNum === null) {
@@ -1554,6 +1614,7 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
                 }
             } else {
                 fontToggler.style.display = 'flex';
+                zoomCtrl.style.display = 'none';
                 document.getElementById('mushafView').style.display = 'none';
                 document.getElementById('listView').style.display = 'block';
                 document.getElementById('mini-title').innerText = surahData ? surahData.namaLatin : 'Memuat...';
@@ -1563,6 +1624,7 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
         }
 
         // --- AUDIO & INTERAKSI AYAT (MODE MUSHAF) ---
+        // Hanya dipanggil dari sheet (long-press), bukan tap.
         function playAyatMushaf(url, verseKey) {
             audioFullEl.pause();
             document.getElementById('btn-play-full').innerHTML = '<i class="fas fa-play-circle"></i>';
@@ -1634,15 +1696,7 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             saveBookmarkGeneric(sheet.dataset.surah, sheet.dataset.ayat);
         }
 
-        function tapPlayAyahWord(verseKey) {
-            const [s, a] = verseKey.split(':').map(Number);
-            const data = equranCache[s];
-            if (!data) return;
-            const ayatObj = data.surah.ayat.find(x => x.nomorAyat === a);
-            if (!ayatObj) return;
-            playAyatMushaf(ayatObj.audio['05'], verseKey);
-        }
-
+        // --- INTERAKSI AYAT: HANYA LONG-PRESS (TIDAK ADA TAP) ---
         (function bindAyahPress() {
             const page = document.getElementById('mushaf-page');
             const LONG_PRESS_MS = 420;
@@ -1672,13 +1726,8 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             });
 
             page.addEventListener('pointerup', e => {
-                const el = e.target.closest('.ayah-word');
-                clearTimeout(pressTimer);
-                if (activeEl) activeEl.classList.remove('pressing');
-                if (el && !longPressFired) {
-                    tapPlayAyahWord(el.dataset.verse);
-                }
-                activeEl = null;
+                // Tidak lakukan apa-apa pada tap singkat
+                clearPress();
             });
 
             page.addEventListener('pointerleave', clearPress, true);
@@ -1700,7 +1749,7 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             } catch (e) {}
         }
 
-        // --- GESER (SWIPE) UNTUK GANTI HALAMAN ---
+        // --- GESER (SWIPE) UNTUK GANTI HALAMAN (arah sudah benar: kiri=next, kanan=prev) ---
         (function bindSwipe() {
             const stage = document.getElementById('mushaf-stage');
             let startX = null,
@@ -1716,8 +1765,8 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
                 const dx = e.changedTouches[0].clientX - startX;
                 const dy = e.changedTouches[0].clientY - startY;
                 if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy)) {
-                    if (dx < 0) goNextPage();
-                    else goPrevPage();
+                    if (dx < 0) goNextPage(); // geser kiri = halaman berikutnya
+                    else goPrevPage(); // geser kanan = halaman sebelumnya
                 }
                 startX = null;
                 startY = null;

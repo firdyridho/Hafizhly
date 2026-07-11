@@ -1,5 +1,9 @@
 <?php
 session_start();
+// Tampung semua output di buffer. Ini penting supaya kalau ada PHP notice/warning
+// yang ke-print duluan (misal dari koneksi DB), itu tidak ikut nempel di depan
+// response JSON dan bikin JS gagal parsing (yang muncul sebagai "periksa koneksi").
+ob_start();
 require_once '../config/database.php';
 
 /** @var mysqli $conn */
@@ -77,6 +81,7 @@ if (isset($_POST['action'])) {
         mysqli_query($conn, "INSERT INTO user_todos (user_id, task_name, task_time, task_date, kategori, catatan) VALUES ('$user_id', '$task', '$time', '$date', '$kat', '$notes')");
         $new_id = mysqli_insert_id($conn);
 
+        ob_clean(); // buang output nyasar (notice/warning) yang mungkin sudah tertampung
         header('Content-Type: application/json');
         echo json_encode([
             'status' => 'ok',
@@ -95,6 +100,7 @@ if (isset($_POST['action'])) {
         $todo_id = (int) $_POST['todo_id'];
         $status = (int) $_POST['status'];
         mysqli_query($conn, "UPDATE user_todos SET is_completed='$status' WHERE id='$todo_id' AND user_id='$user_id'");
+        ob_clean();
         header('Content-Type: application/json');
         echo json_encode(['status' => 'ok']);
         exit();
@@ -102,6 +108,7 @@ if (isset($_POST['action'])) {
     if ($_POST['action'] == 'delete_todo') {
         $todo_id = (int) $_POST['todo_id'];
         mysqli_query($conn, "DELETE FROM user_todos WHERE id='$todo_id' AND user_id='$user_id'");
+        ob_clean();
         header('Content-Type: application/json');
         echo json_encode(['status' => 'ok']);
         exit();
@@ -599,6 +606,22 @@ while($row = mysqli_fetch_assoc($q_todos)) { $todos[] = $row; }
             }[m]));
         }
 
+        // Helper request: ambil response sebagai teks dulu, baru coba parse JSON.
+        // Kalau gagal parse, tampilkan isi respon aslinya di console supaya
+        // kelihatan penyebab sebenarnya (bukan cuma dikira "koneksi putus").
+        function postAction(fd) {
+            return fetch('target.php', { method: 'POST', body: fd })
+                .then(async res => {
+                    const raw = await res.text();
+                    try {
+                        return JSON.parse(raw);
+                    } catch (err) {
+                        console.error('Respon server bukan JSON valid. Isi respon:', raw);
+                        throw new Error('respon_tidak_valid');
+                    }
+                });
+        }
+
         // "Komponen" render satu item todo (mirip render function Vue/React)
         function renderTodoItem(todo) {
             const notesHtml = todo.catatan
@@ -640,11 +663,10 @@ while($row = mysqli_fetch_assoc($q_todos)) { $todos[] = $row; }
             btn.disabled = true;
             btn.innerText = 'Menambahkan...';
 
-            fetch('target.php', { method: 'POST', body: fd })
-                .then(res => res.json())
+            postAction(fd)
                 .then(data => {
                     if (data.status !== 'ok') {
-                        alert('Gagal menambahkan aktivitas.');
+                        alert('Gagal menambahkan aktivitas: ' + (data.message || 'tidak diketahui'));
                         return;
                     }
                     const emptyEl = document.getElementById('todoEmpty');
@@ -661,7 +683,13 @@ while($row = mysqli_fetch_assoc($q_todos)) { $todos[] = $row; }
                     document.getElementById('todoForm').reset();
                     document.getElementById('todoDate').value = '<?= $current_date ?>';
                 })
-                .catch(() => alert('Gagal menambahkan aktivitas. Periksa koneksi lalu coba lagi.'))
+                .catch(err => {
+                    if (err.message === 'respon_tidak_valid') {
+                        alert('Aktivitas mungkin gagal tersimpan: server mengembalikan respon tidak valid. Buka Console (F12) untuk lihat detailnya, atau muat ulang halaman untuk cek apakah datanya sebenarnya tersimpan.');
+                    } else {
+                        alert('Gagal menambahkan aktivitas. Periksa koneksi internet lalu coba lagi.');
+                    }
+                })
                 .finally(() => {
                     btn.disabled = false;
                     btn.innerText = 'Add Activity';
@@ -678,8 +706,7 @@ while($row = mysqli_fetch_assoc($q_todos)) { $todos[] = $row; }
             fd.append('todo_id', id);
             fd.append('status', isChecked ? 1 : 0);
 
-            fetch('target.php', { method: 'POST', body: fd })
-                .then(res => res.json())
+            postAction(fd)
                 .then(data => {
                     if (data.status !== 'ok' && item) {
                         // rollback kalau gagal
@@ -696,8 +723,7 @@ while($row = mysqli_fetch_assoc($q_todos)) { $todos[] = $row; }
             fd.append('action', 'delete_todo');
             fd.append('todo_id', id);
 
-            fetch('target.php', { method: 'POST', body: fd })
-                .then(res => res.json())
+            postAction(fd)
                 .then(data => {
                     if (data.status !== 'ok') return;
                     const item = document.getElementById('todo-' + id);
@@ -707,6 +733,13 @@ while($row = mysqli_fetch_assoc($q_todos)) { $todos[] = $row; }
                     const remaining = list.querySelectorAll('.todo-item').length;
                     if (remaining === 0) {
                         list.innerHTML = '<div class="todo-empty" id="todoEmpty" style="text-align:center; padding:20px; color:var(--text-muted); font-size:0.9rem;">No activities planned for today.</div>';
+                    }
+                })
+                .catch(err => {
+                    if (err.message === 'respon_tidak_valid') {
+                        alert('Item mungkin sudah terhapus tapi respon server tidak valid. Muat ulang halaman untuk memastikan.');
+                    } else {
+                        alert('Gagal menghapus. Periksa koneksi internet lalu coba lagi.');
                     }
                 });
         }

@@ -34,13 +34,16 @@ mysqli_query($conn, "CREATE TABLE IF NOT EXISTS user_todos (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
-mysqli_query($conn, "CREATE TABLE IF NOT EXISTS bookmarks (
+// NOTE: Tabel bookmark memakai nama & kolom YANG SAMA dengan baca.php
+// (tabel "bookmark", kolom surah_nomor & ayat) supaya setiap ayat yang
+// ditandai lewat baca.php otomatis kebaca & tersinkron di halaman ini.
+mysqli_query($conn, "CREATE TABLE IF NOT EXISTS bookmark (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
-    surah INT NOT NULL,
+    surah_nomor INT NOT NULL,
     ayat INT NOT NULL,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    UNIQUE KEY uniq_user_bm (user_id)
+    catatan VARCHAR(255) DEFAULT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
 // --- 2. AJAX HANDLERS ---
@@ -59,25 +62,49 @@ if (isset($_POST['action'])) {
         exit('ok');
     }
     if ($_POST['action'] == 'add_todo') {
-        $task = mysqli_real_escape_string($conn, $_POST['task']);
-        $time = mysqli_real_escape_string($conn, $_POST['time']);
-        $date = mysqli_real_escape_string($conn, $_POST['date']);
-        $kat = mysqli_real_escape_string($conn, $_POST['kategori']);
-        $notes = mysqli_real_escape_string($conn, $_POST['notes']);
-        
+        $task_raw = trim($_POST['task']);
+        $time_raw = $_POST['time'];
+        $date_raw = $_POST['date'];
+        $kat_raw = $_POST['kategori'];
+        $notes_raw = trim($_POST['notes']);
+
+        $task = mysqli_real_escape_string($conn, $task_raw);
+        $time = mysqli_real_escape_string($conn, $time_raw);
+        $date = mysqli_real_escape_string($conn, $date_raw);
+        $kat = mysqli_real_escape_string($conn, $kat_raw);
+        $notes = mysqli_real_escape_string($conn, $notes_raw);
+
         mysqli_query($conn, "INSERT INTO user_todos (user_id, task_name, task_time, task_date, kategori, catatan) VALUES ('$user_id', '$task', '$time', '$date', '$kat', '$notes')");
-        exit('ok');
+        $new_id = mysqli_insert_id($conn);
+
+        header('Content-Type: application/json');
+        echo json_encode([
+            'status' => 'ok',
+            'todo' => [
+                'id' => $new_id,
+                'task_name' => $task_raw,
+                'task_time_label' => date('H:i', strtotime($time_raw)),
+                'kategori' => $kat_raw,
+                'catatan' => $notes_raw,
+                'is_completed' => 0
+            ]
+        ]);
+        exit();
     }
     if ($_POST['action'] == 'toggle_todo') {
         $todo_id = (int) $_POST['todo_id'];
         $status = (int) $_POST['status'];
         mysqli_query($conn, "UPDATE user_todos SET is_completed='$status' WHERE id='$todo_id' AND user_id='$user_id'");
-        exit('ok');
+        header('Content-Type: application/json');
+        echo json_encode(['status' => 'ok']);
+        exit();
     }
     if ($_POST['action'] == 'delete_todo') {
         $todo_id = (int) $_POST['todo_id'];
         mysqli_query($conn, "DELETE FROM user_todos WHERE id='$todo_id' AND user_id='$user_id'");
-        exit('ok');
+        header('Content-Type: application/json');
+        echo json_encode(['status' => 'ok']);
+        exit();
     }
 }
 
@@ -101,10 +128,13 @@ if(mysqli_num_rows($q_last_mutabaah) > 0) {
     $start_surah = 1; $start_ayat = 1;
 }
 
-$q_bookmark = mysqli_query($conn, "SELECT surah, ayat FROM bookmarks WHERE user_id='$user_id' LIMIT 1");
-if(mysqli_num_rows($q_bookmark) > 0) {
+// Ambil bookmark TERBARU milik user dari tabel "bookmark" (dipakai bersama baca.php)
+// supaya begitu ayat ditandai di baca.php, progress & "Current Bookmark" di sini
+// otomatis ikut ter-update tanpa perlu aksi tambahan.
+$q_bookmark = mysqli_query($conn, "SELECT surah_nomor, ayat FROM bookmark WHERE user_id='$user_id' ORDER BY id DESC LIMIT 1");
+if($q_bookmark && mysqli_num_rows($q_bookmark) > 0) {
     $row_bm = mysqli_fetch_assoc($q_bookmark);
-    $end_surah = $row_bm['surah'];
+    $end_surah = $row_bm['surah_nomor'];
     $end_ayat = $row_bm['ayat'];
 } else {
     $end_surah = $start_surah; $end_ayat = $start_ayat - 1;
@@ -190,7 +220,8 @@ while($row = mysqli_fetch_assoc($q_todos)) { $todos[] = $row; }
         /* 3. Active Target Card */
         .target-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .target-badge { background: var(--primary-light); color: var(--primary); padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-        .btn-icon { background: none; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer; transition: 0.2s; }
+        .header-actions { display: flex; align-items: center; gap: 6px; }
+        .btn-icon { background: none; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer; transition: 0.2s; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
         .btn-icon:hover { color: var(--primary); }
 
         .target-title { font-size: 1.5rem; font-weight: 700; color: var(--dark); margin-bottom: 5px; }
@@ -205,6 +236,14 @@ while($row = mysqli_fetch_assoc($q_todos)) { $todos[] = $row; }
         .bookmark-icon { width: 40px; height: 40px; border-radius: 12px; background: white; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 1.2rem; }
         .bookmark-text { font-size: 0.85rem; color: var(--text-muted); font-weight: 500; margin-bottom: 3px; }
         .bookmark-value { font-size: 1rem; font-weight: 700; color: var(--dark); }
+
+        .btn-edit-mutabaah {
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            width: 100%; margin-top: 16px; padding: 13px; border-radius: 14px;
+            background: var(--dark); color: white; text-decoration: none;
+            font-weight: 600; font-size: 0.9rem; transition: 0.2s;
+        }
+        .btn-edit-mutabaah:hover { background: #0f172a; }
 
         /* Auto Mutabaah Success Card */
         .success-card { background: linear-gradient(135deg, var(--primary), #10b981); color: white; padding: 24px; border-radius: var(--radius); text-align: center; margin-bottom: var(--spacing); box-shadow: 0 10px 25px rgba(5,150,105,0.3); display: <?= $target_tercapai ? 'block' : 'none' ?>; }
@@ -234,11 +273,13 @@ while($row = mysqli_fetch_assoc($q_todos)) { $todos[] = $row; }
         .form-control:focus { border-color: var(--primary); }
         .btn-submit-todo { width: 100%; background: var(--dark); color: white; border: none; padding: 14px; border-radius: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; }
         .btn-submit-todo:hover { background: #0f172a; }
+        .btn-submit-todo:disabled { opacity: 0.6; cursor: not-allowed; }
 
         .todo-list { display: flex; flex-direction: column; gap: 12px; }
         .todo-item { display: flex; align-items: flex-start; gap: 12px; padding: 16px; border: 1px solid var(--border); border-radius: 16px; transition: 0.2s; }
         .todo-item:hover { border-color: var(--primary-light); background: #f8fafc; }
-        .todo-item.completed { opacity: 0.6; text-decoration: line-through; background: #f1f5f9; }
+        .todo-item.completed .todo-task { text-decoration: line-through; }
+        .todo-item.completed { opacity: 0.6; background: #f1f5f9; }
         .todo-checkbox { width: 22px; height: 22px; cursor: pointer; accent-color: var(--primary); margin-top: 2px; }
         .todo-content { flex: 1; }
         .todo-task { font-weight: 600; font-size: 0.95rem; color: var(--dark); margin-bottom: 4px; }
@@ -312,7 +353,10 @@ while($row = mysqli_fetch_assoc($q_todos)) { $todos[] = $row; }
         <div class="card">
             <div class="target-card-header">
                 <div class="target-badge">Repeat: Every <?= ucfirst($tipe_target) ?></div>
-                <button class="btn-icon" onclick="openTargetModal()"><i class="fas fa-sliders-h"></i></button>
+                <div class="header-actions">
+                    <a href="mutabaah.php" class="btn-icon" title="Edit Mutabaah"><i class="fas fa-edit"></i></a>
+                    <button class="btn-icon" onclick="openTargetModal()"><i class="fas fa-sliders-h"></i></button>
+                </div>
             </div>
             
             <div class="target-title">Read <?= $jumlah_target ?> Verses</div>
@@ -340,6 +384,10 @@ while($row = mysqli_fetch_assoc($q_todos)) { $todos[] = $row; }
                     </div>
                 </div>
             </div>
+
+            <a href="mutabaah.php" class="btn-edit-mutabaah">
+                <i class="fas fa-pen"></i> Edit Mutabaah
+            </a>
         </div>
 
         <!-- 4. Progress Section (Chart) -->
@@ -377,7 +425,7 @@ while($row = mysqli_fetch_assoc($q_todos)) { $todos[] = $row; }
                 <div style="font-size:0.85rem; color:var(--text-muted); font-weight:600;"><i class="far fa-calendar-alt"></i> <?= date('d M Y') ?></div>
             </div>
 
-            <form class="todo-form" onsubmit="addTodo(event)">
+            <form class="todo-form" id="todoForm" onsubmit="addTodo(event)">
                 <input type="text" id="todoTask" class="form-control" placeholder="Activity name (e.g., Tilawah after Subuh)" required style="margin-bottom:12px; width: 100%;">
                 
                 <div class="form-row">
@@ -396,15 +444,15 @@ while($row = mysqli_fetch_assoc($q_todos)) { $todos[] = $row; }
                 
                 <input type="text" id="todoNotes" class="form-control" placeholder="Add notes (optional)..." style="margin-bottom:15px; width: 100%;">
                 
-                <button type="submit" class="btn-submit-todo">Add Activity</button>
+                <button type="submit" class="btn-submit-todo" id="todoSubmitBtn">Add Activity</button>
             </form>
 
-            <div class="todo-list">
+            <div class="todo-list" id="todoList">
                 <?php if(empty($todos)): ?>
-                    <div style="text-align:center; padding:20px; color:var(--text-muted); font-size:0.9rem;">No activities planned for today.</div>
+                    <div class="todo-empty" id="todoEmpty" style="text-align:center; padding:20px; color:var(--text-muted); font-size:0.9rem;">No activities planned for today.</div>
                 <?php else: ?>
                     <?php foreach($todos as $t): ?>
-                        <div class="todo-item <?= $t['is_completed'] ? 'completed' : '' ?>" id="todo-<?= $t['id'] ?>">
+                        <div class="todo-item <?= $t['is_completed'] ? 'completed' : '' ?>" id="todo-<?= $t['id'] ?>" data-time="<?= date('H:i', strtotime($t['task_time'])) ?>">
                             <input type="checkbox" class="todo-checkbox" <?= $t['is_completed'] ? 'checked' : '' ?> onchange="toggleTodo(<?= $t['id'] ?>, this.checked)">
                             <div class="todo-content">
                                 <div class="todo-task"><?= htmlspecialchars($t['task_name']) ?></div>
@@ -510,7 +558,7 @@ while($row = mysqli_fetch_assoc($q_todos)) { $todos[] = $row; }
             progressChart.update();
         }
 
-        // --- TARGET MODAL JS ---
+        // --- TARGET MODAL JS (TIDAK DIUBAH) ---
         function openTargetModal() {
             const m = document.getElementById('targetModal');
             m.style.display = 'flex';
@@ -539,39 +587,128 @@ while($row = mysqli_fetch_assoc($q_todos)) { $todos[] = $row; }
             fetch('target.php', { method:'POST', body: fd }).then(() => location.reload());
         }
 
-        // --- TODO PLANNER JS ---
+        // ==========================================================
+        // --- TODO PLANNER (REAKTIF, TANPA RELOAD - ala Vue/Next) ---
+        // ==========================================================
+        const catEmoji = { Tilawah: '📖', Hafalan: '🧠', Murojaah: '🔁', Tajwid: '📚' };
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str).replace(/[&<>"']/g, m => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[m]));
+        }
+
+        // "Komponen" render satu item todo (mirip render function Vue/React)
+        function renderTodoItem(todo) {
+            const notesHtml = todo.catatan
+                ? `<div class="todo-notes">"${escapeHtml(todo.catatan)}"</div>`
+                : '';
+            return `<div class="todo-item ${todo.is_completed == 1 ? 'completed' : ''}" id="todo-${todo.id}" data-time="${todo.task_time_label}">
+                <input type="checkbox" class="todo-checkbox" ${todo.is_completed == 1 ? 'checked' : ''} onchange="toggleTodo(${todo.id}, this.checked)">
+                <div class="todo-content">
+                    <div class="todo-task">${escapeHtml(todo.task_name)}</div>
+                    <div class="todo-meta">
+                        <span class="todo-badge">${todo.task_time_label}</span>
+                        <span>• ${escapeHtml(todo.kategori)}</span>
+                    </div>
+                    ${notesHtml}
+                </div>
+                <button class="btn-icon" onclick="deleteTodo(${todo.id})" style="color:#ef4444;"><i class="fas fa-trash-alt"></i></button>
+            </div>`;
+        }
+
         function addTodo(e) {
             e.preventDefault();
-            const task = document.getElementById('todoTask').value;
+            const btn = document.getElementById('todoSubmitBtn');
+            const task = document.getElementById('todoTask').value.trim();
             const time = document.getElementById('todoTime').value;
             const date = document.getElementById('todoDate').value;
             const kat = document.getElementById('todoCat').value;
-            const notes = document.getElementById('todoNotes').value;
-            
+            const notes = document.getElementById('todoNotes').value.trim();
+
+            if (!task || !time || !date) return;
+
             const fd = new URLSearchParams();
-            fd.append('action', 'add_todo'); fd.append('task', task); 
-            fd.append('time', time); fd.append('date', date);
-            fd.append('kategori', kat); fd.append('notes', notes);
-            
-            fetch('target.php', { method:'POST', body: fd }).then(() => location.reload());
+            fd.append('action', 'add_todo');
+            fd.append('task', task);
+            fd.append('time', time);
+            fd.append('date', date);
+            fd.append('kategori', kat);
+            fd.append('notes', notes);
+
+            btn.disabled = true;
+            btn.innerText = 'Menambahkan...';
+
+            fetch('target.php', { method: 'POST', body: fd })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status !== 'ok') {
+                        alert('Gagal menambahkan aktivitas.');
+                        return;
+                    }
+                    const emptyEl = document.getElementById('todoEmpty');
+                    if (emptyEl) emptyEl.remove();
+
+                    const list = document.getElementById('todoList');
+                    list.insertAdjacentHTML('beforeend', renderTodoItem(data.todo));
+
+                    // urutkan ulang list berdasarkan jam, seperti computed list di Vue
+                    const items = Array.from(list.children).filter(el => el.classList.contains('todo-item'));
+                    items.sort((a, b) => a.dataset.time.localeCompare(b.dataset.time));
+                    items.forEach(el => list.appendChild(el));
+
+                    document.getElementById('todoForm').reset();
+                    document.getElementById('todoDate').value = '<?= $current_date ?>';
+                })
+                .catch(() => alert('Gagal menambahkan aktivitas. Periksa koneksi lalu coba lagi.'))
+                .finally(() => {
+                    btn.disabled = false;
+                    btn.innerText = 'Add Activity';
+                });
         }
 
         function toggleTodo(id, isChecked) {
+            const item = document.getElementById('todo-' + id);
+            // update optimis dulu biar terasa instan, baru dikonfirmasi ke server
+            if (item) item.classList.toggle('completed', isChecked);
+
             const fd = new URLSearchParams();
-            fd.append('action', 'toggle_todo'); fd.append('todo_id', id); fd.append('status', isChecked ? 1 : 0);
-            fetch('target.php', { method:'POST', body: fd })
-            .then(() => {
-                const item = document.getElementById('todo-'+id);
-                if(isChecked) item.classList.add('completed');
-                else item.classList.remove('completed');
-            });
+            fd.append('action', 'toggle_todo');
+            fd.append('todo_id', id);
+            fd.append('status', isChecked ? 1 : 0);
+
+            fetch('target.php', { method: 'POST', body: fd })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status !== 'ok' && item) {
+                        // rollback kalau gagal
+                        item.classList.toggle('completed', !isChecked);
+                    }
+                })
+                .catch(() => { if (item) item.classList.toggle('completed', !isChecked); });
         }
 
         function deleteTodo(id) {
-            if(!confirm("Hapus jadwal ini?")) return;
+            if (!confirm('Hapus jadwal ini?')) return;
+
             const fd = new URLSearchParams();
-            fd.append('action', 'delete_todo'); fd.append('todo_id', id);
-            fetch('target.php', { method:'POST', body: fd }).then(() => location.reload());
+            fd.append('action', 'delete_todo');
+            fd.append('todo_id', id);
+
+            fetch('target.php', { method: 'POST', body: fd })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status !== 'ok') return;
+                    const item = document.getElementById('todo-' + id);
+                    if (item) item.remove();
+
+                    const list = document.getElementById('todoList');
+                    const remaining = list.querySelectorAll('.todo-item').length;
+                    if (remaining === 0) {
+                        list.innerHTML = '<div class="todo-empty" id="todoEmpty" style="text-align:center; padding:20px; color:var(--text-muted); font-size:0.9rem;">No activities planned for today.</div>';
+                    }
+                });
         }
     </script>
 </body>

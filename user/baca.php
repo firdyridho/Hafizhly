@@ -1451,7 +1451,7 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
                 if (line.type === 'surah-header') {
                     const sNum = parseInt(line.surah, 10);
                     const sd = equranCache[sNum] ? equranCache[sNum].surah : null;
-                    html += `<div class="mushaf-line line-surah-header"><span class="lsh-orn"><i class="fas fa-gem"></i></span><span>سورة ${sd ? sd.nama : ''}</span><span class="lsh-orn"><i class="fas fa-gem"></i></span></div>`;
+                    html += `<div class="mushaf-line line-surah-header"><span class="lsh-orn"></span><span>سورة ${sd ? sd.nama : ''}</span><span class="lsh-orn"></span></div>`;
                 } else if (line.type === 'basmala') {
                     html += `<div class="mushaf-line line-basmala">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>`;
                 } else if (line.type === 'text' && line.words) {

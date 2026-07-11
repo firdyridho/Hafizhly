@@ -9,303 +9,352 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
 }
 
 $user_id = (int) $_SESSION['user_id'];
+$current_date = date('Y-m-d');
 
-// --- 1. MENGAMBIL DATA PROGRESS HARI INI ---
-// Menghitung jumlah ayat yang diinput hari ini
-$q_today = mysqli_query($conn, "SELECT SUM(ayah_end - ayah_start + 1) as total_today FROM mutabaah WHERE user_id = '$user_id' AND activity_date = CURDATE()");
-$row_today = mysqli_fetch_assoc($q_today);
-$progress_ayat = (int)$row_today['total_today'];
+// --- 1. AUTO-CREATE TABEL YANG DIBUTUHKAN JIKA BELUM ADA ---
+mysqli_query($conn, "CREATE TABLE IF NOT EXISTS user_targets (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    kategori VARCHAR(50) NOT NULL,
+    tipe_target VARCHAR(20) NOT NULL, -- harian, mingguan, bulanan
+    jumlah_target INT NOT NULL,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uniq_user_kat (user_id, kategori)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
-// Target default (Bisa dikembangkan nanti jika ada tabel setting khusus user)
-$target_ayat = 5; 
-$sisa_ayat = $target_ayat - $progress_ayat;
+mysqli_query($conn, "CREATE TABLE IF NOT EXISTS user_todos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    task_name VARCHAR(255) NOT NULL,
+    task_time TIME NOT NULL,
+    task_date DATE NOT NULL,
+    is_completed TINYINT(1) DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
-// Kalkulasi persentase
-$persentase = ($progress_ayat / $target_ayat) * 100;
+// Memastikan tabel bookmark ada (untuk sinkronisasi bacaan)
+mysqli_query($conn, "CREATE TABLE IF NOT EXISTS bookmarks (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    surah INT NOT NULL,
+    ayat INT NOT NULL,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uniq_user_bm (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+// --- 2. AJAX HANDLERS ---
+if (isset($_POST['action'])) {
+    if ($_POST['action'] == 'save_target') {
+        $kategori = mysqli_real_escape_string($conn, $_POST['kategori']);
+        $tipe = mysqli_real_escape_string($conn, $_POST['tipe']);
+        $jumlah = (int) $_POST['jumlah'];
+
+        $cek = mysqli_query($conn, "SELECT id FROM user_targets WHERE user_id='$user_id' AND kategori='$kategori'");
+        if (mysqli_num_rows($cek) > 0) {
+            mysqli_query($conn, "UPDATE user_targets SET tipe_target='$tipe', jumlah_target='$jumlah' WHERE user_id='$user_id' AND kategori='$kategori'");
+        } else {
+            mysqli_query($conn, "INSERT INTO user_targets (user_id, kategori, tipe_target, jumlah_target) VALUES ('$user_id', '$kategori', '$tipe', '$jumlah')");
+        }
+        exit('ok');
+    }
+    if ($_POST['action'] == 'add_todo') {
+        $task = mysqli_real_escape_string($conn, $_POST['task']);
+        $time = mysqli_real_escape_string($conn, $_POST['time']);
+        mysqli_query($conn, "INSERT INTO user_todos (user_id, task_name, task_time, task_date) VALUES ('$user_id', '$task', '$time', '$current_date')");
+        exit('ok');
+    }
+    if ($_POST['action'] == 'toggle_todo') {
+        $todo_id = (int) $_POST['todo_id'];
+        $status = (int) $_POST['status'];
+        mysqli_query($conn, "UPDATE user_todos SET is_completed='$status' WHERE id='$todo_id' AND user_id='$user_id'");
+        exit('ok');
+    }
+    if ($_POST['action'] == 'delete_todo') {
+        $todo_id = (int) $_POST['todo_id'];
+        mysqli_query($conn, "DELETE FROM user_todos WHERE id='$todo_id' AND user_id='$user_id'");
+        exit('ok');
+    }
+}
+
+// --- 3. AMBIL DATA TARGET & SINKRONISASI BOOKMARK (TILAWAH) ---
+// Ambil pengaturan target user (Default: Harian 10 Ayat)
+$q_target = mysqli_query($conn, "SELECT * FROM user_targets WHERE user_id='$user_id' AND kategori='tilawah'");
+if(mysqli_num_rows($q_target) > 0) {
+    $row_tgt = mysqli_fetch_assoc($q_target);
+    $tipe_target = $row_tgt['tipe_target'];
+    $jumlah_target = (int) $row_tgt['jumlah_target'];
+} else {
+    $tipe_target = 'harian';
+    $jumlah_target = 10;
+}
+
+// Logika Pintar: Cari START (Dari Mana) dan END (Sampai Mana)
+// Start = Ayat setelah record Mutabaah terakhir. End = Bookmark saat ini.
+$q_last_mutabaah = mysqli_query($conn, "SELECT surah, ayah_end FROM mutabaah WHERE user_id='$user_id' ORDER BY activity_date DESC, activity_time DESC LIMIT 1");
+if(mysqli_num_rows($q_last_mutabaah) > 0) {
+    $row_lm = mysqli_fetch_assoc($q_last_mutabaah);
+    $start_surah = $row_lm['surah'];
+    $start_ayat = $row_lm['ayah_end'] + 1; // Mulai dari ayat berikutnya
+} else {
+    $start_surah = 1; $start_ayat = 1;
+}
+
+$q_bookmark = mysqli_query($conn, "SELECT surah, ayat FROM bookmarks WHERE user_id='$user_id' LIMIT 1");
+if(mysqli_num_rows($q_bookmark) > 0) {
+    $row_bm = mysqli_fetch_assoc($q_bookmark);
+    $end_surah = $row_bm['surah'];
+    $end_ayat = $row_bm['ayat'];
+} else {
+    // Jika belum ada bookmark, set sama dengan start
+    $end_surah = $start_surah; $end_ayat = $start_ayat - 1;
+}
+
+// Hitung Progres Ayat (Asumsi masih di surah yang sama untuk kemudahan logika dasar)
+$progress_ayat = 0;
+if($end_surah == $start_surah && $end_ayat >= $start_ayat) {
+    $progress_ayat = ($end_ayat - $start_ayat) + 1;
+} elseif ($end_surah > $start_surah) {
+    // Jika pindah surah, kita asumsikan minimal progressnya adalah ayat dari surah baru
+    $progress_ayat = $end_ayat + 5; // Estimasi jika beda surah
+}
+
+$persentase = ($jumlah_target > 0) ? ($progress_ayat / $jumlah_target) * 100 : 0;
 if ($persentase > 100) $persentase = 100;
+$target_tercapai = ($progress_ayat >= $jumlah_target && $jumlah_target > 0);
 
-// Logika Pesan Motivasi
-if ($sisa_ayat > 0) {
-    $pesan_motivasi = "Tinggal $sisa_ayat ayat lagi untuk mencapai target hari ini. Semangat! 🔥";
-    $pesan_color = "#f59e0b"; // Oranye
-    $pesan_bg = "#fef3c7";
-} else {
-    $pesan_motivasi = "Alhamdulillah, target hari ini tercapai! Luar biasa! 🎉";
-    $pesan_color = "#059669"; // Hijau
-    $pesan_bg = "#d1fae5";
-}
-
-// --- 2. MENGAMBIL DATA STATISTIK GLOBAL (ALL TIME) ---
-// Menghitung total ayat keseluruhan dan jumlah hari aktif unik (Streak)
-$q_all = mysqli_query($conn, "SELECT SUM(ayah_end - ayah_start + 1) as total_all, COUNT(DISTINCT activity_date) as active_days FROM mutabaah WHERE user_id = '$user_id'");
-$row_all = mysqli_fetch_assoc($q_all);
-
-$total_ayat_hafal = (int)$row_all['total_all'];
-$hari_aktif = (int)$row_all['active_days'];
-
-// Estimasi Halaman & Juz (Standar: 1 Hal = ~15 Ayat, 1 Juz = ~20 Hal / 300 Ayat)
-$total_halaman = floor($total_ayat_hafal / 15);
-$total_juz = floor($total_ayat_hafal / 300);
-
-// --- 3. MENGAMBIL MILESTONE (Surah & Ayat Terakhir) ---
-$q_last = mysqli_query($conn, "SELECT surah, ayah_end FROM mutabaah WHERE user_id = '$user_id' ORDER BY activity_date DESC, activity_time DESC LIMIT 1");
-if(mysqli_num_rows($q_last) > 0) {
-    $row_last = mysqli_fetch_assoc($q_last);
-    $next_surah_no = $row_last['surah'];
-    $next_ayat = $row_last['ayah_end'] + 1;
-} else {
-    $next_surah_no = 1; // Default
-    $next_ayat = 1;
-}
-
+// --- 4. AMBIL DATA TODO LIST HARI INI ---
+$q_todos = mysqli_query($conn, "SELECT * FROM user_todos WHERE user_id='$user_id' AND task_date='$current_date' ORDER BY task_time ASC");
+$todos = [];
+while($row = mysqli_fetch_assoc($q_todos)) { $todos[] = $row; }
 ?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Target Hafalan - Hifzly</title>
-    <!-- Fonts & Icons -->
+    <title>Target & Jadwal - Hifzly</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --primary: #059669; --primary-light: #d1fae5; --dark: #1e293b;
             --text-muted: #64748b; --bg: #f8fafc; --card-bg: #ffffff;
             --border: #e2e8f0; --spacing: 24px;
         }
-
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background-color: var(--bg); color: var(--dark); padding-bottom: 100px; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--bg); color: var(--dark); padding-bottom: 100px; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
 
-        /* 1. Header */
-        .page-header { text-align: center; margin-bottom: var(--spacing); padding-top: 10px; }
-        .page-title { font-size: 1.6rem; font-weight: 700; color: var(--dark); margin-bottom: 6px; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .page-subtitle { font-size: 0.9rem; color: var(--text-muted); line-height: 1.5; padding: 0 15px; }
+        .page-header { text-align: center; margin-bottom: 20px; }
+        .page-title { font-size: 1.5rem; font-weight: 700; color: var(--dark); }
 
-        /* 2. Segmented Control */
-        .segmented-control {
-            display: flex; background: #f1f5f9; padding: 4px; border-radius: 14px;
-            margin-bottom: var(--spacing); position: relative;
-        }
-        .segment-btn {
-            flex: 1; padding: 10px 0; text-align: center; font-size: 0.9rem; font-weight: 600;
-            color: var(--text-muted); cursor: pointer; border-radius: 10px; transition: 0.3s ease; z-index: 2;
-        }
-        .segment-btn.active { color: white; background: var(--primary); box-shadow: 0 4px 10px rgba(5, 150, 105, 0.2); }
+        /* KATEGORI SCROLL (Tilawah, Hafalan, dll) */
+        .category-tabs { display: flex; overflow-x: auto; gap: 10px; padding-bottom: 10px; margin-bottom: 15px; scrollbar-width: none; }
+        .category-tabs::-webkit-scrollbar { display: none; }
+        .cat-btn { white-space: nowrap; padding: 10px 20px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; cursor: pointer; border: 1.5px solid var(--border); background: var(--card-bg); color: var(--text-muted); transition: 0.2s; }
+        .cat-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .cat-btn.disabled { opacity: 0.5; cursor: not-allowed; }
 
-        /* Card Global Style */
-        .card {
-            background: var(--card-bg); border-radius: 20px; padding: 24px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03); border: 1px solid var(--border);
-            margin-bottom: var(--spacing);
-        }
-
-        /* 3. Current Target Card */
-        .target-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        /* Card Global */
+        .card { background: var(--card-bg); border-radius: 20px; padding: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03); border: 1px solid var(--border); margin-bottom: var(--spacing); }
+        
+        /* Progress Area */
+        .target-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
         .th-title { font-size: 1.1rem; font-weight: 700; color: var(--dark); }
-        .th-value { font-size: 1.4rem; font-weight: 700; color: var(--primary); }
+        .btn-edit-target { font-size: 0.8rem; color: var(--primary); background: var(--primary-light); padding: 5px 12px; border-radius: 12px; cursor: pointer; border: none; font-weight: 600; }
         
-        .progress-meta { display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 600; margin-bottom: 10px; color: var(--text-muted); }
-        .progress-bar-bg { width: 100%; height: 10px; background: #e2e8f0; border-radius: 10px; overflow: hidden; margin-bottom: 15px; }
-        .progress-bar-fill { height: 100%; background: var(--primary); border-radius: 10px; width: <?= $persentase ?>%; transition: 1s cubic-bezier(0.4, 0, 0.2, 1); }
-        
-        .target-footer { display: flex; flex-direction: column; gap: 15px; align-items: flex-start; }
-        .tf-text { font-size: 0.85rem; font-weight: 600; padding: 8px 12px; border-radius: 12px; width: 100%; line-height: 1.5; }
-        
-        .btn-outline { 
-            border: 1.5px solid var(--primary); color: var(--primary); background: transparent; 
-            padding: 10px 20px; border-radius: 12px; font-weight: 600; font-size: 0.9rem; 
-            cursor: pointer; transition: 0.2s; text-decoration: none; width: 100%; text-align: center;
-            display: inline-block;
-        }
-        .btn-outline:hover { background: var(--primary-light); }
+        .progress-bar-bg { width: 100%; height: 12px; background: #e2e8f0; border-radius: 10px; overflow: hidden; margin: 15px 0; }
+        .progress-bar-fill { height: 100%; background: var(--primary); border-radius: 10px; width: <?= $persentase ?>%; transition: 1s ease-in-out; }
 
-        /* 4. Progress Chart */
-        .chart-card { padding: 20px; }
-        .chart-header { font-size: 1.1rem; font-weight: 700; color: var(--dark); margin-bottom: 15px; }
-        .chart-container { position: relative; height: 220px; width: 100%; }
+        /* Info Bookmark Connection */
+        .bookmark-info { background: #f8fafc; border: 1px dashed #cbd5e1; padding: 12px; border-radius: 12px; font-size: 0.85rem; margin-bottom: 15px; }
+        .bm-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
+        .bm-row span { font-weight: 600; color: var(--dark); }
 
-        /* 5. Statistics Grid */
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: var(--spacing); }
-        .stat-card {
-            background: var(--card-bg); border-radius: 18px; padding: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02); border: 1px solid var(--border);
-            display: flex; flex-direction: column; gap: 8px;
-        }
-        .stat-icon { width: 40px; height: 40px; border-radius: 12px; background: var(--primary-light); color: var(--primary); display: flex; justify-content: center; align-items: center; font-size: 1.2rem; }
-        .stat-value { font-size: 1.5rem; font-weight: 700; color: var(--dark); }
-        .stat-label { font-size: 0.85rem; font-weight: 500; color: var(--text-muted); }
+        /* Peringatan / Warning */
+        .warning-box { background: #fef3c7; border: 1px solid #fde68a; padding: 15px; border-radius: 15px; text-align: center; margin-bottom: 15px; display: <?= $target_tercapai ? 'block' : 'none' ?>; }
+        .warning-title { font-weight: 700; color: #d97706; margin-bottom: 10px; font-size: 1rem; }
+        .btn-autofill { background: #d97706; color: white; padding: 10px 20px; border-radius: 12px; text-decoration: none; font-weight: 600; display: inline-block; font-size: 0.9rem; transition: 0.2s; }
+        .btn-autofill:hover { background: #b45309; }
 
-        /* 6. Next Goal / Milestone */
-        .milestone-card { position: relative; overflow: hidden; border: 1.5px solid var(--primary-light); }
-        .milestone-card::before {
-            content: '\f100'; font-family: 'Font Awesome 6 Free'; font-weight: 900;
-            position: absolute; right: -20px; top: -10px; font-size: 8rem; color: var(--primary-light);
-            opacity: 0.3; transform: rotate(-15deg); pointer-events: none;
-        }
-        .ms-title { font-size: 0.9rem; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
-        .ms-surah { font-size: 1.4rem; font-weight: 700; color: var(--dark); margin-bottom: 5px; }
-        .ms-desc { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 20px; }
-        .btn-solid { width: 100%; background: var(--primary); color: white; border: none; padding: 14px; border-radius: 14px; font-weight: 600; font-size: 1rem; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(5,150,105,0.3); transition: 0.2s; text-decoration: none;}
-        .btn-solid:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(5,150,105,0.4); }
+        /* TODO LIST (Jadwal) */
+        .todo-header { font-size: 1.1rem; font-weight: 700; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .todo-input-group { display: flex; gap: 10px; margin-bottom: 20px; }
+        .todo-input { flex: 1; padding: 10px 15px; border: 1px solid var(--border); border-radius: 12px; outline: none; }
+        .todo-time { width: 110px; padding: 10px; border: 1px solid var(--border); border-radius: 12px; outline: none; }
+        .btn-add-todo { background: var(--primary); color: white; border: none; padding: 0 20px; border-radius: 12px; cursor: pointer; font-weight: 600; }
 
+        .todo-list { display: flex; flex-direction: column; gap: 10px; }
+        .todo-item { display: flex; align-items: center; gap: 12px; padding: 12px; border: 1px solid var(--border); border-radius: 12px; background: #fafafa; }
+        .todo-item.completed { opacity: 0.6; background: #f1f5f9; text-decoration: line-through; }
+        .todo-checkbox { width: 22px; height: 22px; cursor: pointer; accent-color: var(--primary); }
+        .todo-text { flex: 1; font-weight: 500; font-size: 0.95rem; }
+        .todo-time-badge { font-size: 0.75rem; background: #e2e8f0; padding: 4px 8px; border-radius: 8px; font-weight: 600; }
+        .btn-del-todo { color: #ef4444; background: none; border: none; cursor: pointer; font-size: 1.1rem; }
+
+        /* Modal Overlay */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 1000; }
+        .modal-content { background: white; padding: 25px; border-radius: 20px; width: 90%; max-width: 400px; }
+        .modal-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 15px; }
+        .form-select, .form-input { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 10px; margin-bottom: 15px; outline: none; }
+        .modal-actions { display: flex; gap: 10px; }
+        .btn-cancel { flex: 1; padding: 12px; background: #f1f5f9; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; }
+        .btn-save { flex: 1; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; }
     </style>
 </head>
 <body>
-
     <div class="container">
-        <!-- 1. Header -->
         <div class="page-header">
-            <h1 class="page-title">🎯 Target</h1>
-            <p class="page-subtitle">Tetapkan target hafalanmu dan pantau progresnya secara konsisten.</p>
+            <h1 class="page-title">🎯 Target & Jadwal</h1>
         </div>
 
-        <!-- 2. Segmented Control -->
-        <div class="segmented-control">
-            <div class="segment-btn active" onclick="switchTab('hari', this)">Hari</div>
-            <div class="segment-btn" onclick="switchTab('minggu', this)">Minggu</div>
-            <div class="segment-btn" onclick="switchTab('bulan', this)">Bulan</div>
-            <div class="segment-btn" onclick="switchTab('tahun', this)">Tahun</div>
+        <!-- TABS KATEGORI -->
+        <div class="category-tabs">
+            <div class="cat-btn active">Tilawah</div>
+            <div class="cat-btn disabled" onclick="alert('Fitur segera hadir!')">Hafalan</div>
+            <div class="cat-btn disabled" onclick="alert('Fitur segera hadir!')">Murojaah</div>
+            <div class="cat-btn disabled" onclick="alert('Fitur segera hadir!')">Belajar Tajwid</div>
         </div>
 
-        <!-- 3. Current Target Card -->
+        <!-- PROGRESS TILAWAH -->
         <div class="card">
             <div class="target-header">
                 <div>
-                    <div class="th-title">Target Hari Ini</div>
-                    <div style="font-size:0.85rem; color:var(--text-muted); margin-top:3px;">Hafal <?= $target_ayat ?> Ayat</div>
+                    <div class="th-title">Target Tilawah <span style="text-transform:capitalize;">(<?= $tipe_target ?>)</span></div>
+                    <div style="font-size:0.85rem; color:var(--text-muted); margin-top:3px;">Konsisten baca <?= $jumlah_target ?> Ayat</div>
                 </div>
-                <div class="th-value"><?= $progress_ayat ?> <span style="font-size:1rem; color:var(--text-muted);">/ <?= $target_ayat ?></span></div>
+                <button class="btn-edit-target" onclick="openTargetModal()"><i class="fas fa-cog"></i> Atur</button>
             </div>
 
-            <div class="progress-meta">
-                <span>Progress</span>
-                <span><?= round($persentase) ?>%</span>
+            <!-- Bookmark Tracker Info -->
+            <div class="bookmark-info">
+                <div class="bm-row">Mulai dari: <span id="start-surah-label">Surah <?= $start_surah ?></span> : <?= $start_ayat ?></div>
+                <div class="bm-row">Sampai (Bookmark): <span id="end-surah-label">Surah <?= $end_surah ?></span> : <?= $end_ayat ?></div>
+                <div style="margin-top:8px; font-size:0.8rem; color:var(--primary);"><i class="fas fa-sync-alt"></i> Tersinkronisasi otomatis dengan bookmark terakhir.</div>
             </div>
+
+            <div style="display:flex; justify-content:space-between; font-weight:600; font-size:0.9rem;">
+                <span>Progres Hari Ini</span>
+                <span style="color:var(--primary);"><?= $progress_ayat ?> / <?= $jumlah_target ?> Ayat</span>
+            </div>
+            
             <div class="progress-bar-bg">
                 <div class="progress-bar-fill"></div>
             </div>
 
-            <div class="target-footer">
-                <div class="tf-text" style="color: <?= $pesan_color ?>; background: <?= $pesan_bg ?>;">
-                    <i class="fas fa-info-circle"></i> <?= $pesan_motivasi ?>
-                </div>
-                <!-- Tombol diarahkan ke mutabaah.php -->
-                <a href="mutabaah.php" class="btn-outline"><i class="fas fa-plus"></i> Tambah Hafalan Baru</a>
+            <!-- WARNING: CATAT KE MUTABAAH -->
+            <div class="warning-box">
+                <div class="warning-title"><i class="fas fa-bell"></i> Alhamdulillah, Target Tercapai!</div>
+                <div style="font-size:0.85rem; color:#b45309; margin-bottom:12px;">Kamu sudah membaca sesuai target. Jangan lupa catat ke jurnal Mutabaah agar datamu tersimpan.</div>
+                <!-- URL Auto-fill ke Mutabaah -->
+                <a href="mutabaah.php?auto=1&kategori=Tilawah&surah=<?= $start_surah ?>&start=<?= $start_ayat ?>&end=<?= $end_ayat ?>" class="btn-autofill">
+                    <i class="fas fa-pen"></i> Catat ke Mutabaah Sekarang
+                </a>
             </div>
         </div>
 
-        <!-- 4. Progress Chart -->
-        <div class="card chart-card">
-            <div class="chart-header">Progress Hafalan</div>
-            <div class="chart-container">
-                <canvas id="targetChart"></canvas>
+        <!-- JADWAL / TODO LIST -->
+        <div class="card">
+            <div class="todo-header">
+                <div><i class="far fa-calendar-check" style="color:var(--primary);"></i> Jadwal Hari Ini</div>
+                <div style="font-size:0.8rem; font-weight:500; color:var(--text-muted);"><?= date('d M Y') ?></div>
+            </div>
+
+            <form class="todo-input-group" id="todoForm" onsubmit="addTodo(event)">
+                <input type="text" id="todoTask" class="todo-input" placeholder="Rencana baca/murojaah..." required>
+                <input type="time" id="todoTime" class="todo-time" required>
+                <button type="submit" class="btn-add-todo"><i class="fas fa-plus"></i></button>
+            </form>
+
+            <div class="todo-list" id="todoList">
+                <?php if(empty($todos)): ?>
+                    <div style="text-align:center; padding:20px; color:var(--text-muted); font-size:0.9rem;">Belum ada jadwal untuk hari ini.</div>
+                <?php else: ?>
+                    <?php foreach($todos as $t): ?>
+                        <div class="todo-item <?= $t['is_completed'] ? 'completed' : '' ?>" id="todo-<?= $t['id'] ?>">
+                            <input type="checkbox" class="todo-checkbox" <?= $t['is_completed'] ? 'checked' : '' ?> onchange="toggleTodo(<?= $t['id'] ?>, this.checked)">
+                            <div class="todo-text"><?= htmlspecialchars($t['task_name']) ?></div>
+                            <div class="todo-time-badge"><?= date('H:i', strtotime($t['task_time'])) ?></div>
+                            <button class="btn-del-todo" onclick="deleteTodo(<?= $t['id'] ?>)"><i class="fas fa-trash-alt"></i></button>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </div>
         </div>
 
-        <!-- 5. Statistics Grid (Data Asli DB) -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-book-open"></i></div>
-                <div class="stat-value"><?= number_format($total_ayat_hafal, 0, ',', '.') ?></div>
-                <div class="stat-label">Total Ayat</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-file-alt"></i></div>
-                <div class="stat-value"><?= $total_halaman ?></div>
-                <div class="stat-label">Est. Halaman</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-layer-group"></i></div>
-                <div class="stat-value"><?= $total_juz ?></div>
-                <div class="stat-label">Est. Juz</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-fire"></i></div>
-                <div class="stat-value"><?= $hari_aktif ?></div>
-                <div class="stat-label">Hari Aktif (Streak)</div>
-            </div>
-        </div>
+    </div>
 
-        <!-- 6. Next Goal / Milestone -->
-        <div class="card milestone-card">
-            <div class="ms-title"><i class="fas fa-bullseye"></i> Target Berikutnya</div>
-            <div class="ms-surah" id="ms-surah-name">Surah ke-<?= $next_surah_no ?></div>
-            <div style="font-weight:600; color:var(--dark); margin-bottom:5px;">Lanjut ke Ayat <?= $next_ayat ?></div>
-            <div class="ms-desc">Terus istiqomah melangkah ke ayat selanjutnya. Sedikit demi sedikit lama-lama menjadi bukit!</div>
+    <!-- MODAL ATUR TARGET -->
+    <div class="modal-overlay" id="targetModal">
+        <div class="modal-content">
+            <div class="modal-title">Atur Target Konsisten</div>
+            <label style="font-size:0.85rem; font-weight:600; margin-bottom:5px; display:block;">Tipe Target</label>
+            <select id="modalTipe" class="form-select">
+                <option value="harian" <?= $tipe_target=='harian'?'selected':'' ?>>Harian</option>
+                <option value="mingguan" <?= $tipe_target=='mingguan'?'selected':'' ?>>Mingguan</option>
+                <option value="bulanan" <?= $tipe_target=='bulanan'?'selected':'' ?>>Bulanan</option>
+            </select>
             
-            <a href="smart_murojaah.php" class="btn-solid">
-                Mulai Hafalan <i class="fas fa-arrow-right"></i>
-            </a>
+            <label style="font-size:0.85rem; font-weight:600; margin-bottom:5px; display:block;">Jumlah Ayat</label>
+            <input type="number" id="modalJumlah" class="form-input" value="<?= $jumlah_target ?>" min="1">
+            
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeTargetModal()">Batal</button>
+                <button class="btn-save" onclick="saveTarget()">Simpan Target</button>
+            </div>
         </div>
     </div>
 
-    <!-- Panggil Bottom Navigation Hifzly -->
     <?php include '../components/nav.php'; ?>
 
     <script>
-        // Tarik nama surah dari API agar nama Surah di Milestone benar (bukan cuma angka)
-        const nextSurahNo = <?= $next_surah_no ?>;
-        fetch(`https://equran.id/api/v2/surat/${nextSurahNo}`)
-            .then(res => res.json())
-            .then(data => {
-                document.getElementById('ms-surah-name').innerText = data.data.namaLatin;
-            }).catch(e => console.log(e));
+        // Fetch Nama Surah API agar tampilan lebih cantik
+        fetch(`https://equran.id/api/v2/surat/<?= $start_surah ?>`).then(r=>r.json()).then(d=> { document.getElementById('start-surah-label').innerText = d.data.namaLatin; });
+        fetch(`https://equran.id/api/v2/surat/<?= $end_surah ?>`).then(r=>r.json()).then(d=> { document.getElementById('end-surah-label').innerText = d.data.namaLatin; });
 
-        // --- Inisialisasi Chart.js ---
-        const ctx = document.getElementById('targetChart').getContext('2d');
-        
-        // Data Mock untuk masing-masing tab chart (Bagian ini bisa dikembangkan pakai query GROUP BY SQL jika diperlukan)
-        const chartData = {
-            hari: { labels: ['06:00', '09:00', '12:00', '15:00', '18:00', '21:00'], data: [0, 0, <?= $progress_ayat > 0 ? floor($progress_ayat/2) : 0 ?>, <?= $progress_ayat ?>, <?= $progress_ayat ?>, <?= $progress_ayat ?>] },
-            minggu: { labels: ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'], data: [4, 5, 2, 6, 8, 3, <?= $progress_ayat ?>] },
-            bulan: { labels: ['Minggu 1', 'Minggu 2', 'Minggu 3', 'Minggu 4'], data: [15, 20, 18, 25] },
-            tahun: { labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun'], data: [50, 80, 60, 90, 120, 150] }
-        };
+        // --- TARGET SETTINGS ---
+        function openTargetModal() { document.getElementById('targetModal').style.display = 'flex'; }
+        function closeTargetModal() { document.getElementById('targetModal').style.display = 'none'; }
+        function saveTarget() {
+            const tipe = document.getElementById('modalTipe').value;
+            const jumlah = document.getElementById('modalJumlah').value;
+            
+            const fd = new URLSearchParams();
+            fd.append('action', 'save_target'); fd.append('kategori', 'tilawah');
+            fd.append('tipe', tipe); fd.append('jumlah', jumlah);
 
-        let progressChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: chartData.hari.labels,
-                datasets: [{
-                    label: 'Ayat Dihafal',
-                    data: chartData.hari.data,
-                    borderColor: '#059669',
-                    backgroundColor: 'rgba(5, 150, 105, 0.1)',
-                    borderWidth: 3,
-                    pointBackgroundColor: '#ffffff',
-                    pointBorderColor: '#059669',
-                    pointBorderWidth: 2,
-                    pointRadius: 4,
-                    pointHoverRadius: 6,
-                    fill: true,
-                    tension: 0.4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: { backgroundColor: '#1e293b', padding: 10, cornerRadius: 8, displayColors: false, }
-                },
-                scales: {
-                    x: { grid: { display: false, drawBorder: false }, ticks: { color: '#64748b', font: { family: 'Inter', size: 11 } } },
-                    y: { grid: { color: '#f1f5f9', borderDash: [5, 5], drawBorder: false }, ticks: { color: '#64748b', font: { family: 'Inter', size: 11 }, stepSize: 1 } }
-                }
-            }
-        });
+            fetch('target.php', { method:'POST', body: fd })
+            .then(() => location.reload());
+        }
 
-        function switchTab(period, element) {
-            document.querySelectorAll('.segment-btn').forEach(btn => btn.classList.remove('active'));
-            element.classList.add('active');
-            progressChart.data.labels = chartData[period].labels;
-            progressChart.data.datasets[0].data = chartData[period].data;
-            progressChart.update();
+        // --- TODO LIST / JADWAL AJAX ---
+        function addTodo(e) {
+            e.preventDefault();
+            const task = document.getElementById('todoTask').value;
+            const time = document.getElementById('todoTime').value;
+            
+            const fd = new URLSearchParams();
+            fd.append('action', 'add_todo'); fd.append('task', task); fd.append('time', time);
+            
+            fetch('target.php', { method:'POST', body: fd }).then(() => location.reload());
+        }
+
+        function toggleTodo(id, isChecked) {
+            const fd = new URLSearchParams();
+            fd.append('action', 'toggle_todo'); fd.append('todo_id', id); fd.append('status', isChecked ? 1 : 0);
+            fetch('target.php', { method:'POST', body: fd })
+            .then(() => {
+                const item = document.getElementById('todo-'+id);
+                if(isChecked) item.classList.add('completed');
+                else item.classList.remove('completed');
+            });
+        }
+
+        function deleteTodo(id) {
+            if(!confirm("Hapus jadwal ini?")) return;
+            const fd = new URLSearchParams();
+            fd.append('action', 'delete_todo'); fd.append('todo_id', id);
+            fetch('target.php', { method:'POST', body: fd }).then(() => location.reload());
         }
     </script>
 </body>

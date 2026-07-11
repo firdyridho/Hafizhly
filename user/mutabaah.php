@@ -463,7 +463,7 @@ while ($row = mysqli_fetch_assoc($time_q)) {
         .dropdown-item-custom .s-ayat {
             font-size: 0.8rem;
             color: var(--text-muted);
-            background: var(--bg);
+         background: var(--bg);
             padding: 0.2rem 0.6rem;
             border-radius: 10px;
         }

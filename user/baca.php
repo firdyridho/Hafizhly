@@ -34,7 +34,6 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Baca Al-Qur'an</title>
     <link rel="icon" type="image/png" href="../assets/icon/logo.png">
-    <!-- MENGGUNAKAN FONT SCHEHERAZADE NEW UNTUK WAQAF SEMPURNA -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Scheherazade+New:wght@400;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -50,8 +49,8 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             --gold: #b8912f;
             --gold-deep: #8f6f1f;
             --gold-soft: #f6ecc9;
-            --parchment: #fdf9ef;
             --arabic-scale: 1;
+            /* hanya untuk mode daftar */
         }
 
         * {
@@ -119,7 +118,6 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             text-overflow: ellipsis;
         }
 
-        /* --- MODE TOGGLE (di header, sejajar tombol lain) --- */
         .mode-toggle {
             display: flex;
             background: var(--bg);
@@ -381,7 +379,6 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             text-transform: uppercase;
         }
 
-        /* ALERT DESAIN BARU (Kapsul Elegan) */
         .islamic-alert {
             position: fixed;
             top: -100px;
@@ -631,11 +628,20 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             font-size: 0.9rem;
         }
 
-        .mushaf-line {
+        /* Baris teks mushaf: JUSTIFY + rata kanan baris terakhir, ukuran font responsif mengecil di mobile */
+        .mushaf-line-text {
             direction: rtl;
             font-family: 'Scheherazade New', serif;
+            /* Ukuran font mengikuti lebar viewport: di mobile kecil, di desktop lebih besar */
+            font-size: clamp(1rem, 4.2vw, 2.2rem);
+            line-height: 2.4;
+            color: var(--quran-text);
+            text-align: justify;
+            text-align-last: right;
+            margin-bottom: 2px;
         }
 
+        /* Header surah & basmala tidak terpengaruh */
         .line-surah-header {
             display: flex;
             justify-content: center;
@@ -659,24 +665,10 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
         .line-basmala {
             display: block;
             text-align: center;
-            font-size: calc(clamp(1.5rem, 5vw, 1.9rem) * var(--arabic-scale));
+            font-size: clamp(1.5rem, 5vw, 1.9rem);
             color: var(--primary);
             margin: 4px 0 14px;
             font-weight: 700;
-        }
-
-        /* Paragraf mengalir: teks disambung terus & dijustify otomatis oleh
-           browser sesuai lebar layar, jadi tidak ada baris yang timpang/kosong
-           dan penanda nomor ayat selalu menempel pas di akhir kata terakhirnya. */
-        .mushaf-para {
-            direction: rtl;
-            font-family: 'Scheherazade New', serif;
-            font-size: calc(clamp(1.55rem, 5vw, 2.05rem) * var(--arabic-scale));
-            line-height: 2.3;
-            color: var(--quran-text);
-            text-align: justify;
-            text-align-last: right;
-            margin-bottom: 6px;
         }
 
         .ayah-word {
@@ -701,6 +693,7 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             background: rgba(245, 158, 11, 0.18);
         }
 
+        /* Nomor ayat menempel tanpa jarak */
         .ayah-end-badge {
             display: inline-flex;
             align-items: center;
@@ -713,7 +706,7 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             border-radius: 50%;
             width: 1.7em;
             height: 1.7em;
-            margin: 0 2px;
+            margin: 0;
             vertical-align: middle;
         }
 
@@ -894,7 +887,6 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
 
 <body id="baca-body">
 
-    <!-- Audio Elements tanpa autoplay/src di awal -->
     <audio id="audioFull"></audio>
     <audio id="audioAyat"></audio>
 
@@ -912,7 +904,8 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
                     <i class="fas fa-book-open"></i><span class="mode-label">Mushaf</span>
                 </div>
             </div>
-            <div class="font-toggle" title="Ukuran Teks Arab">
+            <!-- Tombol pengatur font, hanya muncul di mode list -->
+            <div class="font-toggle" id="fontToggleContainer" title="Ukuran teks arab (hanya mode daftar)">
                 <div class="h-btn" onclick="changeFontSize(-1)"><i class="fas fa-minus"></i></div>
                 <span class="ft-label">Aa</span>
                 <div class="h-btn" onclick="changeFontSize(1)"><i class="fas fa-plus"></i></div>
@@ -1025,7 +1018,6 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
                 surahData = jsonSurat.data;
                 tafsirData = jsonTafsir.data.tafsir;
 
-                // Simpan juga ke cache global supaya Mode Mushaf tidak fetch ulang
                 equranCache[noSurat] = {
                     surah: surahData,
                     tafsir: tafsirData
@@ -1137,7 +1129,6 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             document.getElementById('btn-play-full').classList.remove('active');
         };
 
-        // --- AUDIO PER AYAT (MODE DAFTAR) ---
         let currentAyatCard = null;
         let currentAyatNo = null;
 
@@ -1229,12 +1220,6 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
 
         /* ================================================================ */
         /* ========================  MODE MUSHAF  ========================== */
-        /* Sumber teks Arab, terjemah, tafsir & audio TETAP dari equran.id.  */
-        /* Sumber layout halaman (pembagian baris/halaman/juz) diambil dari  */
-        /* dataset mushaf 604-halaman (zonetecde/mushaf-layout via jsDelivr) */
-        /* karena API resmi quran.com/quran.foundation kini butuh OAuth      */
-        /* backend (client_id/secret) dan tidak bisa dipanggil langsung dari */
-        /* browser seperti equran.id.                                       */
         /* ================================================================ */
 
         let currentMode = 'list';
@@ -1248,7 +1233,6 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
 
         const MUSHAF_BASE = 'https://cdn.jsdelivr.net/gh/zonetecde/mushaf-layout@main/mushaf/page-';
 
-        // Batas awal tiap Juz: [nomor surat, nomor ayat]
         const JUZ_START = [
             [1, 1],
             [2, 142],
@@ -1382,32 +1366,28 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             };
         }
 
-        function buildWordGroupsHTML(words) {
-            const groups = [];
-            let curKey = null,
-                curArr = [];
-            words.forEach(w => {
+        function renderLineWords(words) {
+            let html = '';
+            let currentKey = null;
+            let currentText = '';
+            for (let i = 0; i < words.length; i++) {
+                const w = words[i];
                 const key = w.location.split(':').slice(0, 2).join(':');
-                if (key !== curKey) {
-                    if (curArr.length) groups.push({
-                        key: curKey,
-                        words: curArr
-                    });
-                    curKey = key;
-                    curArr = [];
+                if (key !== currentKey) {
+                    if (currentText) {
+                        currentText = currentText.replace(/([\u0660-\u0669]+)\s*$/, '<span class="ayah-end-badge">$1</span>');
+                        html += `<span class="ayah-word" data-verse="${currentKey}">${currentText}</span>`;
+                    }
+                    currentKey = key;
+                    currentText = '';
                 }
-                curArr.push(w.word);
-            });
-            if (curArr.length) groups.push({
-                key: curKey,
-                words: curArr
-            });
-
-            return groups.map(g => {
-                let text = g.words.join(' ');
-                text = text.replace(/([\u0660-\u0669]+)\s*$/, '<span class="ayah-end-badge">$1</span>');
-                return `<span class="ayah-word" data-verse="${g.key}">${text}</span>`;
-            }).join(' ');
+                currentText += (currentText ? ' ' : '') + w.word;
+            }
+            if (currentText) {
+                currentText = currentText.replace(/([\u0660-\u0669]+)\s*$/, '<span class="ayah-end-badge">$1</span>');
+                html += `<span class="ayah-word" data-verse="${currentKey}">${currentText}</span>`;
+            }
+            return html;
         }
 
         function collectOrderedVerseKeys(pg) {
@@ -1462,29 +1442,17 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             document.getElementById('mini-title').innerText = titleParts[0] || '-';
 
             let html = '';
-            let wordBuffer = [];
-
-            function flushParagraph() {
-                if (wordBuffer.length) {
-                    html += `<div class="mushaf-para">${buildWordGroupsHTML(wordBuffer)}</div>`;
-                    wordBuffer = [];
-                }
-            }
-
             pg.lines.forEach(line => {
                 if (line.type === 'surah-header') {
-                    flushParagraph();
                     const sNum = parseInt(line.surah, 10);
                     const sd = equranCache[sNum] ? equranCache[sNum].surah : null;
                     html += `<div class="mushaf-line line-surah-header"><span class="lsh-orn"><i class="fas fa-gem"></i></span><span>سورة ${sd ? sd.nama : ''}</span><span class="lsh-orn"><i class="fas fa-gem"></i></span></div>`;
                 } else if (line.type === 'basmala') {
-                    flushParagraph();
                     html += `<div class="mushaf-line line-basmala">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>`;
                 } else if (line.type === 'text' && line.words) {
-                    wordBuffer.push(...line.words);
+                    html += `<div class="mushaf-line-text">${renderLineWords(line.words)}</div>`;
                 }
             });
-            flushParagraph();
 
             document.getElementById('mushaf-page').innerHTML = html;
             renderPageTranslationPanel(pg);
@@ -1545,9 +1513,7 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
                 const [s, a] = JUZ_START[j - 1];
                 document.getElementById('mushaf-loading').style.display = 'flex';
                 findStartPage(s).then(async startPage => {
-                    // cari halaman tepat berdasarkan ayat awal juz (bukan cuma awal surat)
                     let p = startPage;
-                    // geser maju sampai menemukan halaman yang memuat ayat awal juz tsb
                     for (let i = 0; i < 40; i++) {
                         const pg = await getPage(p);
                         const fv = firstVerseOfPage(pg);
@@ -1570,7 +1536,9 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             currentMode = mode;
             document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
 
+            const fontToggler = document.getElementById('fontToggleContainer');
             if (mode === 'page') {
+                fontToggler.style.display = 'none';
                 document.getElementById('listView').style.display = 'none';
                 document.getElementById('mushafView').style.display = 'block';
                 if (currentPageNum === null) {
@@ -1584,6 +1552,7 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
                     }
                 }
             } else {
+                fontToggler.style.display = 'flex';
                 document.getElementById('mushafView').style.display = 'none';
                 document.getElementById('listView').style.display = 'block';
                 document.getElementById('mini-title').innerText = surahData ? surahData.namaLatin : 'Memuat...';
@@ -1664,9 +1633,6 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             saveBookmarkGeneric(sheet.dataset.surah, sheet.dataset.ayat);
         }
 
-        // --- INTERAKSI AYAT DI MODE MUSHAF ---
-        // Ketuk (tap) singkat pada kata = putar audio ayat tsb + sorot kata-katanya.
-        // Tahan (long-press) sejenak = buka lembar aksi (tafsir, audio, simpan).
         function tapPlayAyahWord(verseKey) {
             const [s, a] = verseKey.split(':').map(Number);
             const data = equranCache[s];
@@ -1721,7 +1687,7 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             });
         })();
 
-        // --- KONTROL UKURAN FONT ARAB (mode daftar & mushaf) ---
+        // --- KONTROL UKURAN FONT ARAB (hanya mode daftar) ---
         let arabicScale = parseFloat(localStorage.getItem('arabicScale')) || 1;
         document.documentElement.style.setProperty('--arabic-scale', arabicScale);
 
@@ -1758,7 +1724,6 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
                 passive: true
             });
 
-            // dukung drag mouse di desktop
             let mouseStartX = null;
             stage.addEventListener('mousedown', e => {
                 mouseStartX = e.clientX;

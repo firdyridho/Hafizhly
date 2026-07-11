@@ -572,6 +572,11 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             color: var(--primary);
         }
 
+        #mushaf-page-side {
+            color: var(--gold-deep);
+            font-weight: 700;
+        }
+
         .mushaf-stage {
             position: relative;
             perspective: 1200px;
@@ -645,8 +650,8 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             border-top: 1px solid var(--gold);
             border-bottom: 1px solid var(--gold);
             padding: 8px 0;
-            margin: 14px 0 12px;
-            font-size: clamp(1.3rem, 4.5vw, 1.7rem);
+            margin: 10px 0 6px;
+            font-size: calc(clamp(1.2rem, 4.2vw, 1.6rem) * min(var(--arabic-scale), 1.25));
             color: var(--gold-deep);
             font-weight: 700;
         }
@@ -659,27 +664,37 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
         .line-basmala {
             display: block;
             text-align: center;
-            font-size: calc(clamp(1.5rem, 5vw, 1.9rem) * var(--arabic-scale));
+            font-size: calc(clamp(1.4rem, 4.6vw, 1.75rem) * min(var(--arabic-scale), 1.25));
             color: var(--primary);
-            margin: 4px 0 14px;
+            margin: 2px 0 6px;
             font-weight: 700;
         }
 
-        /* Paragraf mengalir: teks disambung terus & dijustify otomatis oleh
-           browser sesuai lebar layar, jadi tidak ada baris yang timpang/kosong
-           dan penanda nomor ayat selalu menempel pas di akhir kata terakhirnya. */
-        .mushaf-para {
+        /* Setiap baris = 1 baris asli mushaf cetak (15 baris/halaman, sesuai
+           dataset layout 604 halaman). Baris TIDAK PERNAH wrap/ganti susunan
+           kata apa pun ukuran fontnya - fitMushafPage() di JS yang menghitung
+           ukuran font & word-spacing supaya setiap baris pas mengisi lebar
+           halaman persis seperti cetakan aslinya, dan tetap responsif
+           terhadap lebar layar. */
+        .mushaf-page-inner {
             direction: rtl;
-            font-family: 'Scheherazade New', serif;
-            font-size: calc(clamp(1.55rem, 5vw, 2.05rem) * var(--arabic-scale));
-            line-height: 2.3;
+            width: 100%;
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+        }
+
+        .line-text {
+            white-space: nowrap;
             color: var(--quran-text);
-            text-align: justify;
-            text-align-last: right;
-            margin-bottom: 6px;
+            line-height: 2.35;
+            font-size: clamp(1.2rem, 4.5vw, 2rem);
+            /* fallback sebelum JS menghitung ukuran pas; JS akan override inline */
         }
 
         .ayah-word {
+
             cursor: pointer;
             border-radius: 6px;
             padding: 1px 2px;
@@ -951,6 +966,7 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
                     <div id="mushaf-surah-title">Memuat...</div>
                     <div class="mtb-pagejump">
                         Hal. <input type="number" id="mushaf-page-input" min="1" max="604" onchange="jumpToPageInput()"> / 604
+                        <span id="mushaf-page-side"></span>
                     </div>
                 </div>
                 <div class="mtb-nav" onclick="goNextPage()" title="Halaman berikutnya"><i class="fas fa-chevron-right"></i></div>
@@ -962,7 +978,9 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
 
         <div class="mushaf-stage" id="mushaf-stage">
             <div class="mushaf-loading" id="mushaf-loading"><i class="fas fa-spinner fa-spin"></i>&nbsp; Memuat halaman...</div>
-            <div class="mushaf-page" id="mushaf-page"></div>
+            <div class="mushaf-page" id="mushaf-page">
+                <div class="mushaf-page-inner" id="mushaf-page-inner"></div>
+            </div>
             <div class="mushaf-arrow left" onclick="goNextPage()" title="Lanjut"><i class="fas fa-chevron-left"></i></div>
             <div class="mushaf-arrow right" onclick="goPrevPage()" title="Mundur"><i class="fas fa-chevron-right"></i></div>
         </div>
@@ -1410,21 +1428,10 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             }).join(' ');
         }
 
-        function collectOrderedVerseKeys(pg) {
-            const keys = [];
-            const seen = new Set();
-            pg.lines.forEach(line => {
-                if (line.type === 'text' && line.words) {
-                    line.words.forEach(w => {
-                        const key = w.location.split(':').slice(0, 2).join(':');
-                        if (!seen.has(key)) {
-                            seen.add(key);
-                            keys.push(key);
-                        }
-                    });
-                }
-            });
-            return keys;
+        function buildLineHTML(words) {
+            // data-tokens dipakai fitMushafPage() untuk tahu jumlah celah spasi
+            // asli di baris ini (supaya word-spacing yang dihitung akurat).
+            return `<div class="mushaf-line line-text" data-tokens="${words.length}">${buildWordGroupsHTML(words)}</div>`;
         }
 
         function renderPageTranslationPanel(pg) {
@@ -1460,35 +1467,99 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             document.getElementById('mushaf-juz-badge').innerHTML = `<i class="fas fa-bookmark"></i> Juz ${currentJuz}`;
             document.getElementById('mushaf-page-input').value = pg.page;
             document.getElementById('mini-title').innerText = titleParts[0] || '-';
+            // Halaman ganjil = halaman kanan (recto), genap = halaman kiri (verso) -
+            // sesuai konvensi penjilidan mushaf cetak, supaya posisi ayat saat
+            // menghafal tetap sesuai intuisi "kanan/kiri" seperti mushaf fisik.
+            document.getElementById('mushaf-page-side').innerText = (pg.page % 2 === 1) ? '(Kanan)' : '(Kiri)';
 
+            // Render PERSIS sesuai baris asli dataset mushaf 604 halaman -
+            // 1 entri "text" di dataset = 1 baris asli cetakan, tidak digabung
+            // dan tidak pernah di-reflow, supaya posisi ayat per baris/halaman
+            // konsisten dengan mushaf fisik (penting untuk hafalan).
             let html = '';
-            let wordBuffer = [];
-
-            function flushParagraph() {
-                if (wordBuffer.length) {
-                    html += `<div class="mushaf-para">${buildWordGroupsHTML(wordBuffer)}</div>`;
-                    wordBuffer = [];
-                }
-            }
-
             pg.lines.forEach(line => {
                 if (line.type === 'surah-header') {
-                    flushParagraph();
                     const sNum = parseInt(line.surah, 10);
                     const sd = equranCache[sNum] ? equranCache[sNum].surah : null;
                     html += `<div class="mushaf-line line-surah-header"><span class="lsh-orn"><i class="fas fa-gem"></i></span><span>سورة ${sd ? sd.nama : ''}</span><span class="lsh-orn"><i class="fas fa-gem"></i></span></div>`;
                 } else if (line.type === 'basmala') {
-                    flushParagraph();
                     html += `<div class="mushaf-line line-basmala">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>`;
                 } else if (line.type === 'text' && line.words) {
-                    wordBuffer.push(...line.words);
+                    html += buildLineHTML(line.words);
                 }
             });
-            flushParagraph();
 
-            document.getElementById('mushaf-page').innerHTML = html;
+            document.getElementById('mushaf-page-inner').innerHTML = html;
             renderPageTranslationPanel(pg);
+            fitMushafPage();
         }
+
+        // ================================================================
+        // FIT ENGINE: menghitung ukuran font & word-spacing per baris supaya
+        // setiap baris PERSIS mengisi lebar halaman (seperti hasil cetak asli
+        // yang di-justify), tanpa pernah mengubah kata mana yang ada di baris
+        // mana. Dipanggil ulang tiap render halaman, tiap resize layar, dan
+        // tiap ukuran font diubah lewat tombol Aa - supaya tetap responsif
+        // tapi tata letaknya tidak pernah berubah.
+        // ================================================================
+        function fitMushafPage() {
+            const inner = document.getElementById('mushaf-page-inner');
+            if (!inner) return;
+            const lines = Array.from(inner.querySelectorAll('.line-text'));
+            if (!lines.length) return;
+
+            const containerWidth = inner.clientWidth;
+            if (!containerWidth) return;
+
+            // tebakan awal ukuran font berdasar lebar layar saat ini
+            const basePx = Math.max(20, Math.min(containerWidth * 0.088, 40));
+
+            lines.forEach(l => {
+                l.style.wordSpacing = '0px';
+                l.style.fontSize = basePx + 'px';
+            });
+
+            // cari baris terlebar secara alami pada ukuran dasar tsb
+            let maxNatural = 0;
+            const naturalWidths = lines.map(l => {
+                const w = l.scrollWidth;
+                if (w > maxNatural) maxNatural = w;
+                return w;
+            });
+
+            // baseline "pas" (arabicScale = 1x) supaya baris terlebar persis
+            // muat di lebar halaman - inilah yang membuatnya selalu responsif
+            const fitRatio = maxNatural > containerWidth ? containerWidth / maxNatural : 1;
+            const fitFontPx = basePx * fitRatio;
+
+            // baru di atasnya diterapkan preferensi zoom manual pengguna (Aa).
+            // Kalau hasil zoom lebih lebar dari halaman, baris TIDAK di-reflow -
+            // halaman cukup bisa digeser horizontal (lihat CSS overflow-x).
+            const finalFontPx = fitFontPx * arabicScale;
+            const scaleRatio = finalFontPx / basePx;
+
+            lines.forEach((l, i) => {
+                const naturalAtFinal = naturalWidths[i] * scaleRatio;
+                const gaps = Math.max(0, (parseInt(l.dataset.tokens, 10) || 1) - 1);
+                let spacing = 0;
+                if (gaps > 0) {
+                    spacing = (containerWidth - naturalAtFinal) / gaps;
+                    spacing = Math.max(0, Math.min(spacing, 16));
+                }
+                l.style.fontSize = finalFontPx + 'px';
+                l.style.wordSpacing = spacing + 'px';
+            });
+        }
+
+        (function bindMushafFitResize() {
+            let resizeTimer;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(() => {
+                    if (currentMode === 'page' && currentPageNum) fitMushafPage();
+                }, 150);
+            });
+        })();
 
         async function setCurrentPage(n, dir) {
             if (n < 1 || n > 604) return;
@@ -1508,7 +1579,7 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
                 const pg = await getPage(n);
                 await renderMushafPage(pg);
             } catch (e) {
-                document.getElementById('mushaf-page').innerHTML = '<div class="mushaf-error"><i class="fas fa-triangle-exclamation"></i><br>Gagal memuat halaman. Periksa koneksi internet lalu coba lagi.</div>';
+                document.getElementById('mushaf-page-inner').innerHTML = '<div class="mushaf-error"><i class="fas fa-triangle-exclamation"></i><br>Gagal memuat halaman. Periksa koneksi internet lalu coba lagi.</div>';
             }
 
             loadingEl.style.display = 'none';
@@ -1579,7 +1650,7 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
                         const startPage = await findStartPage(noSurat);
                         await setCurrentPage(startPage, null);
                     } catch (e) {
-                        document.getElementById('mushaf-page').innerHTML = '<div class="mushaf-error"><i class="fas fa-triangle-exclamation"></i><br>Gagal memuat mode mushaf. Periksa koneksi internet.</div>';
+                        document.getElementById('mushaf-page-inner').innerHTML = '<div class="mushaf-error"><i class="fas fa-triangle-exclamation"></i><br>Gagal memuat mode mushaf. Periksa koneksi internet.</div>';
                         document.getElementById('mushaf-loading').style.display = 'none';
                     }
                 }
@@ -1731,6 +1802,7 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             try {
                 localStorage.setItem('arabicScale', arabicScale);
             } catch (e) {}
+            if (currentMode === 'page' && currentPageNum) fitMushafPage();
         }
 
         // --- GESER (SWIPE) UNTUK GANTI HALAMAN ---

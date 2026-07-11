@@ -166,12 +166,32 @@ if($q_bookmark && mysqli_num_rows($q_bookmark) > 0) {
     $end_surah = $start_surah; $end_ayat = $start_ayat - 1;
 }
 
-$progress_ayat = 0;
-if($end_surah == $start_surah && $end_ayat >= $start_ayat) {
-    $progress_ayat = ($end_ayat - $start_ayat) + 1;
-} elseif ($end_surah > $start_surah) {
-    $progress_ayat = $end_ayat + 5; 
+// --- Hitung progress ayat sesuai periode target (harian/mingguan/bulanan/tahunan) ---
+// Progress dihitung dari total ayat Tilawah yang sudah dicatat di Mutabaah pada periode
+// yang sedang berjalan. (Cara lama membandingkan posisi bookmark vs entri mutabaah
+// terakhir, tapi itu gagal karena kolom "surah" di tabel mutabaah berisi NAMA surah
+// (teks, mis. "Al-Baqarah") sedangkan bookmark pakai NOMOR surah (angka, mis. 2) -
+// keduanya tidak pernah bisa dibandingkan dengan benar, jadi progress selalu macet di 0.)
+switch ($tipe_target) {
+    case 'mingguan':
+        $period_condition = "YEARWEEK(activity_date, 1) = YEARWEEK(CURDATE(), 1)";
+        break;
+    case 'bulanan':
+        $period_condition = "YEAR(activity_date) = YEAR(CURDATE()) AND MONTH(activity_date) = MONTH(CURDATE())";
+        break;
+    case 'tahunan':
+        $period_condition = "YEAR(activity_date) = YEAR(CURDATE())";
+        break;
+    case 'harian':
+    default:
+        $period_condition = "activity_date = CURDATE()";
+        break;
 }
+
+$q_progress = mysqli_query($conn, "SELECT SUM(ayah_end - ayah_start + 1) as total_progress FROM mutabaah WHERE user_id='$user_id' AND activity_type='tilawah' AND $period_condition");
+$row_progress = mysqli_fetch_assoc($q_progress);
+$progress_ayat = (int) ($row_progress['total_progress'] ?? 0);
+if ($progress_ayat < 0) $progress_ayat = 0;
 
 $sisa_ayat = $jumlah_target - $progress_ayat;
 if ($sisa_ayat < 0) $sisa_ayat = 0;

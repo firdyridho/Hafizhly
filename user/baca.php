@@ -665,21 +665,18 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             font-weight: 700;
         }
 
-        /* Ganti .mushaf-para dengan ini untuk layout per baris yang asli */
-        .mushaf-line-text {
+        /* Paragraf mengalir: teks disambung terus & dijustify otomatis oleh
+           browser sesuai lebar layar, jadi tidak ada baris yang timpang/kosong
+           dan penanda nomor ayat selalu menempel pas di akhir kata terakhirnya. */
+        .mushaf-para {
             direction: rtl;
             font-family: 'Scheherazade New', serif;
-            font-size: calc(clamp(1.2rem, 4.2vw, 2.05rem) * var(--arabic-scale));
-            line-height: 2.2;
+            font-size: calc(clamp(1.55rem, 5vw, 2.05rem) * var(--arabic-scale));
+            line-height: 2.3;
             color: var(--quran-text);
-
-            /* Memaksa letak asli tanpa membungkus (wrap) teks */
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: nowrap;
-            width: 100%;
-            margin-bottom: 2px;
+            text-align: justify;
+            text-align-last: right;
+            margin-bottom: 6px;
         }
 
         .ayah-word {
@@ -690,8 +687,6 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             -webkit-user-select: none;
             user-select: none;
             -webkit-touch-callout: none;
-            white-space: nowrap;
-            /* Memastikan satu kata tidak terpisah ke bawah */
         }
 
         .ayah-word:hover {
@@ -1467,18 +1462,29 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             document.getElementById('mini-title').innerText = titleParts[0] || '-';
 
             let html = '';
+            let wordBuffer = [];
+
+            function flushParagraph() {
+                if (wordBuffer.length) {
+                    html += `<div class="mushaf-para">${buildWordGroupsHTML(wordBuffer)}</div>`;
+                    wordBuffer = [];
+                }
+            }
 
             pg.lines.forEach(line => {
                 if (line.type === 'surah-header') {
+                    flushParagraph();
                     const sNum = parseInt(line.surah, 10);
                     const sd = equranCache[sNum] ? equranCache[sNum].surah : null;
                     html += `<div class="mushaf-line line-surah-header"><span class="lsh-orn"><i class="fas fa-gem"></i></span><span>سورة ${sd ? sd.nama : ''}</span><span class="lsh-orn"><i class="fas fa-gem"></i></span></div>`;
                 } else if (line.type === 'basmala') {
+                    flushParagraph();
                     html += `<div class="mushaf-line line-basmala">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>`;
                 } else if (line.type === 'text' && line.words) {
-                    html += `<div class="mushaf-line mushaf-line-text">${buildWordGroupsHTML(line.words)}</div>`;
+                    wordBuffer.push(...line.words);
                 }
             });
+            flushParagraph();
 
             document.getElementById('mushaf-page').innerHTML = html;
             renderPageTranslationPanel(pg);

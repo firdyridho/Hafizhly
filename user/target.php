@@ -4,6 +4,22 @@ session_start();
 // yang ke-print duluan (misal dari koneksi DB), itu tidak ikut nempel di depan
 // response JSON dan bikin JS gagal parsing (yang muncul sebagai "periksa koneksi").
 ob_start();
+
+// Kalau ada error/exception fatal (misal query SQL error, mysqli exception mode di PHP 8+),
+// tangkap di sini supaya response tetap JSON yang jelas, bukan HTTP 500 kosong yang
+// bikin bingung ("respon server bukan JSON valid" tanpa keterangan apa-apa).
+set_exception_handler(function ($e) {
+    error_log('target.php uncaught exception: ' . $e->getMessage());
+    while (ob_get_level() > 0) { ob_end_clean(); }
+    http_response_code(500);
+    header('Content-Type: application/json');
+    echo json_encode([
+        'status' => 'error',
+        'message' => $e->getMessage()
+    ]);
+    exit();
+});
+
 require_once '../config/database.php';
 
 /** @var mysqli $conn */

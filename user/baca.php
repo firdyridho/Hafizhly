@@ -585,14 +585,15 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             font-weight: 600;
         }
 
+        /* Kotak mushaf seperti Quran.com */
         .mushaf-page {
-            background: transparent;
-            border-radius: 0;
-            padding: 6px clamp(8px, 3vw, 20px) 40px;
-            box-shadow: none;
-            border: none;
-            outline: none;
-            min-height: 300px;
+            background: #fffdf5;
+            /* warna krem lembut */
+            border: 1px solid #d4c9a8;
+            border-radius: 12px;
+            padding: 20px clamp(10px, 4vw, 28px) 30px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+            min-height: 400px;
             position: relative;
             transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.28s cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -628,13 +629,13 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             font-size: 0.9rem;
         }
 
-        /* Baris teks mushaf: JUSTIFY + rata kanan baris terakhir, ukuran font responsif mengecil di mobile */
+        /* Baris teks mushaf: JUSTIFY + rata kanan baris terakhir, ukuran font responsif */
         .mushaf-line-text {
             direction: rtl;
             font-family: 'Scheherazade New', serif;
-            /* Ukuran font mengikuti lebar viewport: di mobile kecil, di desktop lebih besar */
-            font-size: clamp(1rem, 4.2vw, 2.2rem);
-            line-height: 2.4;
+            /* Ukuran font mengecil di mobile, cukup kecil untuk menjaga tata letak baris tetap */
+            font-size: clamp(0.9rem, 3.8vw, 2.2rem);
+            line-height: 2.2;
             color: var(--quran-text);
             text-align: justify;
             text-align-last: right;

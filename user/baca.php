@@ -51,6 +51,7 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             --gold-soft: #f6ecc9;
             --parchment: #fdf9ef;
             --arabic-scale: 1;
+            /* hanya untuk mode daftar */
         }
 
         * {
@@ -628,15 +629,16 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             font-size: 0.9rem;
         }
 
-        /* Baris teks mushaf: rata kanan alami, TIDAK justify */
+        /* Baris teks mushaf: justify + rata kanan baris terakhir, ukuran font responsif agar tata letak presisi */
         .mushaf-line-text {
             direction: rtl;
             font-family: 'Scheherazade New', serif;
-            font-size: calc(clamp(1.55rem, 5vw, 2.05rem) * var(--arabic-scale));
-            line-height: 2.3;
+            /* font-size mengikuti lebar viewport, menjaga proporsi baris seperti cetakan */
+            font-size: clamp(1.3rem, 4.2vw, 2.2rem);
+            line-height: 2.4;
             color: var(--quran-text);
-            text-align: right;
-            /* <-- tidak dipaksa justify */
+            text-align: justify;
+            text-align-last: right;
             margin-bottom: 2px;
         }
 
@@ -706,7 +708,6 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             width: 1.7em;
             height: 1.7em;
             margin: 0;
-            /* <-- margin dihapus agar benar-benar menempel */
             vertical-align: middle;
         }
 
@@ -1536,7 +1537,6 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             currentMode = mode;
             document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
 
-            // Sembunyikan/tampilkan tombol pengatur font
             const fontToggler = document.getElementById('fontToggleContainer');
             if (mode === 'page') {
                 fontToggler.style.display = 'none';
@@ -1688,7 +1688,7 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             });
         })();
 
-        // --- KONTROL UKURAN FONT ARAB (hanya mode daftar, tapi tetap bisa diakses via tombol) ---
+        // --- KONTROL UKURAN FONT ARAB (hanya mode daftar) ---
         let arabicScale = parseFloat(localStorage.getItem('arabicScale')) || 1;
         document.documentElement.style.setProperty('--arabic-scale', arabicScale);
 

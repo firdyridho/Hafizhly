@@ -49,7 +49,6 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             --gold: #b8912f;
             --gold-deep: #8f6f1f;
             --gold-soft: #f6ecc9;
-            --parchment: #fdf9ef;
             --arabic-scale: 1;
             /* hanya untuk mode daftar */
         }
@@ -629,20 +628,20 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             font-size: 0.9rem;
         }
 
-        /* Baris teks mushaf: justify + rata kanan baris terakhir, ukuran font responsif agar tata letak presisi */
+        /* Baris teks mushaf: rata kanan, tanpa justify, ukuran font responsif mengecil di mobile */
         .mushaf-line-text {
             direction: rtl;
             font-family: 'Scheherazade New', serif;
-            /* font-size mengikuti lebar viewport, menjaga proporsi baris seperti cetakan */
-            font-size: clamp(1.3rem, 4.2vw, 2.2rem);
+            /* Ukuran font mengikuti lebar viewport: di mobile kecil, di desktop besar */
+            font-size: clamp(1rem, 4.2vw, 2.2rem);
             line-height: 2.4;
             color: var(--quran-text);
-            text-align: justify;
-            text-align-last: right;
+            text-align: right;
+            /* rata kanan, tidak dipaksa justify */
             margin-bottom: 2px;
         }
 
-        /* Header surah & basmala tidak terpengaruh skala font */
+        /* Header surah & basmala tidak terpengaruh */
         .line-surah-header {
             display: flex;
             justify-content: center;
@@ -905,7 +904,7 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
                     <i class="fas fa-book-open"></i><span class="mode-label">Mushaf</span>
                 </div>
             </div>
-            <!-- Tombol pengatur font, hanya muncul di mode list (dikontrol via JS) -->
+            <!-- Tombol pengatur font, hanya muncul di mode list -->
             <div class="font-toggle" id="fontToggleContainer" title="Ukuran teks arab (hanya mode daftar)">
                 <div class="h-btn" onclick="changeFontSize(-1)"><i class="fas fa-minus"></i></div>
                 <span class="ft-label">Aa</span>

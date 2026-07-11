@@ -628,16 +628,16 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             font-size: 0.9rem;
         }
 
-        /* Baris teks mushaf: rata kanan, tanpa justify, ukuran font responsif mengecil di mobile */
+        /* Baris teks mushaf: JUSTIFY + rata kanan baris terakhir, ukuran font responsif mengecil di mobile */
         .mushaf-line-text {
             direction: rtl;
             font-family: 'Scheherazade New', serif;
-            /* Ukuran font mengikuti lebar viewport: di mobile kecil, di desktop besar */
+            /* Ukuran font mengikuti lebar viewport: di mobile kecil, di desktop lebih besar */
             font-size: clamp(1rem, 4.2vw, 2.2rem);
             line-height: 2.4;
             color: var(--quran-text);
-            text-align: right;
-            /* rata kanan, tidak dipaksa justify */
+            text-align: justify;
+            text-align-last: right;
             margin-bottom: 2px;
         }
 

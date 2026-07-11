@@ -4,6 +4,197 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
     header("Location: ../login.php");
     exit();
 }
+
+require_once '../config/database.php'; // sesuaikan bila nama/path file koneksimu beda ($pdo harus PDO)
+
+$userId = (int) $_SESSION['user_id'];
+
+// Nama 114 surah, dipakai supaya kartu "Lanjutkan Hafalan" menampilkan nama surah, bukan cuma nomornya.
+$surahNames = [
+    1 => "Al-Fatihah",
+    2 => "Al-Baqarah",
+    3 => "Ali 'Imran",
+    4 => "An-Nisa'",
+    5 => "Al-Ma'idah",
+    6 => "Al-An'am",
+    7 => "Al-A'raf",
+    8 => "Al-Anfal",
+    9 => "At-Taubah",
+    10 => "Yunus",
+    11 => "Hud",
+    12 => "Yusuf",
+    13 => "Ar-Ra'd",
+    14 => "Ibrahim",
+    15 => "Al-Hijr",
+    16 => "An-Nahl",
+    17 => "Al-Isra'",
+    18 => "Al-Kahf",
+    19 => "Maryam",
+    20 => "Ta-Ha",
+    21 => "Al-Anbiya'",
+    22 => "Al-Hajj",
+    23 => "Al-Mu'minun",
+    24 => "An-Nur",
+    25 => "Al-Furqan",
+    26 => "Asy-Syu'ara'",
+    27 => "An-Naml",
+    28 => "Al-Qasas",
+    29 => "Al-'Ankabut",
+    30 => "Ar-Rum",
+    31 => "Luqman",
+    32 => "As-Sajdah",
+    33 => "Al-Ahzab",
+    34 => "Saba'",
+    35 => "Fatir",
+    36 => "Yasin",
+    37 => "As-Saffat",
+    38 => "Sad",
+    39 => "Az-Zumar",
+    40 => "Ghafir",
+    41 => "Fussilat",
+    42 => "Asy-Syura",
+    43 => "Az-Zukhruf",
+    44 => "Ad-Dukhan",
+    45 => "Al-Jasiyah",
+    46 => "Al-Ahqaf",
+    47 => "Muhammad",
+    48 => "Al-Fath",
+    49 => "Al-Hujurat",
+    50 => "Qaf",
+    51 => "Az-Zariyat",
+    52 => "At-Tur",
+    53 => "An-Najm",
+    54 => "Al-Qamar",
+    55 => "Ar-Rahman",
+    56 => "Al-Waqi'ah",
+    57 => "Al-Hadid",
+    58 => "Al-Mujadilah",
+    59 => "Al-Hasyr",
+    60 => "Al-Mumtahanah",
+    61 => "As-Saff",
+    62 => "Al-Jumu'ah",
+    63 => "Al-Munafiqun",
+    64 => "At-Tagabun",
+    65 => "At-Talaq",
+    66 => "At-Tahrim",
+    67 => "Al-Mulk",
+    68 => "Al-Qalam",
+    69 => "Al-Haqqah",
+    70 => "Al-Ma'arij",
+    71 => "Nuh",
+    72 => "Al-Jinn",
+    73 => "Al-Muzzammil",
+    74 => "Al-Muddassir",
+    75 => "Al-Qiyamah",
+    76 => "Al-Insan",
+    77 => "Al-Mursalat",
+    78 => "An-Naba'",
+    79 => "An-Nazi'at",
+    80 => "'Abasa",
+    81 => "At-Takwir",
+    82 => "Al-Infitar",
+    83 => "Al-Mutaffifin",
+    84 => "Al-Insyiqaq",
+    85 => "Al-Buruj",
+    86 => "At-Tariq",
+    87 => "Al-A'la",
+    88 => "Al-Gasyiyah",
+    89 => "Al-Fajr",
+    90 => "Al-Balad",
+    91 => "Asy-Syams",
+    92 => "Al-Lail",
+    93 => "Ad-Duha",
+    94 => "Asy-Syarh",
+    95 => "At-Tin",
+    96 => "Al-'Alaq",
+    97 => "Al-Qadr",
+    98 => "Al-Bayyinah",
+    99 => "Az-Zalzalah",
+    100 => "Al-'Adiyat",
+    101 => "Al-Qari'ah",
+    102 => "At-Takasur",
+    103 => "Al-'Asr",
+    104 => "Al-Humazah",
+    105 => "Al-Fil",
+    106 => "Quraisy",
+    107 => "Al-Ma'un",
+    108 => "Al-Kausar",
+    109 => "Al-Kafirun",
+    110 => "An-Nasr",
+    111 => "Al-Lahab",
+    112 => "Al-Ikhlas",
+    113 => "Al-Falaq",
+    114 => "An-Nas",
+];
+
+/**
+ * Hitung streak (hari beruntun) dari daftar tanggal unik (descending), dihitung
+ * mundur dari tanggal aktivitas paling baru selama tanggalnya berurutan.
+ */
+function calcStreak(array $datesDesc): int
+{
+    if (empty($datesDesc)) {
+        return 0;
+    }
+    $streak = 1;
+    for ($i = 0; $i < count($datesDesc) - 1; $i++) {
+        $d1 = new DateTime($datesDesc[$i]);
+        $d2 = new DateTime($datesDesc[$i + 1]);
+        if ($d1->diff($d2)->days === 1) {
+            $streak++;
+        } else {
+            break;
+        }
+    }
+    return $streak;
+}
+
+function getStreakForActivity(PDO $pdo, int $userId, string $activityType): int
+{
+    $stmt = $pdo->prepare(
+        "SELECT DISTINCT activity_date FROM mutabaah
+         WHERE user_id = :uid AND activity_type = :type
+         ORDER BY activity_date DESC"
+    );
+    $stmt->execute(['uid' => $userId, 'type' => $activityType]);
+    $dates = $stmt->fetchAll(PDO::FETCH_COLUMN);
+    return calcStreak($dates);
+}
+
+// ---- Lanjutkan Hafalan: progres terakhir dari murojaah_progress ----
+$continue = null;
+try {
+    $stmt = $pdo->prepare(
+        "SELECT surah_nomor, last_ayat, last_page FROM murojaah_progress
+         WHERE user_id = :uid
+         ORDER BY updated_at DESC
+         LIMIT 1"
+    );
+    $stmt->execute(['uid' => $userId]);
+    $progress = $stmt->fetch();
+
+    if ($progress) {
+        $totalHalamanMushaf = 604;
+        $persen = $progress['last_page']
+            ? min(100, round(($progress['last_page'] / $totalHalamanMushaf) * 100))
+            : 0;
+
+        $continue = [
+            'surah_nama' => $surahNames[(int) $progress['surah_nomor']] ?? 'Surah ' . $progress['surah_nomor'],
+            'ayat' => (int) $progress['last_ayat'],
+            'halaman' => $progress['last_page'] !== null ? (int) $progress['last_page'] : null,
+            'persen' => $persen,
+        ];
+    }
+
+    // ---- Murojaah & Tilawah: streak hari beruntun dari tabel mutabaah ----
+    $murojaahStreak = getStreakForActivity($pdo, $userId, 'murojaah');
+    $tilawahStreak = getStreakForActivity($pdo, $userId, 'tilawah');
+} catch (Throwable $e) {
+    $continue = null;
+    $murojaahStreak = 0;
+    $tilawahStreak = 0;
+}
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -19,9 +210,8 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
     <style>
         :root {
             --ink: #16241d;
-            --primary: #0f5132;
-            --primary-deep: #06281f;
-            --primary-light: #1f9d68;
+            --primary: #064e3b;
+            --primary-light: #059669;
             --gold: #c9a227;
             --gold-soft: #e7cd77;
             --parchment: #faf7f0;
@@ -62,7 +252,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
         .hero-section {
             position: relative;
             overflow: hidden;
-            background: radial-gradient(120% 140% at 15% 0%, var(--primary-light) 0%, var(--primary) 45%, var(--primary-deep) 100%);
+            background: linear-gradient(160deg, #022c22, var(--primary), var(--primary-light));
             color: #fdfdf9;
             padding: 26px 20px 34px;
             text-align: center;
@@ -75,7 +265,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             inset: 0;
             width: 100%;
             height: 100%;
-            opacity: 0.18;
+            opacity: 0.16;
             pointer-events: none;
         }
 
@@ -232,6 +422,27 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             z-index: 5;
         }
 
+        /* ---- Swipeable cards row (mobile) ---- */
+        .cards-row {
+            display: flex;
+            gap: 14px;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 8px;
+            margin-bottom: 28px;
+            scrollbar-width: none;
+        }
+
+        .cards-row::-webkit-scrollbar {
+            display: none;
+        }
+
+        .cards-row>* {
+            scroll-snap-align: start;
+            flex: 0 0 auto;
+        }
+
         .floating-card {
             position: relative;
             background: #fff;
@@ -241,7 +452,8 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 28px;
+            width: 80%;
+            min-width: 260px;
         }
 
         .fc-ribbon {
@@ -249,7 +461,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             left: 16px;
             top: -2px;
             background: var(--gold);
-            color: var(--primary-deep);
+            color: #06281f;
             font-family: var(--mono);
             font-size: 0.6rem;
             font-weight: 700;
@@ -261,16 +473,18 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             display: flex;
             align-items: center;
             gap: 14px;
+            min-width: 0;
         }
 
         .progress-circle {
             width: 48px;
             height: 48px;
             border-radius: 50%;
-            background: conic-gradient(var(--primary-light) 21%, var(--parchment-deep) 0);
+            background: conic-gradient(var(--primary-light) 0%, var(--parchment-deep) 0);
             display: flex;
             justify-content: center;
             align-items: center;
+            flex-shrink: 0;
         }
 
         .progress-inner {
@@ -281,8 +495,12 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             font-weight: 700;
+        }
+
+        .fc-text {
+            min-width: 0;
         }
 
         .fc-text h4 {
@@ -296,10 +514,13 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
 
         .fc-text h3 {
             font-family: var(--serif);
-            font-size: 1.08rem;
+            font-size: 1.05rem;
             font-weight: 600;
             color: var(--ink);
             margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .fc-badges {
@@ -325,6 +546,50 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             align-items: center;
             color: var(--muted);
             font-size: 0.8rem;
+            flex-shrink: 0;
+        }
+
+        .stat-card {
+            background: #fff;
+            border-radius: 18px;
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            box-shadow: 0 10px 24px rgba(6, 40, 31, 0.06);
+            color: var(--primary);
+            width: 64%;
+            min-width: 190px;
+        }
+
+        .stat-card i {
+            font-size: 1.3rem;
+        }
+
+        .stat-card h4 {
+            font-size: 0.66rem;
+            text-transform: uppercase;
+            color: var(--muted);
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .stat-card h3 {
+            font-family: var(--serif);
+            font-size: 0.98rem;
+            color: var(--ink);
+            font-weight: 600;
+        }
+
+        .stat-card.coming-soon {
+            color: var(--muted);
+            border: 1.5px dashed var(--parchment-deep);
+            box-shadow: none;
+            background: var(--parchment);
+        }
+
+        .stat-card.coming-soon h3 {
+            color: var(--muted);
         }
 
         /* Quick Access */
@@ -420,50 +685,19 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             .main-content {
                 max-width: 1080px;
                 margin: -30px auto 0;
+            }
+
+            .cards-row {
                 display: grid;
-                grid-template-columns: 1.4fr 1fr 1fr;
+                grid-template-columns: 1.5fr 1fr 1fr 1fr;
+                overflow: visible;
                 gap: 18px;
-                align-items: start;
             }
 
-            .floating-card {
-                margin-bottom: 0;
-                grid-row: 1;
-            }
-
+            .floating-card,
             .stat-card {
-                background: #fff;
-                border-radius: 18px;
-                padding: 18px 20px;
-                display: flex;
-                align-items: center;
-                gap: 14px;
-                box-shadow: 0 10px 24px rgba(6, 40, 31, 0.06);
-                color: var(--primary);
-                grid-row: 1;
-            }
-
-            .stat-card h4 {
-                font-size: 0.66rem;
-                text-transform: uppercase;
-                color: var(--muted);
-                font-weight: 600;
-                margin-bottom: 3px;
-            }
-
-            .stat-card h3 {
-                font-family: var(--serif);
-                font-size: 1rem;
-                color: var(--ink);
-                font-weight: 600;
-            }
-
-            .stat-card i {
-                font-size: 1.3rem;
-            }
-
-            .menu-section {
-                grid-column: 1 / -1;
+                width: auto;
+                min-width: 0;
             }
 
             .quick-grid {
@@ -538,36 +772,46 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
     </div>
 
     <div class="main-content">
-        <a class="floating-card" href="alquran.php">
-            <span class="fc-ribbon">Juz 1</span>
-            <div class="fc-left">
-                <div class="progress-circle">
-                    <div class="progress-inner">21%</div>
-                </div>
-                <div class="fc-text">
-                    <h4>Lanjutkan Hafalan</h4>
-                    <h3>Surah Al-Baqarah</h3>
-                    <div class="fc-badges">
-                        <span class="fc-badge">Ayat 60</span>
+        <div class="cards-row">
+            <a class="floating-card" href="alquran.php">
+                <span class="fc-ribbon"><?= $continue && $continue['halaman'] ? 'Hal. ' . $continue['halaman'] : 'Mulai' ?></span>
+                <div class="fc-left">
+                    <div class="progress-circle" style="background: conic-gradient(var(--primary-light) <?= $continue['persen'] ?? 0 ?>%, var(--parchment-deep) 0);">
+                        <div class="progress-inner"><?= $continue['persen'] ?? 0 ?>%</div>
+                    </div>
+                    <div class="fc-text">
+                        <h4>Lanjutkan Hafalan</h4>
+                        <h3><?= $continue ? htmlspecialchars($continue['surah_nama']) : 'Belum ada hafalan' ?></h3>
+                        <div class="fc-badges">
+                            <span class="fc-badge"><?= $continue ? 'Ayat ' . $continue['ayat'] : 'Yuk mulai sekarang' ?></span>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="fc-arrow"><i class="fas fa-chevron-right"></i></div>
-        </a>
+                <div class="fc-arrow"><i class="fas fa-chevron-right"></i></div>
+            </a>
 
-        <div class="stat-card">
-            <i class="fas fa-medal"></i>
-            <div>
-                <h4>Pencapaian</h4>
-                <h3>3 lencana bulan ini</h3>
+            <div class="stat-card">
+                <i class="fas fa-microphone-alt"></i>
+                <div>
+                    <h4>Murojaah</h4>
+                    <h3><?= $murojaahStreak > 0 ? $murojaahStreak . ' hari beruntun' : 'Belum ada catatan' ?></h3>
+                </div>
             </div>
-        </div>
 
-        <div class="stat-card">
-            <i class="fas fa-chart-line"></i>
-            <div>
-                <h4>Mutaba'ah</h4>
-                <h3>5 hari beruntun</h3>
+            <div class="stat-card">
+                <i class="fas fa-book-open"></i>
+                <div>
+                    <h4>Tilawah</h4>
+                    <h3><?= $tilawahStreak > 0 ? $tilawahStreak . ' hari beruntun' : 'Belum ada catatan' ?></h3>
+                </div>
+            </div>
+
+            <div class="stat-card coming-soon">
+                <i class="fas fa-medal"></i>
+                <div>
+                    <h4>Pencapaian</h4>
+                    <h3>Segera Hadir</h3>
+                </div>
             </div>
         </div>
 
@@ -617,6 +861,8 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
         /**
          * Struktur JS dipecah jadi modul-modul kecil (Clock, Location, PrayerTimes)
          * biar rapi dan gampang dikembangkan, walau tetap vanilla JS di dalam PHP.
+         * Data hafalan/murojaah/tilawah sekarang dirender langsung dari PHP di atas,
+         * jadi tidak perlu fetch AJAX terpisah lagi.
          */
         const Hifzly = (() => {
             const FALLBACK = {

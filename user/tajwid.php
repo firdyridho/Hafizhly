@@ -3,28 +3,18 @@ session_start();
 require_once '../config/database.php';
 
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
-    header("Location: ../login.php");
     exit();
 }
 
-// FUNGSI KONVERSI LINK YOUTUBE KE EMBED
 function getYouTubeEmbedUrl($url)
 {
     if (empty($url)) return false;
-    $shortUrlRegex = '/youtu.be\/([a-zA-Z0-9_-]+)\??/i';
-    $longUrlRegex = '/youtube.com\/((?:embed)|(?:watch))((?:\?v\=)|(?:\/))([a-zA-Z0-9_-]+)/i';
-    if (preg_match($longUrlRegex, $url, $matches)) {
-        return "https://www.youtube.com/embed/" . $matches[3];
-    }
-    if (preg_match($shortUrlRegex, $url, $matches)) {
-        return "https://www.youtube.com/embed/" . $matches[1];
-    }
+    if (preg_match('/youtu.be\/([a-zA-Z0-9_-]+)\??/i', $url, $matches)) return "https://www.youtube.com/embed/" . $matches[1];
+    if (preg_match('/youtube.com\/.*v=([a-zA-Z0-9_-]+)/i', $url, $matches)) return "https://www.youtube.com/embed/" . $matches[1];
     return $url;
 }
 
-// Cek apakah user sedang melihat detail materi atau daftar materi
 $view_materi_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
-
 $materi_detail = null;
 $soal_kuis = [];
 
@@ -32,13 +22,11 @@ if ($view_materi_id > 0) {
     $q_detail = mysqli_query($conn, "SELECT * FROM tajwid_materi WHERE id='$view_materi_id'");
     $materi_detail = mysqli_fetch_assoc($q_detail);
 
-    // Ambil soal kuis
     $q_kuis = mysqli_query($conn, "SELECT * FROM tajwid_kuis WHERE materi_id='$view_materi_id'");
     while ($row = mysqli_fetch_assoc($q_kuis)) {
         $soal_kuis[] = $row;
     }
 } else {
-    // Ambil semua daftar materi
     $materi_q = mysqli_query($conn, "SELECT * FROM tajwid_materi ORDER BY created_at DESC");
     $daftar_materi = [];
     while ($row = mysqli_fetch_assoc($materi_q)) {
@@ -55,7 +43,6 @@ if ($view_materi_id > 0) {
     <title>Belajar Tajwid - Hifzly</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Library untuk Convert HTML to PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root {
@@ -108,62 +95,82 @@ if ($view_materi_id > 0) {
             flex-grow: 1;
         }
 
-        .card {
+        /* LIST MATERI */
+        .materi-card {
             background: var(--card-bg);
             border-radius: 20px;
-            padding: 24px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
             border: 1px solid var(--border);
-            margin-bottom: var(--spacing);
-        }
-
-        /* List Materi */
-        .materi-list {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .materi-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 16px;
-            border: 1px solid var(--border);
-            border-radius: 16px;
+            margin-bottom: 20px;
             text-decoration: none;
             color: var(--dark);
-            transition: 0.2s;
-            background: white;
+            display: block;
+            transition: 0.3s;
         }
 
-        .materi-item:hover {
+        .materi-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(5, 150, 105, 0.1);
             border-color: var(--primary);
-            box-shadow: 0 5px 15px rgba(5, 150, 105, 0.1);
-            transform: translateY(-2px);
         }
 
-        .m-icon {
-            width: 50px;
-            height: 50px;
-            background: var(--primary-light);
-            color: var(--primary);
-            border-radius: 14px;
+        .mc-cover {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            background: #e2e8f0;
+        }
+
+        .mc-body {
+            padding: 20px;
+        }
+
+        .mc-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .mc-badges {
             display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 1.3rem;
+            gap: 10px;
+            font-size: 0.8rem;
+            font-weight: 600;
         }
 
-        /* Detail Materi */
+        .badge {
+            background: var(--bg);
+            padding: 5px 12px;
+            border-radius: 20px;
+            color: var(--text-muted);
+        }
+
+        /* DETAIL MATERI */
+        .detail-cover {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .detail-card {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+            margin-bottom: 20px;
+        }
+
         .video-container {
             position: relative;
             padding-bottom: 56.25%;
             height: 0;
             overflow: hidden;
             border-radius: 16px;
-            margin-bottom: 20px;
-            background: #000;
+            margin-bottom: 25px;
         }
 
         .video-container iframe {
@@ -175,123 +182,249 @@ if ($view_materi_id > 0) {
             border: none;
         }
 
-        .materi-content {
-            font-size: 1rem;
-            line-height: 1.7;
+        /* Render hasil Quill Editor */
+        .rich-content {
+            line-height: 1.8;
+            font-size: 1.05rem;
             color: #334155;
-            margin-bottom: 20px;
-            white-space: pre-line;
+        }
+
+        .rich-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+            margin: 15px 0;
+        }
+
+        .rich-content h1,
+        .rich-content h2,
+        .rich-content h3 {
+            margin-top: 20px;
+            margin-bottom: 10px;
+            color: var(--dark);
         }
 
         .action-bar {
             display: flex;
             gap: 15px;
-            margin-top: 25px;
-            border-top: 1px solid var(--border);
-            padding-top: 20px;
+            margin-top: 20px;
         }
 
         .btn {
             flex: 1;
             text-align: center;
-            padding: 14px;
-            border-radius: 14px;
-            font-weight: 600;
+            padding: 16px;
+            border-radius: 16px;
+            font-weight: 700;
             cursor: pointer;
             border: none;
-            font-size: 0.95rem;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 8px;
+            font-size: 1rem;
             transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
 
         .btn-pdf {
-            background: #fee2e2;
-            color: #dc2626;
+            background: #f1f5f9;
+            color: var(--dark);
         }
 
         .btn-quiz {
-            background: var(--primary);
+            background: linear-gradient(135deg, var(--primary), #10b981);
             color: white;
-            box-shadow: 0 4px 15px rgba(5, 150, 105, 0.3);
+            box-shadow: 0 10px 25px rgba(5, 150, 105, 0.3);
         }
 
-        /* Area Kuis (Tersembunyi Awalnya) */
-        #quizArea {
+        /* GEMINI STYLE QUIZ (SLIDE) */
+        #quizOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg);
+            z-index: 1000;
             display: none;
-            margin-top: 20px;
+            flex-direction: column;
         }
 
-        .question-box {
-            background: #f8fafc;
-            border: 1px solid var(--border);
-            border-radius: 16px;
+        .quiz-header {
             padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .timer-badge {
+            background: #fee2e2;
+            color: #ef4444;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .quiz-slide-container {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        .quiz-card {
+            background: white;
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+            width: 100%;
+            max-width: 500px;
+            display: none;
+            animation: slideIn 0.4s ease forwards;
+        }
+
+        .quiz-card.active {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .q-number {
+            font-size: 0.9rem;
+            color: var(--primary);
+            font-weight: 700;
             margin-bottom: 15px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
         }
 
         .q-text {
-            font-weight: 600;
-            margin-bottom: 15px;
-            font-size: 1.05rem;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 30px;
+            line-height: 1.5;
         }
 
-        .option-label {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 15px;
-            border: 1px solid var(--border);
-            border-radius: 12px;
+        .gemini-option {
+            display: block;
+            padding: 18px 20px;
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            margin-bottom: 12px;
             cursor: pointer;
-            margin-bottom: 10px;
-            background: white;
             transition: 0.2s;
+            font-weight: 600;
+            font-size: 1.05rem;
+            color: #475569;
+            position: relative;
         }
 
-        .option-label:hover {
+        .gemini-option:hover {
+            border-color: var(--primary-light);
+            background: #f8fafc;
+        }
+
+        .gemini-option input[type="radio"] {
+            display: none;
+        }
+
+        /* Style saat dipilih */
+        .gemini-option.selected {
             border-color: var(--primary);
+            background: #f0fdf4;
+            color: var(--primary-dark);
+            box-shadow: 0 4px 15px rgba(5, 150, 105, 0.1);
         }
 
-        .option-label input[type="radio"] {
-            accent-color: var(--primary);
-            width: 18px;
-            height: 18px;
+        .quiz-footer {
+            padding: 20px;
+            display: flex;
+            justify-content: flex-end;
+            background: white;
         }
 
-        /* Custom Modal Hasil */
-        .modal-overlay {
+        .btn-next {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px 30px;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            opacity: 0.5;
+            pointer-events: none;
+            transition: 0.3s;
+        }
+
+        .btn-next.enabled {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Modal Hasil Akhir */
+        .score-modal {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.6);
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
             display: none;
             align-items: center;
             justify-content: center;
-            z-index: 1000;
         }
 
-        .modal-content {
+        .score-box {
             background: white;
-            padding: 30px;
-            border-radius: 24px;
+            padding: 40px;
+            border-radius: 30px;
             text-align: center;
             width: 90%;
-            max-width: 350px;
+            max-width: 400px;
+            animation: popUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popUp {
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
         }
 
         .score-circle {
-            width: 100px;
-            height: 100px;
+            width: 120px;
+            height: 120px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2rem;
+            font-size: 2.5rem;
             font-weight: 800;
             margin: 0 auto 20px auto;
             color: white;
@@ -303,182 +436,237 @@ if ($view_materi_id > 0) {
     <div class="container">
 
         <?php if (!$view_materi_id): ?>
-            <!-- HALAMAN 1: DAFTAR MATERI -->
             <div class="header">
-                <a href="target.php" class="back-btn"><i class="fas fa-arrow-left"></i></a>
-                <h1 class="page-title">📚 Belajar Tajwid</h1>
+                <h1 class="page-title">📚 Modul Tajwid</h1>
             </div>
-            <p style="color:var(--text-muted); margin-bottom:20px;">Pilih materi tajwid yang ingin kamu pelajari hari ini.</p>
 
-            <div class="materi-list">
-                <?php if (empty($daftar_materi)): ?>
-                    <div style="text-align:center; padding:30px; color:var(--text-muted);">Belum ada materi tajwid tersedia.</div>
-                <?php endif; ?>
-
-                <?php foreach ($daftar_materi as $m): ?>
-                    <a href="tajwid.php?id=<?= $m['id'] ?>" class="materi-item">
-                        <div style="display:flex; align-items:center; gap:15px;">
-                            <div class="m-icon"><i class="fas fa-book-quran"></i></div>
-                            <div>
-                                <div style="font-weight:700; font-size:1.1rem;"><?= htmlspecialchars($m['judul']) ?></div>
-                                <div style="font-size:0.85rem; color:var(--text-muted); margin-top:4px;">
-                                    <?= $m['youtube_url'] ? '<i class="fab fa-youtube" style="color:#ef4444;"></i> Video Tersedia' : 'Teks Materi' ?>
-                                </div>
-                            </div>
+            <?php foreach ($daftar_materi as $m):
+                $img_src = !empty($m['cover_image']) ? '../uploads/' . $m['cover_image'] : 'https://via.placeholder.com/600x200/e2e8f0/64748b?text=Materi+Tajwid';
+            ?>
+                <a href="tajwid.php?id=<?= $m['id'] ?>" class="materi-card">
+                    <img src="<?= $img_src ?>" class="mc-cover" alt="Cover Materi">
+                    <div class="mc-body">
+                        <div class="mc-title"><?= htmlspecialchars($m['judul']) ?></div>
+                        <div class="mc-badges">
+                            <span class="badge"><i class="far fa-clock"></i> Kuis <?= $m['waktu_kuis'] ?> Menit</span>
+                            <?php if ($m['youtube_url']): ?><span class="badge"><i class="fab fa-youtube" style="color:#ef4444;"></i> Video</span><?php endif; ?>
                         </div>
-                        <i class="fas fa-chevron-right" style="color:#cbd5e1;"></i>
-                    </a>
-                <?php endforeach; ?>
-            </div>
+                    </div>
+                </a>
+            <?php endforeach; ?>
 
         <?php else: ?>
-            <!-- HALAMAN 2: DETAIL MATERI & KUIS -->
             <div class="header">
                 <a href="tajwid.php" class="back-btn"><i class="fas fa-arrow-left"></i></a>
-                <h1 class="page-title"><?= htmlspecialchars($materi_detail['judul']) ?></h1>
+                <h1 class="page-title" style="font-size:1.2rem;">Materi Hifzly</h1>
             </div>
 
-            <!-- Area ini yang akan diekspor ke PDF -->
-            <div class="card" id="materiToPdf">
-
-                <?php
-                $embed_url = getYouTubeEmbedUrl($materi_detail['youtube_url']);
-                if ($embed_url):
-                ?>
-                    <div class="video-container" data-html2canvas-ignore="true">
-                        <iframe src="<?= $embed_url ?>" allowfullscreen></iframe>
-                    </div>
+            <div id="materiToPdf">
+                <?php if (!empty($materi_detail['cover_image'])): ?>
+                    <img src="../uploads/<?= $materi_detail['cover_image'] ?>" class="detail-cover" alt="Cover">
                 <?php endif; ?>
 
-                <div style="font-size:1.5rem; font-weight:700; margin-bottom:15px; color:var(--dark);" id="pdf-title">
-                    <?= htmlspecialchars($materi_detail['judul']) ?>
-                </div>
+                <div class="detail-card">
+                    <h1 style="font-size:1.8rem; margin-bottom:20px; color:var(--dark);"><?= htmlspecialchars($materi_detail['judul']) ?></h1>
 
-                <div class="materi-content">
-                    <?= htmlspecialchars($materi_detail['konten']) ?>
-                </div>
-            </div>
-
-            <!-- Tombol Aksi -->
-            <div class="action-bar" id="actionBar">
-                <button class="btn btn-pdf" onclick="exportPDF()"><i class="fas fa-file-pdf"></i> Ekspor PDF</button>
-                <?php if (count($soal_kuis) > 0): ?>
-                    <button class="btn btn-quiz" onclick="mulaiKuis()"><i class="fas fa-pen-alt"></i> Mulai Kuis (<?= count($soal_kuis) ?> Soal)</button>
-                <?php endif; ?>
-            </div>
-
-            <!-- Formulir Kuis -->
-            <div id="quizArea">
-                <h2 style="font-size:1.2rem; margin-bottom:20px;"><i class="fas fa-tasks"></i> Kuis Evaluasi</h2>
-                <form id="quizForm" onsubmit="submitKuis(event)">
-                    <?php foreach ($soal_kuis as $index => $soal): ?>
-                        <div class="question-box">
-                            <div class="q-text"><?= ($index + 1) . '. ' . htmlspecialchars($soal['pertanyaan']) ?></div>
-                            <input type="hidden" id="ans_<?= $index ?>" value="<?= $soal['jawaban_benar'] ?>">
-
-                            <label class="option-label"><input type="radio" name="q_<?= $index ?>" value="a" required> A. <?= htmlspecialchars($soal['opsi_a']) ?></label>
-                            <label class="option-label"><input type="radio" name="q_<?= $index ?>" value="b"> B. <?= htmlspecialchars($soal['opsi_b']) ?></label>
-                            <label class="option-label"><input type="radio" name="q_<?= $index ?>" value="c"> C. <?= htmlspecialchars($soal['opsi_c']) ?></label>
-                            <label class="option-label"><input type="radio" name="q_<?= $index ?>" value="d"> D. <?= htmlspecialchars($soal['opsi_d']) ?></label>
+                    <?php $embed_url = getYouTubeEmbedUrl($materi_detail['youtube_url']);
+                    if ($embed_url): ?>
+                        <div class="video-container" data-html2canvas-ignore="true">
+                            <iframe src="<?= $embed_url ?>" allowfullscreen></iframe>
                         </div>
-                    <?php endforeach; ?>
-                    <button type="submit" class="btn btn-quiz" style="width:100%; margin-bottom:30px;"><i class="fas fa-paper-plane"></i> Kumpulkan Jawaban</button>
-                </form>
+                    <?php endif; ?>
+
+                    <div class="rich-content">
+                        <?= $materi_detail['konten'] ?>
+                    </div>
+                </div>
             </div>
 
-            <!-- Modal Hasil Kuis -->
-            <div class="modal-overlay" id="scoreModal">
-                <div class="modal-content">
+            <div class="action-bar">
+                <button class="btn btn-pdf" onclick="exportPDF()"><i class="fas fa-download"></i> Simpan PDF</button>
+                <?php if (count($soal_kuis) > 0): ?>
+                    <button class="btn btn-quiz" onclick="startQuiz()"><i class="fas fa-play"></i> Mulai Kuis Interaktif</button>
+                <?php endif; ?>
+            </div>
+
+            <div id="quizOverlay">
+                <div class="quiz-header">
+                    <button onclick="location.reload()" style="background:none; border:none; font-size:1.5rem; color:var(--text-muted); cursor:pointer;"><i class="fas fa-times"></i></button>
+                    <div class="timer-badge" id="timerDisplay"><i class="fas fa-stopwatch"></i> 00:00</div>
+                </div>
+
+                <div class="quiz-slide-container" id="slideContainer">
+                </div>
+
+                <div class="quiz-footer">
+                    <button class="btn-next" id="nextBtn" onclick="nextSlide()">Selanjutnya <i class="fas fa-arrow-right"></i></button>
+                </div>
+            </div>
+
+            <div class="score-modal" id="scoreModal">
+                <div class="score-box">
                     <div id="scoreCircle" class="score-circle">100</div>
-                    <h3 id="scoreTitle" style="margin-bottom:10px;">Luar Biasa!</h3>
-                    <p id="scoreMessage" style="color:var(--text-muted); font-size:0.9rem; margin-bottom:20px; line-height:1.5;"></p>
-                    <button class="btn btn-quiz" style="width:100%;" onclick="location.reload()">Tutup & Selesai</button>
+                    <h2 id="scoreTitle" style="margin-bottom:10px; color:var(--dark);">Luar Biasa!</h2>
+                    <p id="scoreMessage" style="color:var(--text-muted); margin-bottom:25px; line-height:1.6;"></p>
+                    <button class="btn btn-quiz" style="width:100%;" onclick="location.reload()">Selesai Belajar</button>
                 </div>
             </div>
 
             <script>
-                // Fitur Export ke PDF menggunakan HTML2PDF
+                // --- Fitur Export PDF ---
                 function exportPDF() {
                     const element = document.getElementById('materiToPdf');
-                    const opt = {
+                    const btn = document.querySelector('.btn-pdf');
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
+
+                    html2pdf().set({
                         margin: 15,
-                        filename: 'Materi_Tajwid_Hifzly.pdf',
+                        filename: 'Materi_Tajwid.pdf',
                         image: {
                             type: 'jpeg',
                             quality: 0.98
                         },
                         html2canvas: {
-                            scale: 2
-                        },
+                            scale: 2,
+                            useCORS: true
+                        }, // useCORS penting agar gambar cover ter-render di PDF
                         jsPDF: {
                             unit: 'mm',
                             format: 'a4',
                             orientation: 'portrait'
                         }
-                    };
+                    }).from(element).save().then(() => btn.innerHTML = '<i class="fas fa-download"></i> Simpan PDF');
+                }
 
-                    // Tambahkan class loading ke tombol
-                    const btn = document.querySelector('.btn-pdf');
-                    const originalText = btn.innerHTML;
-                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
+                // --- QUIZ ENGINE (Gemini Style) ---
+                const questions = <?= json_encode($soal_kuis) ?>;
+                const timeLimitMinutes = <?= (int)$materi_detail['waktu_kuis'] ?>;
+                let currentSlide = 0;
+                let userAnswers = [];
+                let timerInterval;
 
-                    html2pdf().set(opt).from(element).save().then(() => {
-                        btn.innerHTML = originalText; // Kembalikan teks tombol
+                function startQuiz() {
+                    document.getElementById('quizOverlay').style.display = 'flex';
+                    buildSlides();
+                    startTimer(timeLimitMinutes * 60);
+                }
+
+                function buildSlides() {
+                    const container = document.getElementById('slideContainer');
+                    container.innerHTML = '';
+
+                    questions.forEach((q, index) => {
+                        const slide = document.createElement('div');
+                        slide.className = `quiz-card ${index === 0 ? 'active' : ''}`;
+                        slide.id = `slide-${index}`;
+
+                        slide.innerHTML = `
+                        <div class="q-number">Pertanyaan ${index + 1} dari ${questions.length}</div>
+                        <div class="q-text">${q.pertanyaan}</div>
+                        
+                        <label class="gemini-option" onclick="selectOption(this, ${index}, 'a')">
+                            <input type="radio" name="q_${index}" value="a"> A. ${q.opsi_a}
+                        </label>
+                        <label class="gemini-option" onclick="selectOption(this, ${index}, 'b')">
+                            <input type="radio" name="q_${index}" value="b"> B. ${q.opsi_b}
+                        </label>
+                        <label class="gemini-option" onclick="selectOption(this, ${index}, 'c')">
+                            <input type="radio" name="q_${index}" value="c"> C. ${q.opsi_c}
+                        </label>
+                        <label class="gemini-option" onclick="selectOption(this, ${index}, 'd')">
+                            <input type="radio" name="q_${index}" value="d"> D. ${q.opsi_d}
+                        </label>
+                    `;
+                        container.appendChild(slide);
                     });
                 }
 
-                // Fitur Munculkan Kuis
-                function mulaiKuis() {
-                    document.getElementById('actionBar').style.display = 'none';
-                    document.getElementById('quizArea').style.display = 'block';
-                    // Scroll perlahan ke bagian kuis
-                    window.scrollTo({
-                        top: document.getElementById('quizArea').offsetTop - 20,
-                        behavior: 'smooth'
-                    });
+                function selectOption(labelElement, qIndex, answer) {
+                    // Hapus style selected dari semua opsi di slide ini
+                    const slide = document.getElementById(`slide-${qIndex}`);
+                    slide.querySelectorAll('.gemini-option').forEach(el => el.classList.remove('selected'));
+
+                    // Tambahkan style ke opsi yang diklik
+                    labelElement.classList.add('selected');
+                    labelElement.querySelector('input').checked = true;
+
+                    userAnswers[qIndex] = answer;
+
+                    // Nyalakan tombol Next
+                    document.getElementById('nextBtn').classList.add('enabled');
                 }
 
-                // Fitur Skoring Kuis Otomatis
-                function submitKuis(e) {
-                    e.preventDefault();
-                    const totalSoal = <?= count($soal_kuis) ?>;
+                function nextSlide() {
+                    // Pindah ke slide berikutnya atau submit
+                    document.getElementById(`slide-${currentSlide}`).classList.remove('active');
+                    currentSlide++;
+
+                    const nextBtn = document.getElementById('nextBtn');
+                    nextBtn.classList.remove('enabled'); // Disable tombol sampai user milih lagi
+
+                    if (currentSlide < questions.length) {
+                        document.getElementById(`slide-${currentSlide}`).classList.add('active');
+                        if (currentSlide === questions.length - 1) {
+                            nextBtn.innerHTML = 'Kumpulkan Jawaban <i class="fas fa-check"></i>';
+                        }
+                    } else {
+                        submitQuiz();
+                    }
+                }
+
+                function startTimer(durationSeconds) {
+                    let timer = durationSeconds;
+                    const display = document.getElementById('timerDisplay');
+
+                    timerInterval = setInterval(() => {
+                        let minutes = parseInt(timer / 60, 10);
+                        let seconds = parseInt(timer % 60, 10);
+
+                        minutes = minutes < 10 ? "0" + minutes : minutes;
+                        seconds = seconds < 10 ? "0" + seconds : seconds;
+
+                        display.innerHTML = `<i class="fas fa-stopwatch"></i> ${minutes}:${seconds}`;
+
+                        if (--timer < 0) {
+                            clearInterval(timerInterval);
+                            alert("Waktu habis! Jawaban akan dikumpulkan otomatis.");
+                            submitQuiz();
+                        }
+                    }, 1000);
+                }
+
+                function submitQuiz() {
+                    clearInterval(timerInterval);
                     let skorBenar = 0;
 
-                    for (let i = 0; i < totalSoal; i++) {
-                        const jawabanUser = document.querySelector(`input[name="q_${i}"]:checked`).value;
-                        const jawabanAsli = document.getElementById(`ans_${i}`).value;
-
-                        if (jawabanUser === jawabanAsli) {
+                    questions.forEach((q, i) => {
+                        if (userAnswers[i] === q.jawaban_benar) {
                             skorBenar++;
                         }
-                    }
+                    });
 
-                    // Kalkulasi Skor 0 - 100
-                    const nilaiAkhir = Math.round((skorBenar / totalSoal) * 100);
+                    const nilaiAkhir = Math.round((skorBenar / questions.length) * 100);
 
-                    tampilkanHasil(nilaiAkhir, skorBenar, totalSoal);
-                }
-
-                function tampilkanHasil(nilai, benar, total) {
+                    // Tampilkan Modal
                     const modal = document.getElementById('scoreModal');
                     const circle = document.getElementById('scoreCircle');
                     const title = document.getElementById('scoreTitle');
                     const msg = document.getElementById('scoreMessage');
 
-                    circle.innerText = nilai;
+                    circle.innerText = nilaiAkhir;
 
-                    if (nilai >= 80) {
+                    if (nilaiAkhir >= 80) {
                         circle.style.background = 'linear-gradient(135deg, #059669, #10b981)';
                         title.innerText = "Luar Biasa! 🎉";
-                        msg.innerText = `Kamu berhasil menjawab ${benar} dari ${total} soal dengan benar. Pemahaman tajwidmu sangat baik!`;
-                    } else if (nilai >= 50) {
+                        msg.innerText = `Kamu berhasil menjawab benar ${skorBenar} dari ${questions.length} soal.`;
+                    } else if (nilaiAkhir >= 50) {
                         circle.style.background = 'linear-gradient(135deg, #f59e0b, #fbbf24)';
-                        title.innerText = "Cukup Bagus! 👍";
-                        msg.innerText = `Kamu menjawab ${benar} dari ${total} soal dengan benar. Yuk pelajari lagi materinya.`;
+                        title.innerText = "Terus Belajar! 👍";
+                        msg.innerText = `Kamu menjawab ${skorBenar} benar. Coba pahami lagi materinya ya.`;
                     } else {
                         circle.style.background = 'linear-gradient(135deg, #ef4444, #f87171)';
                         title.innerText = "Jangan Menyerah! 💪";
-                        msg.innerText = `Kamu menjawab ${benar} dari ${total} soal dengan benar. Tonton videonya lagi dan coba lagi ya.`;
+                        msg.innerText = `Skor kamu belum maksimal. Yuk tonton ulang video penjelasannya!`;
                     }
 
                     modal.style.display = 'flex';
@@ -487,8 +675,6 @@ if ($view_materi_id > 0) {
         <?php endif; ?>
 
     </div>
-
-    <!-- Panggil Bottom Navigation Hifzly di luar Container Halaman Detail -->
     <?php if (!$view_materi_id) include '../components/nav.php'; ?>
 </body>
 

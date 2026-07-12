@@ -31,17 +31,22 @@ if (isset($_SESSION['user_id'])) {
     <style>
         :root {
             --primary: #059669;
-            --primary-dark: #04785a;
+            --primary-dark: #046354;
+            --primary-darker: #033b30;
             --primary-light: #34d399;
+            --primary-lighter: #6ee7b7;
+            --mint: #ecfdf5;
+            --mint-soft: #d7f6e9;
+            --secondary: #0d9488;
+            --danger-soft: #e05252;
             --primary-glow: rgba(5, 150, 105, 0.35);
-            --gold: #c9a227;
-            --gold-light: #e8c85f;
-            --dark: #0b1120;
-            --ink: #0f172a;
-            --muted: #64748b;
-            --bg: #f7faf8;
-            --card-bg: rgba(255, 255, 255, 0.72);
-            --border-soft: rgba(15, 23, 42, 0.06);
+            --dark: #06231b;
+            --ink: #0b241c;
+            --muted: #5c7268;
+            --bg: #f6faf8;
+            --white: #ffffff;
+            --card-bg: rgba(255, 255, 255, 0.78);
+            --border-soft: rgba(6, 35, 27, 0.08);
         }
 
         * {
@@ -73,6 +78,18 @@ if (isset($_SESSION['user_id'])) {
         ::selection {
             background: var(--primary-light);
             color: white;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.001ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.001ms !important;
+                scroll-behavior: auto !important;
+            }
         }
 
         /* ===== Preloader ===== */
@@ -151,10 +168,16 @@ if (isset($_SESSION['user_id'])) {
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: clamp(1.1rem, 4vw, 1.5rem);
-            color: #fff;
+            padding: 9px;
             animation: markPulse 1.3s ease-in-out infinite;
             box-shadow: 0 12px 30px rgba(5, 150, 105, 0.3);
+        }
+
+        .preloader-mark img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: brightness(0) invert(1);
         }
 
         .preloader-text {
@@ -179,7 +202,7 @@ if (isset($_SESSION['user_id'])) {
             height: 100%;
             width: 40%;
             border-radius: 4px;
-            background: linear-gradient(90deg, var(--primary), var(--gold));
+            background: linear-gradient(90deg, var(--primary), var(--primary-light));
             animation: loadBar 1.4s ease-in-out infinite;
         }
 
@@ -226,6 +249,7 @@ if (isset($_SESSION['user_id'])) {
             filter: blur(90px);
             opacity: 0.35;
             animation: drift 18s ease-in-out infinite;
+            will-change: transform;
         }
 
         .aurora span:nth-child(1) {
@@ -239,7 +263,7 @@ if (isset($_SESSION['user_id'])) {
         .aurora span:nth-child(2) {
             width: 480px;
             height: 480px;
-            background: radial-gradient(circle, var(--gold-light), transparent 70%);
+            background: radial-gradient(circle, var(--primary-lighter), transparent 70%);
             top: 30%;
             right: -160px;
             opacity: 0.22;
@@ -279,7 +303,7 @@ if (isset($_SESSION['user_id'])) {
             left: 0;
             height: 3px;
             width: 0%;
-            background: linear-gradient(90deg, var(--primary), var(--gold));
+            background: linear-gradient(90deg, var(--primary), var(--primary-light));
             z-index: 1101;
             transition: width 0.1s linear;
         }
@@ -319,20 +343,26 @@ if (isset($_SESSION['user_id'])) {
             padding: 12px 0;
             background: rgba(247, 250, 248, 0.92);
             border-bottom: 1px solid var(--border-soft);
-            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
+            box-shadow: 0 8px 24px rgba(6, 35, 27, 0.05);
         }
 
         .brand-mark {
             width: 38px;
             height: 38px;
             border-radius: 11px 4px 11px 11px;
-            background: linear-gradient(135deg, var(--gold-light), var(--gold));
+            background: linear-gradient(135deg, var(--primary-light), var(--primary));
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            color: var(--dark);
-            font-size: 1.05rem;
-            box-shadow: 0 6px 16px rgba(201, 162, 39, 0.35);
+            padding: 6px;
+            box-shadow: 0 6px 16px rgba(5, 150, 105, 0.35);
+        }
+
+        .brand-mark img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: brightness(0) invert(1);
         }
 
         .brand-text {
@@ -412,6 +442,19 @@ if (isset($_SESSION['user_id'])) {
             font-weight: 700;
             letter-spacing: 1.2px;
             text-transform: uppercase;
+            animation: badgeFloat 3.4s ease-in-out infinite;
+        }
+
+        @keyframes badgeFloat {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-4px);
+            }
         }
 
         .hero h1 {
@@ -423,10 +466,24 @@ if (isset($_SESSION['user_id'])) {
         }
 
         .hero h1 .text-gradient {
-            background: linear-gradient(100deg, var(--primary), var(--primary-light) 60%, var(--gold));
+            background: linear-gradient(100deg, var(--primary), var(--primary-light) 60%, var(--secondary));
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-size: 200% auto;
+            animation: gradientShift 6s ease-in-out infinite;
+        }
+
+        @keyframes gradientShift {
+
+            0%,
+            100% {
+                background-position: 0% center;
+            }
+
+            50% {
+                background-position: 100% center;
+            }
         }
 
         .hero p.lead-custom {
@@ -474,7 +531,6 @@ if (isset($_SESSION['user_id'])) {
             background: #fff;
         }
 
-        /* Arabic decorative script */
         .arabic-deco {
             position: absolute;
             font-family: 'Amiri', serif;
@@ -486,16 +542,16 @@ if (isset($_SESSION['user_id'])) {
             white-space: nowrap;
             pointer-events: none;
             user-select: none;
+            will-change: transform;
         }
 
-        /* ===== Listening card (hero visual / "video" signature) ===== */
         .listening-card {
             background: var(--card-bg);
             backdrop-filter: blur(16px);
             border: 1px solid rgba(255, 255, 255, 0.6);
             border-radius: 28px;
             padding: 32px 28px;
-            box-shadow: 0 24px 60px rgba(15, 23, 42, 0.1);
+            box-shadow: 0 24px 60px rgba(6, 35, 27, 0.12);
             position: relative;
             transition: transform 0.25s ease;
             will-change: transform;
@@ -611,8 +667,15 @@ if (isset($_SESSION['user_id'])) {
         }
 
         .ayat-box .word.done {
-            color: var(--gold);
+            color: var(--secondary);
             opacity: 0.9;
+        }
+
+        .ayat-box .word.wrong {
+            color: var(--danger-soft) !important;
+            opacity: 1 !important;
+            text-decoration: wavy underline;
+            text-decoration-color: var(--danger-soft);
         }
 
         .score-row {
@@ -626,14 +689,14 @@ if (isset($_SESSION['user_id'])) {
 
         .score-pill {
             background: var(--dark);
-            color: var(--gold-light);
+            color: var(--primary-lighter);
             font-weight: 700;
             padding: 6px 14px;
             border-radius: 20px;
             font-size: 0.8rem;
         }
 
-        /* ===== Features ===== */
+        /* ===== Section basics ===== */
         .section-pad {
             padding: 100px 0;
         }
@@ -660,14 +723,14 @@ if (isset($_SESSION['user_id'])) {
             border-radius: 22px;
             padding: 34px 28px;
             height: 100%;
-            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.03);
+            box-shadow: 0 10px 30px rgba(6, 35, 27, 0.04);
             transition: transform 0.3s ease, box-shadow 0.35s ease;
             will-change: transform;
         }
 
         .feature-card:hover {
             transform: translateY(-6px);
-            box-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
+            box-shadow: 0 20px 45px rgba(6, 35, 27, 0.1);
         }
 
         .feature-icon {
@@ -684,8 +747,8 @@ if (isset($_SESSION['user_id'])) {
         }
 
         .feature-card.accent .feature-icon {
-            background: rgba(201, 162, 39, 0.14);
-            color: var(--gold);
+            background: rgba(13, 148, 136, 0.14);
+            color: var(--secondary);
         }
 
         .feature-card h3 {
@@ -701,41 +764,275 @@ if (isset($_SESSION['user_id'])) {
             margin: 0;
         }
 
-        /* ===== How it works ===== */
+        /* ===== 3D Mushaf page-flip carousel (signature) ===== */
+        .book-scroll-section {
+            position: relative;
+            height: 340vh;
+        }
+
+        .book-sticky {
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .book-glow {
+            position: absolute;
+            width: 620px;
+            height: 620px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(52, 211, 153, 0.22), transparent 70%);
+            top: 50%;
+            left: 62%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            filter: blur(20px);
+        }
+
+        .book-3d-wrap {
+            perspective: 2400px;
+            perspective-origin: 50% 40%;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .book {
+            position: relative;
+            width: min(300px, 68vw);
+            height: min(400px, 60vh);
+            transform-style: preserve-3d;
+            will-change: transform;
+        }
+
+        .book-page-card {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(155deg, #ffffff, var(--mint));
+            border-radius: 6px 16px 16px 6px;
+            box-shadow: 0 30px 70px rgba(6, 35, 27, 0.22), inset 0 0 0 1px rgba(5, 150, 105, 0.15);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: clamp(16px, 3vw, 28px);
+            text-align: center;
+            transform: rotateY(90deg) scale(0.94);
+            opacity: 0;
+            pointer-events: none;
+            transition: transform 0.65s cubic-bezier(.45, .1, .2, 1), opacity 0.45s ease;
+            backface-visibility: hidden;
+        }
+
+        .book-page-card.is-active {
+            transform: rotateY(0deg) scale(1);
+            opacity: 1;
+            pointer-events: auto;
+            z-index: 5;
+        }
+
+        .book-page-card.is-prev {
+            transform: rotateY(-110deg) scale(0.92);
+            opacity: 0;
+        }
+
+        .book-page-card .mushaf-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--primary-dark);
+            margin-bottom: 12px;
+        }
+
+        .book-page-card .ayat-box {
+            font-size: clamp(1rem, 2.4vw, 1.35rem);
+            background: transparent;
+            border: none;
+            padding: 0;
+        }
+
+        .book-page-card .mushaf-juz {
+            margin-top: 14px;
+            font-size: 0.72rem;
+            color: var(--muted);
+            font-weight: 600;
+        }
+
+        .book-cover {
+            position: absolute;
+            inset: 0;
+            transform-origin: left center;
+            background: linear-gradient(135deg, var(--primary-light), var(--primary) 55%, var(--primary-darker));
+            border-radius: 6px 16px 16px 6px;
+            box-shadow: 0 26px 60px rgba(6, 35, 27, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backface-visibility: hidden;
+            will-change: transform;
+            z-index: 10;
+            transition: transform 0.1s linear;
+        }
+
+        .cover-inner {
+            text-align: center;
+            color: #fff;
+        }
+
+        .cover-mark {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 16px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.14);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+            backdrop-filter: blur(4px);
+        }
+
+        .cover-mark img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: brightness(0) invert(1);
+        }
+
+        .cover-title {
+            font-family: 'Amiri', serif;
+            font-size: 1.6rem;
+            font-weight: 700;
+            line-height: 1.4;
+        }
+
+        .book-dots {
+            display: flex;
+            gap: 8px;
+            margin-top: 22px;
+        }
+
+        .book-dots span {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: rgba(5, 150, 105, 0.25);
+            transition: all 0.35s ease;
+        }
+
+        .book-dots span.active {
+            background: var(--primary);
+            width: 22px;
+            border-radius: 4px;
+        }
+
+        .book-progress-track {
+            height: 6px;
+            border-radius: 4px;
+            background: rgba(5, 150, 105, 0.14);
+            overflow: hidden;
+            margin-top: 26px;
+            max-width: 320px;
+        }
+
+        .book-progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--primary), var(--primary-light));
+            border-radius: 4px;
+        }
+
+        .book-progress-label {
+            margin-top: 10px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--primary-dark);
+        }
+
+        /* ===== Cara Kerja - scrollytelling ===== */
         .how-section {
             background: linear-gradient(180deg, rgba(5, 150, 105, 0.04), transparent);
         }
 
-        .step-item {
-            display: flex;
-            gap: 18px;
-            padding: 22px 0;
-            border-bottom: 1px solid var(--border-soft);
+        .step-track {
+            position: relative;
         }
 
-        .step-item:last-child {
-            border-bottom: none;
+        .step-item-scroll {
+            min-height: 58vh;
+            display: flex;
+            align-items: center;
+            opacity: 0.32;
+            transition: opacity 0.45s ease;
+        }
+
+        .step-item-scroll:first-child {
+            min-height: 40vh;
+        }
+
+        .step-item-scroll.active {
+            opacity: 1;
+        }
+
+        .step-item-scroll .step-inner {
+            display: flex;
+            gap: 18px;
         }
 
         .step-num {
             font-family: 'Plus Jakarta Sans', sans-serif;
             font-weight: 800;
-            font-size: 1.6rem;
+            font-size: 1.7rem;
             color: var(--primary);
-            opacity: 0.5;
+            opacity: 0.45;
             min-width: 46px;
+            transition: all 0.35s ease;
         }
 
-        .step-item h4 {
+        .step-item-scroll.active .step-num {
+            opacity: 1;
+            transform: scale(1.12);
+        }
+
+        .step-item-scroll h4 {
             font-weight: 700;
-            font-size: 1.05rem;
-            margin-bottom: 4px;
+            font-size: 1.12rem;
+            margin-bottom: 6px;
         }
 
-        .step-item p {
+        .step-item-scroll p {
             color: var(--muted);
-            font-size: 0.92rem;
+            font-size: 0.94rem;
             margin: 0;
+            max-width: 420px;
+        }
+
+        .step-note {
+            margin-top: 10px;
+            padding: 40px 0 10px;
+            text-align: left;
+        }
+
+        .step-note-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-soft);
+            border-radius: 18px;
+            padding: 22px 24px;
+            max-width: 480px;
+        }
+
+        .step-note-card i {
+            color: var(--primary);
+        }
+
+        .phone-sticky-col {
+            position: sticky;
+            top: 14vh;
         }
 
         .phone-mock {
@@ -744,67 +1041,295 @@ if (isset($_SESSION['user_id'])) {
             padding: 14px;
             max-width: 300px;
             margin: 0 auto;
-            box-shadow: 0 30px 70px rgba(15, 23, 42, 0.28);
+            box-shadow: 0 30px 70px rgba(6, 35, 27, 0.3);
         }
 
         .phone-mock-screen {
-            background: linear-gradient(160deg, #ffffff, #f1faf6);
+            background: linear-gradient(160deg, #ffffff, #eefbf4);
             border-radius: 24px;
+            position: relative;
+            overflow: hidden;
+            min-height: 480px;
+        }
+
+        .phone-scene {
+            position: absolute;
+            inset: 0;
             padding: 22px 18px;
-            min-height: 460px;
             display: flex;
             flex-direction: column;
+            opacity: 0;
+            transform: translateY(12px);
+            transition: opacity 0.45s ease, transform 0.45s ease;
+            pointer-events: none;
+        }
+
+        .phone-scene.active {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
         }
 
         .phone-mock-header {
             display: flex;
             align-items: center;
             gap: 10px;
-            margin-bottom: 18px;
+            margin-bottom: 16px;
         }
 
         .phone-mock-header i {
             color: var(--primary);
         }
 
-        .phone-progress {
-            height: 6px;
-            border-radius: 4px;
-            background: rgba(5, 150, 105, 0.12);
-            overflow: hidden;
-            margin-bottom: 20px;
-        }
-
-        .phone-progress-fill {
-            height: 100%;
-            width: 42%;
-            background: linear-gradient(90deg, var(--primary), var(--primary-light));
-            border-radius: 4px;
-            animation: progressGrow 6s ease-in-out infinite;
-        }
-
-        @keyframes progressGrow {
-            0% {
-                width: 15%;
-            }
-
-            50% {
-                width: 78%;
-            }
-
-            100% {
-                width: 15%;
-            }
-        }
-
-        .phone-mock .ayat-box {
-            font-size: 1.15rem;
+        .scene-mic-wrap {
             flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 18px;
+        }
+
+        .scene-mic-big {
+            width: 78px;
+            height: 78px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            position: relative;
+        }
+
+        .scene-mic-big::before,
+        .scene-mic-big::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            border: 2px solid var(--primary);
+            animation: ringPulse 2.2s ease-out infinite;
+        }
+
+        .scene-mic-big::after {
+            animation-delay: 1.1s;
+        }
+
+        .scene-waveform-mini {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            height: 30px;
+        }
+
+        .scene-waveform-mini span {
+            width: 3px;
+            border-radius: 3px;
+            background: linear-gradient(180deg, var(--primary-light), var(--primary));
+            animation: bar 1s ease-in-out infinite;
+        }
+
+        .scene-hint-tag {
+            margin-top: 12px;
+            background: rgba(224, 82, 82, 0.1);
+            color: var(--danger-soft);
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 8px 12px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .contrib-grid {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            gap: 4px;
+            margin: 18px 0;
+        }
+
+        .contrib-grid span {
+            aspect-ratio: 1;
+            border-radius: 3px;
+            background: rgba(5, 150, 105, 0.12);
+        }
+
+        .streak-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--mint);
+            border-radius: 14px;
+            padding: 12px 16px;
+            margin-top: auto;
+        }
+
+        .streak-badge .num {
+            font-weight: 800;
+            font-size: 1.3rem;
+            color: var(--primary-dark);
+        }
+
+        .streak-badge .lbl {
+            font-size: 0.72rem;
+            color: var(--muted);
+        }
+
+        .scene-badge-wrap {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: 10px;
+        }
+
+        .scene-trophy {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-light), var(--primary));
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.9rem;
+            box-shadow: 0 14px 30px rgba(5, 150, 105, 0.35);
+        }
+
+        .scene-badge-wrap h5 {
+            font-weight: 800;
+            font-size: 1rem;
+            margin: 0;
+        }
+
+        .scene-badge-wrap p {
+            font-size: 0.8rem;
+            color: var(--muted);
+            margin: 0;
+        }
+
+        .scene-reco-list {
+            width: 100%;
+            margin-top: 8px;
+            text-align: left;
+        }
+
+        .scene-reco-list div {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.78rem;
+            color: var(--ink);
+            padding: 7px 10px;
+            background: var(--mint);
+            border-radius: 10px;
+            margin-bottom: 6px;
+        }
+
+        .scene-reco-list i {
+            color: var(--primary);
+            font-size: 0.7rem;
+        }
+
+        /* ===== Game / interactive features ===== */
+        .game-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-soft);
+            border-radius: 22px;
+            padding: 32px 26px;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.35s ease;
+        }
+
+        .game-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 45px rgba(6, 35, 27, 0.1);
+        }
+
+        .game-card::after {
+            content: '';
+            position: absolute;
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(5, 150, 105, 0.1), transparent 70%);
+            top: -50px;
+            right: -50px;
+        }
+
+        .game-badge-new {
+            position: absolute;
+            top: 18px;
+            right: 18px;
+            background: var(--primary);
+            color: #fff;
+            font-size: 0.66rem;
+            font-weight: 700;
+            padding: 4px 11px;
+            border-radius: 20px;
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+        }
+
+        .game-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            background: rgba(5, 150, 105, 0.1);
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.35rem;
+            margin-bottom: 18px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .game-card h3 {
+            font-size: 1.12rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .game-card p {
+            color: var(--muted);
+            font-size: 0.92rem;
+            line-height: 1.6;
+            margin: 0 0 14px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .game-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.76rem;
+            font-weight: 600;
+            color: var(--primary-dark);
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ===== How-it-works old classes reused for step icon lines ===== */
+        .phone-mock .ayat-box {
+            font-size: 1.1rem;
         }
 
         /* ===== CTA ===== */
         .cta-section {
-            background: linear-gradient(120deg, var(--dark), #10281f 60%, var(--dark));
+            background: linear-gradient(120deg, var(--dark), var(--primary-darker) 60%, var(--dark));
             border-radius: 32px;
             padding: 70px 40px;
             text-align: center;
@@ -817,8 +1342,7 @@ if (isset($_SESSION['user_id'])) {
             content: '';
             position: absolute;
             inset: 0;
-            background: radial-gradient(circle at 30% 20%, rgba(5, 150, 105, 0.35), transparent 55%),
-                radial-gradient(circle at 80% 80%, rgba(201, 162, 39, 0.25), transparent 50%);
+            background: radial-gradient(circle at 30% 20%, rgba(5, 150, 105, 0.35), transparent 55%), radial-gradient(circle at 80% 80%, rgba(52, 211, 153, 0.28), transparent 50%);
         }
 
         .cta-section>* {
@@ -846,25 +1370,17 @@ if (isset($_SESSION['user_id'])) {
             font-size: 0.9rem;
         }
 
-        .footer-social a {
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            background: rgba(5, 150, 105, 0.08);
+        footer a {
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 0.85rem;
+        }
+
+        footer a:hover {
             color: var(--primary-dark);
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            margin-left: 8px;
-            transition: all 0.3s ease;
         }
 
-        .footer-social a:hover {
-            background: var(--primary);
-            color: #fff;
-        }
-
-        /* ===== Mobile menu panel ===== */
+        /* ===== Mobile ===== */
         @media (max-width: 991px) {
             #navMenu {
                 background: rgba(255, 255, 255, 0.97);
@@ -872,7 +1388,7 @@ if (isset($_SESSION['user_id'])) {
                 border-radius: 18px;
                 padding: 14px;
                 margin-top: 10px;
-                box-shadow: 0 16px 40px rgba(15, 23, 42, 0.1);
+                box-shadow: 0 16px 40px rgba(6, 35, 27, 0.1);
                 border: 1px solid var(--border-soft);
             }
 
@@ -887,6 +1403,12 @@ if (isset($_SESSION['user_id'])) {
             .nav-item.ms-lg-3 .btn-gold {
                 display: block;
                 text-align: center;
+            }
+
+            .phone-sticky-col {
+                position: static;
+                top: auto;
+                margin-bottom: 30px;
             }
         }
 
@@ -937,7 +1459,8 @@ if (isset($_SESSION['user_id'])) {
                 padding: 64px 0;
             }
 
-            .feature-card {
+            .feature-card,
+            .game-card {
                 padding: 26px 22px;
             }
 
@@ -950,13 +1473,39 @@ if (isset($_SESSION['user_id'])) {
                 max-width: 260px;
             }
 
-            .phone-mock-screen {
-                min-height: 400px;
-                padding: 18px 14px;
-            }
-
             footer .container {
                 text-align: center;
+            }
+
+            .book-scroll-section {
+                height: 300vh;
+            }
+
+            .book-3d-wrap {
+                perspective: 1400px;
+            }
+
+            .book-glow {
+                width: 420px;
+                height: 420px;
+                left: 50%;
+            }
+
+            .book-progress-track {
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .step-item-scroll {
+                min-height: 42vh;
+            }
+
+            .step-item-scroll:first-child {
+                min-height: 26vh;
+            }
+
+            .step-note-card {
+                max-width: 100%;
             }
         }
 
@@ -984,7 +1533,8 @@ if (isset($_SESSION['user_id'])) {
         @media (hover: none) {
 
             .feature-card:hover,
-            .listening-card:hover {
+            .listening-card:hover,
+            .game-card:hover {
                 transform: none;
             }
         }
@@ -998,7 +1548,7 @@ if (isset($_SESSION['user_id'])) {
         <div class="preloader-orb o2"></div>
         <div class="preloader-ring-wrap">
             <div class="preloader-ring"></div>
-            <div class="preloader-mark"><i class="fa-solid fa-book-quran"></i></div>
+            <div class="preloader-mark"><img src="assets/icon/logo.png" alt="Hafizhly"></div>
         </div>
         <div class="preloader-text">Menyiapkan Hafizhly</div>
         <div class="preloader-bar">
@@ -1007,14 +1557,13 @@ if (isset($_SESSION['user_id'])) {
     </div>
 
     <div id="scrollProgress"></div>
-
     <div class="aurora"><span></span><span></span><span></span></div>
 
     <!-- Navbar -->
     <nav class="navbar navbar-custom navbar-expand-lg" id="mainNav">
         <div class="container d-flex align-items-center justify-content-between">
             <a class="d-flex align-items-center gap-2 text-decoration-none" href="#">
-                <span class="brand-mark"><i class="fa-solid fa-book-quran"></i></span>
+                <span class="brand-mark"><img src="assets/icon/logo.png" alt="Hafizhly"></span>
                 <span class="brand-text">Hafizhly</span>
             </a>
             <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
@@ -1024,7 +1573,9 @@ if (isset($_SESSION['user_id'])) {
                 <ul class="navbar-nav align-items-lg-center gap-lg-1 mt-3 mt-lg-0">
                     <li class="nav-item"><a class="nav-link nav-link-custom" href="#beranda">Beranda</a></li>
                     <li class="nav-item"><a class="nav-link nav-link-custom" href="#fitur">Fitur</a></li>
+                    <li class="nav-item"><a class="nav-link nav-link-custom" href="#jelajah-quran">Jelajah Al-Qur'an</a></li>
                     <li class="nav-item"><a class="nav-link nav-link-custom" href="#cara-kerja">Cara Kerja</a></li>
+                    <li class="nav-item"><a class="nav-link nav-link-custom" href="#belajar-seru">Belajar Seru</a></li>
                     <li class="nav-item ms-lg-3">
                         <a href="login.php" class="btn btn-gold">
                             <i class="fa-solid fa-arrow-right-to-bracket me-2"></i>Masuk
@@ -1037,7 +1588,7 @@ if (isset($_SESSION['user_id'])) {
 
     <!-- Hero -->
     <section class="hero" id="beranda">
-        <div class="arabic-deco">القرآن الكريم</div>
+        <div class="arabic-deco" id="arabicDeco">القرآن الكريم</div>
         <div class="container">
             <div class="row align-items-center g-5">
                 <div class="col-lg-6" data-aos="fade-right">
@@ -1127,58 +1678,230 @@ if (isset($_SESSION['user_id'])) {
         </div>
     </section>
 
-    <!-- How it works -->
-    <section id="cara-kerja" class="section-pad how-section">
-        <div class="container">
-            <div class="row align-items-center g-5">
-                <div class="col-lg-5 order-lg-2" data-aos="fade-left">
-                    <div class="phone-mock">
-                        <div class="phone-mock-screen">
-                            <div class="phone-mock-header">
-                                <i class="fa-solid fa-microphone fa-lg"></i>
-                                <div>
-                                    <div class="fw-bold small">Murojaah - QS. An-Naba</div>
-                                    <div class="text-muted" style="font-size:0.72rem;">Ayat 1 dari 40</div>
+    <!-- 3D Mushaf page-flip carousel -->
+    <section class="book-scroll-section" id="jelajah-quran">
+        <div class="book-sticky">
+            <div class="book-glow"></div>
+            <div class="container">
+                <div class="row align-items-center g-5">
+                    <div class="col-lg-5 d-flex justify-content-center order-lg-2">
+                        <div class="book-3d-wrap">
+                            <div class="book" id="book3d">
+                                <div class="book-page-card" data-page="1">
+                                    <div class="mushaf-label">QS. Al-Fatihah &middot; Ayat 1-3</div>
+                                    <div class="ayat-box"><span class="word">بِسْمِ</span> <span class="word">اللَّهِ</span> <span class="word">الرَّحْمَٰنِ</span> <span class="word">الرَّحِيمِ</span></div>
+                                    <div class="mushaf-juz">Juz 1 &middot; Al-Fatihah</div>
+                                </div>
+                                <div class="book-page-card" data-page="2">
+                                    <div class="mushaf-label">QS. Al-Ikhlas &middot; Ayat 1-2</div>
+                                    <div class="ayat-box"><span class="word">قُلْ</span> <span class="word">هُوَ</span> <span class="word">اللَّهُ</span> <span class="word">أَحَدٌ</span></div>
+                                    <div class="mushaf-juz">Juz 30 &middot; Al-Ikhlas</div>
+                                </div>
+                                <div class="book-page-card" data-page="3">
+                                    <div class="mushaf-label">QS. Ar-Rahman &middot; Ayat 13</div>
+                                    <div class="ayat-box"><span class="word">فَبِأَيِّ</span> <span class="word">آلَاءِ</span> <span class="word">رَبِّكُمَا</span> <span class="word">تُكَذِّبَانِ</span></div>
+                                    <div class="mushaf-juz">Juz 27 &middot; Ar-Rahman</div>
+                                </div>
+                                <div class="book-page-card" data-page="4">
+                                    <div class="mushaf-label">QS. Yasin &middot; Ayat 1-2</div>
+                                    <div class="ayat-box"><span class="word">يس</span> <span class="word">وَالْقُرْآنِ</span> <span class="word">الْحَكِيمِ</span></div>
+                                    <div class="mushaf-juz">Juz 22 &middot; Yasin</div>
+                                </div>
+                                <div class="book-page-card" data-page="5">
+                                    <div class="mushaf-label">QS. An-Naba &middot; Ayat 1-2</div>
+                                    <div class="ayat-box"><span class="word">عَمَّ</span> <span class="word">يَتَسَاءَلُونَ</span> <span class="word">عَنِ</span> <span class="word">النَّبَإِ</span> <span class="word">الْعَظِيمِ</span></div>
+                                    <div class="mushaf-juz">Juz 30 &middot; An-Naba</div>
+                                </div>
+                                <div class="book-cover" id="bookCover">
+                                    <div class="cover-inner">
+                                        <span class="cover-mark"><img src="assets/icon/logo.png" alt="Hafizhly"></span>
+                                        <div class="cover-title">Al-Qur'an<br>Digital</div>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="phone-progress">
-                                <div class="phone-progress-fill"></div>
+                            <div class="book-dots" id="bookDots">
+                                <span></span><span></span><span></span><span></span><span></span>
                             </div>
-                            <div class="ayat-box" id="ayatBoxPhone">
-                                <span class="word" data-w="1">عَمَّ</span>
-                                <span class="word" data-w="2">يَتَسَاءَلُونَ</span>
-                                <span class="word" data-w="3">عَنِ</span>
-                                <span class="word" data-w="4">النَّبَإِ</span>
-                                <span class="word" data-w="5">الْعَظِيمِ</span>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-7 order-lg-1" data-aos="fade-right">
+                        <span class="section-eyebrow">114 Surat Dalam Genggaman</span>
+                        <h2 class="section-title mb-3">Terus Scroll, Terus Berpindah Surah</h2>
+                        <p class="lead-custom">Ini gambaran koleksi Al-Qur'an digital di Hafizhly. Setiap scroll membuka lembar baru dan berpindah ke surah berikutnya, dari Al-Fatihah sampai juz 30, lengkap dengan penanda juz agar kamu tetap tahu posisi bacaanmu.</p>
+                        <div class="book-progress-track">
+                            <div class="book-progress-fill" id="bookProgressFill"></div>
+                        </div>
+                        <div class="book-progress-label" id="bookProgressLabel">Membuka mushaf...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Cara Kerja - scrollytelling -->
+    <section id="cara-kerja" class="section-pad how-section">
+        <div class="container">
+            <div class="text-center mb-4" data-aos="fade-up">
+                <span class="section-eyebrow">Cara Kerja</span>
+                <h2 class="section-title">Empat Langkah Menuju Hafalan yang Terjaga</h2>
+                <p class="lead-custom mx-auto" style="text-align:center;">Scroll ke bawah, dan lihat tampilan HP berubah mengikuti setiap tahap prosesnya.</p>
+            </div>
+
+            <div class="row g-5">
+                <div class="col-lg-5 order-lg-2">
+                    <div class="phone-sticky-col">
+                        <div class="phone-mock">
+                            <div class="phone-mock-screen">
+                                <div class="phone-scene active" data-scene="1">
+                                    <div class="phone-mock-header">
+                                        <i class="fa-solid fa-microphone fa-lg"></i>
+                                        <div>
+                                            <div class="fw-bold small">Murojaah - QS. An-Naba</div>
+                                            <div class="text-muted" style="font-size:0.72rem;">Menunggu suaramu</div>
+                                        </div>
+                                    </div>
+                                    <div class="scene-mic-wrap">
+                                        <div class="scene-mic-big"><i class="fa-solid fa-microphone"></i></div>
+                                        <div class="scene-waveform-mini" id="sceneWaveform1"></div>
+                                        <div class="text-muted" style="font-size:0.8rem;">Sedang mendengarkan...</div>
+                                    </div>
+                                </div>
+
+                                <div class="phone-scene" data-scene="2">
+                                    <div class="phone-mock-header">
+                                        <i class="fa-solid fa-wand-magic-sparkles fa-lg"></i>
+                                        <div>
+                                            <div class="fw-bold small">AI Mengoreksi</div>
+                                            <div class="text-muted" style="font-size:0.72rem;">Analisis real-time</div>
+                                        </div>
+                                    </div>
+                                    <div class="ayat-box">
+                                        <span class="word done">عَمَّ</span> <span class="word wrong">يَتَسَاءَلُونَ</span> <span class="word done">عَنِ</span> <span class="word">النَّبَإِ</span> <span class="word">الْعَظِيمِ</span>
+                                    </div>
+                                    <div class="scene-hint-tag"><i class="fa-solid fa-triangle-exclamation"></i>Kata ke-2 kurang tepat, coba ulangi</div>
+                                </div>
+
+                                <div class="phone-scene" data-scene="3">
+                                    <div class="phone-mock-header">
+                                        <i class="fa-solid fa-chart-simple fa-lg"></i>
+                                        <div>
+                                            <div class="fw-bold small">Mutabaah Yaumi</div>
+                                            <div class="text-muted" style="font-size:0.72rem;">Progres harianmu</div>
+                                        </div>
+                                    </div>
+                                    <div class="contrib-grid" id="contribGrid"></div>
+                                    <div class="streak-badge"><span class="num">12</span><span class="lbl">Hari beruntun<br>tanpa putus</span></div>
+                                </div>
+
+                                <div class="phone-scene" data-scene="4">
+                                    <div class="phone-mock-header">
+                                        <i class="fa-solid fa-award fa-lg"></i>
+                                        <div>
+                                            <div class="fw-bold small">Rekomendasi & Lencana</div>
+                                            <div class="text-muted" style="font-size:0.72rem;">Hasil akhir sesi</div>
+                                        </div>
+                                    </div>
+                                    <div class="scene-badge-wrap">
+                                        <div class="scene-trophy"><i class="fa-solid fa-award"></i></div>
+                                        <h5>Lencana Juz 30 Diraih!</h5>
+                                        <p>AI merekomendasikan surah berikut untuk diulang:</p>
+                                        <div class="scene-reco-list">
+                                            <div><i class="fa-solid fa-circle"></i>QS. An-Naba (perlu diulang)</div>
+                                            <div><i class="fa-solid fa-circle"></i>QS. Al-Ikhlas (lancar)</div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-lg-7 order-lg-1" data-aos="fade-right">
-                    <span class="section-eyebrow">Cara Kerja</span>
-                    <h2 class="section-title mb-4">Tiga Langkah Menuju Hafalan yang Terjaga</h2>
+                <div class="col-lg-7 order-lg-1">
+                    <div class="step-track">
+                        <div class="step-item-scroll" data-step="1">
+                            <div class="step-inner">
+                                <div class="step-num">01</div>
+                                <div>
+                                    <h4><i class="fa-solid fa-microphone me-2 text-success"></i>Bacakan Ayat</h4>
+                                    <p>Aktifkan mikrofon dan mulai murojaah seperti biasa, tanpa melihat mushaf. Hafizhly mendengarkan lewat suara HP-mu, tidak perlu alat tambahan.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="step-item-scroll" data-step="2">
+                            <div class="step-inner">
+                                <div class="step-num">02</div>
+                                <div>
+                                    <h4><i class="fa-solid fa-wand-magic-sparkles me-2 text-success"></i>AI Mengoreksi Real-time</h4>
+                                    <p>Sistem mendeteksi setiap kata yang kamu ucapkan, membandingkannya dengan mushaf asli, dan menandai kata yang kurang tepat saat itu juga.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="step-item-scroll" data-step="3">
+                            <div class="step-inner">
+                                <div class="step-num">03</div>
+                                <div>
+                                    <h4><i class="fa-solid fa-chart-simple me-2 text-success"></i>Lihat Progres di Mutabaah</h4>
+                                    <p>Skor dan konsistensi harianmu otomatis tercatat, lengkap dengan grafik streak seperti kontribusi Github, biar kamu tetap semangat konsisten.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="step-item-scroll" data-step="4">
+                            <div class="step-inner">
+                                <div class="step-num">04</div>
+                                <div>
+                                    <h4><i class="fa-solid fa-award me-2 text-success"></i>Dapatkan Rekomendasi & Lencana</h4>
+                                    <p>Selesai murojaah, AI Coach memberi rekomendasi surah yang perlu diulang dan lencana pencapaian untuk memotivasi hafalanmu terus bertambah.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="step-note">
+                            <div class="step-note-card">
+                                <p><i class="fa-solid fa-circle-info me-2"></i>Semua proses ini berjalan langsung di HP kamu, hasilnya tersimpan otomatis, dan bisa diakses kapan saja lewat dashboard Mutabaah.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-                    <div class="step-item">
-                        <div class="step-num">01</div>
-                        <div>
-                            <h4><i class="fa-solid fa-microphone me-2 text-success"></i>Bacakan Ayat</h4>
-                            <p>Aktifkan mikrofon dan mulai murojaah seperti biasa, tanpa melihat mushaf.</p>
-                        </div>
+    <!-- Belajar Seru / Game features -->
+    <section id="belajar-seru" class="section-pad">
+        <div class="container">
+            <div class="text-center mb-5" data-aos="fade-up">
+                <span class="section-eyebrow">Belajar Sambil Bermain</span>
+                <h2 class="section-title">Hafalan Jadi Seru dengan Mode Interaktif</h2>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-md-4" data-aos="fade-up">
+                    <div class="game-card">
+                        <span class="game-badge-new">Baru</span>
+                        <div class="game-icon"><i class="fa-solid fa-puzzle-piece"></i></div>
+                        <h3>Tebak Ayat</h3>
+                        <p>Sepotong ayat ditampilkan tanpa nama surah, kamu tebak sebelum waktu habis. Cocok buat asah ingatan sambil seru-seruan bareng teman.</p>
+                        <span class="game-tag"><i class="fa-solid fa-clock"></i>Mode cepat, ada leaderboard</span>
                     </div>
-                    <div class="step-item">
-                        <div class="step-num">02</div>
-                        <div>
-                            <h4><i class="fa-solid fa-wand-magic-sparkles me-2 text-success"></i>AI Mengoreksi Real-time</h4>
-                            <p>Sistem mendeteksi setiap kata yang kamu ucapkan dan menandai bacaan yang kurang tepat.</p>
-                        </div>
+                </div>
+
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="game-card">
+                        <span class="game-badge-new">Baru</span>
+                        <div class="game-icon"><i class="fa-solid fa-forward"></i></div>
+                        <h3>Lanjutkan Ayat</h3>
+                        <p>Sistem menampilkan potongan awal ayat, kamu ucapkan atau ketik lanjutannya. Latihan ini melatih transisi hafalan antar ayat yang sering jadi titik lupa.</p>
+                        <span class="game-tag"><i class="fa-solid fa-microphone"></i>Bisa pakai suara atau ketik</span>
                     </div>
-                    <div class="step-item">
-                        <div class="step-num">03</div>
-                        <div>
-                            <h4><i class="fa-solid fa-chart-simple me-2 text-success"></i>Lihat Progres di Mutabaah</h4>
-                            <p>Skor dan konsistensi harianmu otomatis tercatat, lengkap dengan rekomendasi ulangan.</p>
-                        </div>
+                </div>
+
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="game-card">
+                        <span class="game-badge-new">Baru</span>
+                        <div class="game-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+                        <h3>Belajar Tajwid</h3>
+                        <p>Modul interaktif mengenal hukum tajwid lengkap dengan warna kode huruf, contoh audio, dan latihan singkat supaya bacaanmu makin sesuai kaidah.</p>
+                        <span class="game-tag"><i class="fa-solid fa-palette"></i>Visual warna-kode, ada kuis</span>
                     </div>
                 </div>
             </div>
@@ -1201,19 +1924,14 @@ if (isset($_SESSION['user_id'])) {
     <footer>
         <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
             <div class="d-flex align-items-center gap-2">
-                <span class="brand-mark" style="width:32px;height:32px;font-size:0.9rem;"><i class="fa-solid fa-book-quran"></i></span>
+                <span class="brand-mark" style="width:32px;height:32px;"><img src="assets/icon/logo.png" alt="Hafizhly"></span>
                 <span>&copy; <?= date('Y'); ?> Hafizhly. Pendamping Murojaah Al-Qur'an Berbasis AI.</span>
             </div>
-            <div style="margin-top: 5px; display: flex; justify-content: center; gap: 15px;">
-                <a href="privacy.php" style="color: var(--text-gray); text-decoration: none; font-size: 0.85rem;">Kebijakan Privasi</a>
+            <div style="display: flex; justify-content: center; gap: 15px;">
+                <a href="privacy.php">Kebijakan Privasi</a>
                 <span style="color: #cbd5e1;">|</span>
-                <a href="terms.php" style="color: var(--text-gray); text-decoration: none; font-size: 0.85rem;">Syarat & Ketentuan</a>
+                <a href="terms.php">Syarat & Ketentuan</a>
             </div>
-            <!-- <div class="footer-social">
-                <a href="#"><i class="fa-brands fa-instagram"></i></a>
-                <a href="#"><i class="fa-brands fa-tiktok"></i></a>
-                <a href="#"><i class="fa-brands fa-youtube"></i></a>
-            </div> -->
         </div>
     </footer>
 
@@ -1221,33 +1939,29 @@ if (isset($_SESSION['user_id'])) {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.1/aos.js"></script>
     <script>
-        // Preloader
         window.addEventListener('load', function() {
             document.getElementById('preloader').classList.add('hide');
         });
 
-        // AOS init
         AOS.init({
             duration: 700,
             once: true,
             offset: 60
         });
 
-        // Navbar scroll state
         const nav = document.getElementById('mainNav');
         window.addEventListener('scroll', function() {
             nav.classList.toggle('scrolled', window.scrollY > 30);
         });
 
-        // Scroll progress bar
         const scrollProgress = document.getElementById('scrollProgress');
-        window.addEventListener('scroll', function() {
+
+        function updateScrollProgress() {
             const h = document.documentElement;
             const percent = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
             scrollProgress.style.width = percent + '%';
-        });
+        }
 
-        // Active nav-link tracking while scrolling
         const navLinks = document.querySelectorAll('.nav-link-custom');
         const trackedSections = document.querySelectorAll('section[id]');
         const sectionObserver = new IntersectionObserver((entries) => {
@@ -1263,7 +1977,6 @@ if (isset($_SESSION['user_id'])) {
         });
         trackedSections.forEach((s) => sectionObserver.observe(s));
 
-        // Auto-close mobile menu after tapping a link
         const navMenuEl = document.getElementById('navMenu');
         navMenuEl.querySelectorAll('a').forEach((link) => {
             link.addEventListener('click', () => {
@@ -1273,7 +1986,6 @@ if (isset($_SESSION['user_id'])) {
             });
         });
 
-        // 3D tilt effect for interactive cards (desktop/mouse only)
         if (window.matchMedia('(hover: hover)').matches) {
             const addTilt = (selector, intensity) => {
                 document.querySelectorAll(selector).forEach((card) => {
@@ -1292,9 +2004,9 @@ if (isset($_SESSION['user_id'])) {
             };
             addTilt('.feature-card', 6);
             addTilt('.listening-card', 4);
+            addTilt('.game-card', 5);
         }
 
-        // Ripple effect on buttons
         document.querySelectorAll('.btn-primary-custom, .btn-outline-custom, .btn-gold').forEach((btn) => {
             btn.addEventListener('click', function(e) {
                 const rect = this.getBoundingClientRect();
@@ -1309,23 +2021,37 @@ if (isset($_SESSION['user_id'])) {
             });
         });
 
-        // Waveform bars generator
-        const waveform = document.getElementById('waveform');
-        const barCount = 24;
-        for (let i = 0; i < barCount; i++) {
-            const bar = document.createElement('span');
-            bar.style.animationDelay = (i * 0.06) + 's';
-            bar.style.animationDuration = (0.9 + Math.random() * 0.6) + 's';
-            waveform.appendChild(bar);
+        function buildWaveform(el, count) {
+            if (!el) return;
+            for (let i = 0; i < count; i++) {
+                const bar = document.createElement('span');
+                bar.style.animationDelay = (i * 0.06) + 's';
+                bar.style.animationDuration = (0.9 + Math.random() * 0.6) + 's';
+                el.appendChild(bar);
+            }
         }
+        buildWaveform(document.getElementById('waveform'), 24);
+        buildWaveform(document.getElementById('sceneWaveform1'), 16);
 
-        // "Live caption" word-by-word highlight loop (the signature demo animation)
-        function runCaptionLoop(boxId, interval) {
-            const box = document.getElementById(boxId);
-            if (!box) return;
+        function buildContribGrid(el) {
+            if (!el) return;
+            for (let i = 0; i < 27; i++) {
+                const cell = document.createElement('span');
+                const shade = Math.random();
+                if (shade > 0.8) cell.style.background = 'var(--primary)';
+                else if (shade > 0.55) cell.style.background = 'var(--primary-light)';
+                else if (shade > 0.3) cell.style.background = 'rgba(5,150,105,0.3)';
+                el.appendChild(cell);
+            }
+        }
+        buildContribGrid(document.getElementById('contribGrid'));
+
+        function runCaptionLoop(box, interval) {
+            if (!box) return null;
             const words = box.querySelectorAll('.word');
+            if (!words.length) return null;
             let i = 0;
-            setInterval(() => {
+            return setInterval(() => {
                 words.forEach((w, idx) => {
                     w.classList.remove('active');
                     if (idx < i) w.classList.add('done');
@@ -1336,8 +2062,112 @@ if (isset($_SESSION['user_id'])) {
                 if (i === 0) words.forEach(w => w.classList.remove('done'));
             }, interval);
         }
-        runCaptionLoop('ayatBox', 850);
-        runCaptionLoop('ayatBoxPhone', 700);
+        runCaptionLoop(document.getElementById('ayatBox'), 850);
+
+        /* Parallax on hero ambient elements */
+        const arabicDeco = document.getElementById('arabicDeco');
+        const auroraSpans = document.querySelectorAll('.aurora span');
+
+        function updateParallax() {
+            const y = window.scrollY;
+            if (arabicDeco) arabicDeco.style.transform = 'translateY(' + (y * 0.15) + 'px)';
+            auroraSpans.forEach((span, idx) => {
+                const speed = 0.04 + idx * 0.015;
+                span.style.transform = 'translateY(' + (y * speed) + 'px)';
+            });
+        }
+
+        /* ===== 3D Mushaf page-flip carousel, scroll-driven ===== */
+        const bookSection = document.getElementById('jelajah-quran');
+        const bookEl = document.getElementById('book3d');
+        const bookCover = document.getElementById('bookCover');
+        const pageCards = Array.from(document.querySelectorAll('.book-page-card'));
+        const bookProgressFill = document.getElementById('bookProgressFill');
+        const bookProgressLabel = document.getElementById('bookProgressLabel');
+        const bookDots = document.querySelectorAll('#bookDots span');
+        let activeCardIndex = -1;
+        let cardCaptionTimer = null;
+
+        function setActiveCard(newIndex) {
+            if (newIndex === activeCardIndex) return;
+            pageCards.forEach((card, idx) => {
+                card.classList.remove('is-active', 'is-prev');
+                if (idx < newIndex) card.classList.add('is-prev');
+                if (idx === newIndex) card.classList.add('is-active');
+            });
+            bookDots.forEach((dot, idx) => dot.classList.toggle('active', idx === newIndex));
+            if (cardCaptionTimer) clearInterval(cardCaptionTimer);
+            if (newIndex >= 0 && pageCards[newIndex]) {
+                cardCaptionTimer = runCaptionLoop(pageCards[newIndex].querySelector('.ayat-box'), 700);
+            }
+            activeCardIndex = newIndex;
+        }
+
+        function updateBookScroll() {
+            if (!bookSection) return;
+            const rect = bookSection.getBoundingClientRect();
+            const total = bookSection.offsetHeight - window.innerHeight;
+            const scrolled = -rect.top;
+            let progress = total > 0 ? scrolled / total : 0;
+            progress = Math.min(Math.max(progress, 0), 1);
+
+            const coverOpenPhase = 0.12;
+            const coverAngle = -155 * Math.min(progress / coverOpenPhase, 1);
+            bookCover.style.transform = 'rotateY(' + coverAngle + 'deg)';
+
+            const tilt = 5 * Math.sin(progress * Math.PI);
+            bookEl.style.transform = 'rotateX(' + (4 - progress * 4) + 'deg) rotateY(' + tilt + 'deg)';
+
+            if (progress <= coverOpenPhase) {
+                setActiveCard(-1);
+                bookProgressLabel.textContent = 'Membuka mushaf...';
+            } else {
+                const cardsProgress = (progress - coverOpenPhase) / (1 - coverOpenPhase);
+                const idx = Math.min(pageCards.length - 1, Math.floor(cardsProgress * pageCards.length));
+                setActiveCard(idx);
+                const card = pageCards[idx];
+                const label = card ? card.querySelector('.mushaf-label').textContent : '';
+                bookProgressLabel.textContent = label;
+            }
+
+            bookProgressFill.style.width = (progress * 100) + '%';
+        }
+
+        /* ===== Cara Kerja scrollytelling ===== */
+        const stepItems = document.querySelectorAll('.step-item-scroll');
+        const phoneScenes = document.querySelectorAll('.phone-scene');
+        const stepObserver = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    const stepNum = entry.target.getAttribute('data-step');
+                    stepItems.forEach((item) => item.classList.remove('active'));
+                    entry.target.classList.add('active');
+                    phoneScenes.forEach((scene) => {
+                        scene.classList.toggle('active', scene.getAttribute('data-scene') === stepNum);
+                    });
+                }
+            });
+        }, {
+            rootMargin: '-40% 0px -40% 0px',
+            threshold: 0
+        });
+        stepItems.forEach((item) => stepObserver.observe(item));
+
+        let ticking = false;
+
+        function onScroll() {
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    updateParallax();
+                    updateBookScroll();
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        }
+        window.addEventListener('scroll', onScroll);
+        window.addEventListener('scroll', updateScrollProgress);
+        updateBookScroll();
     </script>
 </body>
 

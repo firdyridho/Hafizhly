@@ -31,17 +31,21 @@ if (isset($_SESSION['user_id'])) {
     <style>
         :root {
             --primary: #059669;
-            --primary-dark: #04785a;
+            --primary-dark: #046354;
+            --primary-darker: #033b30;
             --primary-light: #34d399;
+            --primary-lighter: #6ee7b7;
+            --mint: #ecfdf5;
+            --mint-soft: #d7f6e9;
+            --secondary: #0d9488;
             --primary-glow: rgba(5, 150, 105, 0.35);
-            --gold: #c9a227;
-            --gold-light: #e8c85f;
-            --dark: #0b1120;
-            --ink: #0f172a;
-            --muted: #64748b;
-            --bg: #f7faf8;
-            --card-bg: rgba(255, 255, 255, 0.72);
-            --border-soft: rgba(15, 23, 42, 0.06);
+            --dark: #06231b;
+            --ink: #0b241c;
+            --muted: #5c7268;
+            --bg: #f6faf8;
+            --white: #ffffff;
+            --card-bg: rgba(255, 255, 255, 0.78);
+            --border-soft: rgba(6, 35, 27, 0.08);
         }
 
         * {
@@ -73,6 +77,18 @@ if (isset($_SESSION['user_id'])) {
         ::selection {
             background: var(--primary-light);
             color: white;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.001ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.001ms !important;
+                scroll-behavior: auto !important;
+            }
         }
 
         /* ===== Preloader ===== */
@@ -151,10 +167,16 @@ if (isset($_SESSION['user_id'])) {
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: clamp(1.1rem, 4vw, 1.5rem);
-            color: #fff;
+            padding: 9px;
             animation: markPulse 1.3s ease-in-out infinite;
             box-shadow: 0 12px 30px rgba(5, 150, 105, 0.3);
+        }
+
+        .preloader-mark img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: brightness(0) invert(1);
         }
 
         .preloader-text {
@@ -179,7 +201,7 @@ if (isset($_SESSION['user_id'])) {
             height: 100%;
             width: 40%;
             border-radius: 4px;
-            background: linear-gradient(90deg, var(--primary), var(--gold));
+            background: linear-gradient(90deg, var(--primary), var(--primary-light));
             animation: loadBar 1.4s ease-in-out infinite;
         }
 
@@ -226,6 +248,7 @@ if (isset($_SESSION['user_id'])) {
             filter: blur(90px);
             opacity: 0.35;
             animation: drift 18s ease-in-out infinite;
+            will-change: transform;
         }
 
         .aurora span:nth-child(1) {
@@ -239,7 +262,7 @@ if (isset($_SESSION['user_id'])) {
         .aurora span:nth-child(2) {
             width: 480px;
             height: 480px;
-            background: radial-gradient(circle, var(--gold-light), transparent 70%);
+            background: radial-gradient(circle, var(--primary-lighter), transparent 70%);
             top: 30%;
             right: -160px;
             opacity: 0.22;
@@ -279,7 +302,7 @@ if (isset($_SESSION['user_id'])) {
             left: 0;
             height: 3px;
             width: 0%;
-            background: linear-gradient(90deg, var(--primary), var(--gold));
+            background: linear-gradient(90deg, var(--primary), var(--primary-light));
             z-index: 1101;
             transition: width 0.1s linear;
         }
@@ -319,20 +342,26 @@ if (isset($_SESSION['user_id'])) {
             padding: 12px 0;
             background: rgba(247, 250, 248, 0.92);
             border-bottom: 1px solid var(--border-soft);
-            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
+            box-shadow: 0 8px 24px rgba(6, 35, 27, 0.05);
         }
 
         .brand-mark {
             width: 38px;
             height: 38px;
             border-radius: 11px 4px 11px 11px;
-            background: linear-gradient(135deg, var(--gold-light), var(--gold));
+            background: linear-gradient(135deg, var(--primary-light), var(--primary));
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            color: var(--dark);
-            font-size: 1.05rem;
-            box-shadow: 0 6px 16px rgba(201, 162, 39, 0.35);
+            padding: 6px;
+            box-shadow: 0 6px 16px rgba(5, 150, 105, 0.35);
+        }
+
+        .brand-mark img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: brightness(0) invert(1);
         }
 
         .brand-text {
@@ -412,6 +441,19 @@ if (isset($_SESSION['user_id'])) {
             font-weight: 700;
             letter-spacing: 1.2px;
             text-transform: uppercase;
+            animation: badgeFloat 3.4s ease-in-out infinite;
+        }
+
+        @keyframes badgeFloat {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-4px);
+            }
         }
 
         .hero h1 {
@@ -423,10 +465,24 @@ if (isset($_SESSION['user_id'])) {
         }
 
         .hero h1 .text-gradient {
-            background: linear-gradient(100deg, var(--primary), var(--primary-light) 60%, var(--gold));
+            background: linear-gradient(100deg, var(--primary), var(--primary-light) 60%, var(--secondary));
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-size: 200% auto;
+            animation: gradientShift 6s ease-in-out infinite;
+        }
+
+        @keyframes gradientShift {
+
+            0%,
+            100% {
+                background-position: 0% center;
+            }
+
+            50% {
+                background-position: 100% center;
+            }
         }
 
         .hero p.lead-custom {
@@ -486,16 +542,17 @@ if (isset($_SESSION['user_id'])) {
             white-space: nowrap;
             pointer-events: none;
             user-select: none;
+            will-change: transform;
         }
 
-        /* ===== Listening card (hero visual / "video" signature) ===== */
+        /* ===== Listening card (hero visual) ===== */
         .listening-card {
             background: var(--card-bg);
             backdrop-filter: blur(16px);
             border: 1px solid rgba(255, 255, 255, 0.6);
             border-radius: 28px;
             padding: 32px 28px;
-            box-shadow: 0 24px 60px rgba(15, 23, 42, 0.1);
+            box-shadow: 0 24px 60px rgba(6, 35, 27, 0.12);
             position: relative;
             transition: transform 0.25s ease;
             will-change: transform;
@@ -611,7 +668,7 @@ if (isset($_SESSION['user_id'])) {
         }
 
         .ayat-box .word.done {
-            color: var(--gold);
+            color: var(--secondary);
             opacity: 0.9;
         }
 
@@ -626,7 +683,7 @@ if (isset($_SESSION['user_id'])) {
 
         .score-pill {
             background: var(--dark);
-            color: var(--gold-light);
+            color: var(--primary-lighter);
             font-weight: 700;
             padding: 6px 14px;
             border-radius: 20px;
@@ -660,14 +717,14 @@ if (isset($_SESSION['user_id'])) {
             border-radius: 22px;
             padding: 34px 28px;
             height: 100%;
-            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.03);
+            box-shadow: 0 10px 30px rgba(6, 35, 27, 0.04);
             transition: transform 0.3s ease, box-shadow 0.35s ease;
             will-change: transform;
         }
 
         .feature-card:hover {
             transform: translateY(-6px);
-            box-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
+            box-shadow: 0 20px 45px rgba(6, 35, 27, 0.1);
         }
 
         .feature-icon {
@@ -684,8 +741,8 @@ if (isset($_SESSION['user_id'])) {
         }
 
         .feature-card.accent .feature-icon {
-            background: rgba(201, 162, 39, 0.14);
-            color: var(--gold);
+            background: rgba(13, 148, 136, 0.14);
+            color: var(--secondary);
         }
 
         .feature-card h3 {
@@ -744,11 +801,11 @@ if (isset($_SESSION['user_id'])) {
             padding: 14px;
             max-width: 300px;
             margin: 0 auto;
-            box-shadow: 0 30px 70px rgba(15, 23, 42, 0.28);
+            box-shadow: 0 30px 70px rgba(6, 35, 27, 0.3);
         }
 
         .phone-mock-screen {
-            background: linear-gradient(160deg, #ffffff, #f1faf6);
+            background: linear-gradient(160deg, #ffffff, #eefbf4);
             border-radius: 24px;
             padding: 22px 18px;
             min-height: 460px;
@@ -802,9 +859,167 @@ if (isset($_SESSION['user_id'])) {
             flex-grow: 1;
         }
 
+        /* ===== 3D Mushaf scroll section (signature) ===== */
+        .book-scroll-section {
+            position: relative;
+            height: 300vh;
+        }
+
+        .book-sticky {
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .book-glow {
+            position: absolute;
+            width: 620px;
+            height: 620px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(52, 211, 153, 0.22), transparent 70%);
+            top: 50%;
+            left: 62%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            filter: blur(20px);
+        }
+
+        .book-3d-wrap {
+            perspective: 2400px;
+            perspective-origin: 50% 40%;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
+        .book {
+            position: relative;
+            width: min(300px, 68vw);
+            height: min(400px, 62vh);
+            transform-style: preserve-3d;
+            will-change: transform;
+        }
+
+        .book-inside {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(155deg, #ffffff, var(--mint));
+            border-radius: 6px 16px 16px 6px;
+            box-shadow: 0 30px 70px rgba(6, 35, 27, 0.25), inset 0 0 0 1px rgba(5, 150, 105, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: clamp(16px, 3vw, 30px);
+            transform: translateZ(-2px);
+        }
+
+        .book-page-content {
+            width: 100%;
+            opacity: 0;
+            transform: translateY(14px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        .book-page-content.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .mushaf-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--primary-dark);
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .book #ayatBoxBook {
+            font-size: clamp(1.05rem, 2.6vw, 1.4rem);
+            background: transparent;
+            border: none;
+            padding: 0;
+        }
+
+        .book-cover {
+            position: absolute;
+            inset: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transform-origin: left center;
+            background: linear-gradient(135deg, var(--primary-light), var(--primary) 55%, var(--primary-darker));
+            border-radius: 6px 16px 16px 6px;
+            box-shadow: 0 26px 60px rgba(6, 35, 27, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backface-visibility: hidden;
+            will-change: transform;
+        }
+
+        .cover-inner {
+            text-align: center;
+            color: #fff;
+        }
+
+        .cover-mark {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 16px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.14);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+            backdrop-filter: blur(4px);
+        }
+
+        .cover-mark img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: brightness(0) invert(1);
+        }
+
+        .cover-title {
+            font-family: 'Amiri', serif;
+            font-size: 1.6rem;
+            font-weight: 700;
+            line-height: 1.4;
+        }
+
+        .book-progress-track {
+            height: 6px;
+            border-radius: 4px;
+            background: rgba(5, 150, 105, 0.14);
+            overflow: hidden;
+            margin-top: 26px;
+            max-width: 320px;
+        }
+
+        .book-progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--primary), var(--primary-light));
+            border-radius: 4px;
+        }
+
+        .book-progress-label {
+            margin-top: 10px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--primary-dark);
+        }
+
         /* ===== CTA ===== */
         .cta-section {
-            background: linear-gradient(120deg, var(--dark), #10281f 60%, var(--dark));
+            background: linear-gradient(120deg, var(--dark), var(--primary-darker) 60%, var(--dark));
             border-radius: 32px;
             padding: 70px 40px;
             text-align: center;
@@ -818,7 +1033,7 @@ if (isset($_SESSION['user_id'])) {
             position: absolute;
             inset: 0;
             background: radial-gradient(circle at 30% 20%, rgba(5, 150, 105, 0.35), transparent 55%),
-                radial-gradient(circle at 80% 80%, rgba(201, 162, 39, 0.25), transparent 50%);
+                radial-gradient(circle at 80% 80%, rgba(52, 211, 153, 0.28), transparent 50%);
         }
 
         .cta-section>* {
@@ -846,22 +1061,14 @@ if (isset($_SESSION['user_id'])) {
             font-size: 0.9rem;
         }
 
-        .footer-social a {
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            background: rgba(5, 150, 105, 0.08);
-            color: var(--primary-dark);
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            margin-left: 8px;
-            transition: all 0.3s ease;
+        footer a {
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 0.85rem;
         }
 
-        .footer-social a:hover {
-            background: var(--primary);
-            color: #fff;
+        footer a:hover {
+            color: var(--primary-dark);
         }
 
         /* ===== Mobile menu panel ===== */
@@ -872,7 +1079,7 @@ if (isset($_SESSION['user_id'])) {
                 border-radius: 18px;
                 padding: 14px;
                 margin-top: 10px;
-                box-shadow: 0 16px 40px rgba(15, 23, 42, 0.1);
+                box-shadow: 0 16px 40px rgba(6, 35, 27, 0.1);
                 border: 1px solid var(--border-soft);
             }
 
@@ -958,6 +1165,38 @@ if (isset($_SESSION['user_id'])) {
             footer .container {
                 text-align: center;
             }
+
+            .book-scroll-section {
+                height: 260vh;
+            }
+
+            .book-3d-wrap {
+                perspective: 1400px;
+            }
+
+            .book-glow {
+                width: 420px;
+                height: 420px;
+                left: 50%;
+            }
+
+            .book-sticky .row {
+                text-align: center;
+            }
+
+            .book-sticky .col-lg-7 {
+                order: 2 !important;
+                margin-top: 28px;
+            }
+
+            .book-sticky .col-lg-5 {
+                order: 1 !important;
+            }
+
+            .book-progress-track {
+                margin-left: auto;
+                margin-right: auto;
+            }
         }
 
         @media (max-width: 575px) {
@@ -998,7 +1237,7 @@ if (isset($_SESSION['user_id'])) {
         <div class="preloader-orb o2"></div>
         <div class="preloader-ring-wrap">
             <div class="preloader-ring"></div>
-            <div class="preloader-mark"><i class="fa-solid fa-book-quran"></i></div>
+            <div class="preloader-mark"><img src="assets/icon/logo.png" alt="Hafizhly"></div>
         </div>
         <div class="preloader-text">Menyiapkan Hafizhly</div>
         <div class="preloader-bar">
@@ -1014,7 +1253,7 @@ if (isset($_SESSION['user_id'])) {
     <nav class="navbar navbar-custom navbar-expand-lg" id="mainNav">
         <div class="container d-flex align-items-center justify-content-between">
             <a class="d-flex align-items-center gap-2 text-decoration-none" href="#">
-                <span class="brand-mark"><i class="fa-solid fa-book-quran"></i></span>
+                <span class="brand-mark"><img src="assets/icon/logo.png" alt="Hafizhly"></span>
                 <span class="brand-text">Hafizhly</span>
             </a>
             <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
@@ -1024,6 +1263,7 @@ if (isset($_SESSION['user_id'])) {
                 <ul class="navbar-nav align-items-lg-center gap-lg-1 mt-3 mt-lg-0">
                     <li class="nav-item"><a class="nav-link nav-link-custom" href="#beranda">Beranda</a></li>
                     <li class="nav-item"><a class="nav-link nav-link-custom" href="#fitur">Fitur</a></li>
+                    <li class="nav-item"><a class="nav-link nav-link-custom" href="#mushaf3d">Mushaf 3D</a></li>
                     <li class="nav-item"><a class="nav-link nav-link-custom" href="#cara-kerja">Cara Kerja</a></li>
                     <li class="nav-item ms-lg-3">
                         <a href="login.php" class="btn btn-gold">
@@ -1037,7 +1277,7 @@ if (isset($_SESSION['user_id'])) {
 
     <!-- Hero -->
     <section class="hero" id="beranda">
-        <div class="arabic-deco">القرآن الكريم</div>
+        <div class="arabic-deco" id="arabicDeco">القرآن الكريم</div>
         <div class="container">
             <div class="row align-items-center g-5">
                 <div class="col-lg-6" data-aos="fade-right">
@@ -1057,7 +1297,7 @@ if (isset($_SESSION['user_id'])) {
                 </div>
 
                 <div class="col-lg-6" data-aos="fade-left" data-aos-delay="150">
-                    <div class="listening-card">
+                    <div class="listening-card" id="tiltCard1">
                         <div class="listening-header">
                             <span class="mic-badge"><i class="fa-solid fa-microphone"></i></span>
                             <div>
@@ -1121,6 +1361,51 @@ if (isset($_SESSION['user_id'])) {
                         <div class="feature-icon"><i class="fa-solid fa-chart-line"></i></div>
                         <h3>Mutabaah Yaumi</h3>
                         <p>Catatan amal digital komprehensif ala Github Contribution. Pantau streak, hafalan baru, dan konsistensimu hari demi hari.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3D Mushaf scroll section (signature interaction) -->
+    <section class="book-scroll-section" id="mushaf3d">
+        <div class="book-sticky">
+            <div class="book-glow"></div>
+            <div class="container">
+                <div class="row align-items-center g-5">
+                    <div class="col-lg-5 d-flex justify-content-center">
+                        <div class="book-3d-wrap">
+                            <div class="book" id="book3d">
+                                <div class="book-inside">
+                                    <div class="book-page-content" id="bookPageContent">
+                                        <div class="mushaf-label">QS. An-Naba &middot; Ayat 1-2</div>
+                                        <div class="ayat-box" id="ayatBoxBook">
+                                            <span class="word" data-w="1">عَمَّ</span>
+                                            <span class="word" data-w="2">يَتَسَاءَلُونَ</span>
+                                            <span class="word" data-w="3">عَنِ</span>
+                                            <span class="word" data-w="4">النَّبَإِ</span>
+                                            <span class="word" data-w="5">الْعَظِيمِ</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="book-cover" id="bookCover">
+                                    <div class="cover-inner">
+                                        <span class="cover-mark"><img src="assets/icon/logo.png" alt="Hafizhly"></span>
+                                        <div class="cover-title">Al-Qur'an<br>Digital</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-7" data-aos="fade-right">
+                        <span class="section-eyebrow">Pengalaman Immersive</span>
+                        <h2 class="section-title mb-3">Buka Setiap Halaman, Kuatkan Setiap Hafalan</h2>
+                        <p class="lead-custom">Scroll perlahan untuk membuka mushaf digital dan rasakan bagaimana Hafizhly menemanimu ayat demi ayat, kapan pun dan di mana pun kamu berada.</p>
+                        <div class="book-progress-track">
+                            <div class="book-progress-fill" id="bookProgressFill"></div>
+                        </div>
+                        <div class="book-progress-label" id="bookProgressLabel">0% terbuka</div>
                     </div>
                 </div>
             </div>
@@ -1201,19 +1486,14 @@ if (isset($_SESSION['user_id'])) {
     <footer>
         <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
             <div class="d-flex align-items-center gap-2">
-                <span class="brand-mark" style="width:32px;height:32px;font-size:0.9rem;"><i class="fa-solid fa-book-quran"></i></span>
+                <span class="brand-mark" style="width:32px;height:32px;"><img src="assets/icon/logo.png" alt="Hafizhly"></span>
                 <span>&copy; <?= date('Y'); ?> Hafizhly. Pendamping Murojaah Al-Qur'an Berbasis AI.</span>
             </div>
-            <div style="margin-top: 5px; display: flex; justify-content: center; gap: 15px;">
-                <a href="privacy.php" style="color: var(--text-gray); text-decoration: none; font-size: 0.85rem;">Kebijakan Privasi</a>
+            <div style="display: flex; justify-content: center; gap: 15px;">
+                <a href="privacy.php">Kebijakan Privasi</a>
                 <span style="color: #cbd5e1;">|</span>
-                <a href="terms.php" style="color: var(--text-gray); text-decoration: none; font-size: 0.85rem;">Syarat & Ketentuan</a>
+                <a href="terms.php">Syarat & Ketentuan</a>
             </div>
-            <!-- <div class="footer-social">
-                <a href="#"><i class="fa-brands fa-instagram"></i></a>
-                <a href="#"><i class="fa-brands fa-tiktok"></i></a>
-                <a href="#"><i class="fa-brands fa-youtube"></i></a>
-            </div> -->
         </div>
     </footer>
 
@@ -1241,11 +1521,13 @@ if (isset($_SESSION['user_id'])) {
 
         // Scroll progress bar
         const scrollProgress = document.getElementById('scrollProgress');
-        window.addEventListener('scroll', function() {
+
+        function updateScrollProgress() {
             const h = document.documentElement;
             const percent = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
             scrollProgress.style.width = percent + '%';
-        });
+        }
+        window.addEventListener('scroll', updateScrollProgress);
 
         // Active nav-link tracking while scrolling
         const navLinks = document.querySelectorAll('.nav-link-custom');
@@ -1319,13 +1601,13 @@ if (isset($_SESSION['user_id'])) {
             waveform.appendChild(bar);
         }
 
-        // "Live caption" word-by-word highlight loop (the signature demo animation)
+        // "Live caption" word-by-word highlight loop
         function runCaptionLoop(boxId, interval) {
             const box = document.getElementById(boxId);
-            if (!box) return;
+            if (!box) return null;
             const words = box.querySelectorAll('.word');
             let i = 0;
-            setInterval(() => {
+            let timer = setInterval(() => {
                 words.forEach((w, idx) => {
                     w.classList.remove('active');
                     if (idx < i) w.classList.add('done');
@@ -1335,9 +1617,80 @@ if (isset($_SESSION['user_id'])) {
                 i = (i + 1) % words.length;
                 if (i === 0) words.forEach(w => w.classList.remove('done'));
             }, interval);
+            return timer;
         }
         runCaptionLoop('ayatBox', 850);
         runCaptionLoop('ayatBoxPhone', 700);
+        let bookCaptionTimer = null;
+        let bookCaptionStarted = false;
+
+        // ===== Parallax on hero ambient elements =====
+        const arabicDeco = document.getElementById('arabicDeco');
+        const auroraSpans = document.querySelectorAll('.aurora span');
+
+        function updateParallax() {
+            const y = window.scrollY;
+            if (arabicDeco) arabicDeco.style.transform = 'translateY(' + (y * 0.15) + 'px)';
+            auroraSpans.forEach((span, idx) => {
+                const speed = 0.04 + idx * 0.015;
+                span.style.transform = 'translateY(' + (y * speed) + 'px)';
+            });
+        }
+
+        // ===== 3D Mushaf scroll-driven animation (signature interaction) =====
+        const bookSection = document.getElementById('mushaf3d');
+        const bookEl = document.getElementById('book3d');
+        const bookCover = document.getElementById('bookCover');
+        const bookPageContent = document.getElementById('bookPageContent');
+        const bookProgressFill = document.getElementById('bookProgressFill');
+        const bookProgressLabel = document.getElementById('bookProgressLabel');
+
+        function updateBookScroll() {
+            if (!bookSection) return;
+            const rect = bookSection.getBoundingClientRect();
+            const total = bookSection.offsetHeight - window.innerHeight;
+            const scrolled = -rect.top;
+            let progress = total > 0 ? scrolled / total : 0;
+            progress = Math.min(Math.max(progress, 0), 1);
+
+            const coverAngle = -160 * Math.min(progress / 0.7, 1);
+            bookCover.style.transform = 'rotateY(' + coverAngle + 'deg)';
+
+            const tilt = 6 * Math.sin(progress * Math.PI);
+            bookEl.style.transform = 'rotateX(' + (4 - progress * 4) + 'deg) rotateY(' + tilt + 'deg)';
+
+            if (progress > 0.35) {
+                bookPageContent.classList.add('visible');
+            } else {
+                bookPageContent.classList.remove('visible');
+            }
+
+            if (progress > 0.55 && !bookCaptionStarted) {
+                bookCaptionStarted = true;
+                bookCaptionTimer = runCaptionLoop('ayatBoxBook', 750);
+            } else if (progress <= 0.55 && bookCaptionStarted) {
+                bookCaptionStarted = false;
+                if (bookCaptionTimer) clearInterval(bookCaptionTimer);
+            }
+
+            bookProgressFill.style.width = (progress * 100) + '%';
+            bookProgressLabel.textContent = Math.round(progress * 100) + '% terbuka';
+        }
+
+        let ticking = false;
+
+        function onScroll() {
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    updateParallax();
+                    updateBookScroll();
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        }
+        window.addEventListener('scroll', onScroll);
+        updateBookScroll();
     </script>
 </body>
 

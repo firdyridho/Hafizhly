@@ -6,10 +6,6 @@ if (file_exists('../config/database.php')) {
 
 /** @var mysqli $conn */
 
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
-    exit();
-}
-
 function getYouTubeEmbedUrl($url)
 {
     if (empty($url)) return false;
@@ -18,18 +14,39 @@ function getYouTubeEmbedUrl($url)
     return $url;
 }
 
+// Ubah path relatif ("../uploads/x.jpg") jadi URL absolut, dibutuhkan oleh
+// og:image / twitter:image karena crawler medsos tidak bisa membaca path relatif.
+function hz_absolute_url($relativePath)
+{
+    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    $host = $_SERVER['HTTP_HOST'] ?? '';
+    $scriptDir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? ''));
+    $parentDir = rtrim(dirname($scriptDir), '/');
+    $path = preg_replace('#^(\.\./)+#', '', ltrim($relativePath, '/'));
+    return $scheme . '://' . $host . $parentDir . '/' . $path;
+}
+
 $view_materi_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 $materi_detail = null;
 $soal_kuis = [];
+$daftar_materi = [];
 
+// Data materi (judul, cover, konten) diambil lebih dulu, di luar gerbang
+// login, khusus supaya bot WhatsApp/Facebook/Twitter bisa baca og:title
+// dan og:image saat link dibagikan. Soal kuis & daftar lengkap tetap
+// hanya diambil kalau user benar-benar login (lihat di bawah).
 if ($view_materi_id > 0) {
     $stmt = mysqli_prepare($conn, "SELECT * FROM tajwid_materi WHERE id=?");
     mysqli_stmt_bind_param($stmt, "i", $view_materi_id);
     mysqli_stmt_execute($stmt);
     $materi_detail = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
     mysqli_stmt_close($stmt);
+}
 
-    if ($materi_detail) {
+$is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
+
+if ($is_logged_in) {
+    if ($view_materi_id > 0 && $materi_detail) {
         $stmtK = mysqli_prepare($conn, "SELECT * FROM tajwid_kuis WHERE materi_id=?");
         mysqli_stmt_bind_param($stmtK, "i", $view_materi_id);
         mysqli_stmt_execute($stmtK);
@@ -38,13 +55,27 @@ if ($view_materi_id > 0) {
             $soal_kuis[] = $row;
         }
         mysqli_stmt_close($stmtK);
+    } elseif ($view_materi_id === 0) {
+        $materi_q = mysqli_query($conn, "SELECT * FROM tajwid_materi ORDER BY created_at DESC");
+        while ($row = mysqli_fetch_assoc($materi_q)) {
+            $daftar_materi[] = $row;
+        }
     }
+}
+
+// ============ SUSUN META OG / TWITTER ============
+$current_url = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http')
+    . '://' . ($_SERVER['HTTP_HOST'] ?? '') . ($_SERVER['REQUEST_URI'] ?? '');
+$og_fallback_image = hz_absolute_url('assets/icon/logo.png');
+
+if ($view_materi_id > 0 && $materi_detail) {
+    $og_title = 'Ayo Belajar ' . $materi_detail['judul'] . ' di Hafizhly 📖';
+    $og_description = 'Yuk sempurnakan bacaan Al-Qur\'anmu lewat modul "' . $materi_detail['judul'] . '" di Hafizhly. Kuasai kaidah tajwidnya, tonton videonya, lalu uji pemahamanmu lewat kuis interaktif. 🌿';
+    $og_image = !empty($materi_detail['cover_image']) ? hz_absolute_url('uploads/' . $materi_detail['cover_image']) : $og_fallback_image;
 } else {
-    $materi_q = mysqli_query($conn, "SELECT * FROM tajwid_materi ORDER BY created_at DESC");
-    $daftar_materi = [];
-    while ($row = mysqli_fetch_assoc($materi_q)) {
-        $daftar_materi[] = $row;
-    }
+    $og_title = 'Modul Pembelajaran Tajwid - Hafizhly';
+    $og_description = 'Kuasai kaidah bacaan Al-Qur\'an lewat modul interaktif, video, dan kuis evaluasi bareng Hafizhly. 🌿📖';
+    $og_image = $og_fallback_image;
 }
 ?>
 <!DOCTYPE html>
@@ -53,8 +84,23 @@ if ($view_materi_id > 0) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Belajar Tajwid - Hafizhly</title>
+    <title><?= htmlspecialchars($og_title) ?></title>
     <link rel="icon" type="image/png" href="../assets/icon/logo.png">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Hafizhly">
+    <meta property="og:title" content="<?= htmlspecialchars($og_title) ?>">
+    <meta property="og:description" content="<?= htmlspecialchars($og_description) ?>">
+    <meta property="og:image" content="<?= htmlspecialchars($og_image) ?>">
+    <meta property="og:url" content="<?= htmlspecialchars($current_url) ?>">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="<?= htmlspecialchars($og_title) ?>">
+    <meta name="twitter:description" content="<?= htmlspecialchars($og_description) ?>">
+    <meta name="twitter:image" content="<?= htmlspecialchars($og_image) ?>">
+
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -220,6 +266,49 @@ if ($view_materi_id > 0) {
             color: var(--primary);
             margin-bottom: 12px;
             display: block;
+        }
+
+        /* ---------- LOGIN REQUIRED ---------- */
+        .login-required-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: clamp(18px, 4vw, 28px);
+            padding: clamp(32px, 8vw, 56px) clamp(20px, 5vw, 30px);
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+        }
+
+        .login-required-card i {
+            font-size: clamp(2rem, 6vw, 2.6rem);
+            color: var(--primary);
+            background: var(--primary-light);
+            width: clamp(64px, 15vw, 76px);
+            height: clamp(64px, 15vw, 76px);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto clamp(16px, 4vw, 22px);
+        }
+
+        .login-required-card h2 {
+            font-size: clamp(1.15rem, 4vw, 1.4rem);
+            margin-bottom: 10px;
+            color: var(--dark);
+        }
+
+        .login-required-card p {
+            color: var(--text-muted);
+            font-size: clamp(0.88rem, 2.5vw, 1rem);
+            max-width: 380px;
+            margin: 0 auto clamp(20px, 4vw, 26px);
+            line-height: 1.6;
+        }
+
+        .login-required-card .btn {
+            display: inline-flex;
+            max-width: 260px;
+            margin: 0 auto;
         }
 
         /* ---------- HEADER (LIST) ---------- */
@@ -754,7 +843,19 @@ if ($view_materi_id > 0) {
 <body>
     <div class="container">
 
-        <?php if (!$view_materi_id): ?>
+        <?php if (!$is_logged_in): ?>
+            <div class="header list-header reveal">
+                <span class="eyebrow"><i class="fa-solid fa-book-quran"></i> Kelas Tajwid</span>
+                <h1 class="page-title"><?= $view_materi_id && $materi_detail ? htmlspecialchars($materi_detail['judul']) : 'Modul Pembelajaran' ?></h1>
+            </div>
+            <div class="login-required-card reveal">
+                <i class="fa-solid fa-lock"></i>
+                <h2>Yuk masuk dulu</h2>
+                <p>Login ke akun Hafizhly kamu untuk membuka <?= $view_materi_id && $materi_detail ? 'modul "' . htmlspecialchars($materi_detail['judul']) . '"' : 'modul pembelajaran ini' ?>.</p>
+                <a href="../login.php" class="btn btn-quiz"><i class="fa-solid fa-arrow-right-to-bracket"></i> Masuk Sekarang</a>
+            </div>
+
+        <?php elseif (!$view_materi_id): ?>
             <div class="header list-header reveal">
                 <span class="eyebrow"><i class="fa-solid fa-book-quran"></i> Kelas Tajwid</span>
                 <h1 class="page-title">Modul Pembelajaran</h1>
@@ -1134,7 +1235,7 @@ if ($view_materi_id > 0) {
         }
     </script>
 
-    <?php if (!$view_materi_id) include '../components/nav.php'; ?>
+    <?php if ($is_logged_in && !$view_materi_id) include '../components/nav.php'; ?>
 </body>
 
 </html>

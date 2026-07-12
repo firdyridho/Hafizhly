@@ -451,6 +451,140 @@ if (isset($_POST['register'])) {
             color: var(--danger);
         }
 
+        /* ===== Persetujuan kebijakan privasi & syarat ketentuan ===== */
+        .policy-box {
+            margin-bottom: 15px;
+            padding: 14px 16px;
+            border: 1.5px solid var(--border);
+            border-radius: 14px;
+            background: #fbfdfc;
+            transition: border-color 0.3s ease, background 0.3s ease;
+        }
+
+        .policy-box.unlocked {
+            border-color: rgba(5, 150, 105, 0.35);
+            background: rgba(5, 150, 105, 0.04);
+        }
+
+        .policy-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .policy-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 8px 12px;
+            border-radius: 10px;
+            border: 1.5px solid var(--border);
+            background: #fff;
+            color: var(--dark);
+            font-size: 0.78rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.25s ease;
+        }
+
+        .policy-link i.link-icon {
+            color: var(--primary);
+            font-size: 0.8rem;
+        }
+
+        .policy-link i.ext-icon {
+            font-size: 0.68rem;
+            color: var(--muted);
+            transition: all 0.25s ease;
+        }
+
+        .policy-link:hover {
+            border-color: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        .policy-link.visited {
+            border-color: var(--primary);
+            background: rgba(5, 150, 105, 0.08);
+        }
+
+        .policy-link.visited i.ext-icon {
+            color: var(--primary-dark);
+        }
+
+        .policy-link.visited::after {
+            content: '\f00c';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            color: var(--primary-dark);
+            font-size: 0.68rem;
+        }
+
+        .policy-checkbox-wrap {
+            display: flex;
+            align-items: flex-start;
+            gap: 9px;
+            font-size: 0.8rem;
+            color: var(--dark);
+            line-height: 1.5;
+            cursor: pointer;
+        }
+
+        .policy-checkbox-wrap input[type="checkbox"] {
+            margin-top: 2px;
+            width: 16px;
+            height: 16px;
+            accent-color: var(--primary);
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+
+        .policy-checkbox-wrap input[type="checkbox"]:disabled {
+            cursor: not-allowed;
+        }
+
+        .policy-checkbox-wrap.locked {
+            color: var(--muted);
+        }
+
+        .policy-hint {
+            margin-top: 8px;
+            font-size: 0.72rem;
+            color: var(--muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .policy-hint.ready {
+            color: var(--primary-dark);
+        }
+
+        .policy-hint.error {
+            color: var(--danger);
+        }
+
+        .policy-box.shake {
+            animation: policyShake 0.4s ease;
+        }
+
+        @keyframes policyShake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-5px);
+            }
+
+            75% {
+                transform: translateX(5px);
+            }
+        }
+
         .btn {
             position: relative;
             overflow: hidden;
@@ -679,6 +813,26 @@ if (isset($_POST['register'])) {
                         <div class="match-hint" id="matchHint"></div>
                     </div>
 
+                    <div class="policy-box" id="policyBox">
+                        <div class="policy-links">
+                            <a href="privacy.php" target="_blank" rel="noopener" class="policy-link" data-policy="privacy" id="linkPrivacy">
+                                <i class="fa-solid fa-shield-halved link-icon"></i> Kebijakan Privasi <i class="fa-solid fa-arrow-up-right-from-square ext-icon"></i>
+                            </a>
+                            <a href="terms.php" target="_blank" rel="noopener" class="policy-link" data-policy="terms" id="linkTerms">
+                                <i class="fa-solid fa-file-contract link-icon"></i> Syarat &amp; Ketentuan <i class="fa-solid fa-arrow-up-right-from-square ext-icon"></i>
+                            </a>
+                        </div>
+
+                        <label class="policy-checkbox-wrap locked" id="policyCheckboxWrap" for="agreePolicy">
+                            <input type="checkbox" id="agreePolicy" disabled>
+                            <span>Saya sudah membaca dan menyetujui <strong>Kebijakan Privasi</strong> dan <strong>Syarat &amp; Ketentuan</strong> Hafizhly.</span>
+                        </label>
+
+                        <div class="policy-hint" id="policyHint">
+                            <i class="fa-solid fa-circle-info"></i> Buka kedua tautan di atas dulu untuk mengaktifkan centang persetujuan.
+                        </div>
+                    </div>
+
                     <button type="submit" name="register" class="btn" id="btn-register">
                         <span id="btn-text">Daftar Sekarang</span>
                     </button>
@@ -793,6 +947,46 @@ if (isset($_POST['register'])) {
 
         confirmInput.addEventListener('input', checkMatch);
 
+        // ===== Wajib buka Kebijakan Privasi & Syarat Ketentuan sebelum bisa centang setuju =====
+        const policyBox = document.getElementById('policyBox');
+        const policyLinks = document.querySelectorAll('.policy-link');
+        const agreeCheckbox = document.getElementById('agreePolicy');
+        const policyCheckboxWrap = document.getElementById('policyCheckboxWrap');
+        const policyHint = document.getElementById('policyHint');
+
+        const visited = {
+            privacy: false,
+            terms: false
+        };
+
+        function updatePolicyState() {
+            const allVisited = visited.privacy && visited.terms;
+
+            if (allVisited) {
+                agreeCheckbox.disabled = false;
+                policyCheckboxWrap.classList.remove('locked');
+                policyBox.classList.add('unlocked');
+                policyHint.classList.remove('error');
+                policyHint.classList.add('ready');
+                policyHint.innerHTML = '<i class="fa-solid fa-circle-check"></i> Kedua dokumen sudah dibuka. Silakan centang persetujuan di atas.';
+            } else {
+                const sisa = [];
+                if (!visited.privacy) sisa.push('Kebijakan Privasi');
+                if (!visited.terms) sisa.push('Syarat & Ketentuan');
+                policyHint.classList.remove('error', 'ready');
+                policyHint.innerHTML = '<i class="fa-solid fa-circle-info"></i> Buka dulu: ' + sisa.join(' &amp; ') + '.';
+            }
+        }
+
+        policyLinks.forEach((link) => {
+            link.addEventListener('click', function() {
+                const key = this.dataset.policy;
+                visited[key] = true;
+                this.classList.add('visited');
+                updatePolicyState();
+            });
+        });
+
         // ===== Validasi sebelum submit (tanpa alert() native, biar tetap premium) =====
         function validasiForm() {
             if (passwordInput.value !== confirmInput.value) {
@@ -802,6 +996,23 @@ if (isset($_POST['register'])) {
                 setTimeout(() => {
                     confirmInput.style.borderColor = '';
                 }, 1500);
+                return false;
+            }
+
+            if (!agreeCheckbox.checked) {
+                policyBox.classList.add('shake');
+                policyHint.classList.remove('ready');
+                policyHint.classList.add('error');
+                if (!(visited.privacy && visited.terms)) {
+                    policyHint.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> Buka dan baca kedua tautan di atas dulu sebelum mendaftar.';
+                } else {
+                    policyHint.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> Centang dulu persetujuan sebelum mendaftar.';
+                }
+                setTimeout(() => policyBox.classList.remove('shake'), 400);
+                policyBox.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
                 return false;
             }
 

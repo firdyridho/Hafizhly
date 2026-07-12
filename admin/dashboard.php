@@ -56,29 +56,29 @@ if ($cek_mutabaah && mysqli_num_rows($cek_mutabaah) > 0) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Dashboard Admin - Hifzly</title>
+    <title>Dashboard Admin - Hafizhly</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Lexend:wght@500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --primary: #10b981;
             --primary-dark: #059669;
-            --primary-glow: rgba(16, 185, 129, 0.35);
-            --gold: #e8c366;
-            --gold-light: #f7e3a1;
-            --gold-glow: rgba(232, 195, 102, 0.35);
+            --primary-light: #d1fae5;
+            --primary-glow: rgba(16, 185, 129, 0.22);
 
-            --bg: #0b1120;
-            --bg-soft: #0f172a;
-            --sidebar-bg: linear-gradient(180deg, #0c1424 0%, #0a0f1c 100%);
+            --accent: #f0b429;
+            --accent-light: #fef3c7;
 
-            --glass: rgba(255, 255, 255, 0.04);
-            --glass-strong: rgba(255, 255, 255, 0.06);
-            --glass-border: rgba(255, 255, 255, 0.08);
+            --bg: #f4f9f6;
+            --sidebar-bg: #ffffff;
 
-            --text-main: #eef2f7;
-            --text-muted: #8b96a8;
-            --danger: #f87171;
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --card-border: rgba(16, 185, 129, 0.12);
+
+            --text-main: #0f2b22;
+            --text-muted: #6b8579;
+            --danger: #ef4444;
+            --border: #e6f0ea;
 
             --ease: cubic-bezier(0.16, 1, 0.3, 1);
             --ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
@@ -97,8 +97,8 @@ if ($cek_mutabaah && mysqli_num_rows($cek_mutabaah) > 0) {
 
         body {
             background:
-                radial-gradient(circle at 15% 0%, rgba(16, 185, 129, 0.08), transparent 40%),
-                radial-gradient(circle at 85% 20%, rgba(232, 195, 102, 0.06), transparent 35%),
+                radial-gradient(circle at 10% 0%, rgba(16, 185, 129, 0.07), transparent 40%),
+                radial-gradient(circle at 90% 10%, rgba(240, 180, 41, 0.06), transparent 35%),
                 var(--bg);
             color: var(--text-main);
             display: flex;
@@ -108,10 +108,9 @@ if ($cek_mutabaah && mysqli_num_rows($cek_mutabaah) > 0) {
 
         ::selection {
             background: var(--primary-glow);
-            color: #fff;
+            color: var(--text-main);
         }
 
-        /* Custom scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
@@ -122,15 +121,15 @@ if ($cek_mutabaah && mysqli_num_rows($cek_mutabaah) > 0) {
         }
 
         ::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.12);
+            background: rgba(16, 185, 129, 0.25);
             border-radius: 10px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: rgba(232, 195, 102, 0.4);
+            background: rgba(16, 185, 129, 0.45);
         }
 
-        /* --- Page loader (SPA-ish first paint) --- */
+        /* --- Page loader --- */
         #page-loader {
             position: fixed;
             inset: 0;
@@ -148,11 +147,11 @@ if ($cek_mutabaah && mysqli_num_rows($cek_mutabaah) > 0) {
         }
 
         .loader-ring {
-            width: 46px;
-            height: 46px;
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
-            border: 3px solid rgba(232, 195, 102, 0.15);
-            border-top-color: var(--gold);
+            border: 3px solid var(--primary-light);
+            border-top-color: var(--primary);
             animation: spin 0.85s linear infinite;
         }
 
@@ -164,51 +163,69 @@ if ($cek_mutabaah && mysqli_num_rows($cek_mutabaah) > 0) {
 
         /* --- SIDEBAR --- */
         .sidebar {
-            width: clamp(230px, 22vw, 270px);
+            width: clamp(230px, 22vw, 268px);
             background: var(--sidebar-bg);
-            color: white;
+            color: var(--text-main);
             display: flex;
             flex-direction: column;
             transition: transform 0.45s var(--ease);
             z-index: 1000;
             flex-shrink: 0;
-            border-right: 1px solid var(--glass-border);
-            position: relative;
-        }
-
-        .sidebar::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            right: -1px;
-            width: 1px;
-            height: 100%;
-            background: linear-gradient(180deg, transparent, rgba(232, 195, 102, 0.25), transparent);
+            border-right: 1px solid var(--border);
+            box-shadow: 4px 0 24px rgba(16, 185, 129, 0.04);
         }
 
         .sidebar-header {
             padding: clamp(20px, 3vw, 26px) 22px;
-            font-family: 'Lexend', sans-serif;
-            font-size: clamp(1.15rem, 2vw, 1.4rem);
-            font-weight: 700;
-            color: white;
             display: flex;
             align-items: center;
-            gap: 12px;
-            border-bottom: 1px solid var(--glass-border);
-            letter-spacing: 0.2px;
+            gap: 13px;
+            border-bottom: 1px solid var(--border);
         }
 
-        .sidebar-header .logo-icon {
-            width: 38px;
-            height: 38px;
-            border-radius: 11px;
+        .logo-badge {
+            width: 44px;
+            height: 44px;
+            border-radius: 13px;
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 0 18px var(--primary-glow);
             flex-shrink: 0;
+            box-shadow: 0 6px 16px var(--primary-glow);
+            overflow: hidden;
+        }
+
+        .logo-badge img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .logo-badge i {
+            color: #fff;
+            font-size: 1.2rem;
+        }
+
+        .brand-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.15;
+        }
+
+        .brand-text .brand-name {
+            font-family: 'Lexend', sans-serif;
+            font-size: clamp(1.1rem, 2vw, 1.3rem);
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .brand-text .brand-sub {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            letter-spacing: 0.3px;
         }
 
         .sidebar-menu {
@@ -220,58 +237,62 @@ if ($cek_mutabaah && mysqli_num_rows($cek_mutabaah) > 0) {
         }
 
         .menu-item {
-            padding: 13px 16px;
+            padding: 12px 16px;
             display: flex;
             align-items: center;
             gap: 14px;
-            color: #9aa5b8;
+            color: var(--text-muted);
             text-decoration: none;
             font-weight: 500;
             font-size: 0.92rem;
             border-radius: 12px;
             position: relative;
             transition: color 0.3s var(--ease-soft), background 0.3s var(--ease-soft), transform 0.25s var(--ease-soft);
-            overflow: hidden;
         }
 
         .menu-item i {
             font-size: 1.05rem;
             width: 20px;
             text-align: center;
-            transition: transform 0.3s var(--ease-soft);
+            color: var(--text-muted);
+            transition: transform 0.3s var(--ease-soft), color 0.3s var(--ease-soft);
         }
 
         .menu-item:hover {
-            background: var(--glass-strong);
-            color: #fff;
+            background: var(--primary-light);
+            color: var(--primary-dark);
             transform: translateX(3px);
         }
 
         .menu-item:hover i {
+            color: var(--primary-dark);
             transform: scale(1.12);
         }
 
         .menu-item.active {
-            background: linear-gradient(90deg, rgba(16, 185, 129, 0.18), rgba(16, 185, 129, 0.02));
-            color: #fff;
-            box-shadow: inset 0 0 0 1px rgba(16, 185, 129, 0.25);
+            background: linear-gradient(90deg, var(--primary-light), rgba(209, 250, 229, 0.2));
+            color: var(--primary-dark);
+            font-weight: 600;
+        }
+
+        .menu-item.active i {
+            color: var(--primary);
         }
 
         .menu-item.active::before {
             content: '';
             position: absolute;
-            left: 0;
+            left: -12px;
             top: 10%;
-            width: 3px;
+            width: 4px;
             height: 80%;
             border-radius: 3px;
-            background: linear-gradient(180deg, var(--gold), var(--primary));
-            box-shadow: 0 0 10px var(--gold-glow);
+            background: linear-gradient(180deg, var(--primary), var(--accent));
         }
 
         .sidebar-footer {
             padding: 16px;
-            border-top: 1px solid var(--glass-border);
+            border-top: 1px solid var(--border);
         }
 
         .logout-btn {
@@ -288,7 +309,7 @@ if ($cek_mutabaah && mysqli_num_rows($cek_mutabaah) > 0) {
         }
 
         .logout-btn:hover {
-            background: rgba(248, 113, 113, 0.1);
+            background: #fef2f2;
             transform: translateX(3px);
         }
 
@@ -297,21 +318,20 @@ if ($cek_mutabaah && mysqli_num_rows($cek_mutabaah) > 0) {
             flex-grow: 1;
             display: flex;
             flex-direction: column;
-            width: calc(100% - 270px);
+            width: calc(100% - 268px);
             height: 100vh;
             overflow-y: auto;
         }
 
-        /* Top Navigation */
         .top-nav {
-            background: rgba(15, 23, 42, 0.55);
-            backdrop-filter: blur(16px) saturate(160%);
-            -webkit-backdrop-filter: blur(16px) saturate(160%);
+            background: rgba(244, 249, 246, 0.7);
+            backdrop-filter: blur(14px) saturate(160%);
+            -webkit-backdrop-filter: blur(14px) saturate(160%);
             padding: 14px clamp(16px, 3vw, 30px);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid var(--glass-border);
+            border-bottom: 1px solid var(--border);
             position: sticky;
             top: 0;
             z-index: 100;
@@ -319,8 +339,8 @@ if ($cek_mutabaah && mysqli_num_rows($cek_mutabaah) > 0) {
 
         .menu-toggle {
             display: none;
-            background: var(--glass);
-            border: 1px solid var(--glass-border);
+            background: #fff;
+            border: 1px solid var(--border);
             width: 40px;
             height: 40px;
             border-radius: 10px;
@@ -331,7 +351,7 @@ if ($cek_mutabaah && mysqli_num_rows($cek_mutabaah) > 0) {
         }
 
         .menu-toggle:hover {
-            background: var(--glass-strong);
+            background: var(--primary-light);
         }
 
         .menu-toggle:active {
@@ -348,14 +368,14 @@ if ($cek_mutabaah && mysqli_num_rows($cek_mutabaah) > 0) {
             width: 42px;
             height: 42px;
             border-radius: 50%;
-            background: linear-gradient(135deg, var(--gold-light), var(--gold));
-            color: #1a1305;
+            background: linear-gradient(135deg, var(--accent), #d99a1f);
+            color: #fff;
             display: flex;
             justify-content: center;
             align-items: center;
             font-weight: 800;
-            font-size: 1.15rem;
-            box-shadow: 0 0 0 3px rgba(232, 195, 102, 0.12), 0 4px 14px var(--gold-glow);
+            font-size: 1.1rem;
+            box-shadow: 0 0 0 3px var(--accent-light);
         }
 
         .admin-info {
@@ -374,7 +394,6 @@ if ($cek_mutabaah && mysqli_num_rows($cek_mutabaah) > 0) {
             color: var(--text-muted);
         }
 
-        /* Content Area */
         .content-area {
             padding: clamp(18px, 3vw, 34px);
         }
@@ -389,7 +408,7 @@ if ($cek_mutabaah && mysqli_num_rows($cek_mutabaah) > 0) {
             font-family: 'Lexend', sans-serif;
             font-size: clamp(1.25rem, 2.4vw, 1.7rem);
             font-weight: 700;
-            color: #fff;
+            color: var(--text-main);
             margin-bottom: 6px;
             display: flex;
             align-items: center;
@@ -436,7 +455,6 @@ if ($cek_mutabaah && mysqli_num_rows($cek_mutabaah) > 0) {
             font-size: clamp(0.85rem, 1.3vw, 0.95rem);
         }
 
-        /* Stats Grid */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(clamp(200px, 30vw, 240px), 1fr));
@@ -445,10 +463,10 @@ if ($cek_mutabaah && mysqli_num_rows($cek_mutabaah) > 0) {
         }
 
         .stat-card {
-            background: var(--glass);
-            backdrop-filter: blur(14px);
-            -webkit-backdrop-filter: blur(14px);
-            border: 1px solid var(--glass-border);
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--card-border);
             padding: clamp(18px, 2.2vw, 25px);
             border-radius: 20px;
             display: flex;
@@ -456,28 +474,16 @@ if ($cek_mutabaah && mysqli_num_rows($cek_mutabaah) > 0) {
             gap: 18px;
             position: relative;
             overflow: hidden;
+            box-shadow: 0 4px 18px rgba(16, 185, 129, 0.05);
             transition: transform 0.4s var(--ease), box-shadow 0.4s var(--ease), border-color 0.4s var(--ease-soft);
             opacity: 0;
             animation: fadeUp 0.7s var(--ease) forwards;
         }
 
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(135deg, rgba(232, 195, 102, 0.06), transparent 60%);
-            opacity: 0;
-            transition: opacity 0.4s var(--ease-soft);
-        }
-
         .stat-card:hover {
             transform: translateY(-6px);
-            border-color: rgba(232, 195, 102, 0.35);
-            box-shadow: 0 16px 34px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(232, 195, 102, 0.08);
-        }
-
-        .stat-card:hover::before {
-            opacity: 1;
+            border-color: rgba(16, 185, 129, 0.3);
+            box-shadow: 0 18px 34px rgba(16, 185, 129, 0.14);
         }
 
         .stat-icon {
@@ -497,18 +503,18 @@ if ($cek_mutabaah && mysqli_num_rows($cek_mutabaah) > 0) {
         }
 
         .icon-blue {
-            background: rgba(56, 189, 248, 0.14);
-            color: #38bdf8;
+            background: #e0f2fe;
+            color: #0284c7;
         }
 
         .icon-green {
-            background: rgba(16, 185, 129, 0.14);
-            color: var(--primary);
+            background: var(--primary-light);
+            color: var(--primary-dark);
         }
 
         .icon-gold {
-            background: rgba(232, 195, 102, 0.14);
-            color: var(--gold);
+            background: var(--accent-light);
+            color: #b7791f;
         }
 
         .stat-info h3 {
@@ -516,7 +522,7 @@ if ($cek_mutabaah && mysqli_num_rows($cek_mutabaah) > 0) {
             font-size: clamp(1.4rem, 2.4vw, 1.8rem);
             font-weight: 700;
             margin-bottom: 2px;
-            color: #fff;
+            color: var(--text-main);
             font-variant-numeric: tabular-nums;
         }
 
@@ -526,7 +532,6 @@ if ($cek_mutabaah && mysqli_num_rows($cek_mutabaah) > 0) {
             font-weight: 500;
         }
 
-        /* Section header */
         .section-header {
             font-family: 'Lexend', sans-serif;
             font-size: clamp(1.02rem, 1.6vw, 1.15rem);
@@ -535,7 +540,7 @@ if ($cek_mutabaah && mysqli_num_rows($cek_mutabaah) > 0) {
             display: flex;
             align-items: center;
             gap: 10px;
-            color: #fff;
+            color: var(--text-main);
             opacity: 0;
             animation: fadeUp 0.7s var(--ease) forwards;
         }
@@ -547,10 +552,10 @@ if ($cek_mutabaah && mysqli_num_rows($cek_mutabaah) > 0) {
         }
 
         .action-card {
-            background: var(--glass);
-            backdrop-filter: blur(14px);
-            -webkit-backdrop-filter: blur(14px);
-            border: 1px solid var(--glass-border);
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--card-border);
             border-radius: 20px;
             padding: clamp(20px, 2.4vw, 26px);
             text-align: center;
@@ -558,37 +563,34 @@ if ($cek_mutabaah && mysqli_num_rows($cek_mutabaah) > 0) {
             color: var(--text-main);
             transition: transform 0.4s var(--ease), border-color 0.4s var(--ease-soft), box-shadow 0.4s var(--ease);
             display: block;
-            position: relative;
-            overflow: hidden;
+            box-shadow: 0 4px 18px rgba(16, 185, 129, 0.05);
             opacity: 0;
             animation: fadeUp 0.7s var(--ease) forwards;
         }
 
         .action-card:hover {
             transform: translateY(-6px);
-            border-color: rgba(16, 185, 129, 0.4);
-            box-shadow: 0 16px 34px rgba(0, 0, 0, 0.35);
+            border-color: rgba(16, 185, 129, 0.35);
+            box-shadow: 0 18px 34px rgba(16, 185, 129, 0.14);
         }
 
         .action-icon {
             font-size: clamp(2rem, 3vw, 2.5rem);
-            background: linear-gradient(135deg, var(--gold-light), var(--primary));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
+            color: var(--primary);
             margin-bottom: 14px;
             transition: transform 0.4s var(--ease);
         }
 
         .action-card:hover .action-icon {
             transform: scale(1.12);
+            color: var(--primary-dark);
         }
 
         .action-title {
             font-weight: 700;
             font-size: clamp(1rem, 1.4vw, 1.1rem);
             margin-bottom: 8px;
-            color: #fff;
+            color: var(--text-main);
         }
 
         .action-desc {
@@ -609,7 +611,6 @@ if ($cek_mutabaah && mysqli_num_rows($cek_mutabaah) > 0) {
             }
         }
 
-        /* stagger delays */
         .stat-card:nth-child(1),
         .action-card:nth-child(1) {
             animation-delay: 0.05s;
@@ -653,17 +654,17 @@ if ($cek_mutabaah && mysqli_num_rows($cek_mutabaah) > 0) {
         .toast {
             pointer-events: auto;
             width: min(360px, 100%);
-            background: rgba(15, 23, 42, 0.75);
-            backdrop-filter: blur(18px) saturate(180%);
-            -webkit-backdrop-filter: blur(18px) saturate(180%);
-            border: 1px solid var(--glass-border);
-            border-left: 3px solid var(--gold);
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(16px) saturate(180%);
+            -webkit-backdrop-filter: blur(16px) saturate(180%);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--primary);
             border-radius: 16px;
             padding: 14px 16px;
             display: flex;
             align-items: flex-start;
             gap: 12px;
-            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(232, 195, 102, 0.06);
+            box-shadow: 0 18px 40px rgba(16, 185, 129, 0.16);
             transform: translateX(120%) scale(0.9);
             opacity: 0;
             animation: toastIn 0.55s var(--ease) forwards;
@@ -726,17 +727,17 @@ if ($cek_mutabaah && mysqli_num_rows($cek_mutabaah) > 0) {
         }
 
         .toast.info .toast-icon {
-            background: rgba(232, 195, 102, 0.16);
-            color: var(--gold);
+            background: var(--accent-light);
+            color: #b7791f;
         }
 
         .toast.success .toast-icon {
-            background: rgba(16, 185, 129, 0.16);
-            color: var(--primary);
+            background: var(--primary-light);
+            color: var(--primary-dark);
         }
 
         .toast.error .toast-icon {
-            background: rgba(248, 113, 113, 0.16);
+            background: #fee2e2;
             color: var(--danger);
         }
 
@@ -748,7 +749,7 @@ if ($cek_mutabaah && mysqli_num_rows($cek_mutabaah) > 0) {
         .toast-title {
             font-weight: 700;
             font-size: 0.88rem;
-            color: #fff;
+            color: var(--text-main);
             margin-bottom: 2px;
         }
 
@@ -770,7 +771,7 @@ if ($cek_mutabaah && mysqli_num_rows($cek_mutabaah) > 0) {
         }
 
         .toast-close:hover {
-            color: #fff;
+            color: var(--text-main);
             transform: rotate(90deg);
         }
 
@@ -779,7 +780,7 @@ if ($cek_mutabaah && mysqli_num_rows($cek_mutabaah) > 0) {
             bottom: 0;
             left: 0;
             height: 3px;
-            background: linear-gradient(90deg, var(--gold), var(--primary));
+            background: linear-gradient(90deg, var(--primary), var(--accent));
             animation: progressShrink linear forwards;
         }
 
@@ -799,7 +800,6 @@ if ($cek_mutabaah && mysqli_num_rows($cek_mutabaah) > 0) {
                 position: fixed;
                 height: 100vh;
                 transform: translateX(-100%);
-                box-shadow: 20px 0 60px rgba(0, 0, 0, 0.5);
             }
 
             .sidebar.active {
@@ -828,9 +828,9 @@ if ($cek_mutabaah && mysqli_num_rows($cek_mutabaah) > 0) {
                 display: none;
                 position: fixed;
                 inset: 0;
-                background: rgba(5, 8, 15, 0.6);
-                backdrop-filter: blur(4px);
-                -webkit-backdrop-filter: blur(4px);
+                background: rgba(15, 43, 34, 0.35);
+                backdrop-filter: blur(3px);
+                -webkit-backdrop-filter: blur(3px);
                 z-index: 999;
                 opacity: 0;
                 transition: opacity 0.35s var(--ease-soft);
@@ -870,18 +870,26 @@ if ($cek_mutabaah && mysqli_num_rows($cek_mutabaah) > 0) {
     <!-- SIDEBAR NAVIGATION -->
     <nav class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <span class="logo-icon"><i class="fas fa-leaf" style="color:#fff;"></i></span> Hifzly Admin
+            <span class="logo-badge">
+                <!-- Ganti src di bawah ini dengan logo Hafizhly kamu, contoh: assets/img/logo.png -->
+                <img src="assets/img/logo.png" alt="Logo Hafizhly" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <i class="fas fa-book-quran" style="display:none;"></i>
+            </span>
+            <div class="brand-text">
+                <span class="brand-name">Hafizhly</span>
+                <span class="brand-sub">Admin Panel</span>
+            </div>
         </div>
         <div class="sidebar-menu">
-            <a href="dashboard.php" class="menu-item active"><i class="fas fa-home"></i> Dashboard</a>
+            <a href="dashboard.php" class="menu-item active"><i class="fas fa-house"></i> Dashboard</a>
             <a href="#" class="menu-item" onclick="showToast('info','Segera Hadir','Fitur Kelola Pengguna sedang dalam pengembangan.'); return false;"><i class="fas fa-users"></i> Kelola Pengguna</a>
             <a href="materi_tajwid.php" class="menu-item"><i class="fas fa-book-quran"></i> Materi Tajwid</a>
-            <a href="#" class="menu-item" onclick="showToast('info','Segera Hadir','Laporan Aktivitas sedang dalam pengembangan.'); return false;"><i class="fas fa-chart-bar"></i> Laporan Aktivitas</a>
-            <a href="#" class="menu-item" onclick="showToast('info','Segera Hadir','Halaman Pengaturan sedang dalam pengembangan.'); return false;"><i class="fas fa-cog"></i> Pengaturan</a>
+            <a href="#" class="menu-item" onclick="showToast('info','Segera Hadir','Laporan Aktivitas sedang dalam pengembangan.'); return false;"><i class="fas fa-chart-column"></i> Laporan Aktivitas</a>
+            <a href="#" class="menu-item" onclick="showToast('info','Segera Hadir','Halaman Pengaturan sedang dalam pengembangan.'); return false;"><i class="fas fa-gear"></i> Pengaturan</a>
         </div>
         <div class="sidebar-footer">
             <a href="../logout.php" class="logout-btn">
-                <i class="fas fa-sign-out-alt"></i> Keluar (Logout)
+                <i class="fas fa-arrow-right-from-bracket"></i> Keluar (Logout)
             </a>
         </div>
     </nav>
@@ -910,7 +918,7 @@ if ($cek_mutabaah && mysqli_num_rows($cek_mutabaah) > 0) {
 
             <div class="welcome-box">
                 <h1 class="welcome-title">Assalamu'alaikum, <?= htmlspecialchars($admin_name) ?> <span class="wave">👋</span></h1>
-                <p class="welcome-subtitle">Berikut adalah ringkasan data aplikasi Hifzly hari ini.</p>
+                <p class="welcome-subtitle">Berikut adalah ringkasan data aplikasi Hafizhly hari ini.</p>
             </div>
 
             <!-- STATISTIC CARDS -->
@@ -939,7 +947,7 @@ if ($cek_mutabaah && mysqli_num_rows($cek_mutabaah) > 0) {
             </div>
 
             <!-- QUICK ACTIONS -->
-            <h2 class="section-header"><i class="fas fa-bolt" style="color: var(--gold);"></i> Akses Cepat</h2>
+            <h2 class="section-header"><i class="fas fa-bolt" style="color: #b7791f;"></i> Akses Cepat</h2>
             <div class="quick-access-grid">
                 <a href="materi_tajwid.php" class="action-card">
                     <div class="action-icon"><i class="fas fa-clapperboard"></i></div>

@@ -147,6 +147,7 @@ if ($view_materi_id > 0) {
         }
 
         .materi-card {
+            position: relative;
             background: var(--card-bg);
             border-radius: clamp(16px, 3vw, 24px);
             overflow: hidden;
@@ -156,6 +157,7 @@ if ($view_materi_id > 0) {
             color: var(--dark);
             display: flex;
             flex-direction: column;
+            cursor: pointer;
             transition: 0.3s var(--ease);
         }
 
@@ -211,6 +213,140 @@ if ($view_materi_id > 0) {
             border-radius: 20px;
             border: 1px dashed var(--border);
             color: var(--text-muted);
+        }
+
+        .empty-state i {
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        /* ---------- HEADER (LIST) ---------- */
+        .list-header {
+            align-items: flex-start;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: white;
+            border: 1px solid var(--primary-light);
+            color: var(--primary-dark);
+            font-size: clamp(.68rem, 2vw, .75rem);
+            font-weight: 700;
+            letter-spacing: .05em;
+            text-transform: uppercase;
+            padding: 6px 14px;
+            border-radius: 999px;
+            box-shadow: 0 4px 14px rgba(5, 150, 105, .08);
+        }
+
+        .eyebrow i {
+            color: var(--primary);
+        }
+
+        .list-header .page-title {
+            margin-top: 10px;
+        }
+
+        .page-subtitle {
+            color: var(--text-muted);
+            font-size: clamp(.85rem, 2.5vw, .98rem);
+            max-width: 480px;
+            line-height: 1.6;
+        }
+
+        /* ---------- SHARE ---------- */
+        .mc-cover-wrap {
+            position: relative;
+        }
+
+        .mc-stretched-link {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+        }
+
+        .share-chip {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            z-index: 2;
+            width: clamp(34px, 8vw, 38px);
+            height: clamp(34px, 8vw, 38px);
+            border-radius: 12px;
+            border: none;
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: .9rem;
+            transition: 0.25s var(--ease);
+        }
+
+        .share-chip:hover {
+            background: var(--primary);
+            transform: scale(1.08);
+        }
+
+        .share-btn {
+            margin-left: auto;
+        }
+
+        #hzToast {
+            position: fixed;
+            left: 50%;
+            bottom: clamp(90px, 20vw, 115px);
+            transform: translateX(-50%) translateY(16px);
+            background: var(--dark);
+            color: #fff;
+            padding: 12px 22px;
+            border-radius: 14px;
+            font-size: .85rem;
+            font-weight: 600;
+            line-height: 1.5;
+            box-shadow: 0 16px 34px rgba(0, 0, 0, .25);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .35s var(--ease), transform .35s var(--ease);
+            z-index: 2000;
+            max-width: min(90vw, 360px);
+            text-align: center;
+        }
+
+        #hzToast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* ---------- REVEAL ANIMATION ---------- */
+        .reveal {
+            opacity: 0;
+            transform: translateY(18px);
+            animation: reveal-up .6s var(--ease) forwards;
+        }
+
+        @keyframes reveal-up {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .reveal {
+                animation: none;
+                opacity: 1;
+                transform: none;
+            }
         }
 
         /* ---------- DETAIL MATERI ---------- */
@@ -619,27 +755,39 @@ if ($view_materi_id > 0) {
     <div class="container">
 
         <?php if (!$view_materi_id): ?>
-            <div class="header">
-                <h1 class="page-title">📚 Modul Pembelajaran</h1>
+            <div class="header list-header reveal">
+                <span class="eyebrow"><i class="fa-solid fa-book-quran"></i> Kelas Tajwid</span>
+                <h1 class="page-title">Modul Pembelajaran</h1>
+                <p class="page-subtitle">Pilih materi, kuasai kaidah bacaan Al-Qur'an, lalu uji pemahamanmu lewat kuis interaktif.</p>
             </div>
             <div class="grid-materi">
                 <?php if (empty($daftar_materi)): ?>
-                    <div class="empty-state">Belum ada materi tersedia.</div>
+                    <div class="empty-state reveal"><i class="fa-solid fa-book-open-reader"></i>Belum ada materi tersedia.</div>
                 <?php endif; ?>
-                <?php foreach ($daftar_materi as $m):
+                <?php foreach ($daftar_materi as $i => $m):
                     $img_src = !empty($m['cover_image']) ? '../uploads/' . htmlspecialchars($m['cover_image']) : 'https://via.placeholder.com/600x400/e2e8f0/64748b?text=Materi+Hafizhly';
+                    $delay = min($i, 6) * 0.08;
                 ?>
-                    <a href="tajwid.php?id=<?= (int)$m['id'] ?>" class="materi-card">
-                        <img src="<?= $img_src ?>" class="mc-cover" alt="Cover" loading="lazy">
+                    <div class="materi-card reveal" style="animation-delay: <?= $delay ?>s;">
+                        <a href="tajwid.php?id=<?= (int)$m['id'] ?>" class="mc-stretched-link" aria-label="Buka materi <?= htmlspecialchars($m['judul']) ?>"></a>
+                        <div class="mc-cover-wrap">
+                            <img src="<?= $img_src ?>" class="mc-cover" alt="Cover" loading="lazy">
+                            <button type="button" class="share-chip js-share" title="Bagikan materi ini"
+                                data-judul="<?= htmlspecialchars($m['judul'], ENT_QUOTES) ?>"
+                                data-cover="<?= htmlspecialchars($img_src, ENT_QUOTES) ?>"
+                                data-id="<?= (int)$m['id'] ?>">
+                                <i class="fa-solid fa-share-nodes"></i>
+                            </button>
+                        </div>
                         <div class="mc-body">
                             <div class="mc-title"><?= htmlspecialchars($m['judul']) ?></div>
                             <div class="mc-badges">
-                                <?php if ($m['waktu_kuis'] > 0): ?><span class="badge"><i class="far fa-clock"></i> <?= (int)$m['waktu_kuis'] ?>m Kuis</span><?php endif; ?>
-                                <?php if ($m['youtube_url']): ?><span class="badge"><i class="fab fa-youtube" style="color:#ef4444;"></i> Video</span><?php endif; ?>
-                                <?php if ($m['pdf_file']): ?><span class="badge"><i class="fas fa-file-pdf" style="color:#3b82f6;"></i> Modul PDF</span><?php endif; ?>
+                                <?php if ($m['waktu_kuis'] > 0): ?><span class="badge"><i class="fa-regular fa-clock"></i> <?= (int)$m['waktu_kuis'] ?>m Kuis</span><?php endif; ?>
+                                <?php if ($m['youtube_url']): ?><span class="badge"><i class="fa-brands fa-youtube" style="color:#ef4444;"></i> Video</span><?php endif; ?>
+                                <?php if ($m['pdf_file']): ?><span class="badge"><i class="fa-solid fa-file-pdf" style="color:#3b82f6;"></i> Modul PDF</span><?php endif; ?>
                             </div>
                         </div>
-                    </a>
+                    </div>
                 <?php endforeach; ?>
             </div>
 
@@ -649,18 +797,25 @@ if ($view_materi_id > 0) {
                 <h1 class="page-title" style="font-size:1.3rem;">Materi Tidak Ditemukan</h1>
             </div>
 
-        <?php else: ?>
+        <?php else:
+            $detail_cover_src = !empty($materi_detail['cover_image']) ? '../uploads/' . htmlspecialchars($materi_detail['cover_image']) : '';
+        ?>
             <div class="header">
                 <a href="tajwid.php" class="back-btn"><i class="fas fa-arrow-left"></i></a>
                 <h1 class="page-title" style="font-size:clamp(1.05rem, 4vw, 1.3rem);">Detail Modul</h1>
+                <button type="button" class="back-btn share-btn" id="shareMateriBtn" title="Bagikan materi ini"
+                    data-judul="<?= htmlspecialchars($materi_detail['judul'], ENT_QUOTES) ?>"
+                    data-cover="<?= htmlspecialchars($detail_cover_src, ENT_QUOTES) ?>">
+                    <i class="fa-solid fa-share-nodes"></i>
+                </button>
             </div>
 
             <div id="materiToPdf">
                 <?php if (!empty($materi_detail['cover_image'])): ?>
-                    <img src="../uploads/<?= htmlspecialchars($materi_detail['cover_image']) ?>" class="detail-cover" alt="Cover">
+                    <img src="../uploads/<?= htmlspecialchars($materi_detail['cover_image']) ?>" class="detail-cover reveal" alt="Cover">
                 <?php endif; ?>
 
-                <div class="detail-card">
+                <div class="detail-card reveal" style="animation-delay:.08s;">
                     <h1><?= htmlspecialchars($materi_detail['judul']) ?></h1>
 
                     <?php $embed_url = getYouTubeEmbedUrl($materi_detail['youtube_url']);
@@ -676,7 +831,7 @@ if ($view_materi_id > 0) {
                 </div>
             </div>
 
-            <div class="action-bar" id="materiActions">
+            <div class="action-bar reveal" id="materiActions" style="animation-delay:.16s;">
                 <?php if (!empty($materi_detail['pdf_file'])): ?>
                     <a href="../uploads/<?= htmlspecialchars($materi_detail['pdf_file']) ?>" target="_blank" class="btn btn-pdf"><i class="fas fa-file-download"></i> Unduh Modul (PDF)</a>
                 <?php else: ?>
@@ -894,6 +1049,91 @@ if ($view_materi_id > 0) {
             </script>
         <?php endif; ?>
     </div>
+
+    <div id="hzToast"></div>
+
+    <script>
+        // ============ FITUR BAGIKAN MATERI ============
+        // Membagikan sampul materi + judul + ajakan belajar yang rapi,
+        // lewat share sheet asli HP (WhatsApp, dsb) kalau didukung,
+        // atau fallback salin ke clipboard.
+        async function shareMateri(judul, coverUrl, pageUrl) {
+            const teks = `📖✨ Ayo belajar "${judul}" bareng aku di Hafizhly!\nYuk kita sama-sama perbaiki bacaan Al-Qur'an, sedikit demi sedikit menuju bacaan yang makin tartil. 🌿🕌`;
+            const shareData = {
+                title: `Ayo belajar ${judul} di Hafizhly`,
+                text: teks,
+                url: pageUrl
+            };
+
+            try {
+                if (coverUrl && window.navigator.canShare) {
+                    try {
+                        const resp = await fetch(coverUrl);
+                        const blob = await resp.blob();
+                        const file = new File([blob], 'cover-tajwid.jpg', {
+                            type: blob.type || 'image/jpeg'
+                        });
+                        if (navigator.canShare({
+                                files: [file]
+                            })) {
+                            shareData.files = [file];
+                        }
+                    } catch (imgErr) {
+                        // Gagal ambil gambar, tetap lanjut bagikan teks + link saja
+                    }
+                }
+
+                if (navigator.share) {
+                    await navigator.share(shareData);
+                    return;
+                }
+                await copyShareFallback(teks, pageUrl);
+            } catch (err) {
+                if (err && err.name === 'AbortError') return; // dibatalkan user sendiri
+                await copyShareFallback(teks, pageUrl);
+            }
+        }
+
+        async function copyShareFallback(teks, pageUrl) {
+            try {
+                await navigator.clipboard.writeText(`${teks}\n${pageUrl}`);
+                showToast('Ajakan belajar & tautannya disalin! Tinggal tempel ke chat kamu 📋');
+            } catch (e2) {
+                showToast('Yah, gagal membagikan. Coba lagi ya.');
+            }
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('hzToast');
+            if (!toast) return;
+            toast.textContent = msg;
+            toast.classList.add('show');
+            clearTimeout(window.__hzToastTimer);
+            window.__hzToastTimer = setTimeout(() => toast.classList.remove('show'), 3200);
+        }
+
+        // Tombol share di kartu daftar materi
+        document.querySelectorAll('.js-share').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const id = this.dataset.id;
+                const judul = this.dataset.judul;
+                const cover = this.dataset.cover;
+                const pageUrl = new URL(`tajwid.php?id=${id}`, location.href).href;
+                shareMateri(judul, cover, pageUrl);
+            });
+        });
+
+        // Tombol share di halaman detail
+        const shareMateriBtn = document.getElementById('shareMateriBtn');
+        if (shareMateriBtn) {
+            shareMateriBtn.addEventListener('click', function() {
+                shareMateri(this.dataset.judul, this.dataset.cover, location.href);
+            });
+        }
+    </script>
+
     <?php if (!$view_materi_id) include '../components/nav.php'; ?>
 </body>
 

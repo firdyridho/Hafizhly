@@ -84,7 +84,11 @@ if ($stmt = mysqli_prepare($conn, "SELECT MAX(score) AS best FROM game_history W
             overflow-x: hidden;
         }
 
-        /* ===== Page load / transition overlay ===== */
+        /* ===== Page load / transition overlay =====
+           Auto-hide murni pakai CSS animation (tidak bergantung JS sama
+           sekali), supaya walau script gagal load, overlay TETAP hilang
+           sendiri. JS hanya dipakai untuk efek slide balik saat pindah
+           halaman (progressive enhancement, bukan syarat). */
         #page-transition {
             position: fixed;
             inset: 0;
@@ -93,17 +97,33 @@ if ($stmt = mysqli_prepare($conn, "SELECT MAX(score) AS best FROM game_history W
             display: flex;
             align-items: center;
             justify-content: center;
-            transform: translateY(0);
-            transition: transform .55s var(--ease), opacity .5s var(--ease);
+            pointer-events: none;
+            /* jangan pernah mengunci klik ke konten di baliknya */
+            animation: curtain-out .7s var(--ease) .2s forwards;
         }
 
-        #page-transition.hide {
-            transform: translateY(-100%);
+        @keyframes curtain-out {
+            from {
+                transform: translateY(0);
+            }
+
+            to {
+                transform: translateY(-100%);
+            }
         }
 
-        #page-transition.enter {
-            transform: translateY(0);
-            opacity: 1;
+        #page-transition.leaving {
+            animation: curtain-in .4s var(--ease) forwards;
+        }
+
+        @keyframes curtain-in {
+            from {
+                transform: translateY(-100%);
+            }
+
+            to {
+                transform: translateY(0);
+            }
         }
 
         #page-transition i {
@@ -419,7 +439,7 @@ if ($stmt = mysqli_prepare($conn, "SELECT MAX(score) AS best FROM game_history W
 
 <body>
 
-    <div id="page-transition" class="enter">
+    <div id="page-transition">
         <i class="fa-solid fa-book-quran"></i>
     </div>
 
@@ -477,30 +497,34 @@ if ($stmt = mysqli_prepare($conn, "SELECT MAX(score) AS best FROM game_history W
 
     <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
     <script>
-        // Sembunyikan overlay setelah halaman siap (efek transisi masuk)
+        // Overlay loading sudah hilang otomatis lewat CSS animation di atas,
+        // JS di sini murni tambahan (progressive enhancement) dan dibungkus
+        // try/catch supaya kalau ada yang gagal, halaman tetap normal.
         window.addEventListener('DOMContentLoaded', () => {
-            const overlay = document.getElementById('page-transition');
-            requestAnimationFrame(() => {
-                overlay.classList.add('hide');
-            });
-
-            AOS.init({
-                duration: 600,
-                once: true,
-                easing: 'ease-out-cubic'
-            });
+            try {
+                if (typeof AOS !== 'undefined') {
+                    AOS.init({
+                        duration: 600,
+                        once: true,
+                        easing: 'ease-out-cubic'
+                    });
+                }
+            } catch (err) {
+                console.warn('AOS gagal dimuat, animasi scroll dilewati.', err);
+            }
         });
 
         // Transisi ala-SPA saat pindah ke halaman game
         document.querySelectorAll('.js-game-link').forEach(link => {
             link.addEventListener('click', function(e) {
+                const overlay = document.getElementById('page-transition');
+                if (!overlay) return; // fallback: biarkan link jalan normal
                 e.preventDefault();
                 const target = this.getAttribute('href');
-                const overlay = document.getElementById('page-transition');
-                overlay.classList.remove('hide');
+                overlay.classList.add('leaving');
                 setTimeout(() => {
                     window.location.href = target;
-                }, 420);
+                }, 380);
             });
         });
     </script>

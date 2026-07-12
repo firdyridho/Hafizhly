@@ -20,12 +20,21 @@ $materi_detail = null;
 $soal_kuis = [];
 
 if ($view_materi_id > 0) {
-    $q_detail = mysqli_query($conn, "SELECT * FROM tajwid_materi WHERE id='$view_materi_id'");
-    $materi_detail = mysqli_fetch_assoc($q_detail);
+    $stmt = mysqli_prepare($conn, "SELECT * FROM tajwid_materi WHERE id=?");
+    mysqli_stmt_bind_param($stmt, "i", $view_materi_id);
+    mysqli_stmt_execute($stmt);
+    $materi_detail = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
+    mysqli_stmt_close($stmt);
 
-    $q_kuis = mysqli_query($conn, "SELECT * FROM tajwid_kuis WHERE materi_id='$view_materi_id'");
-    while ($row = mysqli_fetch_assoc($q_kuis)) {
-        $soal_kuis[] = $row;
+    if ($materi_detail) {
+        $stmtK = mysqli_prepare($conn, "SELECT * FROM tajwid_kuis WHERE materi_id=?");
+        mysqli_stmt_bind_param($stmtK, "i", $view_materi_id);
+        mysqli_stmt_execute($stmtK);
+        $resK = mysqli_stmt_get_result($stmtK);
+        while ($row = mysqli_fetch_assoc($resK)) {
+            $soal_kuis[] = $row;
+        }
+        mysqli_stmt_close($stmtK);
     }
 } else {
     $materi_q = mysqli_query($conn, "SELECT * FROM tajwid_materi ORDER BY created_at DESC");
@@ -40,21 +49,22 @@ if ($view_materi_id > 0) {
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Belajar Tajwid - Hifzly</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Belajar Tajwid - Hafizhly</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root {
             --primary: #059669;
+            --primary-dark: #047857;
             --primary-light: #d1fae5;
             --dark: #0f172a;
             --text-muted: #64748b;
             --bg: #f8fafc;
             --card-bg: #ffffff;
             --border: #e2e8f0;
-            --spacing: 24px;
+            --ease: cubic-bezier(.22, 1, .36, 1);
         }
 
         * {
@@ -64,29 +74,41 @@ if ($view_materi_id > 0) {
             font-family: 'Plus Jakarta Sans', sans-serif;
         }
 
+        html {
+            -webkit-text-size-adjust: 100%;
+        }
+
         body {
             background-color: var(--bg);
             color: var(--dark);
-            padding-bottom: 100px;
+            padding-bottom: clamp(80px, 20vw, 100px);
+            overflow-x: hidden;
+        }
+
+        img {
+            max-width: 100%;
+            display: block;
         }
 
         .container {
             max-width: 800px;
             margin: 0 auto;
-            padding: 20px;
+            padding: clamp(14px, 4vw, 20px);
+            width: 100%;
         }
 
         .header {
             display: flex;
             align-items: center;
-            gap: 15px;
-            margin-bottom: 30px;
+            gap: clamp(10px, 3vw, 15px);
+            margin-bottom: clamp(20px, 5vw, 30px);
         }
 
         .back-btn {
             background: white;
-            width: 45px;
-            height: 45px;
+            width: clamp(40px, 10vw, 45px);
+            height: clamp(40px, 10vw, 45px);
+            flex-shrink: 0;
             border-radius: 14px;
             display: flex;
             align-items: center;
@@ -95,7 +117,7 @@ if ($view_materi_id > 0) {
             text-decoration: none;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
             border: 1px solid var(--border);
-            transition: 0.2s;
+            transition: 0.2s var(--ease);
         }
 
         .back-btn:hover {
@@ -105,22 +127,24 @@ if ($view_materi_id > 0) {
         }
 
         .page-title {
-            font-size: 1.6rem;
+            font-size: clamp(1.2rem, 4.5vw, 1.6rem);
             font-weight: 800;
             color: var(--dark);
             flex-grow: 1;
+            min-width: 0;
+            overflow-wrap: break-word;
         }
 
-        /* LIST MATERI */
+        /* ---------- LIST MATERI ---------- */
         .grid-materi {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
+            gap: clamp(14px, 3vw, 20px);
         }
 
         .materi-card {
             background: var(--card-bg);
-            border-radius: 24px;
+            border-radius: clamp(16px, 3vw, 24px);
             overflow: hidden;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
             border: 1px solid var(--border);
@@ -128,33 +152,33 @@ if ($view_materi_id > 0) {
             color: var(--dark);
             display: flex;
             flex-direction: column;
-            transition: 0.3s;
+            transition: 0.3s var(--ease);
         }
 
         .materi-card:hover {
-            transform: translateY(-8px);
+            transform: translateY(-6px);
             box-shadow: 0 20px 40px rgba(5, 150, 105, 0.1);
             border-color: var(--primary);
         }
 
         .mc-cover {
             width: 100%;
-            height: 180px;
+            height: clamp(140px, 30vw, 180px);
             object-fit: cover;
-            background: #e2e8f0;
+            background: var(--border);
         }
 
         .mc-body {
-            padding: 25px;
+            padding: clamp(16px, 4vw, 25px);
             flex-grow: 1;
             display: flex;
             flex-direction: column;
         }
 
         .mc-title {
-            font-size: 1.3rem;
+            font-size: clamp(1.05rem, 3.5vw, 1.3rem);
             font-weight: 800;
-            margin-bottom: 15px;
+            margin-bottom: clamp(10px, 3vw, 15px);
             line-height: 1.4;
         }
 
@@ -162,7 +186,7 @@ if ($view_materi_id > 0) {
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
-            font-size: 0.8rem;
+            font-size: clamp(0.72rem, 2vw, 0.8rem);
             font-weight: 700;
             margin-top: auto;
         }
@@ -172,25 +196,47 @@ if ($view_materi_id > 0) {
             padding: 6px 14px;
             border-radius: 20px;
             color: var(--text-muted);
+            white-space: nowrap;
         }
 
-        /* DETAIL MATERI */
+        .empty-state {
+            grid-column: 1/-1;
+            text-align: center;
+            padding: 50px 20px;
+            background: white;
+            border-radius: 20px;
+            border: 1px dashed var(--border);
+            color: var(--text-muted);
+        }
+
+        /* ---------- DETAIL MATERI ---------- */
         .detail-cover {
             width: 100%;
-            height: 350px;
+            height: clamp(160px, 40vw, 350px);
             object-fit: cover;
-            border-radius: 24px;
-            margin-bottom: 25px;
+            border-radius: clamp(16px, 3vw, 24px);
+            margin-bottom: clamp(16px, 4vw, 25px);
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
         }
 
         .detail-card {
             background: white;
-            padding: 40px;
-            border-radius: 24px;
+            padding: clamp(18px, 5vw, 40px);
+            border-radius: clamp(16px, 3vw, 24px);
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.03);
-            margin-bottom: 25px;
+            margin-bottom: clamp(18px, 4vw, 25px);
             border: 1px solid var(--border);
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .detail-card h1 {
+            font-size: clamp(1.35rem, 5vw, 2.2rem);
+            margin-bottom: clamp(16px, 4vw, 25px);
+            color: var(--dark);
+            font-weight: 800;
+            line-height: 1.3;
+            overflow-wrap: break-word;
         }
 
         .video-container {
@@ -198,8 +244,8 @@ if ($view_materi_id > 0) {
             padding-bottom: 56.25%;
             height: 0;
             overflow: hidden;
-            border-radius: 20px;
-            margin-bottom: 30px;
+            border-radius: clamp(12px, 3vw, 20px);
+            margin-bottom: clamp(18px, 4vw, 30px);
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
         }
 
@@ -214,8 +260,10 @@ if ($view_materi_id > 0) {
 
         .rich-content {
             line-height: 1.8;
-            font-size: 1.1rem;
+            font-size: clamp(0.95rem, 2vw, 1.1rem);
             color: #334155;
+            width: 100%;
+            overflow-wrap: break-word;
         }
 
         .rich-content img {
@@ -227,16 +275,24 @@ if ($view_materi_id > 0) {
 
         .rich-content h2,
         .rich-content h3 {
-            margin-top: 30px;
+            margin-top: clamp(20px, 4vw, 30px);
             margin-bottom: 15px;
             color: var(--dark);
             font-weight: 800;
         }
 
+        .table-scroll {
+            width: 100%;
+            overflow-x: auto;
+            margin: 20px 0;
+            -webkit-overflow-scrolling: touch;
+            border-radius: 10px;
+        }
+
         .rich-content table {
             width: 100%;
+            min-width: 420px;
             border-collapse: collapse;
-            margin: 20px 0;
         }
 
         .rich-content th,
@@ -244,6 +300,7 @@ if ($view_materi_id > 0) {
             border: 1px solid var(--border);
             padding: 12px;
             text-align: left;
+            font-size: clamp(0.85rem, 2vw, 1rem);
         }
 
         .rich-content th {
@@ -254,23 +311,25 @@ if ($view_materi_id > 0) {
         .action-bar {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 15px;
+            gap: clamp(10px, 3vw, 15px);
             margin-top: 10px;
         }
 
         .btn {
-            padding: 16px;
+            padding: clamp(13px, 3vw, 16px) clamp(10px, 3vw, 16px);
             border-radius: 16px;
             font-weight: 700;
             cursor: pointer;
             border: none;
-            font-size: 1rem;
-            transition: 0.3s;
+            font-size: clamp(0.85rem, 2.8vw, 1rem);
+            transition: 0.3s var(--ease);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 8px;
             text-decoration: none;
+            text-align: center;
+            line-height: 1.3;
         }
 
         .btn-pdf {
@@ -294,13 +353,20 @@ if ($view_materi_id > 0) {
             box-shadow: 0 10px 25px rgba(5, 150, 105, 0.3);
         }
 
-        /* QUIZ OVERLAY */
+        @media (max-width: 420px) {
+            .action-bar {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ---------- QUIZ OVERLAY ---------- */
         #quizOverlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
+            height: 100dvh;
             background: #f1f5f9;
             z-index: 1000;
             display: none;
@@ -309,7 +375,8 @@ if ($view_materi_id > 0) {
         }
 
         .quiz-header {
-            padding: 20px;
+            padding: clamp(14px, 3vw, 20px);
+            padding-top: max(clamp(14px, 3vw, 20px), env(safe-area-inset-top));
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -320,16 +387,24 @@ if ($view_materi_id > 0) {
             box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
         }
 
+        .quiz-header button {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            flex-shrink: 0;
+        }
+
         .timer-badge {
             background: #fee2e2;
             color: #ef4444;
-            padding: 10px 20px;
+            padding: clamp(8px, 2vw, 10px) clamp(14px, 3vw, 20px);
             border-radius: 20px;
             font-weight: 800;
-            font-size: 1.1rem;
+            font-size: clamp(0.9rem, 2.8vw, 1.1rem);
             display: flex;
             align-items: center;
             gap: 8px;
+            white-space: nowrap;
         }
 
         .quiz-container {
@@ -337,13 +412,14 @@ if ($view_materi_id > 0) {
             display: flex;
             justify-content: center;
             align-items: flex-start;
-            padding: 40px 20px;
+            padding: clamp(18px, 5vw, 40px) clamp(12px, 4vw, 20px);
+            width: 100%;
         }
 
         .quiz-card {
             background: white;
-            padding: 40px;
-            border-radius: 30px;
+            padding: clamp(20px, 5vw, 40px);
+            border-radius: clamp(18px, 4vw, 30px);
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
             width: 100%;
             max-width: 600px;
@@ -358,7 +434,7 @@ if ($view_materi_id > 0) {
         @keyframes slideIn {
             from {
                 opacity: 0;
-                transform: translateX(50px) scale(0.95);
+                transform: translateX(30px) scale(0.97);
             }
 
             to {
@@ -369,43 +445,45 @@ if ($view_materi_id > 0) {
 
         .q-img {
             width: 100%;
-            max-height: 250px;
+            max-height: clamp(160px, 35vw, 250px);
             object-fit: contain;
             background: var(--bg);
             border-radius: 16px;
-            margin-bottom: 20px;
+            margin-bottom: clamp(14px, 3vw, 20px);
             border: 1px solid var(--border);
         }
 
         .q-number {
-            font-size: 0.95rem;
+            font-size: clamp(0.8rem, 2.3vw, 0.95rem);
             color: var(--primary);
             font-weight: 800;
-            margin-bottom: 15px;
+            margin-bottom: clamp(10px, 3vw, 15px);
             letter-spacing: 1px;
             text-transform: uppercase;
         }
 
         .q-text {
-            font-size: 1.4rem;
+            font-size: clamp(1.1rem, 4.5vw, 1.4rem);
             font-weight: 800;
             color: var(--dark);
-            margin-bottom: 30px;
+            margin-bottom: clamp(20px, 5vw, 30px);
             line-height: 1.5;
+            overflow-wrap: break-word;
         }
 
         .gemini-option {
             display: block;
-            padding: 20px;
+            padding: clamp(14px, 3.5vw, 20px);
             border: 2px solid var(--border);
-            border-radius: 20px;
-            margin-bottom: 15px;
+            border-radius: clamp(14px, 3vw, 20px);
+            margin-bottom: clamp(10px, 2.5vw, 15px);
             cursor: pointer;
-            transition: 0.2s;
+            transition: 0.2s var(--ease);
             font-weight: 700;
-            font-size: 1.05rem;
+            font-size: clamp(0.92rem, 2.8vw, 1.05rem);
             color: #475569;
             position: relative;
+            overflow-wrap: break-word;
         }
 
         .gemini-option:hover {
@@ -427,7 +505,8 @@ if ($view_materi_id > 0) {
         }
 
         .quiz-footer {
-            padding: 20px;
+            padding: clamp(14px, 3vw, 20px);
+            padding-bottom: max(clamp(14px, 3vw, 20px), env(safe-area-inset-bottom));
             display: flex;
             justify-content: center;
             background: white;
@@ -440,15 +519,18 @@ if ($view_materi_id > 0) {
             background: var(--primary);
             color: white;
             border: none;
-            padding: 16px 40px;
+            padding: clamp(14px, 3vw, 16px) clamp(24px, 6vw, 40px);
             border-radius: 20px;
             font-weight: 800;
-            font-size: 1.1rem;
+            font-size: clamp(0.95rem, 3vw, 1.1rem);
             cursor: pointer;
             opacity: 0.5;
             pointer-events: none;
-            transition: 0.3s;
+            transition: 0.3s var(--ease);
             box-shadow: 0 10px 25px rgba(5, 150, 105, 0.3);
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
         }
 
         .btn-next.enabled {
@@ -456,11 +538,11 @@ if ($view_materi_id > 0) {
             pointer-events: auto;
         }
 
-        /* REVIEW SCREEN */
+        /* ---------- REVIEW SCREEN ---------- */
         .review-card {
             background: white;
-            padding: 40px;
-            border-radius: 30px;
+            padding: clamp(20px, 5vw, 40px);
+            border-radius: clamp(18px, 4vw, 30px);
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
             width: 100%;
             max-width: 700px;
@@ -469,21 +551,25 @@ if ($view_materi_id > 0) {
         }
 
         .score-circle {
-            width: 140px;
-            height: 140px;
+            width: clamp(100px, 25vw, 140px);
+            height: clamp(100px, 25vw, 140px);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 3rem;
+            font-size: clamp(2rem, 7vw, 3rem);
             font-weight: 800;
-            margin: 0 auto 30px auto;
+            margin: 0 auto clamp(20px, 4vw, 30px) auto;
             color: white;
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
         }
 
+        #scoreTitle {
+            font-size: clamp(1.4rem, 5vw, 2rem);
+        }
+
         .review-item {
-            padding: 20px;
+            padding: clamp(14px, 3.5vw, 20px);
             border: 1px solid var(--border);
             border-radius: 16px;
             margin-bottom: 15px;
@@ -493,19 +579,22 @@ if ($view_materi_id > 0) {
 
         .ri-q {
             font-weight: 700;
-            font-size: 1.1rem;
+            font-size: clamp(1rem, 3vw, 1.1rem);
             margin-bottom: 15px;
             color: var(--dark);
+            overflow-wrap: break-word;
         }
 
         .ri-ans {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             gap: 10px;
             font-weight: 600;
             padding: 12px;
             border-radius: 12px;
             margin-bottom: 8px;
+            font-size: clamp(0.88rem, 2.5vw, 1rem);
+            overflow-wrap: break-word;
         }
 
         .ri-correct {
@@ -530,15 +619,18 @@ if ($view_materi_id > 0) {
                 <h1 class="page-title">📚 Modul Pembelajaran</h1>
             </div>
             <div class="grid-materi">
+                <?php if (empty($daftar_materi)): ?>
+                    <div class="empty-state">Belum ada materi tersedia.</div>
+                <?php endif; ?>
                 <?php foreach ($daftar_materi as $m):
-                    $img_src = !empty($m['cover_image']) ? '../uploads/' . $m['cover_image'] : 'https://via.placeholder.com/600x400/e2e8f0/64748b?text=Materi+Hifzly';
+                    $img_src = !empty($m['cover_image']) ? '../uploads/' . htmlspecialchars($m['cover_image']) : 'https://via.placeholder.com/600x400/e2e8f0/64748b?text=Materi+Hafizhly';
                 ?>
-                    <a href="tajwid.php?id=<?= $m['id'] ?>" class="materi-card">
-                        <img src="<?= $img_src ?>" class="mc-cover" alt="Cover">
+                    <a href="tajwid.php?id=<?= (int)$m['id'] ?>" class="materi-card">
+                        <img src="<?= $img_src ?>" class="mc-cover" alt="Cover" loading="lazy">
                         <div class="mc-body">
                             <div class="mc-title"><?= htmlspecialchars($m['judul']) ?></div>
                             <div class="mc-badges">
-                                <?php if ($m['waktu_kuis'] > 0): ?><span class="badge"><i class="far fa-clock"></i> <?= $m['waktu_kuis'] ?>m Kuis</span><?php endif; ?>
+                                <?php if ($m['waktu_kuis'] > 0): ?><span class="badge"><i class="far fa-clock"></i> <?= (int)$m['waktu_kuis'] ?>m Kuis</span><?php endif; ?>
                                 <?php if ($m['youtube_url']): ?><span class="badge"><i class="fab fa-youtube" style="color:#ef4444;"></i> Video</span><?php endif; ?>
                                 <?php if ($m['pdf_file']): ?><span class="badge"><i class="fas fa-file-pdf" style="color:#3b82f6;"></i> Modul PDF</span><?php endif; ?>
                             </div>
@@ -547,28 +639,34 @@ if ($view_materi_id > 0) {
                 <?php endforeach; ?>
             </div>
 
+        <?php elseif (!$materi_detail): ?>
+            <div class="header">
+                <a href="tajwid.php" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+                <h1 class="page-title" style="font-size:1.3rem;">Materi Tidak Ditemukan</h1>
+            </div>
+
         <?php else: ?>
             <div class="header">
                 <a href="tajwid.php" class="back-btn"><i class="fas fa-arrow-left"></i></a>
-                <h1 class="page-title" style="font-size:1.3rem;">Detail Modul</h1>
+                <h1 class="page-title" style="font-size:clamp(1.05rem, 4vw, 1.3rem);">Detail Modul</h1>
             </div>
 
             <div id="materiToPdf">
                 <?php if (!empty($materi_detail['cover_image'])): ?>
-                    <img src="../uploads/<?= $materi_detail['cover_image'] ?>" class="detail-cover" alt="Cover">
+                    <img src="../uploads/<?= htmlspecialchars($materi_detail['cover_image']) ?>" class="detail-cover" alt="Cover">
                 <?php endif; ?>
 
                 <div class="detail-card">
-                    <h1 style="font-size:2.2rem; margin-bottom:25px; color:var(--dark); font-weight:800;"><?= htmlspecialchars($materi_detail['judul']) ?></h1>
+                    <h1><?= htmlspecialchars($materi_detail['judul']) ?></h1>
 
                     <?php $embed_url = getYouTubeEmbedUrl($materi_detail['youtube_url']);
                     if ($embed_url): ?>
                         <div class="video-container" data-html2canvas-ignore="true">
-                            <iframe src="<?= $embed_url ?>" allowfullscreen></iframe>
+                            <iframe src="<?= htmlspecialchars($embed_url) ?>" allowfullscreen loading="lazy"></iframe>
                         </div>
                     <?php endif; ?>
 
-                    <div class="rich-content">
+                    <div class="rich-content" id="richContent">
                         <?= $materi_detail['konten'] ?>
                     </div>
                 </div>
@@ -576,7 +674,7 @@ if ($view_materi_id > 0) {
 
             <div class="action-bar" id="materiActions">
                 <?php if (!empty($materi_detail['pdf_file'])): ?>
-                    <a href="../uploads/<?= $materi_detail['pdf_file'] ?>" target="_blank" class="btn btn-pdf"><i class="fas fa-file-download"></i> Unduh Modul (PDF)</a>
+                    <a href="../uploads/<?= htmlspecialchars($materi_detail['pdf_file']) ?>" target="_blank" class="btn btn-pdf"><i class="fas fa-file-download"></i> Unduh Modul (PDF)</a>
                 <?php else: ?>
                     <button class="btn btn-pdf" onclick="exportPDF()"><i class="fas fa-print"></i> Cetak ke PDF</button>
                 <?php endif; ?>
@@ -603,10 +701,10 @@ if ($view_materi_id > 0) {
                     <!-- LAYAR REVIEW HASIL (Disembunyikan di awal) -->
                     <div class="review-card" id="reviewArea">
                         <div id="scoreCircle" class="score-circle">100</div>
-                        <h2 id="scoreTitle" style="margin-bottom:10px; color:var(--dark); font-size:2rem; text-align:center;">Luar Biasa!</h2>
-                        <p id="scoreMessage" style="color:var(--text-muted); margin-bottom:30px; text-align:center; font-size:1.1rem;"></p>
+                        <h2 id="scoreTitle" style="margin-bottom:10px; color:var(--dark); text-align:center;">Luar Biasa!</h2>
+                        <p id="scoreMessage" style="color:var(--text-muted); margin-bottom:clamp(20px,4vw,30px); text-align:center; font-size:clamp(0.95rem,2.5vw,1.1rem);"></p>
 
-                        <h3 style="margin-bottom:15px; border-bottom:2px solid var(--border); padding-bottom:10px;">Pembahasan Kuis:</h3>
+                        <h3 style="margin-bottom:15px; border-bottom:2px solid var(--border); padding-bottom:10px; font-size:clamp(1rem,3vw,1.15rem);">Pembahasan Kuis:</h3>
                         <div id="reviewList"></div>
 
                         <button class="btn btn-quiz" style="width:100%; margin-top:20px;" onclick="location.reload()"><i class="fas fa-home"></i> Kembali ke Modul</button>
@@ -619,12 +717,20 @@ if ($view_materi_id > 0) {
             </div>
 
             <script>
+                // Bungkus semua tabel di dalam konten materi agar bisa di-scroll horizontal di layar kecil
+                document.querySelectorAll('#richContent table').forEach(table => {
+                    const wrap = document.createElement('div');
+                    wrap.className = 'table-scroll';
+                    table.parentNode.insertBefore(wrap, table);
+                    wrap.appendChild(table);
+                });
+
                 // --- Fitur Export PDF Alternatif ---
                 function exportPDF() {
                     const element = document.getElementById('materiToPdf');
                     html2pdf().set({
                         margin: 15,
-                        filename: 'Materi_Hifzly.pdf',
+                        filename: 'Materi_Hafizhly.pdf',
                         html2canvas: {
                             scale: 2
                         },
@@ -650,6 +756,12 @@ if ($view_materi_id > 0) {
                     if (timeLimit > 0) startTimer(timeLimit * 60);
                 }
 
+                function escapeHtml(str) {
+                    const div = document.createElement('div');
+                    div.textContent = str || '';
+                    return div.innerHTML;
+                }
+
                 function buildSlides() {
                     const container = document.getElementById('slideContainer');
                     container.innerHTML = '';
@@ -659,16 +771,16 @@ if ($view_materi_id > 0) {
                         slide.className = `quiz-card ${index === 0 ? 'active' : ''}`;
                         slide.id = `slide-${index}`;
 
-                        const imgHtml = q.gambar ? `<img src="../uploads/${q.gambar}" class="q-img">` : '';
+                        const imgHtml = q.gambar ? `<img src="../uploads/${escapeHtml(q.gambar)}" class="q-img">` : '';
 
                         slide.innerHTML = `
                         <div class="q-number">Soal ${index + 1} dari ${questions.length}</div>
                         ${imgHtml}
-                        <div class="q-text">${q.pertanyaan}</div>
-                        <label class="gemini-option" onclick="selectOption(this, ${index}, 'a')"><input type="radio" name="q_${index}" value="a"> A. ${q.opsi_a}</label>
-                        <label class="gemini-option" onclick="selectOption(this, ${index}, 'b')"><input type="radio" name="q_${index}" value="b"> B. ${q.opsi_b}</label>
-                        <label class="gemini-option" onclick="selectOption(this, ${index}, 'c')"><input type="radio" name="q_${index}" value="c"> C. ${q.opsi_c}</label>
-                        <label class="gemini-option" onclick="selectOption(this, ${index}, 'd')"><input type="radio" name="q_${index}" value="d"> D. ${q.opsi_d}</label>
+                        <div class="q-text">${escapeHtml(q.pertanyaan)}</div>
+                        <label class="gemini-option" onclick="selectOption(this, ${index}, 'a')"><input type="radio" name="q_${index}" value="a"> A. ${escapeHtml(q.opsi_a)}</label>
+                        <label class="gemini-option" onclick="selectOption(this, ${index}, 'b')"><input type="radio" name="q_${index}" value="b"> B. ${escapeHtml(q.opsi_b)}</label>
+                        <label class="gemini-option" onclick="selectOption(this, ${index}, 'c')"><input type="radio" name="q_${index}" value="c"> C. ${escapeHtml(q.opsi_c)}</label>
+                        <label class="gemini-option" onclick="selectOption(this, ${index}, 'd')"><input type="radio" name="q_${index}" value="d"> D. ${escapeHtml(q.opsi_d)}</label>
                     `;
                         container.appendChild(slide);
                     });
@@ -709,7 +821,6 @@ if ($view_materi_id > 0) {
                         display.innerHTML = `<i class="fas fa-stopwatch"></i> ${minutes < 10 ? '0'+minutes : minutes}:${seconds < 10 ? '0'+seconds : seconds}`;
                         if (--timer < 0) {
                             clearInterval(timerInterval);
-                            alert("Waktu Habis!");
                             submitQuiz();
                         }
                     }, 1000);
@@ -730,7 +841,6 @@ if ($view_materi_id > 0) {
                         const isBenar = uAns === q.jawaban_benar;
                         if (isBenar) skorBenar++;
 
-                        // Mapping string jawaban
                         const opsiMap = {
                             'a': q.opsi_a,
                             'b': q.opsi_b,
@@ -738,12 +848,12 @@ if ($view_materi_id > 0) {
                             'd': q.opsi_d,
                             'kosong': 'Tidak dijawab'
                         };
-                        const textUser = opsiMap[uAns];
-                        const textBenar = opsiMap[q.jawaban_benar];
+                        const textUser = escapeHtml(opsiMap[uAns]);
+                        const textBenar = escapeHtml(opsiMap[q.jawaban_benar]);
 
                         reviewHTML += `
                         <div class="review-item">
-                            <div class="ri-q">${i+1}. ${q.pertanyaan}</div>
+                            <div class="ri-q">${i+1}. ${escapeHtml(q.pertanyaan)}</div>
                             ${isBenar 
                                 ? `<div class="ri-ans ri-correct"><i class="fas fa-check-circle"></i> Jawabanmu Benar: ${textUser}</div>` 
                                 : `<div class="ri-ans ri-wrong"><i class="fas fa-times-circle"></i> Jawabanmu: ${textUser}</div>
@@ -753,7 +863,7 @@ if ($view_materi_id > 0) {
                     `;
                     });
 
-                    const nilaiAkhir = Math.round((skorBenar / questions.length) * 100);
+                    const nilaiAkhir = questions.length ? Math.round((skorBenar / questions.length) * 100) : 0;
                     const circle = document.getElementById('scoreCircle');
                     circle.innerText = nilaiAkhir;
 
@@ -772,7 +882,6 @@ if ($view_materi_id > 0) {
                     reviewList.innerHTML = reviewHTML;
                     reviewArea.style.display = 'block';
 
-                    // Scroll ke atas overlay
                     document.getElementById('quizOverlay').scrollTo({
                         top: 0,
                         behavior: 'smooth'

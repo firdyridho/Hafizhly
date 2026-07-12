@@ -589,6 +589,10 @@ if ($q_bm && mysqli_num_rows($q_bm) > 0) {
                 <div class="q-icon"><i class="fas fa-robot"></i></div>
                 <div class="q-text">AI Coach</div>
             </a>
+            <a href="game.php" class="q-item">
+                <div class="q-icon"><i class="fas fa-gamepad"></i></div>
+                <div class="q-text">AI Coach</div>
+            </a>
         </div>
     </div>
 

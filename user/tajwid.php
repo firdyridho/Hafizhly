@@ -3,6 +3,9 @@ session_start();
 if (file_exists('../config/database.php')) {
     require_once '../config/database.php';
 }
+
+/** @var mysqli $conn */
+
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
     exit();
 }

@@ -3,7 +3,7 @@ session_start();
 require_once '../config/database.php';
 $user_id = (int) $_SESSION['user_id'];
 $current_month = date('Y-m');
-
+/** @var mysqli $conn */
 // 1. AJAX HANDLER: SIMPAN SKOR & ACHIEVEMENT
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'save_score') {
     $juz_start = (int)$_POST['j_start'];

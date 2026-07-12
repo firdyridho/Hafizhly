@@ -6,6 +6,8 @@ if (file_exists('../config/database.php')) {
     die("Error: File database.php tidak ditemukan!");
 }
 
+/** @var mysqli $conn */
+
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     header("Location: ../login.php");
     exit();

@@ -214,14 +214,19 @@
             margin: 0 auto;
             padding: 56px 24px 90px;
             display: grid;
-            grid-template-columns: 240px 1fr;
+            grid-template-columns: 240px minmax(0, 1fr);
             gap: 48px;
             align-items: start;
         }
 
+        .toc-wrap,
+        main {
+            min-width: 0;
+        }
+
         @media (max-width: 860px) {
             .layout {
-                grid-template-columns: 1fr;
+                grid-template-columns: minmax(0, 1fr);
                 padding-top: 28px;
             }
         }

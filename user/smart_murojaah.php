@@ -1539,7 +1539,7 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
         let recognitionActive = false; // status aktual apakah engine speech sedang berjalan
         let speechBuffer = '';         // akumulasi teks FINAL yang sudah dikonfirmasi browser
         let interimBuffer = '';        // teks INTERIM (sedang diucapkan, belum final)
-        let lastFinalHash = '';        // hash konten final terakhir — untuk cegah double-process
+        let lastProcessedIndex = 0;    // FIX Android duplicate: track index hasil final
         let lastBulkMatchTime = 0;     // waktu terakhir banyak kata cocok sekaligus (anti-echo)
         let silenceTimer = null;
         let restartTimer = null;
@@ -1639,6 +1639,7 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
                 currentWordTargetIdx = 0;
                 speechBuffer = '';
                 interimBuffer = '';
+                lastProcessedIndex = 0;
                 updateTargetIndicator();
             } catch (err) {
                 showToast("Gagal memuat halaman");
@@ -1742,6 +1743,7 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
                 updateTargetIndicator();
                 speechBuffer = '';
                 interimBuffer = '';
+                lastProcessedIndex = 0;
                 if (currentWordTargetIdx >= quranWords.length) {
                     showToast("Halaman selesai!");
                     setTimeout(() => changePage(1), 1500);
@@ -1769,25 +1771,22 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
                 let newFinal = '';
                 let newInterim = '';
 
-                for (let i = event.resultIndex; i < event.results.length; i++) {
+                // Mencegah duplikasi Android: hanya baca hasil yang belum pernah diproses
+                let startIndex = Math.max(lastProcessedIndex, event.resultIndex);
+
+                for (let i = startIndex; i < event.results.length; i++) {
                     const res = event.results[i];
                     if (res.isFinal) {
                         newFinal += ' ' + res[0].transcript;
+                        lastProcessedIndex = i + 1;
                     } else {
-                        newInterim = res[0].transcript; // ambil interim terbaru saja
+                        newInterim += ' ' + res[0].transcript;
                     }
                 }
 
                 if (newFinal.trim()) {
-                    // --- DEDUPLICATION: cegah teks yang sama diproses dua kali ---
-                    // Chrome Android kadang resend transkrip lama saat restart internal.
-                    // Bandingkan dengan hash konten final terakhir yang kita proses.
-                    const finalNorm = normalizeArabicExtreme(newFinal.trim());
-                    if (finalNorm && finalNorm !== lastFinalHash) {
-                        speechBuffer += ' ' + newFinal;
-                        lastFinalHash = finalNorm;
-                    }
-                    interimBuffer = '';
+                    speechBuffer += ' ' + newFinal;
+                    interimBuffer = ''; 
                 }
 
                 // Interim selalu dipakai sebagai jendela "sedang diucapkan"
@@ -1815,12 +1814,11 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             recognition.onend = () => {
                 recognitionActive = false;
                 if (isRecording) {
-                    // Saat restart: hanya clear interim (volatile) dan reset dedup tracker.
+                    // Saat restart: hanya clear interim (volatile) dan reset tracker.
                     // speechBuffer TIDAK dikosongkan supaya kata yang diucapkan di jeda
                     // restart (200ms) tidak hilang dan tetap bisa dicocokkan.
-                    // Dedup tracker (lastFinalHash) direset supaya sesi baru dimulai bersih.
                     interimBuffer = '';
-                    lastFinalHash = '';
+                    lastProcessedIndex = 0;
                     clearTimeout(restartTimer);
                     restartTimer = setTimeout(startRecognition, RESTART_DELAY);
                 }
@@ -1893,6 +1891,26 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             return false;
         }
 
+        // Terjemahkan ejaan Huruf Muqatta'at ke teks aslinya
+        function replaceMuqattaat(text) {
+            return text
+                .replace(/الف لام ميم را/g, 'المر')
+                .replace(/الف لام ميم صاد/g, 'المص')
+                .replace(/الف لام ميم/g, 'الم')
+                .replace(/الف لام را/g, 'الر')
+                .replace(/كاف ها يا عين صاد/g, 'كهيعص')
+                .replace(/طا سين ميم/g, 'طسم')
+                .replace(/طا سين/g, 'طس')
+                .replace(/طا ها/g, 'طه')
+                .replace(/يا سين/g, 'يس')
+                .replace(/حا ميم عين سين قاف/g, 'حمعسق')
+                .replace(/حا ميم/g, 'حم')
+                .replace(/عين سين قاف/g, 'عسق')
+                .replace(/(?<=\s|^)صاد(?=\s|$)/g, 'ص')
+                .replace(/(?<=\s|^)قاف(?=\s|$)/g, 'ق')
+                .replace(/(?<=\s|^)نون(?=\s|$)/g, 'ن');
+        }
+
         function processSpeechBuffer() {
             if (currentWordTargetIdx >= quranWords.length) return;
 
@@ -1905,10 +1923,14 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             const combined = (speechBuffer + ' ' + interimBuffer).trim();
             if (!combined) return;
 
-            // Pecah teks ucapan menjadi kata-kata, buang noise 1 huruf
-            const spokenWords = normalizeArabicExtreme(combined)
+            // Normalisasi dan terjemahkan Huruf Muqatta'at
+            let spokenClean = normalizeArabicExtreme(combined);
+            spokenClean = replaceMuqattaat(spokenClean);
+
+            // Pecah teks ucapan menjadi kata-kata, buang noise 1 huruf (kecuali huruf khusus)
+            const spokenWords = spokenClean
                 .split(/\s+/)
-                .filter(w => w.length >= 2);
+                .filter(w => w.length >= 2 || ['ص', 'ق', 'ن'].includes(w));
 
             if (spokenWords.length === 0) return;
 
@@ -1985,11 +2007,13 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
                 } catch (e) {}
                 speechBuffer = '';
                 interimBuffer = '';
+                lastProcessedIndex = 0;
                 transcriptBox.classList.remove('active');
             } else {
                 isRecording = true;
                 speechBuffer = '';
                 interimBuffer = '';
+                lastProcessedIndex = 0;
                 transcriptBox.innerText = "Mendengarkan...";
                 transcriptBox.classList.add('active');
                 startRecognition();

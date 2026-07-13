@@ -251,7 +251,7 @@ if (isset($_SESSION['alert'])) {
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/super-build/ckeditor.js"></script>
+    <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
 
     <style>
         :root {
@@ -743,85 +743,11 @@ if (isset($_SESSION['alert'])) {
 
         .ck.ck-toolbar {
             border-radius: 12px 12px 0 0 !important;
-            flex-wrap: wrap !important;
         }
 
         .ck.ck-editor__main>.ck-editor__editable,
         .ck.ck-toolbar {
             border-color: var(--border) !important;
-        }
-
-        .ck.ck-editor__editable.ck-focused {
-            box-shadow: 0 0 0 4px var(--primary-100) !important;
-            border-color: var(--primary-light) !important;
-        }
-
-        /* Konten editor: tabel, gambar, quote, dsb dibuat rapi seperti Word */
-        .ck-content table {
-            border-collapse: collapse;
-            width: 100%;
-            margin: 14px 0;
-        }
-
-        .ck-content table td,
-        .ck-content table th {
-            border: 1px solid #cbd5e1;
-            padding: 8px 10px;
-        }
-
-        .ck-content table th {
-            background: var(--primary-50);
-            font-weight: 700;
-        }
-
-        .ck-content .table {
-            margin: 14px 0;
-        }
-
-        .ck-content figure.image {
-            margin: 14px auto;
-        }
-
-        .ck-content figure.image img {
-            border-radius: 10px;
-            max-width: 100%;
-        }
-
-        .ck-content figcaption {
-            font-size: .82rem;
-            color: var(--muted);
-            text-align: center;
-            margin-top: 6px;
-        }
-
-        .ck-content blockquote {
-            border-left: 4px solid var(--primary-light);
-            background: var(--primary-50);
-            margin: 14px 0;
-            padding: 10px 18px;
-            font-style: italic;
-            border-radius: 0 10px 10px 0;
-        }
-
-        .ck-content hr {
-            border: none;
-            border-top: 2px solid var(--border);
-            margin: 20px 0;
-        }
-
-        .ck-content mark {
-            border-radius: 3px;
-            padding: 0 2px;
-        }
-
-        .ck-content .todo-list__label>input[type="checkbox"] {
-            accent-color: var(--primary);
-        }
-
-        /* Upload progress overlay pada gambar yang sedang diunggah */
-        .ck-content .image-inline.ck-upload-in-progress,
-        .ck-content .image.ck-upload-in-progress {
-            opacity: .6;
         }
 
         /* Quiz box */
@@ -1064,8 +990,7 @@ if (isset($_SESSION['alert'])) {
                     <!-- STEP 2 -->
                     <div class="step-content" id="step2">
                         <div class="form-group">
-                            <label>Isi Materi</label>
-                            <div class="form-hint" style="margin-top:-4px; margin-bottom:10px;">Editor lengkap: heading, font &amp; ukuran, warna teks/stabilo, tabel, sisip gambar (auto-upload), rata kanan-kiri-tengah, garis pemisah, dan lainnya — mirip Word.</div>
+                            <label>Isi Materi (Bisa tambahkan tabel, gambar, link, dll)</label>
                             <textarea name="konten" id="editor"></textarea>
                         </div>
                         <div class="form-footer">
@@ -1119,165 +1044,7 @@ if (isset($_SESSION['alert'])) {
 
         let myEditor;
         ClassicEditor.create(document.querySelector('#editor'), {
-            toolbar: {
-                items: [
-                    'undo', 'redo', '|',
-                    'heading', '|',
-                    'fontFamily', 'fontSize', 'fontColor', 'fontBackgroundColor', '|',
-                    'bold', 'italic', 'underline', 'strikethrough', 'subscript', 'superscript', 'removeFormat', '|',
-                    'alignment', '|',
-                    'bulletedList', 'numberedList', 'todoList', 'outdent', 'indent', '|',
-                    'link', 'blockQuote', 'insertTable', 'uploadImage', 'mediaEmbed', 'horizontalLine', 'specialCharacters', '|',
-                    'highlight', 'findAndReplace', 'sourceEditing'
-                ],
-                shouldNotGroupWhenFull: true
-            },
-            fontSize: {
-                options: [10, 12, 'default', 16, 18, 20, 24, 28, 32]
-            },
-            fontFamily: {
-                options: [
-                    'default',
-                    'Plus Jakarta Sans, sans-serif',
-                    'Arial, Helvetica, sans-serif',
-                    'Georgia, serif',
-                    'Times New Roman, Times, serif',
-                    'Courier New, Courier, monospace',
-                    'Amiri, serif'
-                ]
-            },
-            fontColor: {
-                colors: [{
-                        color: '#0f172a',
-                        label: 'Hitam'
-                    },
-                    {
-                        color: '#64748b',
-                        label: 'Abu-abu'
-                    },
-                    {
-                        color: '#ef4444',
-                        label: 'Merah'
-                    },
-                    {
-                        color: '#f59e0b',
-                        label: 'Oranye'
-                    },
-                    {
-                        color: '#eab308',
-                        label: 'Kuning'
-                    },
-                    {
-                        color: '#059669',
-                        label: 'Hijau (Primary)'
-                    },
-                    {
-                        color: '#10b981',
-                        label: 'Hijau Muda'
-                    },
-                    {
-                        color: '#2563eb',
-                        label: 'Biru'
-                    },
-                    {
-                        color: '#7c3aed',
-                        label: 'Ungu'
-                    },
-                    {
-                        color: '#b45309',
-                        label: 'Gold/Coklat'
-                    }
-                ],
-                columns: 5
-            },
-            fontBackgroundColor: {
-                colors: [{
-                        color: 'transparent',
-                        label: 'Tanpa Warna'
-                    },
-                    {
-                        color: '#fef9c3',
-                        label: 'Kuning Muda'
-                    },
-                    {
-                        color: '#d1fae5',
-                        label: 'Hijau Muda'
-                    },
-                    {
-                        color: '#dbeafe',
-                        label: 'Biru Muda'
-                    },
-                    {
-                        color: '#fee2e2',
-                        label: 'Merah Muda'
-                    },
-                    {
-                        color: '#ede9fe',
-                        label: 'Ungu Muda'
-                    }
-                ],
-                columns: 5
-            },
-            highlight: {
-                options: [{
-                        model: 'yellowMarker',
-                        class: 'marker-yellow',
-                        title: 'Stabilo Kuning',
-                        color: '#fef08a',
-                        type: 'marker'
-                    },
-                    {
-                        model: 'greenMarker',
-                        class: 'marker-green',
-                        title: 'Stabilo Hijau',
-                        color: '#bbf7d0',
-                        type: 'marker'
-                    },
-                    {
-                        model: 'redPen',
-                        class: 'pen-red',
-                        title: 'Pena Merah',
-                        color: '#ef4444',
-                        type: 'pen'
-                    }
-                ]
-            },
-            table: {
-                contentToolbar: [
-                    'tableColumn', 'tableRow', 'mergeTableCells',
-                    'tableProperties', 'tableCellProperties'
-                ]
-            },
-            image: {
-                toolbar: [
-                    'imageTextAlternative', 'toggleImageCaption', '|',
-                    'imageStyle:inline', 'imageStyle:wrapText', 'imageStyle:breakText', '|',
-                    'resizeImage'
-                ],
-                resizeOptions: [{
-                        name: 'resizeImage:original',
-                        value: null,
-                        label: 'Ukuran Asli'
-                    },
-                    {
-                        name: 'resizeImage:50',
-                        value: '50',
-                        label: '50%'
-                    },
-                    {
-                        name: 'resizeImage:75',
-                        value: '75',
-                        label: '75%'
-                    }
-                ]
-            },
-            simpleUpload: {
-                uploadUrl: 'ckeditor_upload.php',
-                headers: {
-                    'X-CSRF-Token': '<?= htmlspecialchars($csrf_token) ?>'
-                }
-            },
-            licenseKey: ''
+            toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', '|', 'insertTable', 'blockQuote', '|', 'undo', 'redo']
         }).then(editor => {
             myEditor = editor;
         }).catch(err => console.error(err));

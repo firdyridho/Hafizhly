@@ -34,67 +34,6 @@ if (empty($_SESSION['csrf_token'])) {
 $csrf_token = $_SESSION['csrf_token'];
 
 /* =========================================================
-   1b. HANDLER UPLOAD GAMBAR DARI DALAM EDITOR (CKEditor SimpleUploadAdapter)
-   Dipanggil via materi_tajwid.php?ck_upload=1 — tetap satu file, tidak perlu file terpisah
-   ========================================================= */
-if (isset($_GET['ck_upload'])) {
-    header('Content-Type: application/json');
-
-    $sentToken = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
-    if (!hash_equals($csrf_token, $sentToken)) {
-        http_response_code(403);
-        echo json_encode(['error' => ['message' => 'Sesi tidak valid, silakan muat ulang halaman.']]);
-        exit();
-    }
-
-    if (!isset($_FILES['upload']) || $_FILES['upload']['error'] !== UPLOAD_ERR_OK) {
-        http_response_code(400);
-        echo json_encode(['error' => ['message' => 'Tidak ada file terkirim atau upload gagal.']]);
-        exit();
-    }
-
-    $allowedExt  = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
-    $allowedMime = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-    $maxSizeMB   = 5;
-
-    $tmp  = $_FILES['upload']['tmp_name'];
-    $name = $_FILES['upload']['name'];
-    $size = $_FILES['upload']['size'];
-
-    $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
-    if (!in_array($ext, $allowedExt, true)) {
-        http_response_code(400);
-        echo json_encode(['error' => ['message' => "Format .$ext tidak diizinkan. Gunakan JPG, PNG, WEBP, atau GIF."]]);
-        exit();
-    }
-
-    $finfo = finfo_open(FILEINFO_MIME_TYPE);
-    $mime  = finfo_file($finfo, $tmp);
-    finfo_close($finfo);
-    if (!in_array($mime, $allowedMime, true)) {
-        http_response_code(400);
-        echo json_encode(['error' => ['message' => 'Jenis file tidak valid.']]);
-        exit();
-    }
-
-    if ($size > $maxSizeMB * 1024 * 1024) {
-        http_response_code(400);
-        echo json_encode(['error' => ['message' => "Ukuran file melebihi {$maxSizeMB}MB."]]);
-        exit();
-    }
-
-    $newName = time() . '_' . bin2hex(random_bytes(4)) . '_content.' . $ext;
-    if (!@move_uploaded_file($tmp, '../uploads/' . $newName)) {
-        http_response_code(500);
-        echo json_encode(['error' => ['message' => 'Gagal menyimpan file ke server.']]);
-        exit();
-    }
-
-    echo json_encode(['url' => '../uploads/' . $newName]);
-    exit();
-}
-
-/* =========================================================
    Helper: validasi & simpan file upload dengan aman
    ========================================================= */
 function simpan_upload($fileArrKey, $allowedExt, $maxSizeMB, $suffix, $index = null)
@@ -312,7 +251,7 @@ if (isset($_SESSION['alert'])) {
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://cdn.ckeditor.com/ckeditor5/36.0.1/super-build/ckeditor.js"></script>
+    <script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/super-build/ckeditor.js"></script>
 
     <style>
         :root {
@@ -1333,11 +1272,12 @@ if (isset($_SESSION['alert'])) {
                 ]
             },
             simpleUpload: {
-                uploadUrl: 'materi_tajwid.php?ck_upload=1',
+                uploadUrl: 'ckeditor_upload.php',
                 headers: {
                     'X-CSRF-Token': '<?= htmlspecialchars($csrf_token) ?>'
                 }
-            }
+            },
+            licenseKey: ''
         }).then(editor => {
             myEditor = editor;
         }).catch(err => console.error(err));

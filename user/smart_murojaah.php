@@ -327,12 +327,13 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
         .mushaf-container {
             max-width: 700px;
             margin: 20px auto;
-            padding: clamp(20px, 4vw, 40px) clamp(15px, 3vw, 30px);
+            padding: clamp(20px, 4vw, 40px) clamp(10px, 2vw, 30px);
             background: var(--paper);
             border-radius: 20px;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
             border: 1px solid var(--paper-border);
             min-height: 60vh;
+            overflow-x: auto;
         }
 
         .mushaf-line {
@@ -345,6 +346,7 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             border-bottom: 1px solid rgba(0, 0, 0, 0.05);
             flex-wrap: nowrap;
             width: 100%;
+            white-space: nowrap;
         }
 
         .mushaf-line.centered {
@@ -354,7 +356,7 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
 
         .ayah-word {
             font-family: 'Uthmani', serif;
-            font-size: clamp(1.4rem, 5vw, 2.2rem);
+            font-size: clamp(1rem, 4.3vw, 2.2rem);
             line-height: 1.6;
             color: var(--text-dark);
             transition: 0.2s;
@@ -430,25 +432,6 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             flex-direction: column;
             align-items: center;
             gap: 10px;
-        }
-
-        .live-transcript {
-            background: rgba(15, 23, 42, 0.85);
-            backdrop-filter: blur(5px);
-            color: white;
-            width: 100%;
-            padding: 10px 15px;
-            border-radius: 12px;
-            font-size: 0.9rem;
-            text-align: center;
-            direction: rtl;
-            font-family: 'Uthmani', serif;
-            min-height: 40px;
-            display: none;
-        }
-
-        .live-transcript.active {
-            display: block;
         }
 
         .bottom-bar {
@@ -562,15 +545,38 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             <i class="fas fa-search"></i>
             <input type="text" id="searchInput" placeholder="Cari nama surah..." onkeyup="filterSurah()">
         </div>
+        
+        <div style="margin-bottom: 20px;">
+            <label style="font-size:0.9rem;font-weight:600;display:block;margin-bottom:8px;">Mulai Berdasarkan Juz:</label>
+            <select id="juzSelect" style="width:100%;padding:12px;border-radius:12px;border:1px solid var(--line-color);font-family:'Plus Jakarta Sans';" onchange="startFromJuz()">
+                <option value="">-- Pilih Juz --</option>
+                <!-- Opsi Juz diisi dari JS -->
+            </select>
+        </div>
+
         <div class="surah-list" id="surahListContainer"></div>
     </div>
 
     <div class="modal-overlay" id="rangeModal">
         <div class="range-modal">
             <h3 id="rmTitle">Al-Baqarah</h3>
-            <label style="font-size:0.9rem;font-weight:600;margin-bottom:8px;display:block;">Pilih Halaman Mushaf:</label>
-            <select id="rmPageSelect"></select>
-            <button class="btn-start" onclick="startMurojaahFromModal()">Mulai Hafalan <i class="fas fa-arrow-right"></i></button>
+            
+            <div style="display:flex; gap:10px; margin-bottom: 15px; margin-top:10px;">
+                <button id="tabAyat" style="flex:1; padding:8px; border-radius:8px; background:var(--primary); color:white; border:none; font-weight:600;" onclick="switchModalTab('ayat')">Ayat</button>
+                <button id="tabHalaman" style="flex:1; padding:8px; border-radius:8px; background:var(--line-color); color:var(--text-dark); border:none; font-weight:600;" onclick="switchModalTab('halaman')">Halaman</button>
+            </div>
+
+            <div id="panelAyat">
+                <label style="font-size:0.9rem;font-weight:600;margin-bottom:8px;display:block;">Pilih Ayat Mulai:</label>
+                <input type="number" id="rmAyatInput" min="1" value="1" style="width:100%;padding:12px;border-radius:12px;border:1px solid var(--line-color);font-family:'Plus Jakarta Sans';margin-bottom:10px;">
+            </div>
+
+            <div id="panelHalaman" style="display:none;">
+                <label style="font-size:0.9rem;font-weight:600;margin-bottom:8px;display:block;">Pilih Halaman Mushaf:</label>
+                <select id="rmPageSelect" style="width:100%;padding:12px;border-radius:12px;border:1px solid var(--line-color);font-family:'Plus Jakarta Sans';margin-bottom:10px;"></select>
+            </div>
+
+            <button class="btn-start" onclick="startMurojaahFromModal()" id="btnStartModal">Mulai Hafalan <i class="fas fa-arrow-right"></i></button>
             <button style="width:100%;padding:14px;background:none;border:none;margin-top:10px;font-weight:600;color:#64748b;cursor:pointer;" onclick="document.getElementById('rangeModal').style.display='none'">Batal</button>
         </div>
     </div>
@@ -597,7 +603,6 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
         </div>
 
         <div class="bottom-wrapper">
-            <div class="live-transcript" id="liveTranscript">...</div>
             <div class="bottom-bar">
                 <button class="bb-btn" id="btnEye" onclick="toggleMode()"><i class="fas fa-eye-slash"></i></button>
                 <button class="bb-btn" onclick="changePage(-1)"><i class="fas fa-chevron-right"></i></button>
@@ -1546,12 +1551,33 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
         const SILENCE_TIMEOUT = 4000;  // ms tanpa suara sebelum buffer direset
         const RESTART_DELAY  = 200;    // ms delay restart recognition
 
+        let selectedSurahId = 1;
+        let selectedSurahAyahs = 1;
+        let activeModalTab = 'ayat';
+        const juzStartPages = [0, 1, 22, 42, 62, 82, 102, 122, 142, 162, 182, 202, 222, 242, 262, 282, 302, 322, 342, 362, 382, 402, 422, 442, 462, 482, 502, 522, 542, 562, 582];
+
         document.addEventListener('DOMContentLoaded', () => {
             renderSurahList();
             checkBookmarkStatus();
             initSwipeGestures();
             initSpeechRecognition();
+            populateJuzDropdown();
         });
+
+        function populateJuzDropdown() {
+            const select = document.getElementById('juzSelect');
+            for (let i = 1; i <= 30; i++) {
+                select.innerHTML += `<option value="${i}">Juz ${i}</option>`;
+            }
+        }
+
+        function startFromJuz() {
+            const juz = parseInt(document.getElementById('juzSelect').value);
+            if (juz) {
+                document.getElementById('juzSelect').value = '';
+                openMurojaah(juzStartPages[juz]);
+            }
+        }
 
         // ==================== DASHBOARD & NAVIGASI ====================
         function renderSurahList(filter = '') {
@@ -1580,17 +1606,62 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
 
         function openRangeModal(surahId) {
             const surah = surahsData.find(s => s.id === surahId);
+            selectedSurahId = surah.id;
+            selectedSurahAyahs = surah.ayahs;
             document.getElementById('rmTitle').innerText = surah.name;
+            
+            document.getElementById('rmAyatInput').max = surah.ayahs;
+            document.getElementById('rmAyatInput').value = 1;
+
             const pSelect = document.getElementById('rmPageSelect');
             pSelect.innerHTML = '';
             for (let p = surah.startPage; p <= surah.endPage; p++) pSelect.innerHTML += `<option value="${p}">Halaman ${p}</option>`;
+            
             document.getElementById('rangeModal').style.display = 'flex';
         }
 
-        function startMurojaahFromModal() {
-            const page = parseInt(document.getElementById('rmPageSelect').value);
-            document.getElementById('rangeModal').style.display = 'none';
-            openMurojaah(page);
+        function switchModalTab(tab) {
+            activeModalTab = tab;
+            if(tab === 'ayat') {
+                document.getElementById('tabAyat').style.background = 'var(--primary)';
+                document.getElementById('tabAyat').style.color = 'white';
+                document.getElementById('tabHalaman').style.background = 'var(--line-color)';
+                document.getElementById('tabHalaman').style.color = 'var(--text-dark)';
+                document.getElementById('panelAyat').style.display = 'block';
+                document.getElementById('panelHalaman').style.display = 'none';
+            } else {
+                document.getElementById('tabHalaman').style.background = 'var(--primary)';
+                document.getElementById('tabHalaman').style.color = 'white';
+                document.getElementById('tabAyat').style.background = 'var(--line-color)';
+                document.getElementById('tabAyat').style.color = 'var(--text-dark)';
+                document.getElementById('panelHalaman').style.display = 'block';
+                document.getElementById('panelAyat').style.display = 'none';
+            }
+        }
+
+        async function startMurojaahFromModal() {
+            const btn = document.getElementById('btnStartModal');
+            
+            if (activeModalTab === 'halaman') {
+                const page = parseInt(document.getElementById('rmPageSelect').value);
+                document.getElementById('rangeModal').style.display = 'none';
+                openMurojaah(page);
+            } else {
+                let ayat = parseInt(document.getElementById('rmAyatInput').value);
+                if(ayat < 1) ayat = 1;
+                if(ayat > selectedSurahAyahs) ayat = selectedSurahAyahs;
+                
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memuat...';
+                try {
+                    const res = await fetch(`https://api.quran.com/api/v4/verses/by_key/${selectedSurahId}:${ayat}?fields=page_number`);
+                    const data = await res.json();
+                    document.getElementById('rangeModal').style.display = 'none';
+                    openMurojaah(data.verse.page_number, `${selectedSurahId}:${ayat}`);
+                } catch(e) {
+                    showToast("Gagal mencari halaman ayat tersebut");
+                }
+                btn.innerHTML = 'Mulai Hafalan <i class="fas fa-arrow-right"></i>';
+            }
         }
 
         function checkBookmarkStatus() {
@@ -1608,12 +1679,12 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             if (saved) openMurojaah(parseInt(saved));
         }
 
-        function openMurojaah(page) {
+        function openMurojaah(page, startVerseKey = null) {
             currentPage = page;
             document.getElementById('dashboardView').style.display = 'none';
             document.getElementById('murojaahView').style.display = 'block';
             window.scrollTo(0, 0);
-            loadQuranPage(currentPage);
+            loadQuranPage(currentPage, startVerseKey);
         }
 
         function backToDashboard() {
@@ -1623,7 +1694,7 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             checkBookmarkStatus();
         }
 
-        async function loadQuranPage(page) {
+        async function loadQuranPage(page, startVerseKey = null) {
             document.getElementById('quranPageContainer').innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size:2rem;color:var(--primary);margin:50px 0;"></i>';
             document.getElementById('lblBottomPage').innerText = page;
 
@@ -1635,8 +1706,15 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             try {
                 const res = await fetch(`https://api.quran.com/api/v4/verses/by_page/${page}?language=id&words=true&word_fields=text_uthmani,line_number`);
                 const data = await res.json();
-                renderExactMushafLayout(data.verses, page);
-                currentWordTargetIdx = 0;
+                const targetIdx = renderExactMushafLayout(data.verses, page, startVerseKey);
+                
+                currentWordTargetIdx = targetIdx;
+                if (targetIdx > 0) {
+                    for (let i = 0; i < targetIdx; i++) {
+                        document.getElementById(quranWords[i].id).classList.add('read-correctly');
+                    }
+                }
+                
                 speechBuffer = '';
                 interimBuffer = '';
                 lastProcessedIndex = 0;
@@ -1646,7 +1724,7 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             }
         }
 
-        function renderExactMushafLayout(verses, pageNum) {
+        function renderExactMushafLayout(verses, pageNum, startVerseKey = null) {
             const container = document.getElementById('quranPageContainer');
             container.innerHTML = '';
             quranWords = [];
@@ -1688,7 +1766,8 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
                         linesMap[word.line_number].push({
                             type: 'word',
                             text: word.text_uthmani,
-                            text_raw: word.text_uthmani
+                            text_raw: word.text_uthmani,
+                            verse_key: verse.verse_key
                         });
                     }
                 });
@@ -1702,6 +1781,9 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             });
 
             let wordCounter = 0;
+            let startIndexTarget = 0;
+            let startFound = false;
+
             sortedLines.forEach(lineNum => {
                 const items = linesMap[lineNum];
                 if (items[0].type === 'header') {
@@ -1724,12 +1806,19 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
                             id: `w-${wordCounter}`,
                             normalized: normalizeArabicExtreme(item.text_raw)
                         });
+
+                        if (startVerseKey && item.verse_key === startVerseKey && !startFound) {
+                            startIndexTarget = wordCounter;
+                            startFound = true;
+                        }
+
                         wordCounter++;
                     }
                 });
                 html += `</div>`;
             });
             container.innerHTML = html;
+            return startIndexTarget;
         }
 
         // ==================== MANUAL TAP ====================
@@ -1791,9 +1880,6 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
 
                 // Interim selalu dipakai sebagai jendela "sedang diucapkan"
                 interimBuffer = newInterim;
-
-                const liveText = (speechBuffer + ' ' + interimBuffer).trim();
-                document.getElementById('liveTranscript').innerText = liveText || '...';
 
                 resetSilenceTimer();
                 processSpeechBuffer();
@@ -2002,7 +2088,6 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
 
         function toggleRecording() {
             if (!recognition) return;
-            const transcriptBox = document.getElementById('liveTranscript');
 
             if (isRecording) {
                 isRecording = false;
@@ -2014,14 +2099,11 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
                 speechBuffer = '';
                 interimBuffer = '';
                 lastProcessedIndex = 0;
-                transcriptBox.classList.remove('active');
             } else {
                 isRecording = true;
                 speechBuffer = '';
                 interimBuffer = '';
                 lastProcessedIndex = 0;
-                transcriptBox.innerText = "Mendengarkan...";
-                transcriptBox.classList.add('active');
                 startRecognition();
             }
             renderMicState();

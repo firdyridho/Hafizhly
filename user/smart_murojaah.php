@@ -16,7 +16,7 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* ========== GAYA TIDAK BERUBAH ========== */
+        /* ========== GAYA (sama seperti sebelumnya) ========== */
         @font-face {
             font-family: 'Uthmani';
             src: url('https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/fonts/KFGQPC_Uthmanic_Script_HAFS_Regular.ttf') format('truetype');
@@ -612,21 +612,933 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
     <div class="toast" id="toastMsg">Notifikasi</div>
 
     <script>
-        const surahsData = [ /* ... data sama seperti sebelumnya ... */ ];
-        // Lengkapi dengan data surah (sudah ada di kode asli, di sini saya singkat agar jawaban tidak terlalu panjang)
-        // Pastikan array surahsData sudah lengkap 114 surah seperti di kode asli.
+        // ==================== DATA SURAH LENGKAP 114 SURAH ====================
+        const surahsData = [{
+                id: 1,
+                name: "Al-Fatihah",
+                ayahs: 7,
+                startPage: 1,
+                endPage: 1,
+                arabic: "الفاتحة"
+            },
+            {
+                id: 2,
+                name: "Al-Baqarah",
+                ayahs: 286,
+                startPage: 2,
+                endPage: 49,
+                arabic: "البقرة"
+            },
+            {
+                id: 3,
+                name: "Ali 'Imran",
+                ayahs: 200,
+                startPage: 50,
+                endPage: 76,
+                arabic: "آل عمران"
+            },
+            {
+                id: 4,
+                name: "An-Nisa'",
+                ayahs: 176,
+                startPage: 77,
+                endPage: 106,
+                arabic: "النساء"
+            },
+            {
+                id: 5,
+                name: "Al-Ma'idah",
+                ayahs: 120,
+                startPage: 106,
+                endPage: 127,
+                arabic: "المائدة"
+            },
+            {
+                id: 6,
+                name: "Al-An'am",
+                ayahs: 165,
+                startPage: 128,
+                endPage: 150,
+                arabic: "الأنعام"
+            },
+            {
+                id: 7,
+                name: "Al-A'raf",
+                ayahs: 206,
+                startPage: 151,
+                endPage: 176,
+                arabic: "الأعراف"
+            },
+            {
+                id: 8,
+                name: "Al-Anfal",
+                ayahs: 75,
+                startPage: 177,
+                endPage: 186,
+                arabic: "الأنفال"
+            },
+            {
+                id: 9,
+                name: "At-Taubah",
+                ayahs: 129,
+                startPage: 187,
+                endPage: 207,
+                arabic: "التوبة"
+            },
+            {
+                id: 10,
+                name: "Yunus",
+                ayahs: 109,
+                startPage: 208,
+                endPage: 220,
+                arabic: "يونس"
+            },
+            {
+                id: 11,
+                name: "Hud",
+                ayahs: 123,
+                startPage: 221,
+                endPage: 235,
+                arabic: "هود"
+            },
+            {
+                id: 12,
+                name: "Yusuf",
+                ayahs: 111,
+                startPage: 235,
+                endPage: 248,
+                arabic: "يوسف"
+            },
+            {
+                id: 13,
+                name: "Ar-Ra'd",
+                ayahs: 43,
+                startPage: 249,
+                endPage: 254,
+                arabic: "الرعد"
+            },
+            {
+                id: 14,
+                name: "Ibrahim",
+                ayahs: 52,
+                startPage: 255,
+                endPage: 261,
+                arabic: "إبراهيم"
+            },
+            {
+                id: 15,
+                name: "Al-Hijr",
+                ayahs: 99,
+                startPage: 262,
+                endPage: 267,
+                arabic: "الحجر"
+            },
+            {
+                id: 16,
+                name: "An-Nahl",
+                ayahs: 128,
+                startPage: 267,
+                endPage: 281,
+                arabic: "النحل"
+            },
+            {
+                id: 17,
+                name: "Al-Isra'",
+                ayahs: 111,
+                startPage: 282,
+                endPage: 293,
+                arabic: "الإسراء"
+            },
+            {
+                id: 18,
+                name: "Al-Kahf",
+                ayahs: 110,
+                startPage: 293,
+                endPage: 304,
+                arabic: "الكهف"
+            },
+            {
+                id: 19,
+                name: "Maryam",
+                ayahs: 98,
+                startPage: 305,
+                endPage: 312,
+                arabic: "مريم"
+            },
+            {
+                id: 20,
+                name: "Taha",
+                ayahs: 135,
+                startPage: 312,
+                endPage: 321,
+                arabic: "طه"
+            },
+            {
+                id: 21,
+                name: "Al-Anbiya'",
+                ayahs: 112,
+                startPage: 322,
+                endPage: 331,
+                arabic: "الأنبياء"
+            },
+            {
+                id: 22,
+                name: "Al-Hajj",
+                ayahs: 78,
+                startPage: 332,
+                endPage: 341,
+                arabic: "الحج"
+            },
+            {
+                id: 23,
+                name: "Al-Mu'minun",
+                ayahs: 118,
+                startPage: 342,
+                endPage: 349,
+                arabic: "المؤمنون"
+            },
+            {
+                id: 24,
+                name: "An-Nur",
+                ayahs: 64,
+                startPage: 350,
+                endPage: 359,
+                arabic: "النور"
+            },
+            {
+                id: 25,
+                name: "Al-Furqan",
+                ayahs: 77,
+                startPage: 359,
+                endPage: 366,
+                arabic: "الفرقان"
+            },
+            {
+                id: 26,
+                name: "Asy-Syu'ara'",
+                ayahs: 227,
+                startPage: 367,
+                endPage: 376,
+                arabic: "الشعراء"
+            },
+            {
+                id: 27,
+                name: "An-Naml",
+                ayahs: 93,
+                startPage: 377,
+                endPage: 385,
+                arabic: "النمل"
+            },
+            {
+                id: 28,
+                name: "Al-Qasas",
+                ayahs: 88,
+                startPage: 385,
+                endPage: 396,
+                arabic: "القصص"
+            },
+            {
+                id: 29,
+                name: "Al-'Ankabut",
+                ayahs: 69,
+                startPage: 396,
+                endPage: 404,
+                arabic: "العنكبوت"
+            },
+            {
+                id: 30,
+                name: "Ar-Rum",
+                ayahs: 60,
+                startPage: 404,
+                endPage: 410,
+                arabic: "الروم"
+            },
+            {
+                id: 31,
+                name: "Luqman",
+                ayahs: 34,
+                startPage: 411,
+                endPage: 414,
+                arabic: "لقمان"
+            },
+            {
+                id: 32,
+                name: "As-Sajdah",
+                ayahs: 30,
+                startPage: 415,
+                endPage: 417,
+                arabic: "السجدة"
+            },
+            {
+                id: 33,
+                name: "Al-Ahzab",
+                ayahs: 73,
+                startPage: 418,
+                endPage: 427,
+                arabic: "الأحزاب"
+            },
+            {
+                id: 34,
+                name: "Saba'",
+                ayahs: 54,
+                startPage: 428,
+                endPage: 434,
+                arabic: "سبأ"
+            },
+            {
+                id: 35,
+                name: "Fatir",
+                ayahs: 45,
+                startPage: 434,
+                endPage: 440,
+                arabic: "فاطر"
+            },
+            {
+                id: 36,
+                name: "Yasin",
+                ayahs: 83,
+                startPage: 440,
+                endPage: 445,
+                arabic: "يس"
+            },
+            {
+                id: 37,
+                name: "As-Saffat",
+                ayahs: 182,
+                startPage: 446,
+                endPage: 452,
+                arabic: "الصافات"
+            },
+            {
+                id: 38,
+                name: "Sad",
+                ayahs: 86,
+                startPage: 453,
+                endPage: 458,
+                arabic: "ص"
+            },
+            {
+                id: 39,
+                name: "Az-Zumar",
+                ayahs: 75,
+                startPage: 458,
+                endPage: 467,
+                arabic: "الزمر"
+            },
+            {
+                id: 40,
+                name: "Ghafir",
+                ayahs: 85,
+                startPage: 467,
+                endPage: 476,
+                arabic: "غافر"
+            },
+            {
+                id: 41,
+                name: "Fussilat",
+                ayahs: 54,
+                startPage: 477,
+                endPage: 482,
+                arabic: "فصلت"
+            },
+            {
+                id: 42,
+                name: "Asy-Syura",
+                ayahs: 53,
+                startPage: 483,
+                endPage: 489,
+                arabic: "الشورى"
+            },
+            {
+                id: 43,
+                name: "Az-Zukhruf",
+                ayahs: 89,
+                startPage: 489,
+                endPage: 495,
+                arabic: "الزخرف"
+            },
+            {
+                id: 44,
+                name: "Ad-Dukhan",
+                ayahs: 59,
+                startPage: 496,
+                endPage: 498,
+                arabic: "الدخان"
+            },
+            {
+                id: 45,
+                name: "Al-Jasiyah",
+                ayahs: 37,
+                startPage: 499,
+                endPage: 502,
+                arabic: "الجاثية"
+            },
+            {
+                id: 46,
+                name: "Al-Ahqaf",
+                ayahs: 35,
+                startPage: 502,
+                endPage: 506,
+                arabic: "الأحقاف"
+            },
+            {
+                id: 47,
+                name: "Muhammad",
+                ayahs: 38,
+                startPage: 507,
+                endPage: 510,
+                arabic: "محمد"
+            },
+            {
+                id: 48,
+                name: "Al-Fath",
+                ayahs: 29,
+                startPage: 511,
+                endPage: 515,
+                arabic: "الفتح"
+            },
+            {
+                id: 49,
+                name: "Al-Hujurat",
+                ayahs: 18,
+                startPage: 515,
+                endPage: 517,
+                arabic: "الحجرات"
+            },
+            {
+                id: 50,
+                name: "Qaf",
+                ayahs: 45,
+                startPage: 518,
+                endPage: 520,
+                arabic: "ق"
+            },
+            {
+                id: 51,
+                name: "Az-Zariyat",
+                ayahs: 60,
+                startPage: 520,
+                endPage: 523,
+                arabic: "الذاريات"
+            },
+            {
+                id: 52,
+                name: "At-Tur",
+                ayahs: 49,
+                startPage: 523,
+                endPage: 525,
+                arabic: "الطور"
+            },
+            {
+                id: 53,
+                name: "An-Najm",
+                ayahs: 62,
+                startPage: 526,
+                endPage: 528,
+                arabic: "النجم"
+            },
+            {
+                id: 54,
+                name: "Al-Qamar",
+                ayahs: 55,
+                startPage: 528,
+                endPage: 531,
+                arabic: "القمر"
+            },
+            {
+                id: 55,
+                name: "Ar-Rahman",
+                ayahs: 78,
+                startPage: 531,
+                endPage: 534,
+                arabic: "الرحمن"
+            },
+            {
+                id: 56,
+                name: "Al-Waqi'ah",
+                ayahs: 96,
+                startPage: 534,
+                endPage: 537,
+                arabic: "الواقعة"
+            },
+            {
+                id: 57,
+                name: "Al-Hadid",
+                ayahs: 29,
+                startPage: 537,
+                endPage: 541,
+                arabic: "الحديد"
+            },
+            {
+                id: 58,
+                name: "Al-Mujadilah",
+                ayahs: 22,
+                startPage: 542,
+                endPage: 545,
+                arabic: "المجادلة"
+            },
+            {
+                id: 59,
+                name: "Al-Hasyr",
+                ayahs: 24,
+                startPage: 545,
+                endPage: 548,
+                arabic: "الحشر"
+            },
+            {
+                id: 60,
+                name: "Al-Mumtahanah",
+                ayahs: 13,
+                startPage: 549,
+                endPage: 551,
+                arabic: "الممتحنة"
+            },
+            {
+                id: 61,
+                name: "As-Saff",
+                ayahs: 14,
+                startPage: 551,
+                endPage: 552,
+                arabic: "الصف"
+            },
+            {
+                id: 62,
+                name: "Al-Jumu'ah",
+                ayahs: 11,
+                startPage: 553,
+                endPage: 554,
+                arabic: "الجمعة"
+            },
+            {
+                id: 63,
+                name: "Al-Munafiqun",
+                ayahs: 11,
+                startPage: 554,
+                endPage: 555,
+                arabic: "المنافقون"
+            },
+            {
+                id: 64,
+                name: "At-Tagabun",
+                ayahs: 18,
+                startPage: 556,
+                endPage: 557,
+                arabic: "التغابن"
+            },
+            {
+                id: 65,
+                name: "At-Talaq",
+                ayahs: 12,
+                startPage: 558,
+                endPage: 559,
+                arabic: "الطلاق"
+            },
+            {
+                id: 66,
+                name: "At-Tahrim",
+                ayahs: 12,
+                startPage: 560,
+                endPage: 561,
+                arabic: "التحريم"
+            },
+            {
+                id: 67,
+                name: "Al-Mulk",
+                ayahs: 30,
+                startPage: 562,
+                endPage: 564,
+                arabic: "الملك"
+            },
+            {
+                id: 68,
+                name: "Al-Qalam",
+                ayahs: 52,
+                startPage: 564,
+                endPage: 566,
+                arabic: "القلم"
+            },
+            {
+                id: 69,
+                name: "Al-Haqqah",
+                ayahs: 52,
+                startPage: 566,
+                endPage: 568,
+                arabic: "الحاقة"
+            },
+            {
+                id: 70,
+                name: "Al-Ma'arij",
+                ayahs: 44,
+                startPage: 568,
+                endPage: 570,
+                arabic: "المعارج"
+            },
+            {
+                id: 71,
+                name: "Nuh",
+                ayahs: 28,
+                startPage: 570,
+                endPage: 571,
+                arabic: "نوح"
+            },
+            {
+                id: 72,
+                name: "Al-Jinn",
+                ayahs: 28,
+                startPage: 572,
+                endPage: 573,
+                arabic: "الجن"
+            },
+            {
+                id: 73,
+                name: "Al-Muzzammil",
+                ayahs: 20,
+                startPage: 574,
+                endPage: 575,
+                arabic: "المزمل"
+            },
+            {
+                id: 74,
+                name: "Al-Muddassir",
+                ayahs: 56,
+                startPage: 575,
+                endPage: 577,
+                arabic: "المدثر"
+            },
+            {
+                id: 75,
+                name: "Al-Qiyamah",
+                ayahs: 40,
+                startPage: 577,
+                endPage: 578,
+                arabic: "القيامة"
+            },
+            {
+                id: 76,
+                name: "Al-Insan",
+                ayahs: 31,
+                startPage: 578,
+                endPage: 580,
+                arabic: "الإنسان"
+            },
+            {
+                id: 77,
+                name: "Al-Mursalat",
+                ayahs: 50,
+                startPage: 580,
+                endPage: 581,
+                arabic: "المرسلات"
+            },
+            {
+                id: 78,
+                name: "An-Naba'",
+                ayahs: 40,
+                startPage: 582,
+                endPage: 583,
+                arabic: "النبأ"
+            },
+            {
+                id: 79,
+                name: "An-Nazi'at",
+                ayahs: 46,
+                startPage: 583,
+                endPage: 584,
+                arabic: "النازعات"
+            },
+            {
+                id: 80,
+                name: "'Abasa",
+                ayahs: 42,
+                startPage: 585,
+                endPage: 585,
+                arabic: "عبس"
+            },
+            {
+                id: 81,
+                name: "At-Takwir",
+                ayahs: 29,
+                startPage: 586,
+                endPage: 586,
+                arabic: "التكوير"
+            },
+            {
+                id: 82,
+                name: "Al-Infitar",
+                ayahs: 19,
+                startPage: 587,
+                endPage: 587,
+                arabic: "الانفطار"
+            },
+            {
+                id: 83,
+                name: "Al-Mutaffifin",
+                ayahs: 36,
+                startPage: 587,
+                endPage: 589,
+                arabic: "المطففين"
+            },
+            {
+                id: 84,
+                name: "Al-Insyiqaq",
+                ayahs: 25,
+                startPage: 589,
+                endPage: 590,
+                arabic: "الانشقاق"
+            },
+            {
+                id: 85,
+                name: "Al-Buruj",
+                ayahs: 22,
+                startPage: 590,
+                endPage: 590,
+                arabic: "البروج"
+            },
+            {
+                id: 86,
+                name: "At-Tariq",
+                ayahs: 17,
+                startPage: 591,
+                endPage: 591,
+                arabic: "الطارق"
+            },
+            {
+                id: 87,
+                name: "Al-A'la",
+                ayahs: 19,
+                startPage: 591,
+                endPage: 592,
+                arabic: "الأعلى"
+            },
+            {
+                id: 88,
+                name: "Al-Gasyiyah",
+                ayahs: 26,
+                startPage: 592,
+                endPage: 592,
+                arabic: "الغاشية"
+            },
+            {
+                id: 89,
+                name: "Al-Fajr",
+                ayahs: 30,
+                startPage: 593,
+                endPage: 594,
+                arabic: "الفجر"
+            },
+            {
+                id: 90,
+                name: "Al-Balad",
+                ayahs: 20,
+                startPage: 594,
+                endPage: 594,
+                arabic: "البلد"
+            },
+            {
+                id: 91,
+                name: "Asy-Syams",
+                ayahs: 15,
+                startPage: 595,
+                endPage: 595,
+                arabic: "الشمس"
+            },
+            {
+                id: 92,
+                name: "Al-Lail",
+                ayahs: 21,
+                startPage: 595,
+                endPage: 596,
+                arabic: "الليل"
+            },
+            {
+                id: 93,
+                name: "Ad-Duha",
+                ayahs: 11,
+                startPage: 596,
+                endPage: 596,
+                arabic: "الضحى"
+            },
+            {
+                id: 94,
+                name: "Asy-Syarh",
+                ayahs: 8,
+                startPage: 596,
+                endPage: 596,
+                arabic: "الشرح"
+            },
+            {
+                id: 95,
+                name: "At-Tin",
+                ayahs: 8,
+                startPage: 597,
+                endPage: 597,
+                arabic: "التين"
+            },
+            {
+                id: 96,
+                name: "Al-'Alaq",
+                ayahs: 19,
+                startPage: 597,
+                endPage: 597,
+                arabic: "العلق"
+            },
+            {
+                id: 97,
+                name: "Al-Qadr",
+                ayahs: 5,
+                startPage: 598,
+                endPage: 598,
+                arabic: "القدر"
+            },
+            {
+                id: 98,
+                name: "Al-Bayyinah",
+                ayahs: 8,
+                startPage: 598,
+                endPage: 599,
+                arabic: "البينة"
+            },
+            {
+                id: 99,
+                name: "Az-Zalzalah",
+                ayahs: 8,
+                startPage: 599,
+                endPage: 599,
+                arabic: "الزلزلة"
+            },
+            {
+                id: 100,
+                name: "Al-'Adiyat",
+                ayahs: 11,
+                startPage: 599,
+                endPage: 600,
+                arabic: "العاديات"
+            },
+            {
+                id: 101,
+                name: "Al-Qari'ah",
+                ayahs: 11,
+                startPage: 600,
+                endPage: 600,
+                arabic: "القارعة"
+            },
+            {
+                id: 102,
+                name: "At-Takasur",
+                ayahs: 8,
+                startPage: 600,
+                endPage: 600,
+                arabic: "التكاثر"
+            },
+            {
+                id: 103,
+                name: "Al-'Asr",
+                ayahs: 3,
+                startPage: 601,
+                endPage: 601,
+                arabic: "العصر"
+            },
+            {
+                id: 104,
+                name: "Al-Humazah",
+                ayahs: 9,
+                startPage: 601,
+                endPage: 601,
+                arabic: "الهمزة"
+            },
+            {
+                id: 105,
+                name: "Al-Fil",
+                ayahs: 5,
+                startPage: 601,
+                endPage: 601,
+                arabic: "الفيل"
+            },
+            {
+                id: 106,
+                name: "Quraisy",
+                ayahs: 4,
+                startPage: 602,
+                endPage: 602,
+                arabic: "قريش"
+            },
+            {
+                id: 107,
+                name: "Al-Ma'un",
+                ayahs: 7,
+                startPage: 602,
+                endPage: 602,
+                arabic: "الماعون"
+            },
+            {
+                id: 108,
+                name: "Al-Kausar",
+                ayahs: 3,
+                startPage: 602,
+                endPage: 602,
+                arabic: "الكوثر"
+            },
+            {
+                id: 109,
+                name: "Al-Kafirun",
+                ayahs: 6,
+                startPage: 603,
+                endPage: 603,
+                arabic: "الكافرون"
+            },
+            {
+                id: 110,
+                name: "An-Nasr",
+                ayahs: 3,
+                startPage: 603,
+                endPage: 603,
+                arabic: "النصر"
+            },
+            {
+                id: 111,
+                name: "Al-Lahab",
+                ayahs: 5,
+                startPage: 603,
+                endPage: 603,
+                arabic: "المسد"
+            },
+            {
+                id: 112,
+                name: "Al-Ikhlas",
+                ayahs: 4,
+                startPage: 604,
+                endPage: 604,
+                arabic: "الإخلاص"
+            },
+            {
+                id: 113,
+                name: "Al-Falaq",
+                ayahs: 5,
+                startPage: 604,
+                endPage: 604,
+                arabic: "الفلق"
+            },
+            {
+                id: 114,
+                name: "An-Nas",
+                ayahs: 6,
+                startPage: 604,
+                endPage: 604,
+                arabic: "الناس"
+            }
+        ];
 
+        // ==================== VARIABEL UTAMA ====================
         let currentPage = 1;
         let isMurojaahMode = true;
         let quranWords = [];
         let currentWordTargetIdx = 0;
 
-        // ========== PERBAIKAN UTAMA: VARIABEL SPEECH ==========
+        // ==================== SPEECH RECOGNITION (PERBAIKAN) ====================
         let recognition = null;
         let isRecording = false;
-        let speechBuffer = ''; // Menampung transkrip final
-        let silenceTimer = null; // Untuk deteksi hening
-        const SILENCE_TIMEOUT = 2000; // 2 detik hening -> proses buffer
+        let speechBuffer = '';
+        let silenceTimer = null;
+        const SILENCE_TIMEOUT = 2000;
 
         document.addEventListener('DOMContentLoaded', () => {
             renderSurahList();
@@ -636,8 +1548,6 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
         });
 
         // ==================== DASHBOARD & NAVIGASI ====================
-        // (fungsi renderSurahList, filterSurah, openRangeModal, dll. TIDAK BERUBAH)
-        // Saya sertakan ulang agar lengkap.
         function renderSurahList(filter = '') {
             const container = document.getElementById('surahListContainer');
             container.innerHTML = '';
@@ -814,7 +1724,7 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             container.innerHTML = html;
         }
 
-        // ========== MANUAL TAP ==========
+        // ==================== MANUAL TAP ====================
         function manualReveal(index) {
             if (index >= currentWordTargetIdx) {
                 for (let i = currentWordTargetIdx; i <= index; i++) {
@@ -823,8 +1733,7 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
                 }
                 currentWordTargetIdx = index + 1;
                 updateTargetIndicator();
-                speechBuffer = ''; // bersihkan buffer agar tidak konflik
-
+                speechBuffer = '';
                 if (currentWordTargetIdx >= quranWords.length) {
                     showToast("Halaman selesai!");
                     setTimeout(() => changePage(1), 1500);
@@ -842,19 +1751,14 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
 
             recognition = new SpeechRecognition();
             recognition.lang = 'ar-SA';
-            recognition.continuous = false; // <-- PENTING: false agar tidak numpuk transkrip
-            recognition.interimResults = false; // <-- Hanya hasil final yang diproses (mengurangi beban)
+            recognition.continuous = false;
+            recognition.interimResults = false;
 
             recognition.onresult = (event) => {
-                // Ambil hasil final (karena interimResults=false, hanya final)
                 const transcript = event.results[0][0].transcript;
                 speechBuffer += ' ' + transcript;
                 document.getElementById('liveTranscript').innerText = speechBuffer.trim() || '...';
-
-                // Reset timer hening setiap kali menerima suara
                 resetSilenceTimer();
-
-                // Proses buffer untuk mencocokkan kata
                 processSpeechBuffer();
             };
 
@@ -865,17 +1769,13 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
                     renderMicState();
                     showToast("Akses Mikrofon diblokir!");
                 }
-                // Jika error selain 'no-speech' atau 'aborted', jangan restart otomatis
                 if (e.error === 'no-speech' || e.error === 'aborted') {
-                    // Jika masih recording, coba restart setelah jeda
                     if (isRecording) setTimeout(startRecognition, 300);
                 }
             };
 
             recognition.onend = () => {
-                // Jika masih recording, mulai ulang setelah jeda (tetapi dengan timer hening)
                 if (isRecording) {
-                    // Jangan langsung start, beri waktu agar tidak cepat mati-nyala
                     setTimeout(() => {
                         if (isRecording) startRecognition();
                     }, 500);
@@ -889,9 +1789,7 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
                 recognition.start();
                 document.getElementById('liveTranscript').classList.add('active');
             } catch (e) {
-                // Jika sudah berjalan, abaikan
                 if (e.name === 'InvalidStateError') {
-                    // Coba stop lalu start lagi
                     recognition.stop();
                     setTimeout(() => recognition.start(), 100);
                 }
@@ -900,7 +1798,6 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
 
         function resetSilenceTimer() {
             clearTimeout(silenceTimer);
-            // Jika setelah 2 detik tidak ada suara, buffer di-reset untuk mencegah akumulasi salah
             silenceTimer = setTimeout(() => {
                 speechBuffer = '';
                 document.getElementById('liveTranscript').innerText = '';
@@ -909,14 +1806,11 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
 
         function processSpeechBuffer() {
             if (currentWordTargetIdx >= quranWords.length) return;
-
             const spokenClean = normalizeArabicExtreme(speechBuffer);
             let matchFound = false;
 
-            // Coba cocokkan hingga 3 kata ke depan
             for (let i = 0; i < 3; i++) {
                 if (currentWordTargetIdx >= quranWords.length) break;
-
                 const targetWordClean = quranWords[currentWordTargetIdx].normalized;
                 if (spokenClean.includes(targetWordClean)) {
                     document.getElementById(quranWords[currentWordTargetIdx].id).classList.add('read-correctly');
@@ -930,7 +1824,6 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
 
             if (matchFound) {
                 updateTargetIndicator();
-                // Setelah berhasil, bersihkan buffer agar tidak terjadi pengulangan
                 speechBuffer = '';
                 document.getElementById('liveTranscript').innerText = '...';
                 clearTimeout(silenceTimer);
@@ -994,7 +1887,7 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
                 .trim();
         }
 
-        // ========== UTILITAS ==========
+        // ==================== UTILITAS ====================
         function changePage(direction) {
             let newPage = currentPage + direction;
             if (newPage >= 1 && newPage <= 604) {

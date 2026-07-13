@@ -562,6 +562,10 @@ if ($q_bm && mysqli_num_rows($q_bm) > 0) {
                 <div class="q-icon"><i class="fas fa-book-quran"></i></div>
                 <div class="q-text">Qur'an</div>
             </a>
+            <a href="hafalan.php" class="q-item">
+                <div class="q-icon"><i class="fas fa-brain"></i></div>
+                <div class="q-text">Hafalan</div>
+            </a>
             <a href="smart_murojaah.php" class="q-item">
                 <div class="q-icon"><i class="fas fa-microphone-alt"></i></div>
                 <div class="q-text">Murojaah</div>
@@ -593,7 +597,7 @@ if ($q_bm && mysqli_num_rows($q_bm) > 0) {
             </a>
             <a href="game.php" class="q-item">
                 <div class="q-icon"><i class="fas fa-gamepad"></i></div>
-                <div class="q-text">AI Coach</div>
+                <div class="q-text">Game</div>
             </a>
         </div>
     </div>

@@ -251,7 +251,8 @@ if (isset($_SESSION['alert'])) {
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
+    <!-- GANTI: Super Build CKEditor 5 (fitur paling lengkap) -->
+    <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/super-build/ckeditor.js"></script>
 
     <style>
         :root {
@@ -734,8 +735,9 @@ if (isset($_SESSION['alert'])) {
             display: none;
         }
 
+        /* CKEditor custom height & toolbar responsiveness */
         .ck-editor__editable {
-            min-height: 380px;
+            min-height: 420px;
             font-family: inherit;
             font-size: 1.02rem;
             border-radius: 0 0 12px 12px !important;
@@ -743,11 +745,17 @@ if (isset($_SESSION['alert'])) {
 
         .ck.ck-toolbar {
             border-radius: 12px 12px 0 0 !important;
+            flex-wrap: wrap;
+            gap: 4px;
         }
 
         .ck.ck-editor__main>.ck-editor__editable,
         .ck.ck-toolbar {
             border-color: var(--border) !important;
+        }
+
+        .ck.ck-dropdown .ck-dropdown__panel {
+            max-height: 300px;
         }
 
         /* Quiz box */
@@ -1042,12 +1050,76 @@ if (isset($_SESSION['alert'])) {
             }
         });
 
+        // ========== INISIALISASI CKEDITOR SUPER BUILD DENGAN TOOLBAR LENGKAP ==========
         let myEditor;
-        ClassicEditor.create(document.querySelector('#editor'), {
-            toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', '|', 'insertTable', 'blockQuote', '|', 'undo', 'redo']
-        }).then(editor => {
-            myEditor = editor;
-        }).catch(err => console.error(err));
+        ClassicEditor
+            .create(document.querySelector('#editor'), {
+                toolbar: {
+                    items: [
+                        'heading',
+                        '|',
+                        'fontFamily',
+                        'fontSize',
+                        '|',
+                        'fontColor',
+                        'fontBackgroundColor',
+                        '|',
+                        'bold',
+                        'italic',
+                        'underline',
+                        'strikethrough',
+                        'subscript',
+                        'superscript',
+                        '|',
+                        'alignment',
+                        '|',
+                        'bulletedList',
+                        'numberedList',
+                        'todoList',
+                        '|',
+                        'outdent',
+                        'indent',
+                        '|',
+                        'link',
+                        'insertImage',
+                        'mediaEmbed',
+                        'blockQuote',
+                        'codeBlock',
+                        '|',
+                        'insertTable',
+                        '|',
+                        'removeFormat',
+                        'undo',
+                        'redo'
+                    ],
+                    shouldNotGroupWhenFull: true
+                },
+                image: {
+                    toolbar: [
+                        'imageTextAlternative',
+                        'imageStyle:inline',
+                        'imageStyle:block',
+                        'imageStyle:side',
+                        '|',
+                        'toggleImageCaption',
+                        'linkImage'
+                    ]
+                },
+                table: {
+                    contentToolbar: [
+                        'tableColumn',
+                        'tableRow',
+                        'mergeTableCells',
+                        'tableCellProperties',
+                        'tableProperties'
+                    ]
+                },
+                placeholder: 'Tulis atau tempelkan isi materi di sini...'
+            })
+            .then(editor => {
+                myEditor = editor;
+            })
+            .catch(err => console.error(err));
 
         /* ---------- Stepper navigation ---------- */
         const stepFills = {

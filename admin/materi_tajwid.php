@@ -102,7 +102,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
     $pdf   = $upPdf['name'];
 
     if ($id_materi > 0) {
-        // EDIT MATERI
         if ($cover !== '' && $pdf !== '') {
             $stmt = mysqli_prepare($conn, "UPDATE tajwid_materi SET judul=?, konten=?, youtube_url=?, waktu_kuis=?, cover_image=?, pdf_file=? WHERE id=?");
             mysqli_stmt_bind_param($stmt, "sssissi", $judul, $konten, $youtube, $waktu_kuis, $cover, $pdf, $id_materi);
@@ -119,13 +118,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
         mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
 
-        // Hapus soal kuis lama
         $stmtDel = mysqli_prepare($conn, "DELETE FROM tajwid_kuis WHERE materi_id=?");
         mysqli_stmt_bind_param($stmtDel, "i", $id_materi);
         mysqli_stmt_execute($stmtDel);
         mysqli_stmt_close($stmtDel);
     } else {
-        // TAMBAH MATERI BARU
         $stmt = mysqli_prepare($conn, "INSERT INTO tajwid_materi (judul, cover_image, pdf_file, konten, youtube_url, waktu_kuis) VALUES (?, ?, ?, ?, ?, ?)");
         mysqli_stmt_bind_param($stmt, "sssssi", $judul, $cover, $pdf, $konten, $youtube, $waktu_kuis);
         mysqli_stmt_execute($stmt);
@@ -133,7 +130,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
         mysqli_stmt_close($stmt);
     }
 
-    // PROSES SOAL KUIS (Jika ada)
     if (isset($_POST['pertanyaan']) && is_array($_POST['pertanyaan'])) {
         $stmtQ = mysqli_prepare($conn, "INSERT INTO tajwid_kuis (materi_id, pertanyaan, gambar, opsi_a, opsi_b, opsi_c, opsi_d, jawaban_benar) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
         for ($i = 0; $i < count($_POST['pertanyaan']); $i++) {
@@ -231,7 +227,6 @@ while ($row = mysqli_fetch_assoc($q_m)) {
     }
     mysqli_stmt_close($stmtS);
     $row['soal'] = $soal;
-
     $materi_list[] = $row;
 }
 
@@ -247,15 +242,14 @@ if (isset($_SESSION['alert'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Studio Tajwid — Admin Hafizhly</title>
+    <title>Studio Tajwid — Admin Hifzly</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Jodit Editor CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jodit/3.24.8/jodit.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+    <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/super-build/ckeditor.js"></script>
+
     <style>
-        /* === GLOBAL STYLES (sama seperti sebelumnya) === */
         :root {
             --primary: #059669;
             --primary-dark: #047857;
@@ -279,10 +273,7 @@ if (isset($_SESSION['alert'])) {
 
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background:
-                radial-gradient(1200px 500px at 100% -10%, var(--primary-100), transparent 60%),
-                radial-gradient(900px 400px at -10% 10%, #f0fdf4, transparent 55%),
-                var(--bg);
+            background: radial-gradient(1200px 500px at 100% -10%, var(--primary-100), transparent 60%), radial-gradient(900px 400px at -10% 10%, #f0fdf4, transparent 55%), var(--bg);
             color: var(--ink);
             margin: 0;
             padding: clamp(14px, 3vw, 28px);
@@ -665,12 +656,6 @@ if (isset($_SESSION['alert'])) {
             color: var(--ink);
         }
 
-        .form-hint {
-            font-size: .78rem;
-            color: var(--muted);
-            margin-top: 6px;
-        }
-
         .form-control {
             width: 100%;
             padding: 13px 14px;
@@ -728,62 +713,39 @@ if (isset($_SESSION['alert'])) {
             display: none;
         }
 
-        /* RULER STYLES */
-        .ruler-container {
-            background: #f0f0f0;
-            border: 1px solid #ccc;
-            border-bottom: none;
-            border-radius: var(--radius-md) var(--radius-md) 0 0;
-            padding: 2px 0;
-            display: flex;
-            align-items: center;
-            overflow: hidden;
-        }
-
-        .ruler {
-            height: 20px;
-            background: white;
-            position: relative;
-            flex: 1;
-            margin: 0 10px;
-            border-left: 1px solid #999;
-            border-right: 1px solid #999;
-        }
-
-        .ruler-mark {
-            position: absolute;
-            bottom: 0;
-            width: 1px;
-            height: 8px;
-            background: #666;
-        }
-
-        .ruler-mark.major {
-            height: 14px;
-            background: #333;
-        }
-
-        .ruler-label {
-            position: absolute;
-            bottom: -14px;
-            font-size: 8px;
-            color: #333;
-            transform: translateX(-50%);
-        }
-
-        /* Jodit customization */
-        .jodit-container {
-            border-radius: 0 0 var(--radius-md) var(--radius-md) !important;
-            border: 1px solid var(--border) !important;
-        }
-
-        .jodit-toolbar__box {
-            background: #f9fafb !important;
-            border-bottom: 1px solid var(--border) !important;
-        }
-
-        .jodit-workplace {
+        /* CUSTOM CKEDITOR CSS UNTUK ADMIN */
+        .ck-editor__editable {
             min-height: 400px;
+            font-family: inherit;
+            font-size: 1.05rem;
+            border-radius: 0 0 12px 12px !important;
+        }
+
+        .ck.ck-toolbar {
+            border-radius: 12px 12px 0 0 !important;
+        }
+
+        .ck.ck-editor__main>.ck-editor__editable,
+        .ck.ck-toolbar {
+            border-color: var(--border) !important;
+        }
+
+        /* Memastikan tabel di editor admin punya garis */
+        .ck-content table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 15px 0;
+        }
+
+        .ck-content table td,
+        .ck-content table th {
+            border: 1px solid #cbd5e1;
+            padding: 10px;
+        }
+
+        .ck-content table th {
+            background: #f1f5f9;
+            font-weight: bold;
         }
 
         .quiz-box {
@@ -909,7 +871,6 @@ if (isset($_SESSION['alert'])) {
 <body>
     <div class="container">
 
-        <!-- LIST VIEW -->
         <div id="listView">
             <div class="header-top">
                 <div class="header-title">
@@ -960,7 +921,6 @@ if (isset($_SESSION['alert'])) {
             </div>
         </div>
 
-        <!-- FORM AREA -->
         <div id="formArea">
             <div class="header-top" style="margin-bottom:8px;">
                 <h2 id="formTitle" style="font-size:clamp(1.2rem,3vw,1.5rem); font-weight:800; margin:0;">Buat Materi Baru</h2>
@@ -986,7 +946,6 @@ if (isset($_SESSION['alert'])) {
                 <input type="hidden" name="id_materi" id="id_materi" value="0">
 
                 <div class="step-content-wrap">
-                    <!-- STEP 1 -->
                     <div class="step-content active" id="step1">
                         <div class="form-group">
                             <label>Judul Materi <span style="color:var(--danger)">*</span></label>
@@ -1020,14 +979,9 @@ if (isset($_SESSION['alert'])) {
                         </div>
                     </div>
 
-                    <!-- STEP 2 (dengan Ruler & Jodit) -->
                     <div class="step-content" id="step2">
                         <div class="form-group">
-                            <label>Isi Materi (Bisa tambahkan tabel, gambar, link, dll)</label>
-                            <!-- Ruler interaktif -->
-                            <div class="ruler-container">
-                                <div class="ruler" id="ruler"></div>
-                            </div>
+                            <label>Isi Materi (Bisa tambahkan tabel, warna font, link, dll)</label>
                             <textarea name="konten" id="editor"></textarea>
                         </div>
                         <div class="form-footer">
@@ -1036,7 +990,6 @@ if (isset($_SESSION['alert'])) {
                         </div>
                     </div>
 
-                    <!-- STEP 3 -->
                     <div class="step-content" id="step3">
                         <div class="form-group" style="background:var(--primary-50); padding:18px; border-radius:var(--radius-md); border:1px solid var(--primary-100);">
                             <label><i class="fas fa-stopwatch"></i> Pengaturan Waktu Kuis</label>
@@ -1065,98 +1018,70 @@ if (isset($_SESSION['alert'])) {
         </div>
     </div>
 
-    <!-- Jodit JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jodit/3.24.8/jodit.min.js"></script>
-
     <script>
         const ALERT_DATA = <?= $alertData ? json_encode($alertData) : 'null' ?>;
 
-        // ========== INISIALISASI JODIT (LENGKAP) ==========
-        const editor = new Jodit('#editor', {
-            height: 500,
-            placeholder: 'Mulai tulis materi di sini...',
-            toolbar: true,
-            buttons: [
-                'source', '|',
-                'font', 'fontsize', 'paragraph', 'lineHeight', '|',
-                'bold', 'italic', 'underline', 'strikethrough', 'superscript', 'subscript', '|',
-                'color', 'background', '|',
-                'align', 'outdent', 'indent', '|',
-                'ul', 'ol', '|',
-                'table', 'link', 'image', 'video', '|',
-                'undo', 'redo', '|',
-                'fullsize', 'preview', 'print'
-            ],
-            uploader: {
-                url: 'upload.php', // Ganti dengan path yang sesuai jika berbeda
-                format: 'json',
-                prepareData: function(data) {
-                    return data;
-                },
-                isSuccess: function(resp) {
-                    return resp && resp.success;
-                },
-                getMsg: function(resp) {
-                    return resp.message || 'Upload gagal';
-                },
-                process: function(resp) {
-                    if (resp.data && resp.data.files && resp.data.files.length > 0) {
-                        return {
-                            files: resp.data.files,
-                            path: resp.data.files[0],
-                            baseurl: '',
-                            error: undefined,
-                            msg: ''
-                        };
-                    }
-                    return {
-                        error: 'Gagal memproses upload'
-                    };
-                },
-                defaultHandlerSuccess: function(data) {
-                    // Jodit akan menangani sendiri
-                },
-                defaultHandlerError: function(e) {
-                    Swal.fire('Error', 'Gagal mengunggah gambar: ' + (e.message || ''), 'error');
-                }
-            },
-            askBeforePasteHTML: false,
-            askBeforePasteFromWord: false,
-            defaultFont: 'Plus Jakarta Sans',
-            defaultFontSize: '14px',
-            lineHeight: [1, 1.5, 2, 2.5, 3],
-            // Font list sudah otomatis dari Jodit, tidak perlu custom controls.font
+        document.addEventListener('DOMContentLoaded', () => {
+            if (ALERT_DATA) {
+                Swal.fire({
+                    icon: ALERT_DATA.type === 'error' ? 'error' : 'success',
+                    title: ALERT_DATA.msg,
+                    timer: 2500,
+                    showConfirmButton: false
+                });
+            }
         });
 
-        // ========== RULER GENERATOR ==========
-        function generateRuler() {
-            const ruler = document.getElementById('ruler');
-            const width = ruler.clientWidth;
-            const cmPerPixel = 37.8; // perkiraan 1 cm = 37.8 px (96 DPI)
-            let html = '';
-            for (let cm = 0; cm <= width / cmPerPixel; cm++) {
-                const x = cm * cmPerPixel;
-                html += `<div class="ruler-mark ${cm % 5 === 0 ? 'major' : ''}" style="left:${x}px;"></div>`;
-                if (cm % 5 === 0) {
-                    html += `<div class="ruler-label" style="left:${x}px;">${cm}</div>`;
-                }
-            }
-            ruler.innerHTML = html;
-        }
-        window.addEventListener('load', generateRuler);
-        window.addEventListener('resize', generateRuler);
+        // INISIALISASI CKEDITOR 5 SUPER BUILD
+        let myEditor;
+        CKEDITOR.ClassicEditor.create(document.querySelector('#editor'), {
+            toolbar: {
+                items: [
+                    'heading', '|',
+                    'fontFamily', 'fontSize', 'fontColor', 'fontBackgroundColor', '|',
+                    'bold', 'italic', 'underline', 'strikethrough', '|',
+                    'alignment', '|',
+                    'bulletedList', 'numberedList', 'outdent', 'indent', '|',
+                    'link', 'insertTable', 'blockQuote', '|',
+                    'undo', 'redo'
+                ],
+                shouldNotGroupWhenFull: true
+            },
+            fontFamily: {
+                options: [
+                    'default', 'Arial, Helvetica, sans-serif', 'Courier New, Courier, monospace',
+                    'Georgia, serif', 'Tahoma, Geneva, sans-serif', 'Times New Roman, Times, serif',
+                    'Trebuchet MS, Helvetica, sans-serif', 'Verdana, Geneva, sans-serif',
+                    'Plus Jakarta Sans, sans-serif', 'Amiri, serif'
+                ],
+                supportAllValues: true
+            },
+            fontSize: {
+                options: [10, 12, 14, 'default', 18, 20, 22, 24, 28, 36],
+                supportAllValues: true
+            },
+            htmlSupport: {
+                allow: [{
+                    name: /.*/,
+                    attributes: true,
+                    classes: true,
+                    styles: true
+                }]
+            },
+            table: {
+                contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells', 'tableProperties', 'tableCellProperties']
+            },
+            removePlugins: [
+                'ExportPdf', 'ExportWord', 'CKBox', 'CKFinder', 'EasyImage', 'RealTimeCollaborativeComments',
+                'RealTimeCollaborativeTrackChanges', 'RealTimeCollaborativeRevisionHistory', 'PresenceList',
+                'Comments', 'TrackChanges', 'TrackChangesData', 'RevisionHistory', 'Pagination', 'WProofreader',
+                'MathType', 'SlashCommand', 'Template', 'DocumentOutline', 'FormatPainter', 'TableOfContents',
+                'PasteFromOfficeEnhanced', 'CaseChange'
+            ]
+        }).then(editor => {
+            myEditor = editor;
+        }).catch(err => console.error(err));
 
-        // SweetAlert notifikasi
-        if (ALERT_DATA) {
-            Swal.fire({
-                icon: ALERT_DATA.type === 'error' ? 'error' : 'success',
-                title: ALERT_DATA.msg,
-                timer: 2500,
-                showConfirmButton: false
-            });
-        }
-
-        /* ---------- Stepper navigation ---------- */
         const stepFills = {
             1: '2%',
             2: '50%',
@@ -1184,7 +1109,6 @@ if (isset($_SESSION['alert'])) {
 
         function goToStep(step) {
             if (!validateStep(step)) return;
-
             document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.step-item').forEach(el => el.classList.remove('active', 'done'));
 
@@ -1209,7 +1133,7 @@ if (isset($_SESSION['alert'])) {
             document.getElementById('lbl_cover').innerText = 'Klik atau seret foto (JPG/PNG/WEBP, maks 5MB)';
             document.getElementById('lbl_pdf').innerText = 'Klik atau seret file (.pdf, maks 15MB)';
             document.getElementById('preview_cover').style.display = 'none';
-            editor.value = '';
+            if (myEditor) myEditor.setData('');
             document.getElementById('quizContainer').innerHTML = '';
             toggleQuizEmpty();
             goToStep(1);
@@ -1240,7 +1164,9 @@ if (isset($_SESSION['alert'])) {
             if (data.pdf_file) {
                 document.getElementById('lbl_pdf').innerText = 'PDF tersimpan: ' + data.pdf_file;
             }
-            editor.value = data.konten || '';
+            setTimeout(() => {
+                if (myEditor) myEditor.setData(data.konten || '');
+            }, 100);
 
             document.getElementById('quizContainer').innerHTML = '';
             if (data.soal && data.soal.length > 0) {
@@ -1249,7 +1175,6 @@ if (isset($_SESSION['alert'])) {
             toggleQuizEmpty();
         }
 
-        /* ---------- Upload preview + drag&drop ---------- */
         document.getElementById('f_cover').addEventListener('change', function() {
             if (this.files[0]) {
                 document.getElementById('lbl_cover').innerText = this.files[0].name;
@@ -1283,7 +1208,6 @@ if (isset($_SESSION['alert'])) {
         setupDropZone('dropCover', 'f_cover');
         setupDropZone('dropPdf', 'f_pdf');
 
-        /* ---------- Quiz box generator ---------- */
         let quizCounter = 0;
 
         function toggleQuizEmpty() {
@@ -1296,7 +1220,6 @@ if (isset($_SESSION['alert'])) {
             const div = document.createElement('div');
             div.className = 'quiz-box';
             div.id = 'qbox_' + quizCounter;
-
             const esc = (s) => (s || '').replace(/"/g, '&quot;');
             const p = esc(data ? data.pertanyaan : '');
             const oa = esc(data ? data.opsi_a : '');
@@ -1304,22 +1227,13 @@ if (isset($_SESSION['alert'])) {
             const oc = esc(data ? data.opsi_c : '');
             const od = esc(data ? data.opsi_d : '');
             const jb = data ? data.jawaban_benar : '';
-            const imgOld = data && data.gambar ?
-                `<input type="hidden" name="old_gambar_kuis[]" value="${esc(data.gambar)}"><div style="font-size:0.78rem; color:var(--primary-dark); margin-top:6px;"><i class="fas fa-check-circle"></i> Gambar tersimpan: ${esc(data.gambar)}</div>` :
-                `<input type="hidden" name="old_gambar_kuis[]" value="">`;
+            const imgOld = data && data.gambar ? `<input type="hidden" name="old_gambar_kuis[]" value="${esc(data.gambar)}"><div style="font-size:0.78rem; color:var(--primary-dark); margin-top:6px;"><i class="fas fa-check-circle"></i> Gambar tersimpan: ${esc(data.gambar)}</div>` : `<input type="hidden" name="old_gambar_kuis[]" value="">`;
 
             div.innerHTML = `
                 <button type="button" class="btn-remove-quiz" onclick="removeQuizBox('qbox_${quizCounter}')"><i class="fas fa-trash"></i></button>
                 <div class="quiz-box-title"><i class="fas fa-circle-question"></i> Soal #${quizCounter}</div>
-                <div class="form-group">
-                    <label>Pertanyaan</label>
-                    <textarea name="pertanyaan[]" class="form-control" rows="2">${p}</textarea>
-                </div>
-                <div class="form-group">
-                    <label>Sisipkan Gambar (Opsional)</label>
-                    <input type="file" name="gambar_kuis[]" class="form-control" accept="image/*" style="padding:10px;">
-                    ${imgOld}
-                </div>
+                <div class="form-group"><label>Pertanyaan</label><textarea name="pertanyaan[]" class="form-control" rows="2">${p}</textarea></div>
+                <div class="form-group"><label>Sisipkan Gambar (Opsional)</label><input type="file" name="gambar_kuis[]" class="form-control" accept="image/*" style="padding:10px;">${imgOld}</div>
                 <div class="grid-4">
                     <div><label>Opsi A</label><input type="text" name="opsi_a[]" class="form-control" value="${oa}"></div>
                     <div><label>Opsi B</label><input type="text" name="opsi_b[]" class="form-control" value="${ob}"></div>
@@ -1329,10 +1243,8 @@ if (isset($_SESSION['alert'])) {
                 <div class="form-group" style="margin-top:15px;">
                     <label>Jawaban Benar</label>
                     <select name="jawaban_benar[]" class="form-control" style="background:var(--primary-50); font-weight:bold; color:var(--primary-dark);">
-                        <option value="a" ${jb=='a'?'selected':''}>A</option>
-                        <option value="b" ${jb=='b'?'selected':''}>B</option>
-                        <option value="c" ${jb=='c'?'selected':''}>C</option>
-                        <option value="d" ${jb=='d'?'selected':''}>D</option>
+                        <option value="a" ${jb=='a'?'selected':''}>A</option><option value="b" ${jb=='b'?'selected':''}>B</option>
+                        <option value="c" ${jb=='c'?'selected':''}>C</option><option value="d" ${jb=='d'?'selected':''}>D</option>
                     </select>
                 </div>
             `;
@@ -1387,7 +1299,7 @@ if (isset($_SESSION['alert'])) {
                 });
                 return;
             }
-            editor.synchronizeValues();
+            if (myEditor) document.getElementById('editor').value = myEditor.getData();
             document.getElementById('submitBtn').classList.add('loading');
             document.getElementById('submitBtn').setAttribute('disabled', 'true');
         });

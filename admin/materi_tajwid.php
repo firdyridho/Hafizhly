@@ -251,8 +251,8 @@ if (isset($_SESSION['alert'])) {
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <!-- GANTI: Super Build CKEditor 5 (fitur paling lengkap) -->
-    <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/super-build/ckeditor.js"></script>
+    <!-- ====== TINYMCE 6 (Word-like) ====== -->
+    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
 
     <style>
         :root {
@@ -735,29 +735,6 @@ if (isset($_SESSION['alert'])) {
             display: none;
         }
 
-        /* CKEditor custom height & toolbar responsiveness */
-        .ck-editor__editable {
-            min-height: 420px;
-            font-family: inherit;
-            font-size: 1.02rem;
-            border-radius: 0 0 12px 12px !important;
-        }
-
-        .ck.ck-toolbar {
-            border-radius: 12px 12px 0 0 !important;
-            flex-wrap: wrap;
-            gap: 4px;
-        }
-
-        .ck.ck-editor__main>.ck-editor__editable,
-        .ck.ck-toolbar {
-            border-color: var(--border) !important;
-        }
-
-        .ck.ck-dropdown .ck-dropdown__panel {
-            max-height: 300px;
-        }
-
         /* Quiz box */
         .quiz-box {
             border: 1px solid var(--border);
@@ -877,6 +854,19 @@ if (isset($_SESSION['alert'])) {
                 width: 100%;
                 justify-content: center;
             }
+        }
+
+        /* Sedikit perbaikan tampilan editor TinyMCE */
+        .tox-tinymce {
+            border-radius: var(--radius-md) !important;
+            border-color: var(--border) !important;
+        }
+
+        .tox .tox-toolbar,
+        .tox .tox-toolbar__overflow,
+        .tox .tox-toolbar__primary {
+            background: #f9fafb !important;
+            border-bottom: 1px solid var(--border) !important;
         }
     </style>
 </head>
@@ -1050,76 +1040,27 @@ if (isset($_SESSION['alert'])) {
             }
         });
 
-        // ========== INISIALISASI CKEDITOR SUPER BUILD DENGAN TOOLBAR LENGKAP ==========
-        let myEditor;
-        ClassicEditor
-            .create(document.querySelector('#editor'), {
-                toolbar: {
-                    items: [
-                        'heading',
-                        '|',
-                        'fontFamily',
-                        'fontSize',
-                        '|',
-                        'fontColor',
-                        'fontBackgroundColor',
-                        '|',
-                        'bold',
-                        'italic',
-                        'underline',
-                        'strikethrough',
-                        'subscript',
-                        'superscript',
-                        '|',
-                        'alignment',
-                        '|',
-                        'bulletedList',
-                        'numberedList',
-                        'todoList',
-                        '|',
-                        'outdent',
-                        'indent',
-                        '|',
-                        'link',
-                        'insertImage',
-                        'mediaEmbed',
-                        'blockQuote',
-                        'codeBlock',
-                        '|',
-                        'insertTable',
-                        '|',
-                        'removeFormat',
-                        'undo',
-                        'redo'
-                    ],
-                    shouldNotGroupWhenFull: true
-                },
-                image: {
-                    toolbar: [
-                        'imageTextAlternative',
-                        'imageStyle:inline',
-                        'imageStyle:block',
-                        'imageStyle:side',
-                        '|',
-                        'toggleImageCaption',
-                        'linkImage'
-                    ]
-                },
-                table: {
-                    contentToolbar: [
-                        'tableColumn',
-                        'tableRow',
-                        'mergeTableCells',
-                        'tableCellProperties',
-                        'tableProperties'
-                    ]
-                },
-                placeholder: 'Tulis atau tempelkan isi materi di sini...'
-            })
-            .then(editor => {
-                myEditor = editor;
-            })
-            .catch(err => console.error(err));
+        // ========== TINYMCE INISIALISASI ==========
+        tinymce.init({
+            selector: '#editor',
+            height: 500,
+            menubar: 'file edit view insert format tools table help', // menu atas
+            toolbar: 'undo redo | styles | bold italic underline strikethrough | forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | table link image media | fontfamily fontsize | removeformat | fullscreen',
+            plugins: 'advlist autolink lists link image charmap preview anchor searchreplace visualblocks code fullscreen insertdatetime media table help wordcount',
+            table_toolbar: 'tableprops tabledelete | tableinsertrowbefore tableinsertrowafter tabledeleterow | tableinsertcolbefore tableinsertcolafter tabledeletecol',
+            image_uploadtab: false,
+            // pengaturan font default
+            font_family_formats: 'Andale Mono=andale mono,times; Arial=arial,helvetica,sans-serif; Arial Black=arial black,avant garde; Book Antiqua=book antiqua,palatino; Comic Sans MS=comic sans ms,sans-serif; Courier New=courier new,courier; Georgia=georgia,palatino; Helvetica=helvetica; Impact=impact,chicago; Symbol=symbol; Tahoma=tahoma,arial,helvetica,sans-serif; Terminal=terminal,monaco; Times New Roman=times new roman,times; Trebuchet MS=trebuchet ms,geneva; Verdana=verdana,geneva; Webdings=webdings; Wingdings=wingdings,zapf dingbats',
+            font_size_formats: '8pt 10pt 12pt 14pt 18pt 24pt 36pt 48pt',
+            content_style: 'body { font-family:Plus Jakarta Sans,Helvetica,Arial,sans-serif; font-size:14pt }',
+            placeholder: 'Mulai tulis materi di sini...',
+            setup: function(editor) {
+                // Saat editor siap
+                editor.on('init', function() {
+                    // bisa diisi apa saja
+                });
+            }
+        });
 
         /* ---------- Stepper navigation ---------- */
         const stepFills = {
@@ -1129,7 +1070,7 @@ if (isset($_SESSION['alert'])) {
         };
 
         function validateStep(step) {
-            if (step === 2) { // moving away from step1 into step2 -> validate step1
+            if (step === 2) {
                 const judul = document.getElementById('f_judul');
                 if (judul.value.trim() === '') {
                     judul.classList.add('invalid');
@@ -1174,7 +1115,8 @@ if (isset($_SESSION['alert'])) {
             document.getElementById('lbl_cover').innerText = 'Klik atau seret foto (JPG/PNG/WEBP, maks 5MB)';
             document.getElementById('lbl_pdf').innerText = 'Klik atau seret file (.pdf, maks 15MB)';
             document.getElementById('preview_cover').style.display = 'none';
-            if (myEditor) myEditor.setData('');
+            // Reset TinyMCE
+            if (tinymce.get('editor')) tinymce.get('editor').setContent('');
             document.getElementById('quizContainer').innerHTML = '';
             toggleQuizEmpty();
             goToStep(1);
@@ -1205,9 +1147,10 @@ if (isset($_SESSION['alert'])) {
             if (data.pdf_file) {
                 document.getElementById('lbl_pdf').innerText = 'PDF tersimpan: ' + data.pdf_file;
             }
+            // Set konten ke TinyMCE (tunggu sebentar editor siap)
             setTimeout(() => {
-                if (myEditor) myEditor.setData(data.konten || '');
-            }, 100);
+                if (tinymce.get('editor')) tinymce.get('editor').setContent(data.konten || '');
+            }, 150);
 
             document.getElementById('quizContainer').innerHTML = '';
             if (data.soal && data.soal.length > 0) {
@@ -1359,7 +1302,10 @@ if (isset($_SESSION['alert'])) {
                 });
                 return;
             }
-            if (myEditor) document.getElementById('editor').value = myEditor.getData();
+            // Ambil isi editor TinyMCE dan masukkan ke textarea
+            if (tinymce.get('editor')) {
+                document.getElementById('editor').value = tinymce.get('editor').getContent();
+            }
             document.getElementById('submitBtn').classList.add('loading');
             document.getElementById('submitBtn').setAttribute('disabled', 'true');
         });

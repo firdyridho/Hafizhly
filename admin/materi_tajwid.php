@@ -255,6 +255,7 @@ if (isset($_SESSION['alert'])) {
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
+        /* === GLOBAL STYLES (sama seperti sebelumnya) === */
         :root {
             --primary: #059669;
             --primary-dark: #047857;
@@ -293,7 +294,6 @@ if (isset($_SESSION['alert'])) {
             margin: 0 auto;
         }
 
-        /* ---------- Header ---------- */
         .header-top {
             display: flex;
             justify-content: space-between;
@@ -336,7 +336,6 @@ if (isset($_SESSION['alert'])) {
             flex-wrap: wrap;
         }
 
-        /* ---------- Buttons ---------- */
         .btn {
             padding: 12px 22px;
             border-radius: 12px;
@@ -396,7 +395,6 @@ if (isset($_SESSION['alert'])) {
             cursor: not-allowed;
         }
 
-        /* ---------- Search ---------- */
         .search-bar {
             position: relative;
             margin-bottom: 22px;
@@ -428,7 +426,6 @@ if (isset($_SESSION['alert'])) {
             box-shadow: 0 0 0 4px var(--primary-100);
         }
 
-        /* ---------- Cards grid ---------- */
         .grid-materi {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
@@ -534,7 +531,6 @@ if (isset($_SESSION['alert'])) {
             display: block;
         }
 
-        /* ---------- Form area (SPA) ---------- */
         #formArea {
             display: none;
             background: rgba(255, 255, 255, .9);
@@ -553,7 +549,6 @@ if (isset($_SESSION['alert'])) {
             transform: translateY(0);
         }
 
-        /* Stepper */
         .stepper {
             display: flex;
             justify-content: space-between;
@@ -632,7 +627,6 @@ if (isset($_SESSION['alert'])) {
             color: white;
         }
 
-        /* Step content with slide transition */
         .step-content-wrap {
             position: relative;
             overflow: hidden;
@@ -699,7 +693,6 @@ if (isset($_SESSION['alert'])) {
             box-shadow: 0 0 0 4px var(--danger-50);
         }
 
-        /* Upload */
         .upload-area {
             border: 2px dashed #cbd5e1;
             padding: 26px 14px;
@@ -735,42 +728,64 @@ if (isset($_SESSION['alert'])) {
             display: none;
         }
 
-        /* Jodit Editor Customizations */
+        /* RULER STYLES */
+        .ruler-container {
+            background: #f0f0f0;
+            border: 1px solid #ccc;
+            border-bottom: none;
+            border-radius: var(--radius-md) var(--radius-md) 0 0;
+            padding: 2px 0;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .ruler {
+            height: 20px;
+            background: white;
+            position: relative;
+            flex: 1;
+            margin: 0 10px;
+            border-left: 1px solid #999;
+            border-right: 1px solid #999;
+        }
+
+        .ruler-mark {
+            position: absolute;
+            bottom: 0;
+            width: 1px;
+            height: 8px;
+            background: #666;
+        }
+
+        .ruler-mark.major {
+            height: 14px;
+            background: #333;
+        }
+
+        .ruler-label {
+            position: absolute;
+            bottom: -14px;
+            font-size: 8px;
+            color: #333;
+            transform: translateX(-50%);
+        }
+
+        /* Jodit customization */
         .jodit-container {
-            border-radius: var(--radius-md) !important;
+            border-radius: 0 0 var(--radius-md) var(--radius-md) !important;
             border: 1px solid var(--border) !important;
         }
 
         .jodit-toolbar__box {
             background: #f9fafb !important;
             border-bottom: 1px solid var(--border) !important;
-            border-radius: var(--radius-md) var(--radius-md) 0 0 !important;
         }
 
         .jodit-workplace {
             min-height: 400px;
         }
 
-        /* Tambahan ruler sederhana (visual) */
-        .editor-ruler {
-            height: 20px;
-            background: #f0f0f0;
-            border-bottom: 1px solid #ccc;
-            position: relative;
-            display: flex;
-            align-items: center;
-            padding: 0 10px;
-            font-size: 10px;
-            color: #777;
-            margin-bottom: -1px;
-            border-radius: var(--radius-md) var(--radius-md) 0 0;
-        }
-
-        .editor-ruler span {
-            margin-right: 15px;
-        }
-
-        /* Quiz box */
         .quiz-box {
             border: 1px solid var(--border);
             border-radius: var(--radius-md);
@@ -839,7 +854,6 @@ if (isset($_SESSION['alert'])) {
             flex-wrap: wrap;
         }
 
-        /* Loader */
         .btn .fa-spinner {
             display: none;
         }
@@ -860,7 +874,6 @@ if (isset($_SESSION['alert'])) {
             }
         }
 
-        /* Responsive */
         @media (max-width: 640px) {
 
             .grid-2,
@@ -896,7 +909,7 @@ if (isset($_SESSION['alert'])) {
 <body>
     <div class="container">
 
-        <!-- HEADER -->
+        <!-- LIST VIEW -->
         <div id="listView">
             <div class="header-top">
                 <div class="header-title">
@@ -947,7 +960,7 @@ if (isset($_SESSION['alert'])) {
             </div>
         </div>
 
-        <!-- FORM SPA (MULTI-STEP) -->
+        <!-- FORM AREA -->
         <div id="formArea">
             <div class="header-top" style="margin-bottom:8px;">
                 <h2 id="formTitle" style="font-size:clamp(1.2rem,3vw,1.5rem); font-weight:800; margin:0;">Buat Materi Baru</h2>
@@ -1007,15 +1020,13 @@ if (isset($_SESSION['alert'])) {
                         </div>
                     </div>
 
-                    <!-- STEP 2 -->
+                    <!-- STEP 2 (dengan Ruler & Jodit) -->
                     <div class="step-content" id="step2">
                         <div class="form-group">
                             <label>Isi Materi (Bisa tambahkan tabel, gambar, link, dll)</label>
-                            <!-- Ruler sederhana (opsional) -->
-                            <div class="editor-ruler">
-                                <span><i class="fas fa-ruler"></i> Penggaris (lebar area)</span>
-                                <span>|</span>
-                                <span>0 cm</span><span style="flex:1;"></span><span>17 cm (A4)</span>
+                            <!-- Ruler interaktif -->
+                            <div class="ruler-container">
+                                <div class="ruler" id="ruler"></div>
                             </div>
                             <textarea name="konten" id="editor"></textarea>
                         </div>
@@ -1060,9 +1071,9 @@ if (isset($_SESSION['alert'])) {
     <script>
         const ALERT_DATA = <?= $alertData ? json_encode($alertData) : 'null' ?>;
 
-        // Inisialisasi Jodit
+        // ========== INISIALISASI JODIT (LENGKAP) ==========
         const editor = new Jodit('#editor', {
-            height: 450,
+            height: 500,
             placeholder: 'Mulai tulis materi di sini...',
             toolbar: true,
             buttons: [
@@ -1074,13 +1085,39 @@ if (isset($_SESSION['alert'])) {
                 'ul', 'ol', '|',
                 'table', 'link', 'image', 'video', '|',
                 'undo', 'redo', '|',
-                'fullsize', 'preview'
+                'fullsize', 'preview', 'print'
             ],
             uploader: {
-                insertImageAsBase64URI: false,
-                url: 'upload.php', // Kalau tidak ada, gambar via URL saja
+                url: 'upload.php', // Ganti dengan path yang sesuai jika berbeda
+                format: 'json',
+                prepareData: function(data) {
+                    return data;
+                },
+                isSuccess: function(resp) {
+                    return resp && resp.success;
+                },
+                getMsg: function(resp) {
+                    return resp.message || 'Upload gagal';
+                },
+                process: function(resp) {
+                    if (resp.data && resp.data.files && resp.data.files.length > 0) {
+                        return {
+                            files: resp.data.files,
+                            path: resp.data.files[0],
+                            baseurl: '',
+                            error: undefined,
+                            msg: ''
+                        };
+                    }
+                    return {
+                        error: 'Gagal memproses upload'
+                    };
+                },
                 defaultHandlerSuccess: function(data) {
-                    // fallback
+                    // Jodit akan menangani sendiri
+                },
+                defaultHandlerError: function(e) {
+                    Swal.fire('Error', 'Gagal mengunggah gambar: ' + (e.message || ''), 'error');
                 }
             },
             askBeforePasteHTML: false,
@@ -1088,13 +1125,26 @@ if (isset($_SESSION['alert'])) {
             defaultFont: 'Plus Jakarta Sans',
             defaultFontSize: '14px',
             lineHeight: [1, 1.5, 2, 2.5, 3],
-            controls: {
-                font: {
-                    component: 'select',
-                    data: 'Arial, Arial Black, Comic Sans MS, Courier New, Helvetica, Impact, Tahoma, Times New Roman, Verdana, Plus Jakarta Sans'
+            // Font list sudah otomatis dari Jodit, tidak perlu custom controls.font
+        });
+
+        // ========== RULER GENERATOR ==========
+        function generateRuler() {
+            const ruler = document.getElementById('ruler');
+            const width = ruler.clientWidth;
+            const cmPerPixel = 37.8; // perkiraan 1 cm = 37.8 px (96 DPI)
+            let html = '';
+            for (let cm = 0; cm <= width / cmPerPixel; cm++) {
+                const x = cm * cmPerPixel;
+                html += `<div class="ruler-mark ${cm % 5 === 0 ? 'major' : ''}" style="left:${x}px;"></div>`;
+                if (cm % 5 === 0) {
+                    html += `<div class="ruler-label" style="left:${x}px;">${cm}</div>`;
                 }
             }
-        });
+            ruler.innerHTML = html;
+        }
+        window.addEventListener('load', generateRuler);
+        window.addEventListener('resize', generateRuler);
 
         // SweetAlert notifikasi
         if (ALERT_DATA) {
@@ -1159,7 +1209,6 @@ if (isset($_SESSION['alert'])) {
             document.getElementById('lbl_cover').innerText = 'Klik atau seret foto (JPG/PNG/WEBP, maks 5MB)';
             document.getElementById('lbl_pdf').innerText = 'Klik atau seret file (.pdf, maks 15MB)';
             document.getElementById('preview_cover').style.display = 'none';
-            // Reset editor
             editor.value = '';
             document.getElementById('quizContainer').innerHTML = '';
             toggleQuizEmpty();
@@ -1191,7 +1240,6 @@ if (isset($_SESSION['alert'])) {
             if (data.pdf_file) {
                 document.getElementById('lbl_pdf').innerText = 'PDF tersimpan: ' + data.pdf_file;
             }
-            // Set konten editor
             editor.value = data.konten || '';
 
             document.getElementById('quizContainer').innerHTML = '';
@@ -1303,7 +1351,6 @@ if (isset($_SESSION['alert'])) {
             }, 200);
         }
 
-        /* ---------- Search / filter ---------- */
         function filterMateri(term) {
             term = term.trim().toLowerCase();
             document.querySelectorAll('#materiGrid .materi-card').forEach(card => {
@@ -1311,7 +1358,6 @@ if (isset($_SESSION['alert'])) {
             });
         }
 
-        /* ---------- Delete confirm ---------- */
         function confirmDelete(id) {
             Swal.fire({
                 title: 'Hapus materi ini?',
@@ -1323,13 +1369,10 @@ if (isset($_SESSION['alert'])) {
                 confirmButtonText: 'Ya, Hapus!',
                 cancelButtonText: 'Batal'
             }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = 'materi_tajwid.php?delete=' + id;
-                }
+                if (result.isConfirmed) window.location.href = 'materi_tajwid.php?delete=' + id;
             });
         }
 
-        /* ---------- Submit ---------- */
         document.getElementById('mainForm').addEventListener('submit', function(e) {
             const judul = document.getElementById('f_judul');
             if (judul.value.trim() === '') {
@@ -1344,7 +1387,6 @@ if (isset($_SESSION['alert'])) {
                 });
                 return;
             }
-            // Sinkronkan isi editor ke textarea (jodit sudah otomatis, tapi pastikan)
             editor.synchronizeValues();
             document.getElementById('submitBtn').classList.add('loading');
             document.getElementById('submitBtn').setAttribute('disabled', 'true');

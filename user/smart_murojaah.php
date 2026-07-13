@@ -1939,16 +1939,14 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             let spokenPos = 0;
             let wordsMatchedCount = 0;
 
-            // Scan: untuk setiap kata target, cari di spoken stream.
-            // Izinkan skip hingga 4 spoken words per target (untuk filter noise/sisipan),
-            // tapi STOP jika target tidak ditemukan sama sekali (berarti belum diucapkan).
+            // Scan: cari kata target di SELURUH sisa stream ucapan.
+            // Ini akan otomatis mengabaikan "gema" (kata duplikat/noise) yang menyelip.
             while (spokenPos < spokenWords.length && checkIdx < quranWords.length) {
                 const targetWord = quranWords[checkIdx].normalized;
                 if (!targetWord) { checkIdx++; continue; }
 
-                const searchEnd = Math.min(spokenPos + 5, spokenWords.length);
                 let foundAt = -1;
-                for (let la = spokenPos; la < searchEnd; la++) {
+                for (let la = spokenPos; la < spokenWords.length; la++) {
                     if (isWordMatch(spokenWords[la], targetWord)) {
                         foundAt = la;
                         break;
@@ -1974,8 +1972,10 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
                 currentWordTargetIdx = checkIdx;
                 updateTargetIndicator();
 
-                // Simpan sisa kata yang belum dicocokkan untuk event berikutnya
-                speechBuffer = spokenWords.slice(spokenPos).join(' ');
+                // Simpan sisa kata, batasi maksimal 15 kata agar tidak macet
+                let remaining = spokenWords.slice(spokenPos);
+                if (remaining.length > 15) remaining = remaining.slice(-15);
+                speechBuffer = remaining.join(' ');
                 interimBuffer = '';
 
                 // Trigger cooldown anti-echo hanya jika banyak kata langsung cocok
@@ -1986,6 +1986,12 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
 
                 clearTimeout(silenceTimer);
                 resetSilenceTimer();
+            } else {
+                // Jika macet karena banyak gema/noise, potong buffer agar tidak deadlock
+                let currentSpeech = speechBuffer.split(/\s+/).filter(w => w);
+                if (currentSpeech.length > 15) {
+                    speechBuffer = currentSpeech.slice(-15).join(' ');
+                }
             }
 
             if (currentWordTargetIdx >= quranWords.length) {

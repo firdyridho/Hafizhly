@@ -250,10 +250,8 @@ if (isset($_SESSION['alert'])) {
     <title>Studio Tajwid — Admin Hafizhly</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Bootstrap 5 CSS (dibutuhkan Summernote) -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Summernote CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-bs5.min.css" rel="stylesheet">
+    <!-- Jodit Editor CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jodit/3.24.8/jodit.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
@@ -737,21 +735,39 @@ if (isset($_SESSION['alert'])) {
             display: none;
         }
 
-        /* Summernote tweaks */
-        .note-editor {
+        /* Jodit Editor Customizations */
+        .jodit-container {
             border-radius: var(--radius-md) !important;
-            border-color: var(--border) !important;
+            border: 1px solid var(--border) !important;
         }
 
-        .note-toolbar {
+        .jodit-toolbar__box {
             background: #f9fafb !important;
             border-bottom: 1px solid var(--border) !important;
             border-radius: var(--radius-md) var(--radius-md) 0 0 !important;
         }
 
-        .note-btn {
-            border-radius: 8px !important;
-            margin: 2px !important;
+        .jodit-workplace {
+            min-height: 400px;
+        }
+
+        /* Tambahan ruler sederhana (visual) */
+        .editor-ruler {
+            height: 20px;
+            background: #f0f0f0;
+            border-bottom: 1px solid #ccc;
+            position: relative;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            font-size: 10px;
+            color: #777;
+            margin-bottom: -1px;
+            border-radius: var(--radius-md) var(--radius-md) 0 0;
+        }
+
+        .editor-ruler span {
+            margin-right: 15px;
         }
 
         /* Quiz box */
@@ -995,6 +1011,12 @@ if (isset($_SESSION['alert'])) {
                     <div class="step-content" id="step2">
                         <div class="form-group">
                             <label>Isi Materi (Bisa tambahkan tabel, gambar, link, dll)</label>
+                            <!-- Ruler sederhana (opsional) -->
+                            <div class="editor-ruler">
+                                <span><i class="fas fa-ruler"></i> Penggaris (lebar area)</span>
+                                <span>|</span>
+                                <span>0 cm</span><span style="flex:1;"></span><span>17 cm (A4)</span>
+                            </div>
                             <textarea name="konten" id="editor"></textarea>
                         </div>
                         <div class="form-footer">
@@ -1032,47 +1054,57 @@ if (isset($_SESSION['alert'])) {
         </div>
     </div>
 
-    <!-- jQuery & Bootstrap JS (diperlukan Summernote) -->
-    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Summernote JS -->
-    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-bs5.min.js"></script>
+    <!-- Jodit JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jodit/3.24.8/jodit.min.js"></script>
 
     <script>
         const ALERT_DATA = <?= $alertData ? json_encode($alertData) : 'null' ?>;
 
-        $(document).ready(function() {
-            if (ALERT_DATA) {
-                Swal.fire({
-                    icon: ALERT_DATA.type === 'error' ? 'error' : 'success',
-                    title: ALERT_DATA.msg,
-                    timer: 2500,
-                    showConfirmButton: false
-                });
+        // Inisialisasi Jodit
+        const editor = new Jodit('#editor', {
+            height: 450,
+            placeholder: 'Mulai tulis materi di sini...',
+            toolbar: true,
+            buttons: [
+                'source', '|',
+                'font', 'fontsize', 'paragraph', 'lineHeight', '|',
+                'bold', 'italic', 'underline', 'strikethrough', 'superscript', 'subscript', '|',
+                'color', 'background', '|',
+                'align', 'outdent', 'indent', '|',
+                'ul', 'ol', '|',
+                'table', 'link', 'image', 'video', '|',
+                'undo', 'redo', '|',
+                'fullsize', 'preview'
+            ],
+            uploader: {
+                insertImageAsBase64URI: false,
+                url: 'upload.php', // Kalau tidak ada, gambar via URL saja
+                defaultHandlerSuccess: function(data) {
+                    // fallback
+                }
+            },
+            askBeforePasteHTML: false,
+            askBeforePasteFromWord: false,
+            defaultFont: 'Plus Jakarta Sans',
+            defaultFontSize: '14px',
+            lineHeight: [1, 1.5, 2, 2.5, 3],
+            controls: {
+                font: {
+                    component: 'select',
+                    data: 'Arial, Arial Black, Comic Sans MS, Courier New, Helvetica, Impact, Tahoma, Times New Roman, Verdana, Plus Jakarta Sans'
+                }
             }
-
-            // Inisialisasi Summernote pada textarea #editor
-            $('#editor').summernote({
-                height: 450,
-                placeholder: 'Mulai tulis materi di sini...',
-                toolbar: [
-                    ['style', ['style']],
-                    ['font', ['bold', 'italic', 'underline', 'strikethrough', 'superscript', 'subscript', 'clear']],
-                    ['fontname', ['fontname']],
-                    ['fontsize', ['fontsize']],
-                    ['color', ['color', 'background']],
-                    ['para', ['ul', 'ol', 'paragraph', 'height']],
-                    ['table', ['table']],
-                    ['insert', ['link', 'picture', 'video']],
-                    ['view', ['fullscreen', 'codeview', 'help']],
-                    ['alignment', ['alignleft', 'aligncenter', 'alignright', 'alignjustify']],
-                    ['misc', ['undo', 'redo']]
-                ],
-                fontNames: ['Arial', 'Arial Black', 'Comic Sans MS', 'Courier New', 'Helvetica', 'Impact', 'Tahoma', 'Times New Roman', 'Verdana', 'Plus Jakarta Sans'],
-                fontSizes: ['8', '9', '10', '11', '12', '14', '18', '24', '36', '48'],
-                tableClassName: 'table table-bordered',
-            });
         });
+
+        // SweetAlert notifikasi
+        if (ALERT_DATA) {
+            Swal.fire({
+                icon: ALERT_DATA.type === 'error' ? 'error' : 'success',
+                title: ALERT_DATA.msg,
+                timer: 2500,
+                showConfirmButton: false
+            });
+        }
 
         /* ---------- Stepper navigation ---------- */
         const stepFills = {
@@ -1127,8 +1159,8 @@ if (isset($_SESSION['alert'])) {
             document.getElementById('lbl_cover').innerText = 'Klik atau seret foto (JPG/PNG/WEBP, maks 5MB)';
             document.getElementById('lbl_pdf').innerText = 'Klik atau seret file (.pdf, maks 15MB)';
             document.getElementById('preview_cover').style.display = 'none';
-            // Reset Summernote
-            $('#editor').summernote('reset');
+            // Reset editor
+            editor.value = '';
             document.getElementById('quizContainer').innerHTML = '';
             toggleQuizEmpty();
             goToStep(1);
@@ -1159,10 +1191,8 @@ if (isset($_SESSION['alert'])) {
             if (data.pdf_file) {
                 document.getElementById('lbl_pdf').innerText = 'PDF tersimpan: ' + data.pdf_file;
             }
-            // Set konten ke Summernote
-            setTimeout(() => {
-                $('#editor').summernote('code', data.konten || '');
-            }, 150);
+            // Set konten editor
+            editor.value = data.konten || '';
 
             document.getElementById('quizContainer').innerHTML = '';
             if (data.soal && data.soal.length > 0) {
@@ -1314,9 +1344,8 @@ if (isset($_SESSION['alert'])) {
                 });
                 return;
             }
-            // Summernote otomatis update textarea, tapi kita pastikan
-            const konten = $('#editor').summernote('code');
-            document.getElementById('editor').value = konten;
+            // Sinkronkan isi editor ke textarea (jodit sudah otomatis, tapi pastikan)
+            editor.synchronizeValues();
             document.getElementById('submitBtn').classList.add('loading');
             document.getElementById('submitBtn').setAttribute('disabled', 'true');
         });

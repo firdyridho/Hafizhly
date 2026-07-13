@@ -1533,12 +1533,15 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
         let quranWords = [];
         let currentWordTargetIdx = 0;
 
-        // ==================== SPEECH RECOGNITION (PERBAIKAN) ====================
+        // ==================== SPEECH RECOGNITION (DIPERBAIKI) ====================
         let recognition = null;
-        let isRecording = false;
-        let speechBuffer = '';
+        let isRecording = false; // status yang diinginkan user (mic ON/OFF)
+        let recognitionActive = false; // status aktual apakah engine speech sedang berjalan
+        let speechBuffer = ''; // teks final yang sudah dikonfirmasi browser
         let silenceTimer = null;
-        const SILENCE_TIMEOUT = 2000;
+        let restartTimer = null;
+        const SILENCE_TIMEOUT = 3000;
+        const RESTART_DELAY = 300;
 
         document.addEventListener('DOMContentLoaded', () => {
             renderSurahList();
@@ -1664,7 +1667,7 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
                         if (!linesMap['b_' + sId]) linesMap['b_' + sId] = [];
                         linesMap['b_' + sId].push({
                             type: 'bismillah',
-                            text: 'بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ'
+                            text: 'بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ'
                         });
                     }
                 }
@@ -1741,7 +1744,7 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             }
         }
 
-        // ==================== SPEECH RECOGNITION (PERBAIKAN) ====================
+        // ==================== SPEECH RECOGNITION (DIPERBAIKI) ====================
         function initSpeechRecognition() {
             window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!window.SpeechRecognition) {
@@ -1751,48 +1754,74 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
 
             recognition = new SpeechRecognition();
             recognition.lang = 'ar-SA';
-            recognition.continuous = false;
-            recognition.interimResults = false;
+            // continuous + interimResults: supaya suara diproses SAAT diucapkan (real-time),
+            // bukan menunggu jeda diam dulu baru dicek. Ini kunci biar tidak "nge-lag/nge-loop".
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.maxAlternatives = 1;
 
             recognition.onresult = (event) => {
-                const transcript = event.results[0][0].transcript;
-                speechBuffer += ' ' + transcript;
-                document.getElementById('liveTranscript').innerText = speechBuffer.trim() || '...';
+                let interimText = '';
+                let finalText = '';
+
+                // Hanya proses hasil baru sejak resultIndex (penting karena continuous=true
+                // mengirim banyak event, bukan cuma sekali seperti sebelumnya)
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const res = event.results[i];
+                    if (res.isFinal) {
+                        finalText += ' ' + res[0].transcript;
+                    } else {
+                        interimText += ' ' + res[0].transcript;
+                    }
+                }
+
+                if (finalText) {
+                    speechBuffer += ' ' + finalText;
+                }
+
+                const liveText = (speechBuffer + ' ' + interimText).trim();
+                document.getElementById('liveTranscript').innerText = liveText || '...';
+
                 resetSilenceTimer();
-                processSpeechBuffer();
+                // Gabungkan buffer final + interim supaya kata yang SEDANG diucapkan
+                // langsung bisa mencocokkan kata target, tanpa menunggu final.
+                processSpeechBuffer(interimText);
             };
 
             recognition.onerror = (e) => {
                 console.warn('Speech error:', e.error);
-                if (e.error === 'not-allowed') {
+                recognitionActive = false;
+                if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
                     isRecording = false;
                     renderMicState();
                     showToast("Akses Mikrofon diblokir!");
+                    return;
                 }
-                if (e.error === 'no-speech' || e.error === 'aborted') {
-                    if (isRecording) setTimeout(startRecognition, 300);
-                }
+                // Untuk error lain (no-speech, network, aborted, dll) biarkan onend
+                // yang menangani restart tunggal, supaya tidak ada 2 timer restart bentrok.
             };
 
             recognition.onend = () => {
+                recognitionActive = false;
                 if (isRecording) {
-                    setTimeout(() => {
-                        if (isRecording) startRecognition();
-                    }, 500);
+                    clearTimeout(restartTimer);
+                    restartTimer = setTimeout(startRecognition, RESTART_DELAY);
                 }
             };
         }
 
         function startRecognition() {
-            if (!recognition || !isRecording) return;
+            if (!recognition || !isRecording || recognitionActive) return;
             try {
                 recognition.start();
+                recognitionActive = true;
                 document.getElementById('liveTranscript').classList.add('active');
             } catch (e) {
-                if (e.name === 'InvalidStateError') {
-                    recognition.stop();
-                    setTimeout(() => recognition.start(), 100);
-                }
+                // Kalau ada kondisi "sudah jalan"/state tidak valid, jangan double start,
+                // cukup jadwalkan 1 percobaan ulang.
+                recognitionActive = false;
+                clearTimeout(restartTimer);
+                restartTimer = setTimeout(startRecognition, RESTART_DELAY);
             }
         }
 
@@ -1800,22 +1829,28 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             clearTimeout(silenceTimer);
             silenceTimer = setTimeout(() => {
                 speechBuffer = '';
-                document.getElementById('liveTranscript').innerText = '';
+                document.getElementById('liveTranscript').innerText = isRecording ? 'Mendengarkan...' : '';
             }, SILENCE_TIMEOUT);
         }
 
-        function processSpeechBuffer() {
+        function processSpeechBuffer(interimText = '') {
             if (currentWordTargetIdx >= quranWords.length) return;
-            const spokenClean = normalizeArabicExtreme(speechBuffer);
+
+            // Gabungkan teks final yang sudah pasti + teks interim yang lagi diucapkan,
+            // supaya progres kata jalan langsung tanpa menunggu diam/berhenti bicara.
+            const combined = speechBuffer + ' ' + interimText;
+            const spokenClean = normalizeArabicExtreme(combined);
+            let checkIdx = currentWordTargetIdx;
             let matchFound = false;
 
-            for (let i = 0; i < 3; i++) {
-                if (currentWordTargetIdx >= quranWords.length) break;
-                const targetWordClean = quranWords[currentWordTargetIdx].normalized;
-                if (spokenClean.includes(targetWordClean)) {
-                    document.getElementById(quranWords[currentWordTargetIdx].id).classList.add('read-correctly');
-                    document.getElementById(quranWords[currentWordTargetIdx].id).classList.remove('target-word');
-                    currentWordTargetIdx++;
+            // Cek beberapa kata target ke depan (toleransi kalau 1-2 kata sebelumnya
+            // sudah kepakai/kelewat karena delay pengenalan suara)
+            for (let lookahead = 0; lookahead < 6 && checkIdx < quranWords.length; lookahead++) {
+                const targetWordClean = quranWords[checkIdx].normalized;
+                if (targetWordClean && spokenClean.includes(targetWordClean)) {
+                    document.getElementById(quranWords[checkIdx].id).classList.add('read-correctly');
+                    document.getElementById(quranWords[checkIdx].id).classList.remove('target-word');
+                    checkIdx++;
                     matchFound = true;
                 } else {
                     break;
@@ -1823,10 +1858,13 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             }
 
             if (matchFound) {
+                currentWordTargetIdx = checkIdx;
                 updateTargetIndicator();
+                // Hanya kosongkan buffer FINAL; biarkan interim tetap berjalan alami
+                // di siklus berikutnya lewat event onresult.
                 speechBuffer = '';
-                document.getElementById('liveTranscript').innerText = '...';
                 clearTimeout(silenceTimer);
+                resetSilenceTimer();
             }
 
             if (currentWordTargetIdx >= quranWords.length) {
@@ -1841,9 +1879,12 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
 
             if (isRecording) {
                 isRecording = false;
-                recognition.stop();
-                transcriptBox.classList.remove('active');
+                clearTimeout(restartTimer);
                 clearTimeout(silenceTimer);
+                try {
+                    recognition.stop();
+                } catch (e) {}
+                transcriptBox.classList.remove('active');
             } else {
                 isRecording = true;
                 speechBuffer = '';

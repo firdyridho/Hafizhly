@@ -1809,6 +1809,10 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             recognition.onend = () => {
                 recognitionActive = false;
                 if (isRecording) {
+                    // Penting: clear buffer sebelum restart, mencegah Chrome Android
+                    // mengirim ulang transkrip lama sebagai input baru (penyebab double).
+                    speechBuffer = '';
+                    interimBuffer = '';
                     clearTimeout(restartTimer);
                     restartTimer = setTimeout(startRecognition, RESTART_DELAY);
                 }
@@ -1837,7 +1841,49 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             }, SILENCE_TIMEOUT);
         }
 
-        // ==================== PROSES PENCOCOKAN KATA (REAL-TIME) ====================
+        // ==================== PENCOCOKAN KATA FUZZY (REAL-TIME) ====================
+
+        // Levenshtein distance — ukur seberapa beda dua kata (maks beda 1-2 huruf = lolos)
+        function levenshtein(a, b) {
+            if (a === b) return 0;
+            if (!a.length) return b.length;
+            if (!b.length) return a.length;
+            const dp = Array.from({ length: b.length + 1 }, (_, i) => i);
+            for (let i = 1; i <= a.length; i++) {
+                let prev = i;
+                for (let j = 1; j <= b.length; j++) {
+                    const curr = a[i - 1] === b[j - 1]
+                        ? dp[j - 1]
+                        : 1 + Math.min(dp[j - 1], dp[j], prev);
+                    dp[j - 1] = prev;
+                    prev = curr;
+                }
+                dp[b.length] = prev;
+            }
+            return dp[b.length];
+        }
+
+        // Cocokkan satu kata ucapan dengan satu kata target — fuzzy
+        function isWordMatch(spoken, target) {
+            if (!spoken || !target) return false;
+            if (spoken === target) return true;
+
+            // Partial: interim speech belum selesai diucapkan (minimal 2 huruf)
+            if (spoken.length >= 2 && target.startsWith(spoken)) return true;
+            // Partial: target diucapkan tapi speech engine potong di tengah
+            if (target.length >= 2 && spoken.startsWith(target)) return true;
+
+            // Fuzzy: toleransi 1 huruf beda untuk kata >= 4 huruf,
+            //        toleransi 2 huruf untuk kata >= 7 huruf
+            const lenDiff = Math.abs(spoken.length - target.length);
+            if (spoken.length >= 4 && target.length >= 4 && lenDiff <= 2) {
+                const maxDist = target.length >= 7 ? 2 : 1;
+                if (levenshtein(spoken, target) <= maxDist) return true;
+            }
+
+            return false;
+        }
+
         function processSpeechBuffer() {
             if (currentWordTargetIdx >= quranWords.length) return;
 
@@ -1845,8 +1891,7 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             const combined = (speechBuffer + ' ' + interimBuffer).trim();
             if (!combined) return;
 
-            // Pecah teks yang diucapkan menjadi array kata per-kata
-            // → cocokkan KATA DEMI KATA, bukan substring mentah
+            // Pecah teks ucapan menjadi array kata per-kata
             const spokenWords = normalizeArabicExtreme(combined)
                 .split(/\s+/)
                 .filter(w => w.length > 0);
@@ -1855,27 +1900,36 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
 
             let checkIdx = currentWordTargetIdx;
             let matchFound = false;
-            let spokenPos = 0; // posisi pointer di array kata yang diucapkan
+            let spokenPos = 0;
 
-            // Scan maju di dalam kata yang diucapkan untuk cocokkan kata target satu per satu
-            while (spokenPos < spokenWords.length && checkIdx < quranWords.length) {
+            // Scan maju: untuk setiap kata target, cari di spoken stream
+            // Kalau tidak ketemu → SKIP 1 kata ucapan (bukan break),
+            // supaya 1 kata yang salah tidak memblokir semua kata berikutnya.
+            const MAX_TARGET_SEARCH = 10; // maks kata target yang dicoba per panggilan
+            const MAX_SPOKEN_SKIP  = 3;  // maks kata ucapan yang boleh dilewati per target
+            let targetsTried = 0;
+
+            while (
+                spokenPos < spokenWords.length &&
+                checkIdx < quranWords.length &&
+                targetsTried < MAX_TARGET_SEARCH
+            ) {
                 const targetWord = quranWords[checkIdx].normalized;
-                if (!targetWord) { checkIdx++; continue; }
+                if (!targetWord) { checkIdx++; targetsTried++; continue; }
 
-                // Cari kata target di sisa array spokenWords mulai dari spokenPos
-                // Toleransi: cari hingga MAX_LOOKAHEAD posisi ke depan
-                const MAX_LOOKAHEAD = 4;
+                // Cari kata target di spoken stream mulai spokenPos
+                // (boleh skip beberapa kata ucapan yang tidak dikenali)
+                const searchEnd = Math.min(spokenPos + MAX_SPOKEN_SKIP + 1, spokenWords.length);
                 let foundAt = -1;
-                for (let la = spokenPos; la < Math.min(spokenPos + MAX_LOOKAHEAD, spokenWords.length); la++) {
-                    if (spokenWords[la] === targetWord ||
-                        spokenWords[la].startsWith(targetWord) || // partial match (sedang diucapkan)
-                        targetWord.startsWith(spokenWords[la]) && spokenWords[la].length >= 2) { // kata target belum selesai diucapkan
+                for (let la = spokenPos; la < searchEnd; la++) {
+                    if (isWordMatch(spokenWords[la], targetWord)) {
                         foundAt = la;
                         break;
                     }
                 }
 
                 if (foundAt >= 0) {
+                    // ✅ Match ditemukan
                     const el = document.getElementById(quranWords[checkIdx].id);
                     if (el) {
                         el.classList.add('read-correctly');
@@ -1884,8 +1938,9 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
                     checkIdx++;
                     spokenPos = foundAt + 1;
                     matchFound = true;
+                    targetsTried++;
                 } else {
-                    // Kata target tidak ditemukan di sisa spokenWords → hentikan scan
+                    // ❌ Kata target tidak ada di sisa spoken stream → berhenti
                     break;
                 }
             }
@@ -1894,13 +1949,8 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
                 currentWordTargetIdx = checkIdx;
                 updateTargetIndicator();
 
-                // Buang bagian buffer yang sudah terpakai (kata-kata yang sudah di-match)
-                // Sisa kata yang belum di-match tetap ada di buffer untuk event berikutnya
-                const usedWords = spokenWords.slice(0, spokenPos);
-                const remainWords = spokenWords.slice(spokenPos);
-
-                // Update speechBuffer hanya berisi sisa kata yang belum di-match
-                speechBuffer = remainWords.join(' ');
+                // Sisa kata spoken yang belum di-match simpan untuk event berikutnya
+                speechBuffer = spokenWords.slice(spokenPos).join(' ');
                 interimBuffer = '';
 
                 clearTimeout(silenceTimer);
@@ -1961,13 +2011,21 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
         function normalizeArabicExtreme(text) {
             if (!text) return "";
             return text
+                // Hapus harakat/tanda baca Arab (tashkeel)
                 .replace(/[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED]/g, '')
+                // Normalisasi bentuk alif
                 .replace(/[ٱآإأ]/g, 'ا')
+                // Taa marbuta → haa (karena sering diucapkan berbeda)
                 .replace(/ة/g, 'ه')
+                // Normalisasi ya
                 .replace(/[ىيئ]/g, 'ي')
+                // Normalisasi waw
                 .replace(/ؤ/g, 'و')
+                // Hapus hamzah standalone
                 .replace(/ء/g, '')
-                .replace(/\s+/g, '')
+                // ⚠️ PENTING: collapse spasi ganda → spasi tunggal (JANGAN hapus semua spasi)
+                // Kalau dihapus semua, seluruh ayat jadi 1 string dan matching per-kata tidak jalan
+                .replace(/\s+/g, ' ')
                 .trim();
         }
 

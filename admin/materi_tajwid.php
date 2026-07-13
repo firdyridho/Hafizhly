@@ -119,7 +119,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
         mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
 
-        // Hapus soal kuis lama (beserta file gambar lama yang tidak dipertahankan) sebelum insert ulang
+        // Hapus soal kuis lama
         $stmtDel = mysqli_prepare($conn, "DELETE FROM tajwid_kuis WHERE materi_id=?");
         mysqli_stmt_bind_param($stmtDel, "i", $id_materi);
         mysqli_stmt_execute($stmtDel);
@@ -149,7 +149,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
             $upGbr = simpan_upload('gambar_kuis', ['jpg', 'jpeg', 'png', 'webp'], 5, 'q' . $i, $i);
             $gbr_kuis = $upGbr['ok'] ? $upGbr['name'] : '';
             if ($gbr_kuis === '' && isset($_POST['old_gambar_kuis'][$i])) {
-                $gbr_kuis = $_POST['old_gambar_kuis'][$i]; // pertahankan gambar lama
+                $gbr_kuis = $_POST['old_gambar_kuis'][$i];
             }
 
             mysqli_stmt_bind_param($stmtQ, "isssssss", $id_materi, $tanya, $gbr_kuis, $oa, $ob, $oc, $od, $jb);
@@ -164,7 +164,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
 }
 
 /* =========================================================
-   HANDLE HAPUS — cascade hapus kuis + file terkait
+   HANDLE HAPUS
    ========================================================= */
 if (isset($_GET['delete'])) {
     $id = (int)$_GET['delete'];
@@ -250,9 +250,11 @@ if (isset($_SESSION['alert'])) {
     <title>Studio Tajwid — Admin Hafizhly</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Bootstrap 5 CSS (dibutuhkan Summernote) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Summernote CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-bs5.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <!-- ====== TINYMCE 6 (Word-like) ====== -->
-    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
 
     <style>
         :root {
@@ -735,6 +737,23 @@ if (isset($_SESSION['alert'])) {
             display: none;
         }
 
+        /* Summernote tweaks */
+        .note-editor {
+            border-radius: var(--radius-md) !important;
+            border-color: var(--border) !important;
+        }
+
+        .note-toolbar {
+            background: #f9fafb !important;
+            border-bottom: 1px solid var(--border) !important;
+            border-radius: var(--radius-md) var(--radius-md) 0 0 !important;
+        }
+
+        .note-btn {
+            border-radius: 8px !important;
+            margin: 2px !important;
+        }
+
         /* Quiz box */
         .quiz-box {
             border: 1px solid var(--border);
@@ -804,7 +823,7 @@ if (isset($_SESSION['alert'])) {
             flex-wrap: wrap;
         }
 
-        /* Loader overlay for submit */
+        /* Loader */
         .btn .fa-spinner {
             display: none;
         }
@@ -854,19 +873,6 @@ if (isset($_SESSION['alert'])) {
                 width: 100%;
                 justify-content: center;
             }
-        }
-
-        /* Sedikit perbaikan tampilan editor TinyMCE */
-        .tox-tinymce {
-            border-radius: var(--radius-md) !important;
-            border-color: var(--border) !important;
-        }
-
-        .tox .tox-toolbar,
-        .tox .tox-toolbar__overflow,
-        .tox .tox-toolbar__primary {
-            background: #f9fafb !important;
-            border-bottom: 1px solid var(--border) !important;
         }
     </style>
 </head>
@@ -1026,10 +1032,16 @@ if (isset($_SESSION['alert'])) {
         </div>
     </div>
 
+    <!-- jQuery & Bootstrap JS (diperlukan Summernote) -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Summernote JS -->
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-bs5.min.js"></script>
+
     <script>
         const ALERT_DATA = <?= $alertData ? json_encode($alertData) : 'null' ?>;
 
-        document.addEventListener('DOMContentLoaded', () => {
+        $(document).ready(function() {
             if (ALERT_DATA) {
                 Swal.fire({
                     icon: ALERT_DATA.type === 'error' ? 'error' : 'success',
@@ -1038,28 +1050,28 @@ if (isset($_SESSION['alert'])) {
                     showConfirmButton: false
                 });
             }
-        });
 
-        // ========== TINYMCE INISIALISASI ==========
-        tinymce.init({
-            selector: '#editor',
-            height: 500,
-            menubar: 'file edit view insert format tools table help', // menu atas
-            toolbar: 'undo redo | styles | bold italic underline strikethrough | forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | table link image media | fontfamily fontsize | removeformat | fullscreen',
-            plugins: 'advlist autolink lists link image charmap preview anchor searchreplace visualblocks code fullscreen insertdatetime media table help wordcount',
-            table_toolbar: 'tableprops tabledelete | tableinsertrowbefore tableinsertrowafter tabledeleterow | tableinsertcolbefore tableinsertcolafter tabledeletecol',
-            image_uploadtab: false,
-            // pengaturan font default
-            font_family_formats: 'Andale Mono=andale mono,times; Arial=arial,helvetica,sans-serif; Arial Black=arial black,avant garde; Book Antiqua=book antiqua,palatino; Comic Sans MS=comic sans ms,sans-serif; Courier New=courier new,courier; Georgia=georgia,palatino; Helvetica=helvetica; Impact=impact,chicago; Symbol=symbol; Tahoma=tahoma,arial,helvetica,sans-serif; Terminal=terminal,monaco; Times New Roman=times new roman,times; Trebuchet MS=trebuchet ms,geneva; Verdana=verdana,geneva; Webdings=webdings; Wingdings=wingdings,zapf dingbats',
-            font_size_formats: '8pt 10pt 12pt 14pt 18pt 24pt 36pt 48pt',
-            content_style: 'body { font-family:Plus Jakarta Sans,Helvetica,Arial,sans-serif; font-size:14pt }',
-            placeholder: 'Mulai tulis materi di sini...',
-            setup: function(editor) {
-                // Saat editor siap
-                editor.on('init', function() {
-                    // bisa diisi apa saja
-                });
-            }
+            // Inisialisasi Summernote pada textarea #editor
+            $('#editor').summernote({
+                height: 450,
+                placeholder: 'Mulai tulis materi di sini...',
+                toolbar: [
+                    ['style', ['style']],
+                    ['font', ['bold', 'italic', 'underline', 'strikethrough', 'superscript', 'subscript', 'clear']],
+                    ['fontname', ['fontname']],
+                    ['fontsize', ['fontsize']],
+                    ['color', ['color', 'background']],
+                    ['para', ['ul', 'ol', 'paragraph', 'height']],
+                    ['table', ['table']],
+                    ['insert', ['link', 'picture', 'video']],
+                    ['view', ['fullscreen', 'codeview', 'help']],
+                    ['alignment', ['alignleft', 'aligncenter', 'alignright', 'alignjustify']],
+                    ['misc', ['undo', 'redo']]
+                ],
+                fontNames: ['Arial', 'Arial Black', 'Comic Sans MS', 'Courier New', 'Helvetica', 'Impact', 'Tahoma', 'Times New Roman', 'Verdana', 'Plus Jakarta Sans'],
+                fontSizes: ['8', '9', '10', '11', '12', '14', '18', '24', '36', '48'],
+                tableClassName: 'table table-bordered',
+            });
         });
 
         /* ---------- Stepper navigation ---------- */
@@ -1115,8 +1127,8 @@ if (isset($_SESSION['alert'])) {
             document.getElementById('lbl_cover').innerText = 'Klik atau seret foto (JPG/PNG/WEBP, maks 5MB)';
             document.getElementById('lbl_pdf').innerText = 'Klik atau seret file (.pdf, maks 15MB)';
             document.getElementById('preview_cover').style.display = 'none';
-            // Reset TinyMCE
-            if (tinymce.get('editor')) tinymce.get('editor').setContent('');
+            // Reset Summernote
+            $('#editor').summernote('reset');
             document.getElementById('quizContainer').innerHTML = '';
             toggleQuizEmpty();
             goToStep(1);
@@ -1147,9 +1159,9 @@ if (isset($_SESSION['alert'])) {
             if (data.pdf_file) {
                 document.getElementById('lbl_pdf').innerText = 'PDF tersimpan: ' + data.pdf_file;
             }
-            // Set konten ke TinyMCE (tunggu sebentar editor siap)
+            // Set konten ke Summernote
             setTimeout(() => {
-                if (tinymce.get('editor')) tinymce.get('editor').setContent(data.konten || '');
+                $('#editor').summernote('code', data.konten || '');
             }, 150);
 
             document.getElementById('quizContainer').innerHTML = '';
@@ -1287,7 +1299,7 @@ if (isset($_SESSION['alert'])) {
             });
         }
 
-        /* ---------- Submit loading state ---------- */
+        /* ---------- Submit ---------- */
         document.getElementById('mainForm').addEventListener('submit', function(e) {
             const judul = document.getElementById('f_judul');
             if (judul.value.trim() === '') {
@@ -1302,10 +1314,9 @@ if (isset($_SESSION['alert'])) {
                 });
                 return;
             }
-            // Ambil isi editor TinyMCE dan masukkan ke textarea
-            if (tinymce.get('editor')) {
-                document.getElementById('editor').value = tinymce.get('editor').getContent();
-            }
+            // Summernote otomatis update textarea, tapi kita pastikan
+            const konten = $('#editor').summernote('code');
+            document.getElementById('editor').value = konten;
             document.getElementById('submitBtn').classList.add('loading');
             document.getElementById('submitBtn').setAttribute('disabled', 'true');
         });

@@ -12,7 +12,7 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Murojaah AI (Whisper) — Hifzly</title>
+    <title>Murojaah Realtime — Hifzly</title>
     <link rel="icon" type="image/png" href="../assets/icon/logo.png">
 
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -205,7 +205,7 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             color: var(--primary);
         }
 
-        /* Modal Pilihan Range (Halaman / Ayat) */
+        /* Modal Pilihan Range (Halaman) */
         .modal-overlay {
             position: fixed;
             inset: 0;
@@ -366,7 +366,7 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             font-size: clamp(1.4rem, 5vw, 2.2rem);
             line-height: 1.6;
             color: var(--text-dark);
-            transition: 0.3s;
+            transition: color 0.1s;
             padding: 0 2px;
             position: relative;
         }
@@ -468,6 +468,7 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             border-radius: 12px;
         }
 
+        /* Tombol Mic Realtime */
         .mic-btn {
             width: 70px;
             height: 70px;
@@ -484,6 +485,7 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             transition: 0.3s;
             margin-top: -30px;
             border: 5px solid white;
+            position: relative;
         }
 
         .mic-btn.listening {
@@ -506,64 +508,6 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             }
         }
 
-        /* ---------- AI MODEL LOADER MODAL ---------- */
-        #modelLoaderOverlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(255, 255, 255, 0.95);
-            z-index: 2000;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 30px;
-            text-align: center;
-        }
-
-        .loader-spinner {
-            font-size: 3rem;
-            color: var(--primary);
-            margin-bottom: 20px;
-            animation: spin 2s linear infinite;
-        }
-
-        @keyframes spin {
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-
-        .progress-bar-container {
-            width: 100%;
-            max-width: 400px;
-            height: 10px;
-            background: #e2e8f0;
-            border-radius: 10px;
-            margin: 20px 0;
-            overflow: hidden;
-        }
-
-        .progress-bar {
-            height: 100%;
-            background: var(--primary);
-            width: 0%;
-            transition: width 0.3s;
-        }
-
-        .loader-text {
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--text-dark);
-            margin-bottom: 5px;
-        }
-
-        .loader-sub {
-            font-size: 0.85rem;
-            color: #64748b;
-            line-height: 1.5;
-        }
-
-        /* Toast */
         .toast {
             position: fixed;
             top: 80px;
@@ -589,11 +533,10 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
     <!-- 1. DASHBOARD PILIHAN -->
     <div id="dashboardView">
         <div class="dash-header">
-            <h1 class="dash-title">Murojaah AI</h1>
+            <h1 class="dash-title">Murojaah Realtime</h1>
             <a href="index.php" style="color:var(--text-dark); font-size:1.2rem;"><i class="fas fa-home"></i></a>
         </div>
 
-        <!-- Card Bookmark -->
         <div class="bookmark-card" id="bookmarkCard" onclick="loadBookmarkedPage()">
             <div class="bookmark-label"><i class="fas fa-bookmark"></i> Lanjutkan Murojaah</div>
             <div class="bookmark-surah" id="bmSurahName">Belum ada hafalan</div>
@@ -610,19 +553,16 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
         </div>
     </div>
 
-    <!-- MODAL PILIH RENTANG SURAH -->
+    <!-- MODAL PILIH RENTANG HALAMAN -->
     <div class="modal-overlay" id="rangeModal">
         <div class="range-modal">
             <h3 id="rmTitle">Al-Baqarah</h3>
-
             <label style="font-size:0.9rem; font-weight:600; margin-bottom:8px; display:block;">Pilih Halaman Mushaf:</label>
             <select id="rmPageSelect"></select>
-
             <button class="btn-start" onclick="startMurojaahFromModal()">Mulai Hafalan <i class="fas fa-arrow-right"></i></button>
             <button style="width:100%; padding:14px; background:none; border:none; margin-top:10px; font-weight:600; color:#64748b; cursor:pointer;" onclick="document.getElementById('rangeModal').style.display='none'">Batal</button>
         </div>
     </div>
-
 
     <!-- 2. TAMPILAN MUROJAAH (AL-QUR'AN) -->
     <div id="murojaahView" class="mode-murojaah">
@@ -658,98 +598,8 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
 
     <div class="toast" id="toastMsg">Notifikasi</div>
 
-    <!-- 3. AI MODEL LOADER MODAL (Khusus pertama kali load Transformers.js) -->
-    <div id="modelLoaderOverlay" style="display: none;">
-        <i class="fas fa-brain loader-spinner"></i>
-        <div class="loader-text" id="aiLoaderText">Menyiapkan AI Whisper Lokal...</div>
-        <div class="progress-bar-container">
-            <div class="progress-bar" id="aiProgressBar"></div>
-        </div>
-        <div class="loader-sub">Model AI akan diunduh ke cache browser (~40MB).<br>Ini hanya terjadi <b>sekali saja</b> agar fitur suara bisa digunakan secara offline tanpa delay.</div>
-    </div>
-
-    <!-- TRANSFORMERS.JS MODULE -->
-    <script type="module">
-        import {
-            pipeline,
-            env
-        } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2';
-
-        // Nonaktifkan pencarian file lokal, paksa ambil dari CDN HuggingFace
-        env.allowLocalModels = false;
-
-        window.whisperTranscriber = null;
-        window.isModelLoaded = false;
-
-        // Fungsi global agar bisa dipanggil dari UI
-        window.initWhisperModel = async function() {
-            if (window.isModelLoaded) return true;
-
-            const overlay = document.getElementById('modelLoaderOverlay');
-            const progress = document.getElementById('aiProgressBar');
-            const text = document.getElementById('aiLoaderText');
-
-            overlay.style.display = 'flex';
-
-            try {
-                // Menggunakan model Whisper-Tiny (ringan untuk browser mobile)
-                window.whisperTranscriber = await pipeline('automatic-speech-recognition', 'Xenova/whisper-tiny', {
-                    progress_callback: (data) => {
-                        if (data.status === 'progress') {
-                            let percent = Math.round((data.loaded / data.total) * 100);
-                            progress.style.width = `${percent}%`;
-                            text.innerText = `Mengunduh AI: ${percent}%`;
-                        } else if (data.status === 'ready') {
-                            progress.style.width = `100%`;
-                            text.innerText = "Memuat AI ke memori...";
-                        }
-                    }
-                });
-                window.isModelLoaded = true;
-                overlay.style.display = 'none';
-                return true;
-            } catch (err) {
-                console.error("Gagal load model:", err);
-                text.innerText = "Gagal memuat AI. Pastikan internet aktif.";
-                setTimeout(() => {
-                    overlay.style.display = 'none';
-                }, 3000);
-                return false;
-            }
-        };
-
-        // Fungsi Global untuk Proses Audio ke Whisper
-        // Karena Whisper butuh Float32Array 16kHz, kita pakai AudioContext bawaan browser
-        window.processAudioWithWhisper = async function(audioBlob) {
-            if (!window.whisperTranscriber) return "";
-
-            try {
-                const audioContext = new(window.AudioContext || window.webkitAudioContext)({
-                    sampleRate: 16000
-                });
-                const arrayBuffer = await audioBlob.arrayBuffer();
-                const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-                const float32Audio = audioBuffer.getChannelData(0); // Ambil channel mono
-
-                // Transkripsi khusus bahasa Arab
-                const output = await window.whisperTranscriber(float32Audio, {
-                    language: 'arabic',
-                    task: 'transcribe',
-                    chunk_length_s: 30, // Standar whisper chunk
-                    stride_length_s: 5
-                });
-
-                return output.text;
-            } catch (e) {
-                console.error("Whisper Error:", e);
-                return "";
-            }
-        };
-    </script>
-
-    <!-- MAIN LOGIC (PHP/HTML Script) -->
     <script>
-        // DATA SURAH DENGAN RENTANG HALAMAN
+        // DATA SURAH DENGAN RENTANG HALAMAN (Sesuai Mushaf Madinah)
         const surahsData = [{
                 id: 1,
                 name: "Al-Fatihah",
@@ -1669,14 +1519,14 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
         let quranWords = [];
         let currentWordTargetIdx = 0;
 
-        // Inisialisasi Dashboard
         document.addEventListener('DOMContentLoaded', () => {
             renderSurahList();
             checkBookmarkStatus();
             initSwipeGestures();
+            initSpeechRecognition();
         });
 
-        // 1. DASHBOARD LOGIC
+        // ------------------ 1. DASHBOARD LOGIC ------------------
         function renderSurahList(filter = '') {
             const container = document.getElementById('surahListContainer');
             container.innerHTML = '';
@@ -1711,7 +1561,6 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             for (let p = surah.startPage; p <= surah.endPage; p++) {
                 pSelect.innerHTML += `<option value="${p}">Halaman ${p}</option>`;
             }
-
             document.getElementById('rangeModal').style.display = 'flex';
         }
 
@@ -1733,15 +1582,11 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
 
         function loadBookmarkedPage() {
             const saved = localStorage.getItem('hifzly_murojaah_bookmark');
-            openMurojaah(saved ? parseInt(saved) : 1);
+            if (saved) openMurojaah(parseInt(saved));
         }
 
-        // 2. MUROJAAH (QURAN) LOGIC
-        async function openMurojaah(page) {
-            // Pertama kali buka Murojaah, Load Whisper AI lokal
-            const isReady = await window.initWhisperModel();
-            if (!isReady) return;
-
+        // ------------------ 2. TAMPILAN MUSHAF LOGIC ------------------
+        function openMurojaah(page) {
             currentPage = page;
             document.getElementById('dashboardView').style.display = 'none';
             document.getElementById('murojaahView').style.display = 'block';
@@ -1750,7 +1595,7 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
         }
 
         function backToDashboard() {
-            if (mediaRecorder && mediaRecorder.state === 'recording') toggleRecording(); // Matikan mic jika nyala
+            if (isRecording) toggleRecording(); // Berhentikan mic saat kembali
             document.getElementById('murojaahView').style.display = 'none';
             document.getElementById('dashboardView').style.display = 'block';
             checkBookmarkStatus();
@@ -1767,10 +1612,13 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             else btnBm.classList.remove('active');
 
             try {
-                // Layout 15 Baris Presisi dari API Quran.com V4
                 const res = await fetch(`https://api.quran.com/api/v4/verses/by_page/${page}?language=id&words=true&word_fields=text_uthmani,line_number`);
                 const data = await res.json();
                 renderExactMushafLayout(data.verses, page);
+
+                // Reset urutan target deteksi mic ke 0 untuk halaman baru
+                currentWordTargetIdx = 0;
+                finalTranscript = '';
             } catch (err) {
                 showToast("Gagal memuat halaman");
             }
@@ -1780,7 +1628,6 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             const container = document.getElementById('quranPageContainer');
             container.innerHTML = '';
             quranWords = [];
-            currentWordTargetIdx = 0;
 
             const firstSurahId = parseInt(verses[0].verse_key.split(':')[0]);
             const sName = surahsData.find(s => s.id === firstSurahId)?.name || "";
@@ -1864,54 +1711,87 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             container.innerHTML = html;
         }
 
-        // 3. LOGIKA REKAMAN & WHISPER AI
-        let mediaRecorder = null;
-        let audioChunks = [];
-        let isRecording = false;
 
-        async function toggleRecording() {
-            const btn = document.getElementById('btnMic');
+        // ------------------ 3. WEB SPEECH API REALTIME (AUTO HEALING & INTERIM) ------------------
+        let recognition = null;
+        let isRecording = false;
+        let finalTranscript = ''; // Menyimpan teks utuh dari ucapan user
+
+        function initSpeechRecognition() {
+            window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!window.SpeechRecognition) {
+                alert("Waduh, Browser kamu nggak support fitur Mic (Gunakan Google Chrome).");
+                return;
+            }
+
+            recognition = new SpeechRecognition();
+            recognition.lang = 'ar-SA';
+            recognition.continuous = true;
+            recognition.interimResults = true; // SANGAT PENTING: Bikin real-time sebelum kalimat selesai
+
+            recognition.onresult = (event) => {
+                let interimTranscript = '';
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) {
+                        finalTranscript += event.results[i][0].transcript + ' ';
+                    } else {
+                        interimTranscript += event.results[i][0].transcript;
+                    }
+                }
+                // Gabungkan teks final dan teks sementara untuk deteksi secepat kilat
+                const combinedTranscript = finalTranscript + interimTranscript;
+                matchVoiceWithQuran(combinedTranscript);
+            };
+
+            // AGGRESSIVE AUTO-RESTART: Biar ngga ada kata "Delay" pas hening
+            recognition.onend = () => {
+                if (isRecording) {
+                    try {
+                        recognition.start();
+                    } catch (e) {}
+                }
+            };
+
+            recognition.onerror = (e) => {
+                if (e.error === 'not-allowed') {
+                    isRecording = false;
+                    renderMicState();
+                    showToast("Akses Mikrofon diblokir! Tolong izinkan.");
+                }
+            };
+        }
+
+        function toggleRecording() {
+            if (!recognition) {
+                showToast("Gunakan Chrome yang support Speech.");
+                return;
+            }
 
             if (isRecording) {
-                // STOP RECORDING
-                mediaRecorder.stop();
                 isRecording = false;
-                btn.classList.remove('listening');
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; // Loading memproses suara
+                recognition.stop();
             } else {
-                // START RECORDING
+                isRecording = true;
+                finalTranscript = ''; // Kosongkan ingatan suara saat baru menyala
                 try {
-                    const stream = await navigator.mediaDevices.getUserMedia({
-                        audio: true
-                    });
-                    mediaRecorder = new MediaRecorder(stream);
-                    audioChunks = [];
+                    recognition.start();
+                } catch (e) {}
+            }
+            renderMicState();
+        }
 
-                    mediaRecorder.ondataavailable = e => {
-                        if (e.data.size > 0) audioChunks.push(e.data);
-                    };
-                    mediaRecorder.onstop = async () => {
-                        // Saat user stop mic, proses audio nya
-                        const audioBlob = new Blob(audioChunks, {
-                            type: 'audio/webm'
-                        });
-                        const transcribedText = await window.processAudioWithWhisper(audioBlob);
-
-                        btn.innerHTML = '<i class="fas fa-microphone"></i>'; // Kembali ke mic
-                        if (transcribedText) matchVoiceWithQuran(transcribedText);
-                    };
-
-                    mediaRecorder.start();
-                    isRecording = true;
-                    btn.classList.add('listening');
-                    btn.innerHTML = '<i class="fas fa-stop"></i>';
-                } catch (err) {
-                    showToast("Akses mikrofon ditolak");
-                }
+        function renderMicState() {
+            const btn = document.getElementById('btnMic');
+            if (isRecording) {
+                btn.classList.add('listening');
+                btn.innerHTML = '<i class="fas fa-stop"></i>';
+            } else {
+                btn.classList.remove('listening');
+                btn.innerHTML = '<i class="fas fa-microphone"></i>';
             }
         }
 
-        // Pemetaan kata khusus & huruf muqatta'at (Agar Whisper paham)
+        // Trik NLP Arabic biar AI pintar ngenalin tajwid/waqaf
         const customDict = {
             "الف لام ميم": "الم",
             "الف لام را": "الر",
@@ -1929,7 +1809,7 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
                 if (text.includes(key)) text = text.replace(key, customDict[key]);
             }
             return text
-                .replace(/[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED]/g, '') // Hapus Harakat & Waqaf
+                .replace(/[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED]/g, '') // Hapus Harakat & Tanda Waqaf total
                 .replace(/(آ|إ|أ)/g, 'ا')
                 .replace(/(ة)/g, 'ه')
                 .replace(/(ى)/g, 'ي')
@@ -1938,33 +1818,36 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
                 .trim();
         }
 
+        // Logika Real-Time Matching Cerdas!
         function matchVoiceWithQuran(voiceRawText) {
             if (currentWordTargetIdx >= quranWords.length) return;
 
             const spokenClean = normalizeArabic(voiceRawText);
-            const spokenWords = spokenClean.split(' ');
 
-            spokenWords.forEach(spokenW => {
-                if (currentWordTargetIdx >= quranWords.length) return;
+            // Kita Loop terus jika dalam 1 tarikan nafas (1 string suara) user menyebutkan banyak target kata berurutan
+            while (currentWordTargetIdx < quranWords.length) {
                 const targetW = quranWords[currentWordTargetIdx].normalized;
 
-                // Fuzzy match sangat sederhana (Whisper lokal sudah cukup akurat tanpa harakat)
-                if (spokenW === targetW || spokenClean.includes(targetW)) {
+                if (spokenClean.includes(targetW)) {
                     document.getElementById(quranWords[currentWordTargetIdx].id).classList.add('read-correctly');
                     currentWordTargetIdx++;
+                } else {
+                    // Kalau target kata ini belum terucap, berhenti mengecek
+                    break;
                 }
-            });
+            }
 
+            // Auto Next Page kalau 1 halaman beres
             if (currentWordTargetIdx >= quranWords.length) {
                 showToast("Masya Allah! Halaman selesai.");
+                setTimeout(() => changePage(1), 2000);
             }
         }
 
-        // 4. UTILS & GESTURE
+        // ------------------ 4. UTILS & GESTURE ------------------
         function changePage(direction) {
             let newPage = currentPage + direction;
             if (newPage >= 1 && newPage <= 604) {
-                if (isRecording) toggleRecording();
                 loadQuranPage(newPage);
                 currentPage = newPage;
                 window.scrollTo({
@@ -2015,8 +1898,8 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             });
             document.getElementById('murojaahView').addEventListener('touchend', e => {
                 touchendX = e.changedTouches[0].screenX;
-                if (touchstartX - touchendX > 80) changePage(1); // Kiri -> Next Page
-                if (touchendX - touchstartX > 80) changePage(-1); // Kanan -> Prev Page
+                if (touchstartX - touchendX > 80) changePage(1);
+                if (touchendX - touchstartX > 80) changePage(-1);
             }, {
                 passive: true
             });

@@ -1533,15 +1533,16 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
         let quranWords = [];
         let currentWordTargetIdx = 0;
 
-        // ==================== SPEECH RECOGNITION (DIPERBAIKI) ====================
+        // ==================== SPEECH RECOGNITION ====================
         let recognition = null;
-        let isRecording = false; // status yang diinginkan user (mic ON/OFF)
+        let isRecording = false;       // status yang diinginkan user (mic ON/OFF)
         let recognitionActive = false; // status aktual apakah engine speech sedang berjalan
-        let speechBuffer = ''; // teks final yang sudah dikonfirmasi browser
+        let speechBuffer = '';         // akumulasi teks FINAL yang sudah dikonfirmasi browser
+        let interimBuffer = '';        // akumulasi teks INTERIM (sedang diucapkan, belum final)
         let silenceTimer = null;
         let restartTimer = null;
-        const SILENCE_TIMEOUT = 3000;
-        const RESTART_DELAY = 300;
+        const SILENCE_TIMEOUT = 4000; // ms tanpa suara sebelum buffer direset
+        const RESTART_DELAY = 150;    // ms delay sebelum recognition di-restart
 
         document.addEventListener('DOMContentLoaded', () => {
             renderSurahList();
@@ -1635,6 +1636,7 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
                 renderExactMushafLayout(data.verses, page);
                 currentWordTargetIdx = 0;
                 speechBuffer = '';
+                interimBuffer = '';
                 updateTargetIndicator();
             } catch (err) {
                 showToast("Gagal memuat halaman");
@@ -1737,6 +1739,7 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
                 currentWordTargetIdx = index + 1;
                 updateTargetIndicator();
                 speechBuffer = '';
+                interimBuffer = '';
                 if (currentWordTargetIdx >= quranWords.length) {
                     showToast("Halaman selesai!");
                     setTimeout(() => changePage(1), 1500);
@@ -1761,31 +1764,34 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             recognition.maxAlternatives = 1;
 
             recognition.onresult = (event) => {
-                let interimText = '';
-                let finalText = '';
+                let newFinal = '';
+                let newInterim = '';
 
-                // Hanya proses hasil baru sejak resultIndex (penting karena continuous=true
-                // mengirim banyak event, bukan cuma sekali seperti sebelumnya)
+                // Proses hanya hasil BARU sejak resultIndex
                 for (let i = event.resultIndex; i < event.results.length; i++) {
                     const res = event.results[i];
                     if (res.isFinal) {
-                        finalText += ' ' + res[0].transcript;
+                        newFinal += ' ' + res[0].transcript;
                     } else {
-                        interimText += ' ' + res[0].transcript;
+                        newInterim += ' ' + res[0].transcript;
                     }
                 }
 
-                if (finalText) {
-                    speechBuffer += ' ' + finalText;
+                // Akumulasi final ke speechBuffer
+                if (newFinal.trim()) {
+                    speechBuffer += ' ' + newFinal;
+                    interimBuffer = ''; // final sudah ada → reset interim lama
                 }
 
-                const liveText = (speechBuffer + ' ' + interimText).trim();
+                // Interim selalu diganti dengan yang terbaru (bukan diakumulasi)
+                interimBuffer = newInterim;
+
+                const liveText = (speechBuffer + ' ' + interimBuffer).trim();
                 document.getElementById('liveTranscript').innerText = liveText || '...';
 
                 resetSilenceTimer();
-                // Gabungkan buffer final + interim supaya kata yang SEDANG diucapkan
-                // langsung bisa mencocokkan kata target, tanpa menunggu final.
-                processSpeechBuffer(interimText);
+                // Proses real-time: gabungkan final + interim untuk cocokkan kata target
+                processSpeechBuffer();
             };
 
             recognition.onerror = (e) => {
@@ -1797,8 +1803,7 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
                     showToast("Akses Mikrofon diblokir!");
                     return;
                 }
-                // Untuk error lain (no-speech, network, aborted, dll) biarkan onend
-                // yang menangani restart tunggal, supaya tidak ada 2 timer restart bentrok.
+                // Error lain (no-speech, network, aborted) → onend yang tangani restart
             };
 
             recognition.onend = () => {
@@ -1817,8 +1822,6 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
                 recognitionActive = true;
                 document.getElementById('liveTranscript').classList.add('active');
             } catch (e) {
-                // Kalau ada kondisi "sudah jalan"/state tidak valid, jangan double start,
-                // cukup jadwalkan 1 percobaan ulang.
                 recognitionActive = false;
                 clearTimeout(restartTimer);
                 restartTimer = setTimeout(startRecognition, RESTART_DELAY);
@@ -1829,30 +1832,60 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             clearTimeout(silenceTimer);
             silenceTimer = setTimeout(() => {
                 speechBuffer = '';
+                interimBuffer = '';
                 document.getElementById('liveTranscript').innerText = isRecording ? 'Mendengarkan...' : '';
             }, SILENCE_TIMEOUT);
         }
 
-        function processSpeechBuffer(interimText = '') {
+        // ==================== PROSES PENCOCOKAN KATA (REAL-TIME) ====================
+        function processSpeechBuffer() {
             if (currentWordTargetIdx >= quranWords.length) return;
 
-            // Gabungkan teks final yang sudah pasti + teks interim yang lagi diucapkan,
-            // supaya progres kata jalan langsung tanpa menunggu diam/berhenti bicara.
-            const combined = speechBuffer + ' ' + interimText;
-            const spokenClean = normalizeArabicExtreme(combined);
+            // Gabungkan final + interim untuk pencocokan real-time
+            const combined = (speechBuffer + ' ' + interimBuffer).trim();
+            if (!combined) return;
+
+            // Pecah teks yang diucapkan menjadi array kata per-kata
+            // → cocokkan KATA DEMI KATA, bukan substring mentah
+            const spokenWords = normalizeArabicExtreme(combined)
+                .split(/\s+/)
+                .filter(w => w.length > 0);
+
+            if (spokenWords.length === 0) return;
+
             let checkIdx = currentWordTargetIdx;
             let matchFound = false;
+            let spokenPos = 0; // posisi pointer di array kata yang diucapkan
 
-            // Cek beberapa kata target ke depan (toleransi kalau 1-2 kata sebelumnya
-            // sudah kepakai/kelewat karena delay pengenalan suara)
-            for (let lookahead = 0; lookahead < 6 && checkIdx < quranWords.length; lookahead++) {
-                const targetWordClean = quranWords[checkIdx].normalized;
-                if (targetWordClean && spokenClean.includes(targetWordClean)) {
-                    document.getElementById(quranWords[checkIdx].id).classList.add('read-correctly');
-                    document.getElementById(quranWords[checkIdx].id).classList.remove('target-word');
+            // Scan maju di dalam kata yang diucapkan untuk cocokkan kata target satu per satu
+            while (spokenPos < spokenWords.length && checkIdx < quranWords.length) {
+                const targetWord = quranWords[checkIdx].normalized;
+                if (!targetWord) { checkIdx++; continue; }
+
+                // Cari kata target di sisa array spokenWords mulai dari spokenPos
+                // Toleransi: cari hingga MAX_LOOKAHEAD posisi ke depan
+                const MAX_LOOKAHEAD = 4;
+                let foundAt = -1;
+                for (let la = spokenPos; la < Math.min(spokenPos + MAX_LOOKAHEAD, spokenWords.length); la++) {
+                    if (spokenWords[la] === targetWord ||
+                        spokenWords[la].startsWith(targetWord) || // partial match (sedang diucapkan)
+                        targetWord.startsWith(spokenWords[la]) && spokenWords[la].length >= 2) { // kata target belum selesai diucapkan
+                        foundAt = la;
+                        break;
+                    }
+                }
+
+                if (foundAt >= 0) {
+                    const el = document.getElementById(quranWords[checkIdx].id);
+                    if (el) {
+                        el.classList.add('read-correctly');
+                        el.classList.remove('target-word');
+                    }
                     checkIdx++;
+                    spokenPos = foundAt + 1;
                     matchFound = true;
                 } else {
+                    // Kata target tidak ditemukan di sisa spokenWords → hentikan scan
                     break;
                 }
             }
@@ -1860,9 +1893,16 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             if (matchFound) {
                 currentWordTargetIdx = checkIdx;
                 updateTargetIndicator();
-                // Hanya kosongkan buffer FINAL; biarkan interim tetap berjalan alami
-                // di siklus berikutnya lewat event onresult.
-                speechBuffer = '';
+
+                // Buang bagian buffer yang sudah terpakai (kata-kata yang sudah di-match)
+                // Sisa kata yang belum di-match tetap ada di buffer untuk event berikutnya
+                const usedWords = spokenWords.slice(0, spokenPos);
+                const remainWords = spokenWords.slice(spokenPos);
+
+                // Update speechBuffer hanya berisi sisa kata yang belum di-match
+                speechBuffer = remainWords.join(' ');
+                interimBuffer = '';
+
                 clearTimeout(silenceTimer);
                 resetSilenceTimer();
             }
@@ -1884,10 +1924,13 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
                 try {
                     recognition.stop();
                 } catch (e) {}
+                speechBuffer = '';
+                interimBuffer = '';
                 transcriptBox.classList.remove('active');
             } else {
                 isRecording = true;
                 speechBuffer = '';
+                interimBuffer = '';
                 transcriptBox.innerText = "Mendengarkan...";
                 transcriptBox.classList.add('active');
                 startRecognition();

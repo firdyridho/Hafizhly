@@ -10,44 +10,56 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
 }
 
 $user_id = (int) $_SESSION['user_id'];
+$nama_user = $_SESSION['nama_lengkap'] ?? 'Hamba Allah';
+$nama_depan = explode(' ', trim($nama_user))[0];
 
-// --- MENGAMBIL DATA BOOKMARK TILAWAH TERAKHIR ---
-$q_bm = mysqli_query($conn, "SELECT surah, ayat FROM bookmark WHERE user_id='$user_id' LIMIT 1");
+// --- 1. DATA TILAWAH ---
+$q_bm = mysqli_query($conn, "SELECT surah_nomor, ayat FROM bookmark WHERE user_id='$user_id' ORDER BY id DESC LIMIT 1");
 if ($q_bm && mysqli_num_rows($q_bm) > 0) {
     $bm = mysqli_fetch_assoc($q_bm);
-    $bm_surah = (int) $bm['surah'];
+    $bm_surah = (int) $bm['surah_nomor'];
     $bm_ayat = (int) $bm['ayat'];
 } else {
-    // Default jika belum pernah bookmark
     $bm_surah = 1;
     $bm_ayat = 1;
 }
 
-// --- MOCK DATA: 3 PELAJARAN TAJWID TERBARU ---
-// Catatan: Nanti kamu bisa ubah array ini menjadi hasil query dari database (misal: SELECT * FROM tajwid ORDER BY id DESC LIMIT 3)
-$tajwid_lessons = [
-    [
-        'id' => 1,
-        'title' => 'Hukum Nun Mati & Tanwin',
-        'desc' => 'Mengenal Idzhar, Idgham, Iqlab, dan Ikhfa secara mendalam.',
-        'icon' => 'fa-book-open-reader',
-        'color' => 'linear-gradient(135deg, #059669, #10b981)'
-    ],
-    [
-        'id' => 2,
-        'title' => 'Makharijul Huruf',
-        'desc' => 'Memperbaiki tempat keluarnya huruf-huruf hijaiyah.',
-        'icon' => 'fa-comment-dots',
-        'color' => 'linear-gradient(135deg, #d97706, #f59e0b)'
-    ],
-    [
-        'id' => 3,
-        'title' => 'Hukum Mad (Pemanjangan)',
-        'desc' => 'Dasar pemanjangan bacaan yang benar dalam Al-Qur\'an.',
-        'icon' => 'fa-wave-square',
-        'color' => 'linear-gradient(135deg, #2563eb, #3b82f6)'
-    ],
-];
+// --- 2. DATA MUROJAAH ---
+$q_mur = mysqli_query($conn, "SELECT surah_nomor, last_ayat FROM murojaah_progress WHERE user_id='$user_id' ORDER BY updated_at DESC LIMIT 1");
+if ($q_mur && mysqli_num_rows($q_mur) > 0) {
+    $mur = mysqli_fetch_assoc($q_mur);
+    $mur_surah = (int) $mur['surah_nomor'];
+    $mur_ayat = (int) $mur['last_ayat'];
+} else {
+    $mur_surah = 78;
+    $mur_ayat = 1;
+}
+
+// --- 3. DATA HAFALAN ---
+$q_haf = mysqli_query($conn, "SELECT surah, ayah_end FROM mutabaah WHERE user_id='$user_id' AND activity_type='hafalan_baru' ORDER BY created_at DESC LIMIT 1");
+if ($q_haf && mysqli_num_rows($q_haf) > 0) {
+    $haf = mysqli_fetch_assoc($q_haf);
+    $haf_surah_name = $haf['surah'];
+    $haf_ayat = (int) $haf['ayah_end'];
+} else {
+    $haf_surah_name = "Al-Mulk";
+    $haf_ayat = 1;
+}
+
+// --- 4. DATA TAJWID ---
+$q_tajwid = mysqli_query($conn, "SELECT * FROM tajwid_materi ORDER BY created_at DESC LIMIT 3");
+$tajwid_lessons = [];
+while ($row = mysqli_fetch_assoc($q_tajwid)) {
+    $tajwid_lessons[] = $row;
+}
+
+// --- 5. DATA NOTIFIKASI (Dari tabel user_todos) ---
+$q_notif = mysqli_query($conn, "SELECT task_name, task_time, is_completed, created_at FROM user_todos WHERE user_id='$user_id' ORDER BY id DESC LIMIT 5");
+$notifications = [];
+while ($row = mysqli_fetch_assoc($q_notif)) {
+    $notifications[] = $row;
+}
+$has_notif = count($notifications) > 0;
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -55,24 +67,20 @@ $tajwid_lessons = [
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Dashboard - Hifzly</title>
+    <title>Ngajii - Dashboard</title>
     <link rel="icon" type="image/png" href="../assets/icon/logo.png">
 
-    <!-- Fonts & Icons -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Amiri:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
         :root {
-            --primary: #064e3b;
-            --primary-light: #059669;
-            --accent: #fbbf24;
-            --dark: #0f172a;
-            --bg: #f8fafc;
+            --primary: #10b981;
+            --primary-dark: #059669;
+            --bg-color: #f8fafc;
             --card-bg: #ffffff;
+            --text-dark: #0f172a;
             --text-muted: #64748b;
             --border: #e2e8f0;
         }
@@ -86,447 +94,338 @@ $tajwid_lessons = [
         }
 
         body {
-            background-color: var(--bg);
-            color: var(--dark);
-            padding-bottom: 100px;
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            padding-bottom: 90px;
             overflow-x: hidden;
-            scroll-behavior: smooth;
         }
 
-        /* HEADER HERO */
+        /* --- HERO SECTION --- */
         .hero-section {
-            background: linear-gradient(160deg, #022c22, var(--primary), var(--primary-light));
+            background: linear-gradient(180deg, var(--primary-dark) 0%, var(--primary) 100%);
             color: white;
-            padding: max(30px, env(safe-area-inset-top)) 20px 85px 20px;
+            padding: max(20px, env(safe-area-inset-top)) 20px 40px 20px;
+            border-bottom-left-radius: 30px;
+            border-bottom-right-radius: 30px;
             position: relative;
-            border-bottom-left-radius: 40px;
-            border-bottom-right-radius: 40px;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(5, 150, 105, 0.2);
         }
 
         .top-bar {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start;
             margin-bottom: 25px;
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
         }
 
-        .location-badge {
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(8px);
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.85rem;
+        .user-info {
             display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: 0.3s;
+            flex-direction: column;
+            gap: 4px;
         }
 
-        .location-badge:hover {
-            background: rgba(255, 255, 255, 0.25);
-            transform: scale(1.02);
-        }
-
-        .location-badge i {
-            color: var(--accent);
-        }
-
-        .profile-btn {
-            width: 42px;
-            height: 42px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.2);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-weight: 800;
+        .greeting {
             font-size: 1.1rem;
-            border: 2px solid rgba(255, 255, 255, 0.5);
+            font-weight: 700;
+            letter-spacing: 0.5px;
         }
 
-        .bismillah {
-            font-size: 2.2rem;
-            font-family: 'Amiri', serif;
-            margin-bottom: 15px;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        .hijri-date {
+            font-size: 0.85rem;
+            opacity: 0.9;
+            font-weight: 500;
         }
 
-        .date-time-row {
+        .location {
+            font-size: 0.8rem;
             display: flex;
-            justify-content: center;
             align-items: center;
-            gap: 20px;
+            gap: 5px;
+            opacity: 0.9;
+            cursor: pointer;
+            margin-top: 2px;
+        }
+
+        .action-icons {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .icon-btn {
+            color: white;
+            font-size: 1.3rem;
+            text-decoration: none;
+            position: relative;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+
+        .notif-dot {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 8px;
+            height: 8px;
+            background: #ef4444;
+            border-radius: 50%;
+            border: 2px solid var(--primary-dark);
+        }
+
+        /* WAKTU SHOLAT */
+        .clock-container {
+            text-align: center;
             margin-bottom: 25px;
         }
 
-        .date-box {
-            text-align: center;
-        }
-
-        .date-box .label {
-            font-size: 0.7rem;
-            color: rgba(255, 255, 255, 0.7);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 3px;
-            font-weight: 700;
-        }
-
-        .date-box .value {
-            font-size: 0.95rem;
-            font-weight: 700;
-        }
-
-        .realtime-clock {
-            font-size: 2.8rem;
+        .clock-time {
+            font-size: 3.5rem;
             font-weight: 800;
-            letter-spacing: 1px;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            line-height: 1;
+            margin-bottom: 5px;
             font-variant-numeric: tabular-nums;
         }
 
-        /* Jadwal Sholat */
+        .countdown {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            font-weight: 500;
+        }
+
         .prayer-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(0, 0, 0, 0.2);
-            padding: 15px 20px;
-            border-radius: 24px;
-            margin-bottom: 15px;
-            backdrop-filter: blur(8px);
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
+            padding: 0 10px;
         }
 
         .prayer-item {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 6px;
-            opacity: 0.5;
-            transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            gap: 8px;
+            opacity: 0.6;
+            transition: 0.3s;
         }
 
         .prayer-item.active {
             opacity: 1;
-            transform: scale(1.15) translateY(-2px);
         }
 
-        .prayer-item.active .p-time,
         .prayer-item.active .p-icon {
-            color: var(--accent);
-        }
-
-        .p-time {
-            font-size: 0.85rem;
-            font-weight: 800;
-        }
-
-        .p-icon {
-            font-size: 1.4rem;
-            margin: 3px 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .p-name {
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            font-size: 0.75rem;
             font-weight: 600;
         }
 
-        .countdown-text {
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: rgba(255, 255, 255, 0.9);
-        }
-
-        .countdown-text span {
-            color: var(--accent);
-            font-weight: 800;
-        }
-
-        /* MAIN CONTENT & SLIDER KARTU */
-        .main-content {
-            padding: 0;
-            max-width: 800px;
-            margin: -55px auto 0;
-            position: relative;
-            z-index: 5;
-        }
-
-        .slider-container {
-            display: flex;
-            gap: 15px;
-            overflow-x: auto;
-            scroll-snap-type: x mandatory;
-            padding: 0 20px 20px 20px;
-            scrollbar-width: none;
-        }
-
-        .slider-container::-webkit-scrollbar {
-            display: none;
-        }
-
-        .floating-card {
-            min-width: 90%;
-            scroll-snap-align: center;
-            background: var(--card-bg);
-            border-radius: 24px;
-            padding: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-            border: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            text-decoration: none;
-            color: var(--dark);
-            transition: 0.3s;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .fc-left {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .progress-circle {
-            width: 55px;
-            height: 55px;
-            border-radius: 50%;
-            background: conic-gradient(var(--primary-light) 100%, #e5e7eb 0);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .progress-inner {
-            width: 45px;
-            height: 45px;
-            background: white;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+        .p-icon {
             font-size: 1.2rem;
-            color: var(--primary);
-            font-weight: 800;
-        }
-
-        .fc-text h4 {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            margin-bottom: 4px;
-            font-weight: 800;
-            letter-spacing: 0.5px;
-        }
-
-        .fc-text h3 {
-            font-size: 1.15rem;
-            color: var(--dark);
-            margin-bottom: 6px;
-            font-weight: 800;
-        }
-
-        .fc-badges {
+            height: 40px;
             display: flex;
-            gap: 8px;
+            align-items: center;
         }
 
-        .fc-badge {
+        .p-time {
             font-size: 0.75rem;
             font-weight: 700;
-            background: #f1f5f9;
-            padding: 4px 10px;
-            border-radius: 12px;
-            color: var(--text-muted);
         }
 
-        .fc-arrow {
-            width: 38px;
-            height: 38px;
-            background: #f1f5f9;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: var(--dark);
-            font-size: 0.9rem;
-            transition: 0.3s;
+        /* --- MAIN CONTENT --- */
+        .main-content {
+            padding: 25px 20px;
+            max-width: 1000px;
+            margin: 0 auto;
         }
 
-        .floating-card:hover .fc-arrow {
-            background: var(--primary-light);
-            color: white;
-        }
-
-        .coming-soon-overlay {
-            position: absolute;
-            inset: 0;
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(2px);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 2;
-        }
-
-        .cs-badge {
-            background: var(--dark);
-            color: white;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 700;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
-
-        .slider-dots {
-            display: flex;
-            justify-content: center;
-            gap: 6px;
-            margin-top: -10px;
-            margin-bottom: 25px;
-        }
-
-        .dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #cbd5e1;
-            transition: 0.3s;
-        }
-
-        .dot.active {
-            background: var(--primary-light);
-            width: 20px;
-            border-radius: 10px;
-        }
-
-        /* Quick Access (Menus) */
         .section-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin: 10px 20px 15px;
+            margin-bottom: 15px;
         }
 
         .section-title {
-            font-size: 1.15rem;
+            font-size: 1.1rem;
             font-weight: 800;
-            color: var(--dark);
+            color: var(--text-dark);
         }
 
-        .quick-grid {
+        .see-all {
+            font-size: 0.85rem;
+            color: var(--primary-dark);
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        /* MENU GRID */
+        .menu-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 20px 15px;
-            padding: 0 20px 25px;
-            transition: 0.3s;
+            gap: 15px;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 24px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+            margin-bottom: 25px;
         }
 
-        .q-item {
+        .menu-item {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             text-decoration: none;
-            transition: 0.3s;
+            cursor: pointer;
         }
 
-        .q-item.hidden-menu {
-            display: none;
-            animation: fadeIn 0.4s ease forwards;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .q-icon {
-            width: 65px;
-            height: 65px;
-            background: var(--card-bg);
-            border-radius: 22px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 1.7rem;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
-            color: var(--primary-light);
-            border: 1px solid var(--border);
-            transition: 0.3s;
-        }
-
-        .q-item:hover .q-icon {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(5, 150, 105, 0.15);
-            border-color: var(--primary-light);
-        }
-
-        .q-text {
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: var(--dark);
-            text-align: center;
-        }
-
-        /* Tajwid Section */
-        .tajwid-list {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            padding: 0 20px 30px;
-        }
-
-        .tajwid-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 15px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            text-decoration: none;
-            transition: 0.3s;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
-        }
-
-        .tajwid-card:hover {
-            border-color: var(--primary-light);
-            transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(5, 150, 105, 0.08);
-        }
-
-        .tw-icon {
+        .menu-icon {
             width: 55px;
             height: 55px;
-            border-radius: 16px;
+            border-radius: 18px;
+            background: var(--primary);
             color: white;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 1.5rem;
+            font-size: 1.4rem;
+            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
+            transition: 0.3s;
+        }
+
+        .menu-item:hover .menu-icon {
+            transform: translateY(-3px);
+        }
+
+        .menu-text {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            text-align: center;
+        }
+
+        .menu-item.menu-all .menu-icon {
+            background: #f1f5f9;
+            color: var(--primary-dark);
+            box-shadow: none;
+        }
+
+        /* HORIZONTAL SCROLL CARDS */
+        .cards-scroll {
+            display: flex;
+            gap: 15px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            scrollbar-width: none;
+            scroll-snap-type: x mandatory;
+            margin-bottom: 25px;
+        }
+
+        .cards-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .activity-card {
+            min-width: 85%;
+            scroll-snap-align: center;
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 18px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            text-decoration: none;
+            color: var(--text-dark);
+        }
+
+        .ac-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .ac-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 14px;
+            background: #d1fae5;
+            color: var(--primary-dark);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.3rem;
+        }
+
+        .ac-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            text-transform: uppercase;
+            margin-bottom: 3px;
+        }
+
+        .ac-title {
+            font-size: 1.05rem;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+
+        .ac-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .ac-play {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: #f1f5f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-dark);
+        }
+
+        /* TAJWID LIST */
+        .tajwid-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .tajwid-card {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px;
+            background: var(--card-bg);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .tajwid-card:hover {
+            border-color: var(--primary);
+        }
+
+        .tw-cover {
+            width: 70px;
+            height: 70px;
+            border-radius: 12px;
+            object-fit: cover;
+            background: #e2e8f0;
             flex-shrink: 0;
         }
 
@@ -535,59 +434,179 @@ $tajwid_lessons = [
         }
 
         .tw-title {
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-weight: 800;
-            color: var(--dark);
+            color: var(--text-dark);
             margin-bottom: 4px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
 
-        .tw-desc {
-            font-size: 0.8rem;
+        .tw-date {
+            font-size: 0.75rem;
             color: var(--text-muted);
-            line-height: 1.4;
+            font-weight: 600;
         }
 
-        .tw-arrow {
-            color: #cbd5e1;
-            font-size: 1rem;
-            transition: 0.3s;
+        /* MODALS (Menu & Notifikasi) */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            justify-content: center;
+            align-items: flex-end;
         }
 
-        .tajwid-card:hover .tw-arrow {
-            color: var(--primary-light);
-            transform: translateX(3px);
+        .modal-content {
+            background: white;
+            width: 100%;
+            max-width: 600px;
+            border-top-left-radius: 30px;
+            border-top-right-radius: 30px;
+            padding: 30px 20px;
+            animation: slideUp 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+            max-height: 85vh;
+            overflow-y: auto;
         }
 
-        /* Media Queries Desktop */
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .modal-header h3 {
+            font-size: 1.3rem;
+            font-weight: 800;
+        }
+
+        .btn-close {
+            background: #f1f5f9;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            border: none;
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        .notif-item {
+            display: flex;
+            gap: 15px;
+            padding: 15px;
+            border-bottom: 1px solid var(--border);
+            align-items: flex-start;
+        }
+
+        .notif-item:last-child {
+            border-bottom: none;
+        }
+
+        .notif-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e0f2fe;
+            color: #0284c7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .notif-body {
+            flex-grow: 1;
+        }
+
+        .notif-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+            color: var(--text-dark);
+        }
+
+        .notif-time {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .notif-success {
+            background: #d1fae5;
+            color: var(--primary-dark);
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100%);
+            }
+
+            to {
+                transform: translateY(0);
+            }
+        }
+
+        /* DESKTOP RESPONSIVE */
         @media (min-width: 768px) {
             .hero-section {
-                padding-top: 50px;
-                border-bottom-left-radius: 60px;
-                border-bottom-right-radius: 60px;
+                border-radius: 24px;
+                margin: 20px auto;
+                max-width: 1000px;
+                padding: 40px;
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                align-items: center;
+                gap: 30px;
             }
 
-            .floating-card {
-                min-width: 48%;
+            .top-bar {
+                grid-column: 1 / -1;
+                margin-bottom: 0;
             }
 
-            .quick-grid {
-                grid-template-columns: repeat(5, 1fr);
+            .clock-container {
+                text-align: left;
+                margin-bottom: 0;
             }
 
-            /* 5 items per row on desktop */
+            .prayer-row {
+                justify-content: flex-end;
+                gap: 20px;
+            }
+
+            .menu-grid {
+                grid-template-columns: repeat(8, 1fr);
+                padding: 25px;
+            }
+
+            .cards-scroll {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .activity-card {
+                min-width: auto;
+            }
+
             .tajwid-list {
-                flex-direction: row;
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
             }
 
-            .tajwid-card {
-                flex: 1;
-                flex-direction: column;
-                text-align: center;
-                padding: 25px 20px;
+            .modal-overlay {
+                align-items: center;
             }
 
-            .tajwid-card:hover .tw-arrow {
-                transform: translateX(0) translateY(3px);
+            .modal-content {
+                border-radius: 24px;
+                padding: 30px;
             }
         }
     </style>
@@ -597,243 +616,287 @@ $tajwid_lessons = [
 
     <div class="hero-section">
         <div class="top-bar">
-            <!-- Tombol Lokasi (Bisa Diklik) -->
-            <div class="location-badge" onclick="triggerLocationUpdate()">
-                <i class="fas fa-map-marker-alt"></i>
-                <span id="location-text">Mencari Lokasi...</span>
+            <div class="user-info">
+                <div class="greeting">Assalamu'alaikum, <?= htmlspecialchars($nama_depan) ?></div>
+                <div class="hijri-date" id="hijri-date">Memuat tanggal...</div>
+                <div class="location" onclick="triggerLocationUpdate()">
+                    <i class="fas fa-location-dot"></i> <span id="location-text">Mencari...</span>
+                </div>
             </div>
-            <div class="profile-btn"><?= strtoupper(substr($_SESSION['nama_lengkap'] ?? 'U', 0, 1)) ?></div>
-        </div>
-
-        <div class="bismillah">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم</div>
-
-        <div class="date-time-row">
-            <div class="date-box">
-                <div class="label">Hijriah</div>
-                <div class="value" id="hijri-date">--</div>
-            </div>
-            <div class="realtime-clock" id="clock">00:00:00</div>
-            <div class="date-box">
-                <div class="label">Masehi</div>
-                <div class="value" id="masehi-date">--</div>
+            <div class="action-icons">
+                <a href="pengaturan.php" class="icon-btn"><i class="fas fa-cog"></i></a>
+                <button class="icon-btn" onclick="toggleModal('notifModal')">
+                    <i class="fas fa-bell"></i>
+                    <?php if ($has_notif): ?><div class="notif-dot"></div><?php endif; ?>
+                </button>
             </div>
         </div>
 
-        <div class="prayer-row" id="prayer-container">
-            <div style="font-size: 0.85rem; width: 100%; text-align: center; font-weight:600;">Menyelaraskan jadwal sholat...</div>
+        <div class="clock-container">
+            <div class="clock-time" id="clock">00:00</div>
+            <div class="countdown" id="countdown-text">Menghitung waktu sholat...</div>
         </div>
 
-        <div class="countdown-text" id="countdown-text">--:--:-- menuju waktu sholat berikutnya</div>
+        <div class="prayer-row" id="prayer-container"></div>
     </div>
 
     <div class="main-content">
-
-        <!-- SLIDER KARTU PROGRESS -->
-        <div class="slider-container" id="cardSlider" onscroll="updateDots()">
-
-            <!-- 1. KARTU TILAWAH -->
-            <a href="baca.php?surah=<?= $bm_surah ?>&ayat=<?= $bm_ayat ?>" class="floating-card">
-                <div class="fc-left">
-                    <div class="progress-circle">
-                        <div class="progress-inner"><i class="fas fa-book-open"></i></div>
-                    </div>
-                    <div class="fc-text">
-                        <h4>Lanjutkan Baca</h4>
-                        <h3 id="bm-surah-title">Memuat...</h3>
-                        <div class="fc-badges">
-                            <span class="fc-badge" id="bm-surah-no">Surah Ke-<?= $bm_surah ?></span>
-                            <span class="fc-badge">Ayat <?= $bm_ayat ?></span>
-                        </div>
-                    </div>
-                </div>
-                <div class="fc-arrow"><i class="fas fa-play"></i></div>
-            </a>
-
-            <!-- 2. KARTU HAFALAN -->
-            <div class="floating-card" style="opacity: 0.8;">
-                <div class="coming-soon-overlay">
-                    <div class="cs-badge">Segera Hadir</div>
-                </div>
-                <div class="fc-left">
-                    <div class="progress-circle" style="background: conic-gradient(#94a3b8 100%, #e5e7eb 0);">
-                        <div class="progress-inner" style="color: #64748b;"><i class="fas fa-brain"></i></div>
-                    </div>
-                    <div class="fc-text">
-                        <h4>Target Hafalan</h4>
-                        <h3>Surah Al-Mulk</h3>
-                        <div class="fc-badges"><span class="fc-badge">Ayat 1-10</span></div>
-                    </div>
-                </div>
-                <div class="fc-arrow"><i class="fas fa-lock"></i></div>
-            </div>
-
-            <!-- 3. KARTU MUROJAAH -->
-            <div class="floating-card" style="opacity: 0.8;">
-                <div class="coming-soon-overlay">
-                    <div class="cs-badge">Segera Hadir</div>
-                </div>
-                <div class="fc-left">
-                    <div class="progress-circle" style="background: conic-gradient(#94a3b8 100%, #e5e7eb 0);">
-                        <div class="progress-inner" style="color: #64748b;"><i class="fas fa-sync-alt"></i></div>
-                    </div>
-                    <div class="fc-text">
-                        <h4>Jadwal Murojaah</h4>
-                        <h3>Surah Yasin</h3>
-                        <div class="fc-badges"><span class="fc-badge">Waktunya Review</span></div>
-                    </div>
-                </div>
-                <div class="fc-arrow"><i class="fas fa-lock"></i></div>
-            </div>
-
-        </div>
-        <div class="slider-dots">
-            <div class="dot active" id="dot1"></div>
-            <div class="dot" id="dot2"></div>
-            <div class="dot" id="dot3"></div>
-        </div>
-
-        <!-- MENU EKSPLORASI -->
+        <!-- MENU GRID -->
         <div class="section-header">
-            <h3 class="section-title" style="margin:0;">Menu Utama</h3>
+            <h3 class="section-title">Fitur Utama</h3>
         </div>
-        <div class="quick-grid" id="menuGrid">
-            <!-- Selalu Tampil (7 Menu) -->
-            <a href="alquran.php" class="q-item">
-                <div class="q-icon"><i class="fas fa-book-quran"></i></div>
-                <div class="q-text">Qur'an</div>
+        <div class="menu-grid">
+            <a href="alquran.php" class="menu-item">
+                <div class="menu-icon"><i class="fas fa-book-open"></i></div>
+                <div class="menu-text">Qur'an</div>
             </a>
-            <a href="hafalan.php" class="q-item">
-                <div class="q-icon"><i class="fas fa-brain"></i></div>
-                <div class="q-text">Hafalan</div>
+            <a href="hafalan.php" class="menu-item">
+                <div class="menu-icon"><i class="fas fa-brain"></i></div>
+                <div class="menu-text">Hafalan</div>
             </a>
-            <a href="smart_murojaah.php" class="q-item">
-                <div class="q-icon"><i class="fas fa-microphone-alt"></i></div>
-                <div class="q-text">Murojaah</div>
+            <a href="smart_murojaah.php" class="menu-item">
+                <div class="menu-icon"><i class="fas fa-microphone-alt"></i></div>
+                <div class="menu-text">Murojaah</div>
             </a>
-            <a href="mutabaah.php" class="q-item">
-                <div class="q-icon"><i class="fas fa-chart-line"></i></div>
-                <div class="q-text">Mutabaah</div>
+            <a href="mutabaah.php" class="menu-item">
+                <div class="menu-icon"><i class="fas fa-chart-line"></i></div>
+                <div class="menu-text">Mutabaah</div>
             </a>
-            <a href="tajwid.php" class="q-item">
-                <div class="q-icon"><i class="fas fa-chalkboard-teacher"></i></div>
-                <div class="q-text">Tajwid</div>
+            <a href="tajwid.php" class="menu-item">
+                <div class="menu-icon"><i class="fas fa-chalkboard-teacher"></i></div>
+                <div class="menu-text">Tajwid</div>
             </a>
-            <a href="doa.php" class="q-item">
-                <div class="q-icon"><i class="fas fa-hands-praying"></i></div>
-                <div class="q-text">Doa</div>
+            <a href="doa.php" class="menu-item">
+                <div class="menu-icon"><i class="fas fa-hands-praying"></i></div>
+                <div class="menu-text">Doa</div>
             </a>
-            <a href="target.php" class="q-item">
-                <div class="q-icon"><i class="fas fa-bullseye"></i></div>
-                <div class="q-text">Target</div>
+            <a href="game.php" class="menu-item">
+                <div class="menu-icon"><i class="fas fa-gamepad"></i></div>
+                <div class="menu-text">Game</div>
             </a>
+            <!-- Tombol Lainnya membuka Modal -->
+            <div class="menu-item menu-all" onclick="toggleModal('menuModal')">
+                <div class="menu-icon"><i class="fas fa-th-large"></i></div>
+                <div class="menu-text">Lainnya</div>
+            </div>
+        </div>
 
-            <!-- Tombol Selengkapnya -->
-            <a href="javascript:void(0)" class="q-item" id="toggleMenuBtn" onclick="toggleMoreMenu()">
-                <div class="q-icon" style="background:#f1f5f9; border-color:#e2e8f0; color:#64748b;"><i class="fas fa-th-large" id="toggleIcon"></i></div>
-                <div class="q-text" id="toggleText">Lainnya</div>
+        <!-- AKTIVITAS -->
+        <div class="section-header">
+            <h3 class="section-title">Aktivitas Anda</h3>
+        </div>
+        <div class="cards-scroll">
+            <a href="baca.php?surah=<?= $bm_surah ?>&ayat=<?= $bm_ayat ?>" class="activity-card">
+                <div class="ac-left">
+                    <div class="ac-icon"><i class="fas fa-book-quran"></i></div>
+                    <div>
+                        <div class="ac-label">Terakhir Dibaca</div>
+                        <div class="ac-title" id="tilawah-title">Surah <?= $bm_surah ?></div>
+                        <div class="ac-desc">Ayat <?= $bm_ayat ?></div>
+                    </div>
+                </div>
+                <div class="ac-play"><i class="fas fa-play"></i></div>
             </a>
-
-            <!-- Menu Tersembunyi -->
-            <a href="#" class="q-item hidden-menu" onclick="infoComingSoon()">
-                <div class="q-icon"><i class="fas fa-medal"></i></div>
-                <div class="q-text">Pencapaian</div>
+            <a href="smart_murojaah.php" class="activity-card">
+                <div class="ac-left">
+                    <div class="ac-icon" style="background:#e0f2fe; color:#0284c7;"><i class="fas fa-sync-alt"></i></div>
+                    <div>
+                        <div class="ac-label">Progress Murojaah</div>
+                        <div class="ac-title" id="mur-title">Surah <?= $mur_surah ?></div>
+                        <div class="ac-desc">Selesai Ayat <?= $mur_ayat ?></div>
+                    </div>
+                </div>
+                <div class="ac-play"><i class="fas fa-play"></i></div>
             </a>
-            <a href="#" class="q-item hidden-menu" onclick="infoComingSoon()">
-                <div class="q-icon"><i class="fas fa-robot"></i></div>
-                <div class="q-text">AI Coach</div>
-            </a>
-            <a href="game.php" class="q-item hidden-menu">
-                <div class="q-icon"><i class="fas fa-gamepad"></i></div>
-                <div class="q-text">Game</div>
+            <a href="hafalan.php" class="activity-card">
+                <div class="ac-left">
+                    <div class="ac-icon" style="background:#fef3c7; color:#d97706;"><i class="fas fa-brain"></i></div>
+                    <div>
+                        <div class="ac-label">Hafalan Terbaru</div>
+                        <div class="ac-title"><?= htmlspecialchars($haf_surah_name) ?></div>
+                        <div class="ac-desc">Ayat <?= $haf_ayat ?></div>
+                    </div>
+                </div>
+                <div class="ac-play"><i class="fas fa-play"></i></div>
             </a>
         </div>
 
         <!-- TAJWID TERBARU -->
         <div class="section-header">
-            <h3 class="section-title" style="margin:0;">Pelajaran Tajwid</h3>
-            <a href="tajwid.php" style="font-size:0.85rem; color:var(--primary-light); font-weight:700; text-decoration:none;">Lihat Semua <i class="fas fa-arrow-right"></i></a>
+            <h3 class="section-title">Belajar Tajwid</h3>
+            <a href="tajwid.php" class="see-all">Lihat Semua</a>
         </div>
         <div class="tajwid-list">
-            <?php foreach ($tajwid_lessons as $tw): ?>
-                <a href="tajwid_detail.php?id=<?= $tw['id'] ?>" class="tajwid-card">
-                    <div class="tw-icon" style="background: <?= $tw['color'] ?>;">
-                        <i class="fas <?= $tw['icon'] ?>"></i>
-                    </div>
+            <?php foreach ($tajwid_lessons as $tw):
+                // Path gambar tajwid disesuaikan
+                $coverPath = !empty($tw['cover_image']) ? '../uploads/' . htmlspecialchars($tw['cover_image']) : 'https://via.placeholder.com/70x70?text=Tajwid';
+                $date_tw = date('d M Y', strtotime($tw['created_at']));
+            ?>
+                <!-- Tautan tajwid.php?id= disesuaikan -->
+                <a href="tajwid.php?id=<?= $tw['id'] ?>" class="tajwid-card">
+                    <img src="<?= $coverPath ?>" alt="<?= htmlspecialchars($tw['judul']) ?>" class="tw-cover" onerror="this.src='https://via.placeholder.com/70x70?text=Tajwid'">
                     <div class="tw-info">
-                        <h4 class="tw-title"><?= htmlspecialchars($tw['title']) ?></h4>
-                        <p class="tw-desc"><?= htmlspecialchars($tw['desc']) ?></p>
+                        <div class="tw-title"><?= htmlspecialchars($tw['judul']) ?></div>
+                        <div class="tw-date"><i class="far fa-clock"></i> <?= $date_tw ?></div>
                     </div>
-                    <i class="fas fa-chevron-right tw-arrow"></i>
+                    <i class="fas fa-chevron-right" style="color:var(--border);"></i>
                 </a>
             <?php endforeach; ?>
         </div>
-
     </div>
 
-    <!-- Panggil Navigasi Bawah -->
+    <!-- MODAL MENU LENGKAP -->
+    <div id="menuModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Semua Fitur</h3>
+                <button class="btn-close" onclick="toggleModal('menuModal')"><i class="fas fa-times"></i></button>
+            </div>
+            <div style="margin-bottom:20px;">
+                <p style="font-size:0.8rem; color:var(--text-muted); font-weight:700; margin-bottom:15px; letter-spacing:1px;">FITUR UTAMA</p>
+                <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:15px;">
+                    <a href="alquran.php" class="menu-item">
+                        <div class="menu-icon"><i class="fas fa-book-open"></i></div>
+                        <div class="menu-text">Qur'an</div>
+                    </a>
+                    <a href="hafalan.php" class="menu-item">
+                        <div class="menu-icon"><i class="fas fa-brain"></i></div>
+                        <div class="menu-text">Hafalan</div>
+                    </a>
+                    <a href="smart_murojaah.php" class="menu-item">
+                        <div class="menu-icon"><i class="fas fa-microphone-alt"></i></div>
+                        <div class="menu-text">Murojaah</div>
+                    </a>
+                    <a href="mutabaah.php" class="menu-item">
+                        <div class="menu-icon"><i class="fas fa-chart-line"></i></div>
+                        <div class="menu-text">Mutabaah</div>
+                    </a>
+                </div>
+            </div>
+            <div>
+                <p style="font-size:0.8rem; color:var(--text-muted); font-weight:700; margin-bottom:15px; letter-spacing:1px;">PENDUKUNG</p>
+                <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:15px;">
+                    <a href="tajwid.php" class="menu-item">
+                        <div class="menu-icon" style="background:#0284c7;"><i class="fas fa-chalkboard-teacher"></i></div>
+                        <div class="menu-text">Tajwid</div>
+                    </a>
+                    <a href="doa.php" class="menu-item">
+                        <div class="menu-icon" style="background:#d97706;"><i class="fas fa-hands-praying"></i></div>
+                        <div class="menu-text">Doa</div>
+                    </a>
+                    <a href="game.php" class="menu-item">
+                        <div class="menu-icon" style="background:#7c3aed;"><i class="fas fa-gamepad"></i></div>
+                        <div class="menu-text">Game</div>
+                    </a>
+                    <a href="target.php" class="menu-item">
+                        <div class="menu-icon" style="background:#ea580c;"><i class="fas fa-bullseye"></i></div>
+                        <div class="menu-text">Target</div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL NOTIFIKASI -->
+    <div id="notifModal" class="modal-overlay">
+        <div class="modal-content" style="padding: 0;">
+            <div class="modal-header" style="padding: 25px 25px 15px 25px; margin-bottom:0; border-bottom:1px solid var(--border);">
+                <h3>Notifikasi</h3>
+                <button class="btn-close" onclick="toggleModal('notifModal')"><i class="fas fa-times"></i></button>
+            </div>
+            <div style="padding: 10px 0;">
+                <?php if (empty($notifications)): ?>
+                    <div style="padding: 40px 20px; text-align:center; color:var(--text-muted);">
+                        <i class="fas fa-bell-slash" style="font-size:2rem; margin-bottom:10px; color:#cbd5e1;"></i>
+                        <p>Belum ada notifikasi baru.</p>
+                    </div>
+                <?php else: ?>
+                    <?php foreach ($notifications as $n):
+                        $is_done = $n['is_completed'] == 1;
+                        $icon = $is_done ? 'fa-check' : 'fa-clock';
+                        $icon_class = $is_done ? 'notif-success' : '';
+                        $time_str = date('H:i', strtotime($n['task_time']));
+                    ?>
+                        <div class="notif-item">
+                            <div class="notif-icon <?= $icon_class ?>"><i class="fas <?= $icon ?>"></i></div>
+                            <div class="notif-body">
+                                <div class="notif-title">Target: <?= htmlspecialchars($n['task_name']) ?></div>
+                                <div class="notif-time">
+                                    <?= $is_done ? 'Selesai dikerjakan!' : "Jadwal jam {$time_str}. Jangan lupa ya!" ?>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+
+                <!-- Notifikasi Statis Tambahan -->
+                <div class="notif-item">
+                    <div class="notif-icon notif-success"><i class="fas fa-hand-sparkles"></i></div>
+                    <div class="notif-body">
+                        <div class="notif-title">Ahlan Wa Sahlan, <?= htmlspecialchars($nama_depan) ?>!</div>
+                        <div class="notif-time">Selamat datang di dashboard Hifzly. Semangat mengajinya!</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigasi Bawah -->
     <?php include '../components/nav.php'; ?>
 
     <script>
-        // --- 1. TOGGLE MENU SELENGKAPNYA ---
-        function toggleMoreMenu() {
-            const hiddenItems = document.querySelectorAll('.hidden-menu');
-            const icon = document.getElementById('toggleIcon');
-            const text = document.getElementById('toggleText');
-
-            let isExpanded = text.innerText === 'Tutup';
-
-            if (isExpanded) {
-                hiddenItems.forEach(el => el.style.display = 'none');
-                text.innerText = 'Lainnya';
-                icon.className = 'fas fa-th-large';
+        // FUNGSI BUKA TUTUP MODAL
+        function toggleModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal.style.display === 'flex') {
+                modal.style.display = 'none';
+                document.body.style.overflow = 'auto';
             } else {
-                hiddenItems.forEach(el => el.style.display = 'flex');
-                text.innerText = 'Tutup';
-                icon.className = 'fas fa-chevron-up';
+                modal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
             }
         }
 
-        function infoComingSoon() {
-            Swal.fire({
-                icon: 'info',
-                title: 'Insya Allah Segera Hadir',
-                text: 'Fitur ini sedang dalam tahap pengembangan.',
-                confirmButtonColor: '#059669',
-                confirmButtonText: 'Alhamdulillah'
-            });
+        // Tutup modal jika klik area luar konten
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal-overlay')) {
+                event.target.style.display = "none";
+                document.body.style.overflow = 'auto';
+            }
         }
 
-        // --- 2. BOOKMARK DATA ---
+        // Tarik nama surah untuk Bookmark & Murojaah dari API eQuran
         fetch(`https://equran.id/api/v2/surat/<?= $bm_surah ?>`)
             .then(res => res.json())
             .then(data => {
-                document.getElementById('bm-surah-title').innerText = 'Surah ' + data.data.namaLatin;
+                document.getElementById('tilawah-title').innerText = data.data.namaLatin;
             })
-            .catch(e => {
-                document.getElementById('bm-surah-title').innerText = 'Lanjutkan Tilawah';
-            });
+            .catch(() => {});
 
-        function updateDots() {
-            const slider = document.getElementById('cardSlider');
-            const activeIndex = Math.round(slider.scrollLeft / slider.offsetWidth);
-            document.querySelectorAll('.dot').forEach((dot, index) => {
-                dot.classList.toggle('active', index === activeIndex);
-            });
-        }
+        fetch(`https://equran.id/api/v2/surat/<?= $mur_surah ?>`)
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('mur-title').innerText = data.data.namaLatin;
+            })
+            .catch(() => {});
 
-        // --- 3. SISTEM LOKASI SMART CACHE & JADWAL SHOLAT ---
+        // --- SISTEM JAM & JADWAL SHOLAT ---
         let prayerTimesData = null;
 
         function updateClock() {
             const now = new Date();
             const format = n => String(n).padStart(2, '0');
-            document.getElementById('clock').innerText = `${format(now.getHours())}:${format(now.getMinutes())}:${format(now.getSeconds())}`;
-            if (prayerTimesData) updateCountdown(now);
+            document.getElementById('clock').innerText = `${format(now.getHours())}:${format(now.getMinutes())}`;
+            const masehiStr = now.toLocaleDateString('id-ID', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            });
+            if (prayerTimesData) updateCountdown(now, masehiStr);
         }
         setInterval(updateClock, 1000);
         updateClock();
 
-        // Cek Cache Lokasi saat halaman dimuat
         function initLocation() {
             const savedLat = localStorage.getItem('hifzly_lat');
             const savedLon = localStorage.getItem('hifzly_lon');
@@ -843,73 +906,50 @@ $tajwid_lessons = [
                 document.getElementById('location-text').innerText = savedCity;
                 fetchPrayerAPI(savedLat, savedLon);
             } else {
-                executeLocationTracking(false);
+                executeLocationTracking();
             }
         }
 
-        // Tombol Perbarui Lokasi (Manual Click)
         function triggerLocationUpdate() {
-            Swal.fire({
-                title: 'Perbarui Lokasi?',
-                text: 'Sistem akan melacak posisi Anda saat ini untuk menyesuaikan jadwal sholat secara akurat.',
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#059669',
-                cancelButtonColor: '#94a3b8',
-                confirmButtonText: '<i class="fas fa-location-arrow"></i> Bismillah, Lacak!',
-                cancelButtonText: 'Batal'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    document.getElementById('location-text').innerText = "Melacak...";
-                    executeLocationTracking(true);
-                }
-            });
+            document.getElementById('location-text').innerText = "Melacak...";
+            executeLocationTracking(true);
         }
 
-        function executeLocationTracking(showSuccessAlert = false) {
+        function executeLocationTracking(showAlert = false) {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
-                        const lat = position.coords.latitude;
-                        const lon = position.coords.longitude;
-                        fetchCityName(lat, lon, showSuccessAlert);
+                        const lat = position.coords.latitude,
+                            lon = position.coords.longitude;
+                        fetchCityName(lat, lon, showAlert);
                         fetchPrayerAPI(lat, lon);
                     },
-                    () => fallbackLocation(showSuccessAlert), {
+                    () => fallbackLocation(showAlert), {
                         enableHighAccuracy: true,
                         timeout: 5000
                     }
                 );
-            } else {
-                fallbackLocation(showSuccessAlert);
-            }
+            } else fallbackLocation(showAlert);
         }
 
         function fallbackLocation(showAlert) {
-            const defLat = -6.1824,
-                defLon = 106.3351,
-                defCity = "Cikande, Banten";
-            saveLocationData(defLat, defLon, defCity);
-            if (showAlert) Swal.fire('Gagal Melacak', 'Izin lokasi ditolak/gagal. Menggunakan lokasi default.', 'warning');
+            saveLocationData(-6.1824, 106.3351, "Jakarta, Indonesia");
+            if (showAlert) Swal.fire('Gagal', 'Izin ditolak, menggunakan lokasi default', 'warning');
         }
 
         async function fetchCityName(lat, lon, showAlert) {
             try {
                 const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=id`);
                 const data = await res.json();
-                const cityName = data.city || data.locality || "Lokasi Ditemukan";
-                saveLocationData(lat, lon, cityName);
-
-                if (showAlert) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Alhamdulillah',
-                        text: `Lokasi diperbarui ke ${cityName}`,
-                        confirmButtonColor: '#059669',
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
-                }
+                const city = (data.city || data.locality || "Lokasi Anda") + ", " + (data.countryName || "Indonesia");
+                saveLocationData(lat, lon, city);
+                if (showAlert) Swal.fire({
+                    icon: 'success',
+                    title: 'Lokasi Diperbarui',
+                    text: city,
+                    timer: 1500,
+                    showConfirmButton: false
+                });
             } catch (e) {
                 saveLocationData(lat, lon, "Lokasi Tersimpan");
             }
@@ -927,41 +967,39 @@ $tajwid_lessons = [
             try {
                 const res = await fetch(`https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lon}&method=11`);
                 const result = await res.json();
-                const data = result.data;
-                prayerTimesData = data.timings;
+                prayerTimesData = result.data.timings;
 
-                document.getElementById('masehi-date').innerText = data.date.gregorian.date;
-                document.getElementById('hijri-date').innerText = `${data.date.hijri.day} ${data.date.hijri.month.en} ${data.date.hijri.year}`;
+                const hijri = result.data.date.hijri;
+                document.getElementById('hijri-date').innerText = `${hijri.day} ${hijri.month.en} ${hijri.year} H`;
+
                 renderPrayerTimes();
-            } catch (e) {
-                document.getElementById('prayer-container').innerHTML = "<div style='color:red;'>Gagal memuat jadwal.</div>";
-            }
+            } catch (e) {}
         }
 
         const prayerConfig = [{
                 id: 'Fajr',
-                name: 'Subuh',
-                icon: '<i class="fas fa-cloud-moon"></i>'
+                name: 'Fajr',
+                icon: 'fa-cloud-moon'
             },
             {
                 id: 'Dhuhr',
-                name: 'Dzuhur',
-                icon: '<i class="fas fa-sun"></i>'
+                name: 'Dzuhr',
+                icon: 'fa-sun'
             },
             {
                 id: 'Asr',
-                name: 'Ashar',
-                icon: '<i class="fas fa-cloud-sun"></i>'
+                name: 'Asr',
+                icon: 'fa-cloud-sun'
             },
             {
                 id: 'Maghrib',
                 name: 'Maghrib',
-                icon: '<i class="fas fa-moon"></i>'
+                icon: 'fa-moon'
             },
             {
                 id: 'Isha',
-                name: 'Isya',
-                icon: '<i class="fas fa-star"></i>'
+                name: 'Isha',
+                icon: 'fa-star'
             }
         ];
 
@@ -969,9 +1007,9 @@ $tajwid_lessons = [
             let html = '';
             prayerConfig.forEach(p => {
                 html += `<div class="prayer-item" id="pr-${p.id}">
-                    <div class="p-time">${prayerTimesData[p.id]}</div>
-                    <div class="p-icon">${p.icon}</div>
                     <div class="p-name">${p.name}</div>
+                    <div class="p-icon"><i class="fas ${p.icon}"></i></div>
+                    <div class="p-time">${prayerTimesData[p.id]}</div>
                 </div>`;
             });
             document.getElementById('prayer-container').innerHTML = html;
@@ -981,13 +1019,11 @@ $tajwid_lessons = [
             let nextPrayerName = "",
                 nextPrayerTimeDate = null,
                 activeId = "";
-
             for (let i = 0; i < prayerConfig.length; i++) {
                 const p = prayerConfig[i];
                 const [h, m] = prayerTimesData[p.id].split(':');
                 let pTime = new Date();
                 pTime.setHours(h, m, 0, 0);
-
                 if (pTime > now) {
                     nextPrayerName = p.name;
                     nextPrayerTimeDate = pTime;
@@ -995,13 +1031,12 @@ $tajwid_lessons = [
                     break;
                 }
             }
-
             if (!nextPrayerTimeDate) {
                 const [fh, fm] = prayerTimesData['Fajr'].split(':');
                 nextPrayerTimeDate = new Date();
                 nextPrayerTimeDate.setDate(now.getDate() + 1);
                 nextPrayerTimeDate.setHours(fh, fm, 0, 0);
-                nextPrayerName = 'Subuh';
+                nextPrayerName = 'Fajr';
                 activeId = 'Fajr';
             }
 
@@ -1011,10 +1046,12 @@ $tajwid_lessons = [
             const diffMs = nextPrayerTimeDate - now;
             const diffHrs = Math.floor((diffMs % 86400000) / 3600000);
             const diffMins = Math.floor((diffMs % 3600000) / 60000);
-            const diffSecs = Math.floor((diffMs % 60000) / 1000);
-            const format = (num) => String(num).padStart(2, '0');
 
-            document.getElementById('countdown-text').innerHTML = `<span>${format(diffHrs)}:${format(diffMins)}:${format(diffSecs)}</span> menuju ${nextPrayerName}`;
+            let timeText = "";
+            if (diffHrs > 0) timeText += `${diffHrs} hour `;
+            timeText += `${diffMins} min`;
+
+            document.getElementById('countdown-text').innerText = `${nextPrayerName} ${timeText} left`;
         }
 
         window.onload = initLocation;

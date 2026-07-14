@@ -382,7 +382,9 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
         }
 
         .mode-murojaah .ayah-word.target-word {
-            border-bottom: 3px solid #000;
+            border-bottom: 3px solid #10b981;
+            background-color: rgba(16, 185, 129, 0.15);
+            border-radius: 4px;
         }
 
         .ayah-end {
@@ -441,6 +443,23 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             font-size: 2rem;
             margin: 5px 0 15px 0;
             width: 100%;
+        }
+
+        .live-transcript {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            color: #64748b;
+            text-align: center;
+            font-size: 1.1rem;
+            padding: 10px;
+            border-radius: 12px;
+            font-family: 'Uthmani', serif;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            border: 1px solid var(--line-color);
+            direction: rtl;
+            min-height: 40px;
         }
 
         .bottom-wrapper {
@@ -642,6 +661,7 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
         </div>
 
         <div class="bottom-wrapper">
+            <div class="live-transcript" id="liveTranscript">Menunggu suara...</div>
             <div class="bottom-bar">
                 <button class="bb-btn" id="btnEye" onclick="toggleMode()"><i class="fas fa-eye-slash"></i></button>
                 <button class="bb-btn" onclick="changePage(-1)"><i class="fas fa-chevron-right"></i></button>
@@ -1754,6 +1774,9 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
                     }
                 }
                 
+                const lt = document.getElementById('liveTranscript');
+                if (lt) lt.innerText = 'Menunggu suara...';
+
                 speechBuffer = '';
                 interimBuffer = '';
                 lastProcessedIndex = 0;
@@ -1872,6 +1895,10 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
                 }
                 currentWordTargetIdx = index + 1;
                 updateTargetIndicator();
+                
+                const lt = document.getElementById('liveTranscript');
+                if (lt) lt.innerText = 'Menunggu suara...';
+
                 speechBuffer = '';
                 interimBuffer = '';
                 lastProcessedIndex = 0;
@@ -2004,16 +2031,19 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             if (spoken.length >= 4 && target.startsWith(spoken)) return true;
             if (target.length >= 4 && spoken.startsWith(target)) return true;
 
-            // Fuzzy Levenshtein: toleransi disesuaikan panjang kata agar lebih longgar
-            if (spoken.length >= 4 && target.length >= 4) {
-                if (Math.abs(spoken.length - target.length) <= 3) {
-                    let maxDist = 0;
-                    if (target.length >= 8) maxDist = 3;
-                    else if (target.length >= 5) maxDist = 2;
-                    else if (target.length >= 3) maxDist = 1;
-                    
-                    if (levenshtein(spoken, target) <= maxDist) return true;
-                }
+            // Substring agresif (sangat longgar) untuk kata yang diucapkan utuh tapi menempel kata lain
+            if (spoken.length >= 3 && target.length >= 3) {
+                if (spoken.includes(target) || target.includes(spoken)) return true;
+            }
+
+            // Fuzzy Levenshtein super longgar
+            if (Math.abs(spoken.length - target.length) <= 4) {
+                let maxDist = 1; // Default
+                if (target.length >= 7) maxDist = 4;
+                else if (target.length >= 5) maxDist = 3;
+                else if (target.length >= 3) maxDist = 2;
+                
+                if (levenshtein(spoken, target) <= maxDist) return true;
             }
 
             return false;
@@ -2050,6 +2080,10 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
 
             const combined = (speechBuffer + ' ' + interimBuffer).trim();
             if (!combined) return;
+
+            // Tampilkan live transcript
+            const lt = document.getElementById('liveTranscript');
+            if (lt) lt.innerText = combined;
 
             // Normalisasi dan terjemahkan Huruf Muqatta'at
             let spokenClean = normalizeArabicExtreme(combined);

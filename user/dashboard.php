@@ -53,7 +53,7 @@ while ($row = mysqli_fetch_assoc($q_tajwid)) {
     $tajwid_lessons[] = $row;
 }
 
-// --- 5. DATA NOTIFIKASI (Dari tabel user_todos) ---
+// --- 5. DATA NOTIFIKASI ---
 $q_notif = mysqli_query($conn, "SELECT task_name, task_time, is_completed, created_at FROM user_todos WHERE user_id='$user_id' ORDER BY id DESC LIMIT 5");
 $notifications = [];
 while ($row = mysqli_fetch_assoc($q_notif)) {
@@ -72,7 +72,6 @@ $has_notif = count($notifications) > 0;
 
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
         :root {
@@ -143,6 +142,12 @@ $has_notif = count($notifications) > 0;
             opacity: 0.9;
             cursor: pointer;
             margin-top: 2px;
+            transition: 0.2s;
+        }
+
+        .location:hover {
+            opacity: 1;
+            transform: translateX(2px);
         }
 
         .action-icons {
@@ -450,7 +455,7 @@ $has_notif = count($notifications) > 0;
             font-weight: 600;
         }
 
-        /* MODALS (Menu & Notifikasi) */
+        /* MODALS */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -553,7 +558,6 @@ $has_notif = count($notifications) > 0;
             }
         }
 
-        /* DESKTOP RESPONSIVE */
         @media (min-width: 768px) {
             .hero-section {
                 border-radius: 24px;
@@ -619,12 +623,14 @@ $has_notif = count($notifications) > 0;
             <div class="user-info">
                 <div class="greeting">Assalamu'alaikum, <?= htmlspecialchars($nama_depan) ?></div>
                 <div class="hijri-date" id="hijri-date">Memuat tanggal...</div>
-                <div class="location" onclick="triggerLocationUpdate()">
+
+                <!-- Diarahkan ke Pengaturan jika diklik -->
+                <div class="location" onclick="window.location.href='pengaturan.php'">
                     <i class="fas fa-location-dot"></i> <span id="location-text">Mencari...</span>
                 </div>
             </div>
             <div class="action-icons">
-                <a href="setting.php" class="icon-btn"><i class="fas fa-cog"></i></a>
+                <a href="pengaturan.php" class="icon-btn"><i class="fas fa-cog"></i></a>
                 <button class="icon-btn" onclick="toggleModal('notifModal')">
                     <i class="fas fa-bell"></i>
                     <?php if ($has_notif): ?><div class="notif-dot"></div><?php endif; ?>
@@ -728,11 +734,9 @@ $has_notif = count($notifications) > 0;
         </div>
         <div class="tajwid-list">
             <?php foreach ($tajwid_lessons as $tw):
-                // Path gambar tajwid disesuaikan
                 $coverPath = !empty($tw['cover_image']) ? '../uploads/' . htmlspecialchars($tw['cover_image']) : 'https://via.placeholder.com/70x70?text=Tajwid';
                 $date_tw = date('d M Y', strtotime($tw['created_at']));
             ?>
-                <!-- Tautan tajwid.php?id= disesuaikan -->
                 <a href="tajwid.php?id=<?= $tw['id'] ?>" class="tajwid-card">
                     <img src="<?= $coverPath ?>" alt="<?= htmlspecialchars($tw['judul']) ?>" class="tw-cover" onerror="this.src='https://via.placeholder.com/70x70?text=Tajwid'">
                     <div class="tw-info">
@@ -829,12 +833,11 @@ $has_notif = count($notifications) > 0;
                     <?php endforeach; ?>
                 <?php endif; ?>
 
-                <!-- Notifikasi Statis Tambahan -->
                 <div class="notif-item">
                     <div class="notif-icon notif-success"><i class="fas fa-hand-sparkles"></i></div>
                     <div class="notif-body">
                         <div class="notif-title">Ahlan Wa Sahlan, <?= htmlspecialchars($nama_depan) ?>!</div>
-                        <div class="notif-time">Selamat datang di dashboard Hifzhly. Semangat mengajinya!</div>
+                        <div class="notif-time">Selamat datang di dashboard Hifzly. Semangat mengajinya!</div>
                     </div>
                 </div>
             </div>
@@ -845,7 +848,7 @@ $has_notif = count($notifications) > 0;
     <?php include '../components/nav.php'; ?>
 
     <script>
-        // FUNGSI BUKA TUTUP MODAL
+        // BUKA TUTUP MODAL
         function toggleModal(modalId) {
             const modal = document.getElementById(modalId);
             if (modal.style.display === 'flex') {
@@ -857,7 +860,6 @@ $has_notif = count($notifications) > 0;
             }
         }
 
-        // Tutup modal jika klik area luar konten
         window.onclick = function(event) {
             if (event.target.classList.contains('modal-overlay')) {
                 event.target.style.display = "none";
@@ -865,115 +867,85 @@ $has_notif = count($notifications) > 0;
             }
         }
 
-        // Tarik nama surah untuk Bookmark & Murojaah dari API eQuran
+        // AMBIL NAMA SURAH
         fetch(`https://equran.id/api/v2/surat/<?= $bm_surah ?>`)
             .then(res => res.json())
             .then(data => {
                 document.getElementById('tilawah-title').innerText = data.data.namaLatin;
-            })
-            .catch(() => {});
+            }).catch(() => {});
 
         fetch(`https://equran.id/api/v2/surat/<?= $mur_surah ?>`)
             .then(res => res.json())
             .then(data => {
                 document.getElementById('mur-title').innerText = data.data.namaLatin;
-            })
-            .catch(() => {});
+            }).catch(() => {});
 
-        // --- SISTEM JAM & JADWAL SHOLAT ---
+        // --- SISTEM JAM & JADWAL SHOLAT (Terintegrasi Pengaturan) ---
         let prayerTimesData = null;
 
         function updateClock() {
             const now = new Date();
             const format = n => String(n).padStart(2, '0');
             document.getElementById('clock').innerText = `${format(now.getHours())}:${format(now.getMinutes())}`;
-            const masehiStr = now.toLocaleDateString('id-ID', {
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric'
-            });
-            if (prayerTimesData) updateCountdown(now, masehiStr);
+            if (prayerTimesData) updateCountdown(now);
         }
         setInterval(updateClock, 1000);
         updateClock();
 
         function initLocation() {
+            const savedCity = localStorage.getItem('hifzly_city');
             const savedLat = localStorage.getItem('hifzly_lat');
             const savedLon = localStorage.getItem('hifzly_lon');
-            const savedCity = localStorage.getItem('hifzly_city');
 
-            if (savedLat && savedLon && savedCity) {
+            if (savedCity && savedCity !== 'Belum diatur') {
                 document.getElementById('location-text').innerText = savedCity;
-                fetchPrayerAPI(savedLat, savedLon);
+
+                // Jika kordinat tersedia (Deteksi Otomatis)
+                if (savedLat && savedLon) {
+                    fetchPrayerAPIByCoords(savedLat, savedLon);
+                }
+                // Jika cuma ada nama kota (Input Manual)
+                else {
+                    fetchPrayerAPIByAddress(savedCity);
+                }
             } else {
-                executeLocationTracking();
+                // Default Cikande
+                document.getElementById('location-text').innerText = "Cikande, Banten";
+                fetchPrayerAPIByCoords(-6.1824, 106.3351);
             }
         }
 
-        function triggerLocationUpdate() {
-            document.getElementById('location-text').innerText = "Melacak...";
-            executeLocationTracking(true);
-        }
-
-        function executeLocationTracking(showAlert = false) {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        const lat = position.coords.latitude,
-                            lon = position.coords.longitude;
-                        fetchCityName(lat, lon, showAlert);
-                        fetchPrayerAPI(lat, lon);
-                    },
-                    () => fallbackLocation(showAlert), {
-                        enableHighAccuracy: true,
-                        timeout: 5000
-                    }
-                );
-            } else fallbackLocation(showAlert);
-        }
-
-        function fallbackLocation(showAlert) {
-            saveLocationData(-6.1824, 106.3351, "Jakarta, Indonesia");
-            if (showAlert) Swal.fire('Gagal', 'Izin ditolak, menggunakan lokasi default', 'warning');
-        }
-
-        async function fetchCityName(lat, lon, showAlert) {
-            try {
-                const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=id`);
-                const data = await res.json();
-                const city = (data.city || data.locality || "Lokasi Anda") + ", " + (data.countryName || "Indonesia");
-                saveLocationData(lat, lon, city);
-                if (showAlert) Swal.fire({
-                    icon: 'success',
-                    title: 'Lokasi Diperbarui',
-                    text: city,
-                    timer: 1500,
-                    showConfirmButton: false
-                });
-            } catch (e) {
-                saveLocationData(lat, lon, "Lokasi Tersimpan");
-            }
-        }
-
-        function saveLocationData(lat, lon, city) {
-            localStorage.setItem('hifzly_lat', lat);
-            localStorage.setItem('hifzly_lon', lon);
-            localStorage.setItem('hifzly_city', city);
-            document.getElementById('location-text').innerText = city;
-            fetchPrayerAPI(lat, lon);
-        }
-
-        async function fetchPrayerAPI(lat, lon) {
+        // Ambil Jadwal via Koordinat
+        async function fetchPrayerAPIByCoords(lat, lon) {
             try {
                 const res = await fetch(`https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lon}&method=11`);
                 const result = await res.json();
-                prayerTimesData = result.data.timings;
+                processPrayerData(result.data);
+            } catch (e) {
+                showErrorJadwal();
+            }
+        }
 
-                const hijri = result.data.date.hijri;
-                document.getElementById('hijri-date').innerText = `${hijri.day} ${hijri.month.en} ${hijri.year} H`;
+        // Ambil Jadwal via Nama Kota (Untuk Input Manual di Pengaturan)
+        async function fetchPrayerAPIByAddress(address) {
+            try {
+                const res = await fetch(`https://api.aladhan.com/v1/timingsByAddress?address=${encodeURIComponent(address)}&method=11`);
+                const result = await res.json();
+                processPrayerData(result.data);
+            } catch (e) {
+                showErrorJadwal();
+            }
+        }
 
-                renderPrayerTimes();
-            } catch (e) {}
+        function processPrayerData(data) {
+            prayerTimesData = data.timings;
+            const hijri = data.date.hijri;
+            document.getElementById('hijri-date').innerText = `${hijri.day} ${hijri.month.en} ${hijri.year} H`;
+            renderPrayerTimes();
+        }
+
+        function showErrorJadwal() {
+            document.getElementById('prayer-container').innerHTML = "<div style='font-size:0.8rem; text-align:center; width:100%;'>Gagal memuat jadwal dari lokasi tersebut.</div>";
         }
 
         const prayerConfig = [{

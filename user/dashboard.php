@@ -132,6 +132,7 @@ $has_notif = count($notifications) > 0;
             font-size: 0.85rem;
             opacity: 0.9;
             font-weight: 500;
+            min-height: 18px;
         }
 
         .location {
@@ -195,6 +196,7 @@ $has_notif = count($notifications) > 0;
             font-size: 0.9rem;
             opacity: 0.9;
             font-weight: 500;
+            min-height: 20px;
         }
 
         .prayer-row {
@@ -242,6 +244,7 @@ $has_notif = count($notifications) > 0;
         .p-time {
             font-size: 0.75rem;
             font-weight: 700;
+            min-height: 16px;
         }
 
         /* --- MAIN CONTENT --- */
@@ -430,7 +433,19 @@ $has_notif = count($notifications) > 0;
             height: 70px;
             border-radius: 12px;
             object-fit: cover;
-            background: #e2e8f0;
+            flex-shrink: 0;
+        }
+
+        .tw-cover-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 12px;
+            background: #e0f2fe;
+            color: #0284c7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
             flex-shrink: 0;
         }
 
@@ -622,14 +637,15 @@ $has_notif = count($notifications) > 0;
         <div class="top-bar">
             <div class="user-info">
                 <div class="greeting">Assalamu'alaikum, <?= htmlspecialchars($nama_depan) ?></div>
-                <div class="hijri-date" id="hijri-date">Memuat tanggal...</div>
+                <div class="hijri-date" id="hijri-date"></div>
 
-                <!-- Diarahkan ke Pengaturan jika diklik -->
+                <!-- Diarahkan ke setting.php jika diklik -->
                 <div class="location" onclick="window.location.href='setting.php'">
                     <i class="fas fa-location-dot"></i> <span id="location-text">Mencari...</span>
                 </div>
             </div>
             <div class="action-icons">
+                <!-- Tautan ke setting.php -->
                 <a href="setting.php" class="icon-btn"><i class="fas fa-cog"></i></a>
                 <button class="icon-btn" onclick="toggleModal('notifModal')">
                     <i class="fas fa-bell"></i>
@@ -639,11 +655,38 @@ $has_notif = count($notifications) > 0;
         </div>
 
         <div class="clock-container">
-            <div class="clock-time" id="clock">00:00</div>
-            <div class="countdown" id="countdown-text">Menghitung waktu sholat...</div>
+            <div class="clock-time" id="clock">--:--</div>
+            <div class="countdown" id="countdown-text"></div>
         </div>
 
-        <div class="prayer-row" id="prayer-container"></div>
+        <div class="prayer-row" id="prayer-container">
+            <!-- Loader Sementara untuk struktur -->
+            <div class="prayer-item">
+                <div class="p-name">Fajr</div>
+                <div class="p-icon"><i class="fas fa-cloud-moon"></i></div>
+                <div class="p-time">--:--</div>
+            </div>
+            <div class="prayer-item">
+                <div class="p-name">Dzuhr</div>
+                <div class="p-icon"><i class="fas fa-sun"></i></div>
+                <div class="p-time">--:--</div>
+            </div>
+            <div class="prayer-item">
+                <div class="p-name">Asr</div>
+                <div class="p-icon"><i class="fas fa-cloud-sun"></i></div>
+                <div class="p-time">--:--</div>
+            </div>
+            <div class="prayer-item">
+                <div class="p-name">Maghrib</div>
+                <div class="p-icon"><i class="fas fa-moon"></i></div>
+                <div class="p-time">--:--</div>
+            </div>
+            <div class="prayer-item">
+                <div class="p-name">Isha</div>
+                <div class="p-icon"><i class="fas fa-star"></i></div>
+                <div class="p-time">--:--</div>
+            </div>
+        </div>
     </div>
 
     <div class="main-content">
@@ -680,7 +723,6 @@ $has_notif = count($notifications) > 0;
                 <div class="menu-icon"><i class="fas fa-gamepad"></i></div>
                 <div class="menu-text">Game</div>
             </a>
-            <!-- Tombol Lainnya membuka Modal -->
             <div class="menu-item menu-all" onclick="toggleModal('menuModal')">
                 <div class="menu-icon"><i class="fas fa-th-large"></i></div>
                 <div class="menu-text">Lainnya</div>
@@ -727,18 +769,21 @@ $has_notif = count($notifications) > 0;
             </a>
         </div>
 
-        <!-- TAJWID TERBARU -->
+        <!-- TAJWID TERBARU (Menggunakan Icon Jika Tidak Ada Gambar) -->
         <div class="section-header">
             <h3 class="section-title">Belajar Tajwid</h3>
             <a href="tajwid.php" class="see-all">Lihat Semua</a>
         </div>
         <div class="tajwid-list">
             <?php foreach ($tajwid_lessons as $tw):
-                $coverPath = !empty($tw['cover_image']) ? '../uploads/' . htmlspecialchars($tw['cover_image']) : 'https://via.placeholder.com/70x70?text=Tajwid';
                 $date_tw = date('d M Y', strtotime($tw['created_at']));
             ?>
                 <a href="tajwid.php?id=<?= $tw['id'] ?>" class="tajwid-card">
-                    <img src="<?= $coverPath ?>" alt="<?= htmlspecialchars($tw['judul']) ?>" class="tw-cover" onerror="this.src='https://via.placeholder.com/70x70?text=Tajwid'">
+                    <?php if (!empty($tw['cover_image'])): ?>
+                        <img src="../uploads/<?= htmlspecialchars($tw['cover_image']) ?>" alt="<?= htmlspecialchars($tw['judul']) ?>" class="tw-cover">
+                    <?php else: ?>
+                        <div class="tw-cover-icon"><i class="fas fa-book-open"></i></div>
+                    <?php endif; ?>
                     <div class="tw-info">
                         <div class="tw-title"><?= htmlspecialchars($tw['judul']) ?></div>
                         <div class="tw-date"><i class="far fa-clock"></i> <?= $date_tw ?></div>
@@ -867,7 +912,7 @@ $has_notif = count($notifications) > 0;
             }
         }
 
-        // AMBIL NAMA SURAH
+        // AMBIL NAMA SURAH (Tidak Memblokir UI)
         fetch(`https://equran.id/api/v2/surat/<?= $bm_surah ?>`)
             .then(res => res.json())
             .then(data => {
@@ -880,7 +925,7 @@ $has_notif = count($notifications) > 0;
                 document.getElementById('mur-title').innerText = data.data.namaLatin;
             }).catch(() => {});
 
-        // --- SISTEM JAM & JADWAL SHOLAT (Terintegrasi Pengaturan) ---
+        // --- SISTEM JAM & CACHE JADWAL SHOLAT SUPER CEPAT ---
         let prayerTimesData = null;
 
         function updateClock() {
@@ -898,54 +943,68 @@ $has_notif = count($notifications) > 0;
             const savedLon = localStorage.getItem('hifzly_lon');
 
             if (savedCity && savedCity !== 'Belum diatur') {
+                // Instantly update text from LocalStorage (0 delay)
                 document.getElementById('location-text').innerText = savedCity;
 
-                // Jika kordinat tersedia (Deteksi Otomatis)
-                if (savedLat && savedLon) {
-                    fetchPrayerAPIByCoords(savedLat, savedLon);
-                }
-                // Jika cuma ada nama kota (Input Manual)
-                else {
-                    fetchPrayerAPIByAddress(savedCity);
+                const todayStr = new Date().toDateString();
+                const cachedData = localStorage.getItem('hifzly_prayer_data');
+                const cachedDate = localStorage.getItem('hifzly_prayer_date');
+                const cachedDataCity = localStorage.getItem('hifzly_prayer_city');
+
+                // Jika jadwal sholat HARI INI dan untuk KOTA INI sudah ada di memori, tampilkan langsung!
+                if (cachedData && cachedDate === todayStr && cachedDataCity === savedCity) {
+                    processPrayerData(JSON.parse(cachedData), false);
+                } else {
+                    // Hanya fetch ulang jika beda hari atau beda kota
+                    if (savedLat && savedLon) {
+                        fetchPrayerAPIByCoords(savedLat, savedLon, savedCity);
+                    } else {
+                        fetchPrayerAPIByAddress(savedCity);
+                    }
                 }
             } else {
-                // Default Cikande
                 document.getElementById('location-text').innerText = "Cikande, Banten";
-                fetchPrayerAPIByCoords(-6.1824, 106.3351);
+                fetchPrayerAPIByCoords(-6.1824, 106.3351, "Cikande, Banten");
             }
         }
 
-        // Ambil Jadwal via Koordinat
-        async function fetchPrayerAPIByCoords(lat, lon) {
+        async function fetchPrayerAPIByCoords(lat, lon, cityName) {
             try {
                 const res = await fetch(`https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lon}&method=11`);
                 const result = await res.json();
-                processPrayerData(result.data);
+                processPrayerData(result.data, true, cityName);
             } catch (e) {
                 showErrorJadwal();
             }
         }
 
-        // Ambil Jadwal via Nama Kota (Untuk Input Manual di Pengaturan)
         async function fetchPrayerAPIByAddress(address) {
             try {
                 const res = await fetch(`https://api.aladhan.com/v1/timingsByAddress?address=${encodeURIComponent(address)}&method=11`);
                 const result = await res.json();
-                processPrayerData(result.data);
+                processPrayerData(result.data, true, address);
             } catch (e) {
                 showErrorJadwal();
             }
         }
 
-        function processPrayerData(data) {
+        function processPrayerData(data, saveToCache = false, cityName = '') {
+            if (saveToCache) {
+                localStorage.setItem('hifzly_prayer_data', JSON.stringify(data));
+                localStorage.setItem('hifzly_prayer_date', new Date().toDateString());
+                if (cityName) localStorage.setItem('hifzly_prayer_city', cityName);
+            }
+
             prayerTimesData = data.timings;
             const hijri = data.date.hijri;
             document.getElementById('hijri-date').innerText = `${hijri.day} ${hijri.month.en} ${hijri.year} H`;
+
             renderPrayerTimes();
+            updateClock(); // Paksa hitung ulang segera
         }
 
         function showErrorJadwal() {
-            document.getElementById('prayer-container').innerHTML = "<div style='font-size:0.8rem; text-align:center; width:100%;'>Gagal memuat jadwal dari lokasi tersebut.</div>";
+            document.getElementById('prayer-container').innerHTML = "<div style='font-size:0.8rem; text-align:center; width:100%;'>Gagal memuat jadwal.</div>";
         }
 
         const prayerConfig = [{

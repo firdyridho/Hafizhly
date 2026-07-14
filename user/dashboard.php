@@ -12,7 +12,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
 $user_id = (int) $_SESSION['user_id'];
 
 // --- MENGAMBIL DATA BOOKMARK TILAWAH TERAKHIR ---
-$q_bm = mysqli_query($conn, "SELECT surah, ayat FROM bookmarks WHERE user_id='$user_id' LIMIT 1");
+$q_bm = mysqli_query($conn, "SELECT surah, ayat FROM bookmark WHERE user_id='$user_id' LIMIT 1");
 if ($q_bm && mysqli_num_rows($q_bm) > 0) {
     $bm = mysqli_fetch_assoc($q_bm);
     $bm_surah = (int) $bm['surah'];

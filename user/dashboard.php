@@ -587,7 +587,7 @@ if ($q_bm && mysqli_num_rows($q_bm) > 0) {
                 <div class="q-icon"><i class="fas fa-bullseye"></i></div>
                 <div class="q-text">Target</div>
             </a>
-            <a href="#" class="q-item" onclick="alert('Fitur segera hadir!')">
+            <a href="achievement.php" class="q-item">
                 <div class="q-icon"><i class="fas fa-medal"></i></div>
                 <div class="q-text">Pencapaian</div>
             </a>

@@ -624,7 +624,7 @@ $has_notif = count($notifications) > 0;
                 </div>
             </div>
             <div class="action-icons">
-                <a href="pengaturan.php" class="icon-btn"><i class="fas fa-cog"></i></a>
+                <a href="setting.php" class="icon-btn"><i class="fas fa-cog"></i></a>
                 <button class="icon-btn" onclick="toggleModal('notifModal')">
                     <i class="fas fa-bell"></i>
                     <?php if ($has_notif): ?><div class="notif-dot"></div><?php endif; ?>
@@ -834,7 +834,7 @@ $has_notif = count($notifications) > 0;
                     <div class="notif-icon notif-success"><i class="fas fa-hand-sparkles"></i></div>
                     <div class="notif-body">
                         <div class="notif-title">Ahlan Wa Sahlan, <?= htmlspecialchars($nama_depan) ?>!</div>
-                        <div class="notif-time">Selamat datang di dashboard Hifzly. Semangat mengajinya!</div>
+                        <div class="notif-time">Selamat datang di dashboard Hifzhly. Semangat mengajinya!</div>
                     </div>
                 </div>
             </div>

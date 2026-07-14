@@ -625,12 +625,12 @@ $has_notif = count($notifications) > 0;
                 <div class="hijri-date" id="hijri-date">Memuat tanggal...</div>
 
                 <!-- Diarahkan ke Pengaturan jika diklik -->
-                <div class="location" onclick="window.location.href='pengaturan.php'">
+                <div class="location" onclick="window.location.href='setting.php'">
                     <i class="fas fa-location-dot"></i> <span id="location-text">Mencari...</span>
                 </div>
             </div>
             <div class="action-icons">
-                <a href="pengaturan.php" class="icon-btn"><i class="fas fa-cog"></i></a>
+                <a href="setting.php" class="icon-btn"><i class="fas fa-cog"></i></a>
                 <button class="icon-btn" onclick="toggleModal('notifModal')">
                     <i class="fas fa-bell"></i>
                     <?php if ($has_notif): ?><div class="notif-dot"></div><?php endif; ?>

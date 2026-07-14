@@ -502,8 +502,8 @@ $user_data = mysqli_fetch_assoc($q_user);
 
         function goBack() {
             if (currentView === 'menu') {
-                // Jika sedang di menu utama, kembali ke index.php
-                window.location.href = 'index.php';
+                // Jika sedang di menu utama, kembali ke dashboard.php
+                window.location.href = 'dashboard.php';
             } else {
                 // Jika sedang di dalam form, kembali ke menu pengaturan
                 switchView('menu');

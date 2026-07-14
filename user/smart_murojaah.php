@@ -367,22 +367,22 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
 
         .mode-murojaah .ayah-word {
             color: transparent;
-            border-bottom: 2px dashed #b4a269;
+            border-bottom: 2px dashed #999;
             user-select: none;
         }
 
         .mode-murojaah .ayah-word:hover {
-            border-bottom-color: var(--primary);
+            border-bottom-color: #333;
         }
 
         .mode-murojaah .ayah-word.read-correctly {
-            color: var(--primary) !important;
-            border-bottom-style: solid;
-            text-shadow: 0 0 1px var(--primary);
+            color: #000 !important;
+            border-bottom: none;
+            text-shadow: none;
         }
 
         .mode-murojaah .ayah-word.target-word {
-            border-bottom: 3px solid #ef4444;
+            border-bottom: 3px solid #000;
         }
 
         .ayah-end {
@@ -391,29 +391,29 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             justify-content: center;
             width: 38px;
             height: 38px;
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="none" stroke="%23b4a269" stroke-width="3"/><circle cx="50" cy="50" r="38" fill="none" stroke="%23b4a269" stroke-width="1" stroke-dasharray="2,2"/></svg>') no-repeat center;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="none" stroke="%23333" stroke-width="3"/><circle cx="50" cy="50" r="38" fill="none" stroke="%23333" stroke-width="1" stroke-dasharray="2,2"/></svg>') no-repeat center;
             background-size: contain;
             font-size: 0.9rem;
-            color: #b4a269;
+            color: #333;
             font-weight: 700;
             margin: 0 5px;
             flex-shrink: 0;
         }
 
         .surah-title-banner {
-            width: 90%;
+            width: 100%;
             margin: 30px auto 20px auto;
             text-align: center;
             font-family: 'Uthmani', serif;
             font-size: 2.2rem;
-            font-weight: 700;
-            color: var(--text-dark);
-            padding: 15px;
+            font-weight: bold;
+            color: #000;
+            padding: 10px;
             position: relative;
-            border: 2px solid #b4a269;
-            border-radius: 12px;
-            background: #fdfbf5;
-            box-shadow: inset 0 0 10px rgba(180, 162, 105, 0.2);
+            border: 1px solid #000;
+            outline: 2px solid #000;
+            outline-offset: 4px;
+            background: transparent;
         }
 
         .surah-title-banner::before,
@@ -422,17 +422,17 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
-            width: 30px;
-            height: 30px;
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23b4a269"><path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z"/></svg>') no-repeat center;
+            width: 35px;
+            height: 35px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23000"><path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z"/></svg>') no-repeat center;
         }
 
         .surah-title-banner::before {
-            left: 15px;
+            left: 10px;
         }
 
         .surah-title-banner::after {
-            right: 15px;
+            right: 10px;
         }
 
         .bismillah {
@@ -1779,15 +1779,20 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
                 const sId = parseInt(verse.verse_key.split(':')[0]);
 
                 if (ayahNum === 1) {
+                    const firstWordLine = verse.words[0].line_number;
                     const namaS = surahsData.find(s => s.id === sId)?.arabic;
-                    if (!linesMap['h_' + sId]) linesMap['h_' + sId] = [];
-                    linesMap['h_' + sId].push({
+                    
+                    const headerLineNum = firstWordLine - 0.2;
+                    if (!linesMap[headerLineNum]) linesMap[headerLineNum] = [];
+                    linesMap[headerLineNum].push({
                         type: 'header',
                         text: `سورة ${namaS}`
                     });
+                    
                     if (sId !== 1 && sId !== 9) {
-                        if (!linesMap['b_' + sId]) linesMap['b_' + sId] = [];
-                        linesMap['b_' + sId].push({
+                        const bismillahLineNum = firstWordLine - 0.1;
+                        if (!linesMap[bismillahLineNum]) linesMap[bismillahLineNum] = [];
+                        linesMap[bismillahLineNum].push({
                             type: 'bismillah',
                             text: 'بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ'
                         });
@@ -1814,9 +1819,7 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
 
             let html = '';
             const sortedLines = Object.keys(linesMap).sort((a, b) => {
-                if (a.includes('h_') || a.includes('b_')) return -1;
-                if (b.includes('h_') || b.includes('b_')) return 1;
-                return parseInt(a) - parseInt(b);
+                return parseFloat(a) - parseFloat(b);
             });
 
             let wordCounter = 0;
@@ -1939,13 +1942,10 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             recognition.onend = () => {
                 recognitionActive = false;
                 if (isRecording) {
-                    // Google API menghentikan mic secara otomatis (biasanya karena diam).
-                    // Kita TIDAK LAGI memaksa restart otomatis di sini untuk menghilangkan
-                    // bunyi "ting tung" yang mengganggu.
-                    // Jika mic mati, user harus menekan tombol mic secara manual.
-                    isRecording = false;
-                    renderMicState();
-                    showToast("Mic mati otomatis (diam terlalu lama). Klik mic untuk lanjut.");
+                    interimBuffer = '';
+                    lastProcessedIndex = 0;
+                    clearTimeout(restartTimer);
+                    restartTimer = setTimeout(startRecognition, RESTART_DELAY);
                 }
             };
         }

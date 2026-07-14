@@ -102,7 +102,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
     $pdf   = $upPdf['name'];
 
     if ($id_materi > 0) {
-        // EDIT MATERI
         if ($cover !== '' && $pdf !== '') {
             $stmt = mysqli_prepare($conn, "UPDATE tajwid_materi SET judul=?, konten=?, youtube_url=?, waktu_kuis=?, cover_image=?, pdf_file=? WHERE id=?");
             mysqli_stmt_bind_param($stmt, "sssissi", $judul, $konten, $youtube, $waktu_kuis, $cover, $pdf, $id_materi);
@@ -119,13 +118,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
         mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
 
-        // Hapus soal kuis lama (beserta file gambar lama yang tidak dipertahankan) sebelum insert ulang
         $stmtDel = mysqli_prepare($conn, "DELETE FROM tajwid_kuis WHERE materi_id=?");
         mysqli_stmt_bind_param($stmtDel, "i", $id_materi);
         mysqli_stmt_execute($stmtDel);
         mysqli_stmt_close($stmtDel);
     } else {
-        // TAMBAH MATERI BARU
         $stmt = mysqli_prepare($conn, "INSERT INTO tajwid_materi (judul, cover_image, pdf_file, konten, youtube_url, waktu_kuis) VALUES (?, ?, ?, ?, ?, ?)");
         mysqli_stmt_bind_param($stmt, "sssssi", $judul, $cover, $pdf, $konten, $youtube, $waktu_kuis);
         mysqli_stmt_execute($stmt);
@@ -133,7 +130,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
         mysqli_stmt_close($stmt);
     }
 
-    // PROSES SOAL KUIS (Jika ada)
     if (isset($_POST['pertanyaan']) && is_array($_POST['pertanyaan'])) {
         $stmtQ = mysqli_prepare($conn, "INSERT INTO tajwid_kuis (materi_id, pertanyaan, gambar, opsi_a, opsi_b, opsi_c, opsi_d, jawaban_benar) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
         for ($i = 0; $i < count($_POST['pertanyaan']); $i++) {
@@ -149,7 +145,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
             $upGbr = simpan_upload('gambar_kuis', ['jpg', 'jpeg', 'png', 'webp'], 5, 'q' . $i, $i);
             $gbr_kuis = $upGbr['ok'] ? $upGbr['name'] : '';
             if ($gbr_kuis === '' && isset($_POST['old_gambar_kuis'][$i])) {
-                $gbr_kuis = $_POST['old_gambar_kuis'][$i]; // pertahankan gambar lama
+                $gbr_kuis = $_POST['old_gambar_kuis'][$i];
             }
 
             mysqli_stmt_bind_param($stmtQ, "isssssss", $id_materi, $tanya, $gbr_kuis, $oa, $ob, $oc, $od, $jb);
@@ -164,7 +160,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
 }
 
 /* =========================================================
-   HANDLE HAPUS — cascade hapus kuis + file terkait
+   HANDLE HAPUS
    ========================================================= */
 if (isset($_GET['delete'])) {
     $id = (int)$_GET['delete'];
@@ -231,7 +227,6 @@ while ($row = mysqli_fetch_assoc($q_m)) {
     }
     mysqli_stmt_close($stmtS);
     $row['soal'] = $soal;
-
     $materi_list[] = $row;
 }
 
@@ -247,11 +242,12 @@ if (isset($_SESSION['alert'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Studio Tajwid — Admin Hafizhly</title>
+    <title>Studio Tajwid — Admin Hifzly</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
+
+    <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/super-build/ckeditor.js"></script>
 
     <style>
         :root {
@@ -277,10 +273,7 @@ if (isset($_SESSION['alert'])) {
 
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background:
-                radial-gradient(1200px 500px at 100% -10%, var(--primary-100), transparent 60%),
-                radial-gradient(900px 400px at -10% 10%, #f0fdf4, transparent 55%),
-                var(--bg);
+            background: radial-gradient(1200px 500px at 100% -10%, var(--primary-100), transparent 60%), radial-gradient(900px 400px at -10% 10%, #f0fdf4, transparent 55%), var(--bg);
             color: var(--ink);
             margin: 0;
             padding: clamp(14px, 3vw, 28px);
@@ -292,7 +285,6 @@ if (isset($_SESSION['alert'])) {
             margin: 0 auto;
         }
 
-        /* ---------- Header ---------- */
         .header-top {
             display: flex;
             justify-content: space-between;
@@ -335,7 +327,6 @@ if (isset($_SESSION['alert'])) {
             flex-wrap: wrap;
         }
 
-        /* ---------- Buttons ---------- */
         .btn {
             padding: 12px 22px;
             border-radius: 12px;
@@ -395,7 +386,6 @@ if (isset($_SESSION['alert'])) {
             cursor: not-allowed;
         }
 
-        /* ---------- Search ---------- */
         .search-bar {
             position: relative;
             margin-bottom: 22px;
@@ -427,7 +417,6 @@ if (isset($_SESSION['alert'])) {
             box-shadow: 0 0 0 4px var(--primary-100);
         }
 
-        /* ---------- Cards grid ---------- */
         .grid-materi {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
@@ -533,7 +522,6 @@ if (isset($_SESSION['alert'])) {
             display: block;
         }
 
-        /* ---------- Form area (SPA) ---------- */
         #formArea {
             display: none;
             background: rgba(255, 255, 255, .9);
@@ -552,7 +540,6 @@ if (isset($_SESSION['alert'])) {
             transform: translateY(0);
         }
 
-        /* Stepper */
         .stepper {
             display: flex;
             justify-content: space-between;
@@ -631,7 +618,6 @@ if (isset($_SESSION['alert'])) {
             color: white;
         }
 
-        /* Step content with slide transition */
         .step-content-wrap {
             position: relative;
             overflow: hidden;
@@ -670,12 +656,6 @@ if (isset($_SESSION['alert'])) {
             color: var(--ink);
         }
 
-        .form-hint {
-            font-size: .78rem;
-            color: var(--muted);
-            margin-top: 6px;
-        }
-
         .form-control {
             width: 100%;
             padding: 13px 14px;
@@ -698,7 +678,6 @@ if (isset($_SESSION['alert'])) {
             box-shadow: 0 0 0 4px var(--danger-50);
         }
 
-        /* Upload */
         .upload-area {
             border: 2px dashed #cbd5e1;
             padding: 26px 14px;
@@ -734,10 +713,11 @@ if (isset($_SESSION['alert'])) {
             display: none;
         }
 
+        /* CUSTOM CKEDITOR CSS UNTUK ADMIN */
         .ck-editor__editable {
-            min-height: 380px;
+            min-height: 400px;
             font-family: inherit;
-            font-size: 1.02rem;
+            font-size: 1.05rem;
             border-radius: 0 0 12px 12px !important;
         }
 
@@ -750,7 +730,24 @@ if (isset($_SESSION['alert'])) {
             border-color: var(--border) !important;
         }
 
-        /* Quiz box */
+        /* Memastikan tabel di editor admin punya garis */
+        .ck-content table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 15px 0;
+        }
+
+        .ck-content table td,
+        .ck-content table th {
+            border: 1px solid #cbd5e1;
+            padding: 10px;
+        }
+
+        .ck-content table th {
+            background: #f1f5f9;
+            font-weight: bold;
+        }
+
         .quiz-box {
             border: 1px solid var(--border);
             border-radius: var(--radius-md);
@@ -819,7 +816,6 @@ if (isset($_SESSION['alert'])) {
             flex-wrap: wrap;
         }
 
-        /* Loader overlay for submit */
         .btn .fa-spinner {
             display: none;
         }
@@ -840,7 +836,6 @@ if (isset($_SESSION['alert'])) {
             }
         }
 
-        /* Responsive */
         @media (max-width: 640px) {
 
             .grid-2,
@@ -876,7 +871,6 @@ if (isset($_SESSION['alert'])) {
 <body>
     <div class="container">
 
-        <!-- HEADER -->
         <div id="listView">
             <div class="header-top">
                 <div class="header-title">
@@ -927,7 +921,6 @@ if (isset($_SESSION['alert'])) {
             </div>
         </div>
 
-        <!-- FORM SPA (MULTI-STEP) -->
         <div id="formArea">
             <div class="header-top" style="margin-bottom:8px;">
                 <h2 id="formTitle" style="font-size:clamp(1.2rem,3vw,1.5rem); font-weight:800; margin:0;">Buat Materi Baru</h2>
@@ -953,7 +946,6 @@ if (isset($_SESSION['alert'])) {
                 <input type="hidden" name="id_materi" id="id_materi" value="0">
 
                 <div class="step-content-wrap">
-                    <!-- STEP 1 -->
                     <div class="step-content active" id="step1">
                         <div class="form-group">
                             <label>Judul Materi <span style="color:var(--danger)">*</span></label>
@@ -987,10 +979,9 @@ if (isset($_SESSION['alert'])) {
                         </div>
                     </div>
 
-                    <!-- STEP 2 -->
                     <div class="step-content" id="step2">
                         <div class="form-group">
-                            <label>Isi Materi (Bisa tambahkan tabel, gambar, link, dll)</label>
+                            <label>Isi Materi (Bisa tambahkan tabel, warna font, link, dll)</label>
                             <textarea name="konten" id="editor"></textarea>
                         </div>
                         <div class="form-footer">
@@ -999,7 +990,6 @@ if (isset($_SESSION['alert'])) {
                         </div>
                     </div>
 
-                    <!-- STEP 3 -->
                     <div class="step-content" id="step3">
                         <div class="form-group" style="background:var(--primary-50); padding:18px; border-radius:var(--radius-md); border:1px solid var(--primary-100);">
                             <label><i class="fas fa-stopwatch"></i> Pengaturan Waktu Kuis</label>
@@ -1042,14 +1032,56 @@ if (isset($_SESSION['alert'])) {
             }
         });
 
+        // INISIALISASI CKEDITOR 5 SUPER BUILD
         let myEditor;
-        ClassicEditor.create(document.querySelector('#editor'), {
-            toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', '|', 'insertTable', 'blockQuote', '|', 'undo', 'redo']
+        CKEDITOR.ClassicEditor.create(document.querySelector('#editor'), {
+            toolbar: {
+                items: [
+                    'heading', '|',
+                    'fontFamily', 'fontSize', 'fontColor', 'fontBackgroundColor', '|',
+                    'bold', 'italic', 'underline', 'strikethrough', '|',
+                    'alignment', '|',
+                    'bulletedList', 'numberedList', 'outdent', 'indent', '|',
+                    'link', 'insertTable', 'blockQuote', '|',
+                    'undo', 'redo'
+                ],
+                shouldNotGroupWhenFull: true
+            },
+            fontFamily: {
+                options: [
+                    'default', 'Arial, Helvetica, sans-serif', 'Courier New, Courier, monospace',
+                    'Georgia, serif', 'Tahoma, Geneva, sans-serif', 'Times New Roman, Times, serif',
+                    'Trebuchet MS, Helvetica, sans-serif', 'Verdana, Geneva, sans-serif',
+                    'Plus Jakarta Sans, sans-serif', 'Amiri, serif'
+                ],
+                supportAllValues: true
+            },
+            fontSize: {
+                options: [10, 12, 14, 'default', 18, 20, 22, 24, 28, 36],
+                supportAllValues: true
+            },
+            htmlSupport: {
+                allow: [{
+                    name: /.*/,
+                    attributes: true,
+                    classes: true,
+                    styles: true
+                }]
+            },
+            table: {
+                contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells', 'tableProperties', 'tableCellProperties']
+            },
+            removePlugins: [
+                'ExportPdf', 'ExportWord', 'CKBox', 'CKFinder', 'EasyImage', 'RealTimeCollaborativeComments',
+                'RealTimeCollaborativeTrackChanges', 'RealTimeCollaborativeRevisionHistory', 'PresenceList',
+                'Comments', 'TrackChanges', 'TrackChangesData', 'RevisionHistory', 'Pagination', 'WProofreader',
+                'MathType', 'SlashCommand', 'Template', 'DocumentOutline', 'FormatPainter', 'TableOfContents',
+                'PasteFromOfficeEnhanced', 'CaseChange'
+            ]
         }).then(editor => {
             myEditor = editor;
         }).catch(err => console.error(err));
 
-        /* ---------- Stepper navigation ---------- */
         const stepFills = {
             1: '2%',
             2: '50%',
@@ -1057,7 +1089,7 @@ if (isset($_SESSION['alert'])) {
         };
 
         function validateStep(step) {
-            if (step === 2) { // moving away from step1 into step2 -> validate step1
+            if (step === 2) {
                 const judul = document.getElementById('f_judul');
                 if (judul.value.trim() === '') {
                     judul.classList.add('invalid');
@@ -1077,7 +1109,6 @@ if (isset($_SESSION['alert'])) {
 
         function goToStep(step) {
             if (!validateStep(step)) return;
-
             document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.step-item').forEach(el => el.classList.remove('active', 'done'));
 
@@ -1144,7 +1175,6 @@ if (isset($_SESSION['alert'])) {
             toggleQuizEmpty();
         }
 
-        /* ---------- Upload preview + drag&drop ---------- */
         document.getElementById('f_cover').addEventListener('change', function() {
             if (this.files[0]) {
                 document.getElementById('lbl_cover').innerText = this.files[0].name;
@@ -1178,7 +1208,6 @@ if (isset($_SESSION['alert'])) {
         setupDropZone('dropCover', 'f_cover');
         setupDropZone('dropPdf', 'f_pdf');
 
-        /* ---------- Quiz box generator ---------- */
         let quizCounter = 0;
 
         function toggleQuizEmpty() {
@@ -1191,7 +1220,6 @@ if (isset($_SESSION['alert'])) {
             const div = document.createElement('div');
             div.className = 'quiz-box';
             div.id = 'qbox_' + quizCounter;
-
             const esc = (s) => (s || '').replace(/"/g, '&quot;');
             const p = esc(data ? data.pertanyaan : '');
             const oa = esc(data ? data.opsi_a : '');
@@ -1199,22 +1227,13 @@ if (isset($_SESSION['alert'])) {
             const oc = esc(data ? data.opsi_c : '');
             const od = esc(data ? data.opsi_d : '');
             const jb = data ? data.jawaban_benar : '';
-            const imgOld = data && data.gambar ?
-                `<input type="hidden" name="old_gambar_kuis[]" value="${esc(data.gambar)}"><div style="font-size:0.78rem; color:var(--primary-dark); margin-top:6px;"><i class="fas fa-check-circle"></i> Gambar tersimpan: ${esc(data.gambar)}</div>` :
-                `<input type="hidden" name="old_gambar_kuis[]" value="">`;
+            const imgOld = data && data.gambar ? `<input type="hidden" name="old_gambar_kuis[]" value="${esc(data.gambar)}"><div style="font-size:0.78rem; color:var(--primary-dark); margin-top:6px;"><i class="fas fa-check-circle"></i> Gambar tersimpan: ${esc(data.gambar)}</div>` : `<input type="hidden" name="old_gambar_kuis[]" value="">`;
 
             div.innerHTML = `
                 <button type="button" class="btn-remove-quiz" onclick="removeQuizBox('qbox_${quizCounter}')"><i class="fas fa-trash"></i></button>
                 <div class="quiz-box-title"><i class="fas fa-circle-question"></i> Soal #${quizCounter}</div>
-                <div class="form-group">
-                    <label>Pertanyaan</label>
-                    <textarea name="pertanyaan[]" class="form-control" rows="2">${p}</textarea>
-                </div>
-                <div class="form-group">
-                    <label>Sisipkan Gambar (Opsional)</label>
-                    <input type="file" name="gambar_kuis[]" class="form-control" accept="image/*" style="padding:10px;">
-                    ${imgOld}
-                </div>
+                <div class="form-group"><label>Pertanyaan</label><textarea name="pertanyaan[]" class="form-control" rows="2">${p}</textarea></div>
+                <div class="form-group"><label>Sisipkan Gambar (Opsional)</label><input type="file" name="gambar_kuis[]" class="form-control" accept="image/*" style="padding:10px;">${imgOld}</div>
                 <div class="grid-4">
                     <div><label>Opsi A</label><input type="text" name="opsi_a[]" class="form-control" value="${oa}"></div>
                     <div><label>Opsi B</label><input type="text" name="opsi_b[]" class="form-control" value="${ob}"></div>
@@ -1224,10 +1243,8 @@ if (isset($_SESSION['alert'])) {
                 <div class="form-group" style="margin-top:15px;">
                     <label>Jawaban Benar</label>
                     <select name="jawaban_benar[]" class="form-control" style="background:var(--primary-50); font-weight:bold; color:var(--primary-dark);">
-                        <option value="a" ${jb=='a'?'selected':''}>A</option>
-                        <option value="b" ${jb=='b'?'selected':''}>B</option>
-                        <option value="c" ${jb=='c'?'selected':''}>C</option>
-                        <option value="d" ${jb=='d'?'selected':''}>D</option>
+                        <option value="a" ${jb=='a'?'selected':''}>A</option><option value="b" ${jb=='b'?'selected':''}>B</option>
+                        <option value="c" ${jb=='c'?'selected':''}>C</option><option value="d" ${jb=='d'?'selected':''}>D</option>
                     </select>
                 </div>
             `;
@@ -1246,7 +1263,6 @@ if (isset($_SESSION['alert'])) {
             }, 200);
         }
 
-        /* ---------- Search / filter ---------- */
         function filterMateri(term) {
             term = term.trim().toLowerCase();
             document.querySelectorAll('#materiGrid .materi-card').forEach(card => {
@@ -1254,7 +1270,6 @@ if (isset($_SESSION['alert'])) {
             });
         }
 
-        /* ---------- Delete confirm ---------- */
         function confirmDelete(id) {
             Swal.fire({
                 title: 'Hapus materi ini?',
@@ -1266,13 +1281,10 @@ if (isset($_SESSION['alert'])) {
                 confirmButtonText: 'Ya, Hapus!',
                 cancelButtonText: 'Batal'
             }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = 'materi_tajwid.php?delete=' + id;
-                }
+                if (result.isConfirmed) window.location.href = 'materi_tajwid.php?delete=' + id;
             });
         }
 
-        /* ---------- Submit loading state ---------- */
         document.getElementById('mainForm').addEventListener('submit', function(e) {
             const judul = document.getElementById('f_judul');
             if (judul.value.trim() === '') {

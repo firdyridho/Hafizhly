@@ -14,8 +14,7 @@ function getYouTubeEmbedUrl($url)
     return $url;
 }
 
-// Ubah path relatif ("../uploads/x.jpg") jadi URL absolut, dibutuhkan oleh
-// og:image / twitter:image karena crawler medsos tidak bisa membaca path relatif.
+// Ubah path relatif menjadi URL absolut untuk meta image share
 function hz_absolute_url($relativePath)
 {
     $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
@@ -31,10 +30,6 @@ $materi_detail = null;
 $soal_kuis = [];
 $daftar_materi = [];
 
-// Data materi (judul, cover, konten) diambil lebih dulu, di luar gerbang
-// login, khusus supaya bot WhatsApp/Facebook/Twitter bisa baca og:title
-// dan og:image saat link dibagikan. Soal kuis & daftar lengkap tetap
-// hanya diambil kalau user benar-benar login (lihat di bawah).
 if ($view_materi_id > 0) {
     $stmt = mysqli_prepare($conn, "SELECT * FROM tajwid_materi WHERE id=?");
     mysqli_stmt_bind_param($stmt, "i", $view_materi_id);
@@ -69,12 +64,12 @@ $current_url = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'http
 $og_fallback_image = hz_absolute_url('assets/icon/logo.png');
 
 if ($view_materi_id > 0 && $materi_detail) {
-    $og_title = 'Ayo Belajar ' . $materi_detail['judul'] . ' di Hafizhly 📖';
-    $og_description = 'Yuk sempurnakan bacaan Al-Qur\'anmu lewat modul "' . $materi_detail['judul'] . '" di Hafizhly. Kuasai kaidah tajwidnya, tonton videonya, lalu uji pemahamanmu lewat kuis interaktif. 🌿';
+    $og_title = 'Ayo Belajar ' . $materi_detail['judul'] . ' di Hifzly 📖';
+    $og_description = 'Yuk sempurnakan bacaan Al-Qur\'anmu lewat modul "' . $materi_detail['judul'] . '" di Hifzly. Kuasai kaidah tajwidnya, tonton videonya, lalu uji pemahamanmu lewat kuis interaktif. 🌿';
     $og_image = !empty($materi_detail['cover_image']) ? hz_absolute_url('uploads/' . $materi_detail['cover_image']) : $og_fallback_image;
 } else {
-    $og_title = 'Modul Pembelajaran Tajwid - Hafizhly';
-    $og_description = 'Kuasai kaidah bacaan Al-Qur\'an lewat modul interaktif, video, dan kuis evaluasi bareng Hafizhly. 🌿📖';
+    $og_title = 'Modul Pembelajaran Tajwid - Hifzly';
+    $og_description = 'Kuasai kaidah bacaan Al-Qur\'an lewat modul interaktif, video, dan kuis evaluasi bareng Hifzly. 🌿📖';
     $og_image = $og_fallback_image;
 }
 ?>
@@ -87,21 +82,19 @@ if ($view_materi_id > 0 && $materi_detail) {
     <title><?= htmlspecialchars($og_title) ?></title>
     <link rel="icon" type="image/png" href="../assets/icon/logo.png">
 
-    <!-- Open Graph -->
     <meta property="og:type" content="website">
-    <meta property="og:site_name" content="Hafizhly">
+    <meta property="og:site_name" content="Hifzly">
     <meta property="og:title" content="<?= htmlspecialchars($og_title) ?>">
     <meta property="og:description" content="<?= htmlspecialchars($og_description) ?>">
     <meta property="og:image" content="<?= htmlspecialchars($og_image) ?>">
     <meta property="og:url" content="<?= htmlspecialchars($current_url) ?>">
 
-    <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="<?= htmlspecialchars($og_title) ?>">
     <meta name="twitter:description" content="<?= htmlspecialchars($og_description) ?>">
     <meta name="twitter:image" content="<?= htmlspecialchars($og_image) ?>">
 
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
@@ -416,7 +409,6 @@ if ($view_materi_id > 0 && $materi_detail) {
             transform: translateX(-50%) translateY(0);
         }
 
-        /* ---------- REVEAL ANIMATION ---------- */
         .reveal {
             opacity: 0;
             transform: translateY(18px);
@@ -427,14 +419,6 @@ if ($view_materi_id > 0 && $materi_detail) {
             to {
                 opacity: 1;
                 transform: translateY(0);
-            }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-            .reveal {
-                animation: none;
-                opacity: 1;
-                transform: none;
             }
         }
 
@@ -487,6 +471,7 @@ if ($view_materi_id > 0 && $materi_detail) {
             border: none;
         }
 
+        /* ---------- CSS KHUSUS RICH CONTENT (CKEDITOR) ---------- */
         .rich-content {
             line-height: 1.8;
             font-size: clamp(0.95rem, 2vw, 1.1rem);
@@ -495,19 +480,58 @@ if ($view_materi_id > 0 && $materi_detail) {
             overflow-wrap: break-word;
         }
 
+        .rich-content p {
+            margin-bottom: 1em;
+        }
+
         .rich-content img {
             max-width: 100%;
             height: auto;
-            border-radius: 16px;
-            margin: 20px 0;
+            border-radius: 12px;
+            margin: 15px 0;
         }
 
         .rich-content h2,
-        .rich-content h3 {
-            margin-top: clamp(20px, 4vw, 30px);
-            margin-bottom: 15px;
+        .rich-content h3,
+        .rich-content h4 {
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
             color: var(--dark);
             font-weight: 800;
+        }
+
+        /* Modifikasi Fitur Link di Artikel */
+        .rich-content a {
+            color: #2563eb;
+            font-weight: 600;
+            text-decoration: underline;
+            text-decoration-color: #bfdbfe;
+            text-underline-offset: 4px;
+            transition: 0.2s;
+        }
+
+        .rich-content a:hover {
+            color: #1d4ed8;
+            background-color: #eff6ff;
+        }
+
+        /* Modifikasi Blockquote (Kutipan) */
+        .rich-content blockquote {
+            border-left: 5px solid var(--primary);
+            background: #f8fafc;
+            padding: 15px 20px;
+            border-radius: 0 12px 12px 0;
+            font-style: italic;
+            color: #475569;
+            margin: 20px 0;
+        }
+
+        /* Modifikasi Fitur Tabel CKEditor */
+        .rich-content figure.table {
+            width: 100%;
+            overflow-x: auto;
+            margin: 20px 0;
+            -webkit-overflow-scrolling: touch;
         }
 
         .table-scroll {
@@ -515,26 +539,25 @@ if ($view_materi_id > 0 && $materi_detail) {
             overflow-x: auto;
             margin: 20px 0;
             -webkit-overflow-scrolling: touch;
-            border-radius: 10px;
+            border-radius: 8px;
         }
 
         .rich-content table {
             width: 100%;
-            min-width: 420px;
+            min-width: 450px;
             border-collapse: collapse;
         }
 
         .rich-content th,
         .rich-content td {
             border: 1px solid var(--border);
-            padding: 12px;
-            text-align: left;
-            font-size: clamp(0.85rem, 2vw, 1rem);
+            padding: 12px 15px;
         }
 
         .rich-content th {
-            background: #f8fafc;
+            background: #f1f5f9;
             font-weight: 700;
+            color: var(--dark);
         }
 
         .action-bar {
@@ -851,7 +874,7 @@ if ($view_materi_id > 0 && $materi_detail) {
             <div class="login-required-card reveal">
                 <i class="fa-solid fa-lock"></i>
                 <h2>Yuk masuk dulu</h2>
-                <p>Login ke akun Hafizhly kamu untuk membuka <?= $view_materi_id && $materi_detail ? 'modul "' . htmlspecialchars($materi_detail['judul']) . '"' : 'modul pembelajaran ini' ?>.</p>
+                <p>Login ke akun Hifzly kamu untuk membuka <?= $view_materi_id && $materi_detail ? 'modul "' . htmlspecialchars($materi_detail['judul']) . '"' : 'modul pembelajaran ini' ?>.</p>
                 <a href="../login.php" class="btn btn-quiz"><i class="fa-solid fa-arrow-right-to-bracket"></i> Masuk Sekarang</a>
             </div>
 
@@ -866,7 +889,7 @@ if ($view_materi_id > 0 && $materi_detail) {
                     <div class="empty-state reveal"><i class="fa-solid fa-book-open-reader"></i>Belum ada materi tersedia.</div>
                 <?php endif; ?>
                 <?php foreach ($daftar_materi as $i => $m):
-                    $img_src = !empty($m['cover_image']) ? '../uploads/' . htmlspecialchars($m['cover_image']) : 'https://via.placeholder.com/600x400/e2e8f0/64748b?text=Materi+Hafizhly';
+                    $img_src = !empty($m['cover_image']) ? '../uploads/' . htmlspecialchars($m['cover_image']) : 'https://via.placeholder.com/600x400/e2e8f0/64748b?text=Materi+Hifzly';
                     $delay = min($i, 6) * 0.08;
                 ?>
                     <div class="materi-card reveal" style="animation-delay: <?= $delay ?>s;">
@@ -944,7 +967,6 @@ if ($view_materi_id > 0 && $materi_detail) {
                 <?php endif; ?>
             </div>
 
-            <!-- LAYAR KUIS INTERAKTIF -->
             <div id="quizOverlay">
                 <div class="quiz-header">
                     <button onclick="location.reload()" style="background:none; border:none; font-size:1.5rem; color:var(--text-muted); cursor:pointer;"><i class="fas fa-times"></i></button>
@@ -958,7 +980,6 @@ if ($view_materi_id > 0 && $materi_detail) {
                 <div class="quiz-container">
                     <div id="slideContainer" style="width:100%; display:flex; justify-content:center;"></div>
 
-                    <!-- LAYAR REVIEW HASIL (Disembunyikan di awal) -->
                     <div class="review-card" id="reviewArea">
                         <div id="scoreCircle" class="score-circle">100</div>
                         <h2 id="scoreTitle" style="margin-bottom:10px; color:var(--dark); text-align:center;">Luar Biasa!</h2>
@@ -977,12 +998,19 @@ if ($view_materi_id > 0 && $materi_detail) {
             </div>
 
             <script>
-                // Bungkus semua tabel di dalam konten materi agar bisa di-scroll horizontal di layar kecil
+                // MENGATUR TABEL DARI CKEDITOR AGAR BISA DI SCROLL HORIZONTAL
                 document.querySelectorAll('#richContent table').forEach(table => {
-                    const wrap = document.createElement('div');
-                    wrap.className = 'table-scroll';
-                    table.parentNode.insertBefore(wrap, table);
-                    wrap.appendChild(table);
+                    // Jika CKEditor belum otomatis membuat scroll bar, kita paksa bungkus
+                    if (table.parentElement.tagName.toLowerCase() === 'figure' && table.parentElement.classList.contains('table')) {
+                        table.parentElement.style.overflowX = 'auto';
+                        table.parentElement.style.display = 'block';
+                        table.parentElement.style.width = '100%';
+                    } else {
+                        const wrap = document.createElement('div');
+                        wrap.className = 'table-scroll';
+                        table.parentNode.insertBefore(wrap, table);
+                        wrap.appendChild(table);
+                    }
                 });
 
                 // --- Fitur Export PDF Alternatif ---
@@ -990,7 +1018,7 @@ if ($view_materi_id > 0 && $materi_detail) {
                     const element = document.getElementById('materiToPdf');
                     html2pdf().set({
                         margin: 15,
-                        filename: 'Materi_Hafizhly.pdf',
+                        filename: 'Materi_Hifzly.pdf',
                         html2canvas: {
                             scale: 2
                         },
@@ -1155,13 +1183,10 @@ if ($view_materi_id > 0 && $materi_detail) {
 
     <script>
         // ============ FITUR BAGIKAN MATERI ============
-        // Membagikan sampul materi + judul + ajakan belajar yang rapi,
-        // lewat share sheet asli HP (WhatsApp, dsb) kalau didukung,
-        // atau fallback salin ke clipboard.
         async function shareMateri(judul, coverUrl, pageUrl) {
-            const teks = `📖✨ Ayo belajar "${judul}" bareng aku di Hafizhly!\nYuk kita sama-sama perbaiki bacaan Al-Qur'an, sedikit demi sedikit menuju bacaan yang makin tartil. 🌿🕌`;
+            const teks = `📖✨ Ayo belajar "${judul}" bareng aku di Hifzly!\nYuk kita sama-sama perbaiki bacaan Al-Qur'an, sedikit demi sedikit menuju bacaan yang makin tartil. 🌿🕌`;
             const shareData = {
-                title: `Ayo belajar ${judul} di Hafizhly`,
+                title: `Ayo belajar ${judul} di Hifzly`,
                 text: teks,
                 url: pageUrl
             };
@@ -1176,12 +1201,8 @@ if ($view_materi_id > 0 && $materi_detail) {
                         });
                         if (navigator.canShare({
                                 files: [file]
-                            })) {
-                            shareData.files = [file];
-                        }
-                    } catch (imgErr) {
-                        // Gagal ambil gambar, tetap lanjut bagikan teks + link saja
-                    }
+                            })) shareData.files = [file];
+                    } catch (imgErr) {}
                 }
 
                 if (navigator.share) {
@@ -1190,7 +1211,7 @@ if ($view_materi_id > 0 && $materi_detail) {
                 }
                 await copyShareFallback(teks, pageUrl);
             } catch (err) {
-                if (err && err.name === 'AbortError') return; // dibatalkan user sendiri
+                if (err && err.name === 'AbortError') return;
                 await copyShareFallback(teks, pageUrl);
             }
         }
@@ -1213,7 +1234,6 @@ if ($view_materi_id > 0 && $materi_detail) {
             window.__hzToastTimer = setTimeout(() => toast.classList.remove('show'), 3200);
         }
 
-        // Tombol share di kartu daftar materi
         document.querySelectorAll('.js-share').forEach(btn => {
             btn.addEventListener('click', function(e) {
                 e.preventDefault();
@@ -1226,7 +1246,6 @@ if ($view_materi_id > 0 && $materi_detail) {
             });
         });
 
-        // Tombol share di halaman detail
         const shareMateriBtn = document.getElementById('shareMateriBtn');
         if (shareMateriBtn) {
             shareMateriBtn.addEventListener('click', function() {

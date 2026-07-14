@@ -22,17 +22,48 @@ if ($q_bm && mysqli_num_rows($q_bm) > 0) {
     $bm_surah = 1;
     $bm_ayat = 1;
 }
+
+// --- MOCK DATA: 3 PELAJARAN TAJWID TERBARU ---
+// Catatan: Nanti kamu bisa ubah array ini menjadi hasil query dari database (misal: SELECT * FROM tajwid ORDER BY id DESC LIMIT 3)
+$tajwid_lessons = [
+    [
+        'id' => 1,
+        'title' => 'Hukum Nun Mati & Tanwin',
+        'desc' => 'Mengenal Idzhar, Idgham, Iqlab, dan Ikhfa secara mendalam.',
+        'icon' => 'fa-book-open-reader',
+        'color' => 'linear-gradient(135deg, #059669, #10b981)'
+    ],
+    [
+        'id' => 2,
+        'title' => 'Makharijul Huruf',
+        'desc' => 'Memperbaiki tempat keluarnya huruf-huruf hijaiyah.',
+        'icon' => 'fa-comment-dots',
+        'color' => 'linear-gradient(135deg, #d97706, #f59e0b)'
+    ],
+    [
+        'id' => 3,
+        'title' => 'Hukum Mad (Pemanjangan)',
+        'desc' => 'Dasar pemanjangan bacaan yang benar dalam Al-Qur\'an.',
+        'icon' => 'fa-wave-square',
+        'color' => 'linear-gradient(135deg, #2563eb, #3b82f6)'
+    ],
+];
 ?>
 <!DOCTYPE html>
 <html lang="id">
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Dashboard - Hifzly</title>
     <link rel="icon" type="image/png" href="../assets/icon/logo.png">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Amiri:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
         :root {
@@ -43,6 +74,7 @@ if ($q_bm && mysqli_num_rows($q_bm) > 0) {
             --bg: #f8fafc;
             --card-bg: #ffffff;
             --text-muted: #64748b;
+            --border: #e2e8f0;
         }
 
         * {
@@ -50,6 +82,7 @@ if ($q_bm && mysqli_num_rows($q_bm) > 0) {
             padding: 0;
             box-sizing: border-box;
             font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
@@ -57,13 +90,14 @@ if ($q_bm && mysqli_num_rows($q_bm) > 0) {
             color: var(--dark);
             padding-bottom: 100px;
             overflow-x: hidden;
+            scroll-behavior: smooth;
         }
 
         /* HEADER HERO */
         .hero-section {
             background: linear-gradient(160deg, #022c22, var(--primary), var(--primary-light));
             color: white;
-            padding: 30px 20px 85px 20px;
+            padding: max(30px, env(safe-area-inset-top)) 20px 85px 20px;
             position: relative;
             border-bottom-left-radius: 40px;
             border-bottom-right-radius: 40px;
@@ -76,24 +110,28 @@ if ($q_bm && mysqli_num_rows($q_bm) > 0) {
             justify-content: space-between;
             align-items: center;
             margin-bottom: 25px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .location-badge {
             background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(5px);
-            padding: 8px 15px;
+            backdrop-filter: blur(8px);
+            padding: 8px 16px;
             border-radius: 20px;
             font-size: 0.85rem;
             display: flex;
             align-items: center;
             gap: 8px;
             cursor: pointer;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: 0.2s;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: 0.3s;
         }
 
         .location-badge:hover {
             background: rgba(255, 255, 255, 0.25);
+            transform: scale(1.02);
         }
 
         .location-badge i {
@@ -114,8 +152,8 @@ if ($q_bm && mysqli_num_rows($q_bm) > 0) {
         }
 
         .bismillah {
-            font-size: 2rem;
-            font-family: 'Amiri', 'Traditional Arabic', serif;
+            font-size: 2.2rem;
+            font-family: 'Amiri', serif;
             margin-bottom: 15px;
             text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
         }
@@ -142,15 +180,16 @@ if ($q_bm && mysqli_num_rows($q_bm) > 0) {
         }
 
         .date-box .value {
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             font-weight: 700;
         }
 
         .realtime-clock {
-            font-size: 2.5rem;
+            font-size: 2.8rem;
             font-weight: 800;
             letter-spacing: 1px;
             text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            font-variant-numeric: tabular-nums;
         }
 
         /* Jadwal Sholat */
@@ -160,9 +199,12 @@ if ($q_bm && mysqli_num_rows($q_bm) > 0) {
             align-items: center;
             background: rgba(0, 0, 0, 0.2);
             padding: 15px 20px;
-            border-radius: 20px;
+            border-radius: 24px;
             margin-bottom: 15px;
-            backdrop-filter: blur(5px);
+            backdrop-filter: blur(8px);
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .prayer-item {
@@ -171,12 +213,12 @@ if ($q_bm && mysqli_num_rows($q_bm) > 0) {
             align-items: center;
             gap: 6px;
             opacity: 0.5;
-            transition: 0.3s;
+            transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .prayer-item.active {
             opacity: 1;
-            transform: scale(1.15);
+            transform: scale(1.15) translateY(-2px);
         }
 
         .prayer-item.active .p-time,
@@ -190,7 +232,7 @@ if ($q_bm && mysqli_num_rows($q_bm) > 0) {
         }
 
         .p-icon {
-            font-size: 1.3rem;
+            font-size: 1.4rem;
             margin: 3px 0;
         }
 
@@ -215,7 +257,7 @@ if ($q_bm && mysqli_num_rows($q_bm) > 0) {
         /* MAIN CONTENT & SLIDER KARTU */
         .main-content {
             padding: 0;
-            max-width: 600px;
+            max-width: 800px;
             margin: -55px auto 0;
             position: relative;
             z-index: 5;
@@ -228,12 +270,10 @@ if ($q_bm && mysqli_num_rows($q_bm) > 0) {
             scroll-snap-type: x mandatory;
             padding: 0 20px 20px 20px;
             scrollbar-width: none;
-            /* Firefox */
         }
 
         .slider-container::-webkit-scrollbar {
             display: none;
-            /* Chrome */
         }
 
         .floating-card {
@@ -254,10 +294,6 @@ if ($q_bm && mysqli_num_rows($q_bm) > 0) {
             overflow: hidden;
         }
 
-        .floating-card:active {
-            transform: scale(0.98);
-        }
-
         .fc-left {
             display: flex;
             align-items: center;
@@ -269,7 +305,6 @@ if ($q_bm && mysqli_num_rows($q_bm) > 0) {
             height: 55px;
             border-radius: 50%;
             background: conic-gradient(var(--primary-light) 100%, #e5e7eb 0);
-            /* Full circle default */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -319,8 +354,8 @@ if ($q_bm && mysqli_num_rows($q_bm) > 0) {
         }
 
         .fc-arrow {
-            width: 35px;
-            height: 35px;
+            width: 38px;
+            height: 38px;
             background: #f1f5f9;
             border-radius: 50%;
             display: flex;
@@ -328,15 +363,17 @@ if ($q_bm && mysqli_num_rows($q_bm) > 0) {
             align-items: center;
             color: var(--dark);
             font-size: 0.9rem;
+            transition: 0.3s;
         }
 
-        /* Coming Soon Overlay */
+        .floating-card:hover .fc-arrow {
+            background: var(--primary-light);
+            color: white;
+        }
+
         .coming-soon-overlay {
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            inset: 0;
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(2px);
             display: flex;
@@ -356,64 +393,12 @@ if ($q_bm && mysqli_num_rows($q_bm) > 0) {
             text-transform: uppercase;
         }
 
-        /* Quick Access */
-        .section-title {
-            font-size: 1.15rem;
-            font-weight: 800;
-            margin: 10px 20px 15px;
-            color: var(--dark);
-        }
-
-        .quick-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px 10px;
-            padding: 0 20px 30px;
-        }
-
-        .q-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-            text-decoration: none;
-        }
-
-        .q-icon {
-            width: 60px;
-            height: 60px;
-            background: var(--card-bg);
-            border-radius: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 1.6rem;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
-            color: var(--primary-light);
-            border: 1px solid var(--border);
-            transition: 0.3s;
-        }
-
-        .q-item:hover .q-icon {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(5, 150, 105, 0.15);
-            border-color: var(--primary-light);
-        }
-
-        .q-text {
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: var(--dark);
-            text-align: center;
-        }
-
-        /* Dot Indicators */
         .slider-dots {
             display: flex;
             justify-content: center;
             gap: 6px;
             margin-top: -10px;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
 
         .dot {
@@ -430,6 +415,150 @@ if ($q_bm && mysqli_num_rows($q_bm) > 0) {
             border-radius: 10px;
         }
 
+        /* Quick Access (Menus) */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 10px 20px 15px;
+        }
+
+        .section-title {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--dark);
+        }
+
+        .quick-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px 15px;
+            padding: 0 20px 25px;
+            transition: 0.3s;
+        }
+
+        .q-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .q-item.hidden-menu {
+            display: none;
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .q-icon {
+            width: 65px;
+            height: 65px;
+            background: var(--card-bg);
+            border-radius: 22px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.7rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+            color: var(--primary-light);
+            border: 1px solid var(--border);
+            transition: 0.3s;
+        }
+
+        .q-item:hover .q-icon {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(5, 150, 105, 0.15);
+            border-color: var(--primary-light);
+        }
+
+        .q-text {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--dark);
+            text-align: center;
+        }
+
+        /* Tajwid Section */
+        .tajwid-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding: 0 20px 30px;
+        }
+
+        .tajwid-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-decoration: none;
+            transition: 0.3s;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
+        }
+
+        .tajwid-card:hover {
+            border-color: var(--primary-light);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(5, 150, 105, 0.08);
+        }
+
+        .tw-icon {
+            width: 55px;
+            height: 55px;
+            border-radius: 16px;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .tw-info {
+            flex-grow: 1;
+        }
+
+        .tw-title {
+            font-size: 1rem;
+            font-weight: 800;
+            color: var(--dark);
+            margin-bottom: 4px;
+        }
+
+        .tw-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        .tw-arrow {
+            color: #cbd5e1;
+            font-size: 1rem;
+            transition: 0.3s;
+        }
+
+        .tajwid-card:hover .tw-arrow {
+            color: var(--primary-light);
+            transform: translateX(3px);
+        }
+
+        /* Media Queries Desktop */
         @media (min-width: 768px) {
             .hero-section {
                 padding-top: 50px;
@@ -437,16 +566,28 @@ if ($q_bm && mysqli_num_rows($q_bm) > 0) {
                 border-bottom-right-radius: 60px;
             }
 
-            .quick-grid {
-                grid-template-columns: repeat(8, 1fr);
-            }
-
-            .main-content {
-                max-width: 800px;
-            }
-
             .floating-card {
                 min-width: 48%;
+            }
+
+            .quick-grid {
+                grid-template-columns: repeat(5, 1fr);
+            }
+
+            /* 5 items per row on desktop */
+            .tajwid-list {
+                flex-direction: row;
+            }
+
+            .tajwid-card {
+                flex: 1;
+                flex-direction: column;
+                text-align: center;
+                padding: 25px 20px;
+            }
+
+            .tajwid-card:hover .tw-arrow {
+                transform: translateX(0) translateY(3px);
             }
         }
     </style>
@@ -456,11 +597,12 @@ if ($q_bm && mysqli_num_rows($q_bm) > 0) {
 
     <div class="hero-section">
         <div class="top-bar">
-            <div class="location-badge" onclick="getLocation()">
+            <!-- Tombol Lokasi (Bisa Diklik) -->
+            <div class="location-badge" onclick="triggerLocationUpdate()">
                 <i class="fas fa-map-marker-alt"></i>
                 <span id="location-text">Mencari Lokasi...</span>
             </div>
-            <div class="profile-btn"><?= strtoupper(substr($_SESSION['nama_lengkap'], 0, 1)) ?></div>
+            <div class="profile-btn"><?= strtoupper(substr($_SESSION['nama_lengkap'] ?? 'U', 0, 1)) ?></div>
         </div>
 
         <div class="bismillah">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم</div>
@@ -489,7 +631,7 @@ if ($q_bm && mysqli_num_rows($q_bm) > 0) {
         <!-- SLIDER KARTU PROGRESS -->
         <div class="slider-container" id="cardSlider" onscroll="updateDots()">
 
-            <!-- 1. KARTU TILAWAH (Data Dinamis dari Bookmark) -->
+            <!-- 1. KARTU TILAWAH -->
             <a href="baca.php?surah=<?= $bm_surah ?>&ayat=<?= $bm_ayat ?>" class="floating-card">
                 <div class="fc-left">
                     <div class="progress-circle">
@@ -507,7 +649,7 @@ if ($q_bm && mysqli_num_rows($q_bm) > 0) {
                 <div class="fc-arrow"><i class="fas fa-play"></i></div>
             </a>
 
-            <!-- 2. KARTU HAFALAN (Coming Soon) -->
+            <!-- 2. KARTU HAFALAN -->
             <div class="floating-card" style="opacity: 0.8;">
                 <div class="coming-soon-overlay">
                     <div class="cs-badge">Segera Hadir</div>
@@ -519,15 +661,13 @@ if ($q_bm && mysqli_num_rows($q_bm) > 0) {
                     <div class="fc-text">
                         <h4>Target Hafalan</h4>
                         <h3>Surah Al-Mulk</h3>
-                        <div class="fc-badges">
-                            <span class="fc-badge">Ayat 1-10</span>
-                        </div>
+                        <div class="fc-badges"><span class="fc-badge">Ayat 1-10</span></div>
                     </div>
                 </div>
                 <div class="fc-arrow"><i class="fas fa-lock"></i></div>
             </div>
 
-            <!-- 3. KARTU MUROJAAH (Coming Soon) -->
+            <!-- 3. KARTU MUROJAAH -->
             <div class="floating-card" style="opacity: 0.8;">
                 <div class="coming-soon-overlay">
                     <div class="cs-badge">Segera Hadir</div>
@@ -539,25 +679,25 @@ if ($q_bm && mysqli_num_rows($q_bm) > 0) {
                     <div class="fc-text">
                         <h4>Jadwal Murojaah</h4>
                         <h3>Surah Yasin</h3>
-                        <div class="fc-badges">
-                            <span class="fc-badge">Waktunya Review</span>
-                        </div>
+                        <div class="fc-badges"><span class="fc-badge">Waktunya Review</span></div>
                     </div>
                 </div>
                 <div class="fc-arrow"><i class="fas fa-lock"></i></div>
             </div>
 
         </div>
-
-        <!-- Indikator Slide -->
         <div class="slider-dots">
             <div class="dot active" id="dot1"></div>
             <div class="dot" id="dot2"></div>
             <div class="dot" id="dot3"></div>
         </div>
 
-        <h3 class="section-title">Menu Eksplorasi</h3>
-        <div class="quick-grid">
+        <!-- MENU EKSPLORASI -->
+        <div class="section-header">
+            <h3 class="section-title" style="margin:0;">Menu Utama</h3>
+        </div>
+        <div class="quick-grid" id="menuGrid">
+            <!-- Selalu Tampil (7 Menu) -->
             <a href="alquran.php" class="q-item">
                 <div class="q-icon"><i class="fas fa-book-quran"></i></div>
                 <div class="q-text">Qur'an</div>
@@ -574,7 +714,6 @@ if ($q_bm && mysqli_num_rows($q_bm) > 0) {
                 <div class="q-icon"><i class="fas fa-chart-line"></i></div>
                 <div class="q-text">Mutabaah</div>
             </a>
-            <!-- MENU BARU: TAJWID -->
             <a href="tajwid.php" class="q-item">
                 <div class="q-icon"><i class="fas fa-chalkboard-teacher"></i></div>
                 <div class="q-text">Tajwid</div>
@@ -587,93 +726,201 @@ if ($q_bm && mysqli_num_rows($q_bm) > 0) {
                 <div class="q-icon"><i class="fas fa-bullseye"></i></div>
                 <div class="q-text">Target</div>
             </a>
-            <a href="achievement.php" class="q-item">
+
+            <!-- Tombol Selengkapnya -->
+            <a href="javascript:void(0)" class="q-item" id="toggleMenuBtn" onclick="toggleMoreMenu()">
+                <div class="q-icon" style="background:#f1f5f9; border-color:#e2e8f0; color:#64748b;"><i class="fas fa-th-large" id="toggleIcon"></i></div>
+                <div class="q-text" id="toggleText">Lainnya</div>
+            </a>
+
+            <!-- Menu Tersembunyi -->
+            <a href="#" class="q-item hidden-menu" onclick="infoComingSoon()">
                 <div class="q-icon"><i class="fas fa-medal"></i></div>
                 <div class="q-text">Pencapaian</div>
             </a>
-            <a href="#" class="q-item" onclick="alert('Fitur segera hadir!')">
+            <a href="#" class="q-item hidden-menu" onclick="infoComingSoon()">
                 <div class="q-icon"><i class="fas fa-robot"></i></div>
                 <div class="q-text">AI Coach</div>
             </a>
-            <a href="game.php" class="q-item">
+            <a href="game.php" class="q-item hidden-menu">
                 <div class="q-icon"><i class="fas fa-gamepad"></i></div>
                 <div class="q-text">Game</div>
             </a>
         </div>
+
+        <!-- TAJWID TERBARU -->
+        <div class="section-header">
+            <h3 class="section-title" style="margin:0;">Pelajaran Tajwid</h3>
+            <a href="tajwid.php" style="font-size:0.85rem; color:var(--primary-light); font-weight:700; text-decoration:none;">Lihat Semua <i class="fas fa-arrow-right"></i></a>
+        </div>
+        <div class="tajwid-list">
+            <?php foreach ($tajwid_lessons as $tw): ?>
+                <a href="tajwid_detail.php?id=<?= $tw['id'] ?>" class="tajwid-card">
+                    <div class="tw-icon" style="background: <?= $tw['color'] ?>;">
+                        <i class="fas <?= $tw['icon'] ?>"></i>
+                    </div>
+                    <div class="tw-info">
+                        <h4 class="tw-title"><?= htmlspecialchars($tw['title']) ?></h4>
+                        <p class="tw-desc"><?= htmlspecialchars($tw['desc']) ?></p>
+                    </div>
+                    <i class="fas fa-chevron-right tw-arrow"></i>
+                </a>
+            <?php endforeach; ?>
+        </div>
+
     </div>
 
-    <!-- Panggil Navigasi -->
+    <!-- Panggil Navigasi Bawah -->
     <?php include '../components/nav.php'; ?>
 
     <script>
-        // Tarik Nama Surah Bookmark lewat API agar tidak perlu hardcode array
-        const bmSurahNo = <?= $bm_surah ?>;
-        fetch(`https://equran.id/api/v2/surat/${bmSurahNo}`)
-            .then(res => res.json())
-            .then(data => {
-                document.getElementById('bm-surah-title').innerText = 'Surah ' + data.data.namaLatin;
-            }).catch(e => {
-                document.getElementById('bm-surah-title').innerText = 'Lanjutkan Tilawah';
-            });
+        // --- 1. TOGGLE MENU SELENGKAPNYA ---
+        function toggleMoreMenu() {
+            const hiddenItems = document.querySelectorAll('.hidden-menu');
+            const icon = document.getElementById('toggleIcon');
+            const text = document.getElementById('toggleText');
 
-        // Logika Titik Slider (Dots Indicator)
-        function updateDots() {
-            const slider = document.getElementById('cardSlider');
-            const scrollLeft = slider.scrollLeft;
-            const cardWidth = slider.offsetWidth;
-            const activeIndex = Math.round(scrollLeft / cardWidth);
+            let isExpanded = text.innerText === 'Tutup';
 
-            document.querySelectorAll('.dot').forEach((dot, index) => {
-                if (index === activeIndex) dot.classList.add('active');
-                else dot.classList.remove('active');
+            if (isExpanded) {
+                hiddenItems.forEach(el => el.style.display = 'none');
+                text.innerText = 'Lainnya';
+                icon.className = 'fas fa-th-large';
+            } else {
+                hiddenItems.forEach(el => el.style.display = 'flex');
+                text.innerText = 'Tutup';
+                icon.className = 'fas fa-chevron-up';
+            }
+        }
+
+        function infoComingSoon() {
+            Swal.fire({
+                icon: 'info',
+                title: 'Insya Allah Segera Hadir',
+                text: 'Fitur ini sedang dalam tahap pengembangan.',
+                confirmButtonColor: '#059669',
+                confirmButtonText: 'Alhamdulillah'
             });
         }
 
-        // --- SISTEM WAKTU & JADWAL SHOLAT ---
+        // --- 2. BOOKMARK DATA ---
+        fetch(`https://equran.id/api/v2/surat/<?= $bm_surah ?>`)
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('bm-surah-title').innerText = 'Surah ' + data.data.namaLatin;
+            })
+            .catch(e => {
+                document.getElementById('bm-surah-title').innerText = 'Lanjutkan Tilawah';
+            });
+
+        function updateDots() {
+            const slider = document.getElementById('cardSlider');
+            const activeIndex = Math.round(slider.scrollLeft / slider.offsetWidth);
+            document.querySelectorAll('.dot').forEach((dot, index) => {
+                dot.classList.toggle('active', index === activeIndex);
+            });
+        }
+
+        // --- 3. SISTEM LOKASI SMART CACHE & JADWAL SHOLAT ---
         let prayerTimesData = null;
 
         function updateClock() {
             const now = new Date();
-            const h = String(now.getHours()).padStart(2, '0');
-            const m = String(now.getMinutes()).padStart(2, '0');
-            const s = String(now.getSeconds()).padStart(2, '0');
-            document.getElementById('clock').innerText = `${h}:${m}:${s}`;
+            const format = n => String(n).padStart(2, '0');
+            document.getElementById('clock').innerText = `${format(now.getHours())}:${format(now.getMinutes())}:${format(now.getSeconds())}`;
             if (prayerTimesData) updateCountdown(now);
         }
         setInterval(updateClock, 1000);
         updateClock();
 
-        function getLocation() {
-            document.getElementById('location-text').innerText = "Melacak...";
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(showPosition, showError);
+        // Cek Cache Lokasi saat halaman dimuat
+        function initLocation() {
+            const savedLat = localStorage.getItem('hifzly_lat');
+            const savedLon = localStorage.getItem('hifzly_lon');
+            const savedCity = localStorage.getItem('hifzly_city');
+
+            if (savedLat && savedLon && savedCity) {
+                document.getElementById('location-text').innerText = savedCity;
+                fetchPrayerAPI(savedLat, savedLon);
             } else {
-                fallbackLocation();
+                executeLocationTracking(false);
             }
         }
 
-        function showPosition(position) {
-            fetchPrayerAPI(position.coords.latitude, position.coords.longitude);
-            fetchCityName(position.coords.latitude, position.coords.longitude);
+        // Tombol Perbarui Lokasi (Manual Click)
+        function triggerLocationUpdate() {
+            Swal.fire({
+                title: 'Perbarui Lokasi?',
+                text: 'Sistem akan melacak posisi Anda saat ini untuk menyesuaikan jadwal sholat secara akurat.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#059669',
+                cancelButtonColor: '#94a3b8',
+                confirmButtonText: '<i class="fas fa-location-arrow"></i> Bismillah, Lacak!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('location-text').innerText = "Melacak...";
+                    executeLocationTracking(true);
+                }
+            });
         }
 
-        function showError() {
-            fallbackLocation();
+        function executeLocationTracking(showSuccessAlert = false) {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+                        fetchCityName(lat, lon, showSuccessAlert);
+                        fetchPrayerAPI(lat, lon);
+                    },
+                    () => fallbackLocation(showSuccessAlert), {
+                        enableHighAccuracy: true,
+                        timeout: 5000
+                    }
+                );
+            } else {
+                fallbackLocation(showSuccessAlert);
+            }
         }
 
-        function fallbackLocation() {
-            document.getElementById('location-text').innerText = "Cikande, Banten";
-            fetchPrayerAPI(-6.1824, 106.3351); // Koordinat Cikande
+        function fallbackLocation(showAlert) {
+            const defLat = -6.1824,
+                defLon = 106.3351,
+                defCity = "Cikande, Banten";
+            saveLocationData(defLat, defLon, defCity);
+            if (showAlert) Swal.fire('Gagal Melacak', 'Izin lokasi ditolak/gagal. Menggunakan lokasi default.', 'warning');
         }
 
-        async function fetchCityName(lat, lon) {
+        async function fetchCityName(lat, lon, showAlert) {
             try {
                 const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=id`);
                 const data = await res.json();
-                document.getElementById('location-text').innerText = data.city || data.locality || "Lokasi Anda";
+                const cityName = data.city || data.locality || "Lokasi Ditemukan";
+                saveLocationData(lat, lon, cityName);
+
+                if (showAlert) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Alhamdulillah',
+                        text: `Lokasi diperbarui ke ${cityName}`,
+                        confirmButtonColor: '#059669',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                }
             } catch (e) {
-                document.getElementById('location-text').innerText = "Lokasi Ditemukan";
+                saveLocationData(lat, lon, "Lokasi Tersimpan");
             }
+        }
+
+        function saveLocationData(lat, lon, city) {
+            localStorage.setItem('hifzly_lat', lat);
+            localStorage.setItem('hifzly_lon', lon);
+            localStorage.setItem('hifzly_city', city);
+            document.getElementById('location-text').innerText = city;
+            fetchPrayerAPI(lat, lon);
         }
 
         async function fetchPrayerAPI(lat, lon) {
@@ -685,7 +932,6 @@ if ($q_bm && mysqli_num_rows($q_bm) > 0) {
 
                 document.getElementById('masehi-date').innerText = data.date.gregorian.date;
                 document.getElementById('hijri-date').innerText = `${data.date.hijri.day} ${data.date.hijri.month.en} ${data.date.hijri.year}`;
-
                 renderPrayerTimes();
             } catch (e) {
                 document.getElementById('prayer-container').innerHTML = "<div style='color:red;'>Gagal memuat jadwal.</div>";
@@ -722,8 +968,7 @@ if ($q_bm && mysqli_num_rows($q_bm) > 0) {
         function renderPrayerTimes() {
             let html = '';
             prayerConfig.forEach(p => {
-                html += `
-                <div class="prayer-item" id="pr-${p.id}">
+                html += `<div class="prayer-item" id="pr-${p.id}">
                     <div class="p-time">${prayerTimesData[p.id]}</div>
                     <div class="p-icon">${p.icon}</div>
                     <div class="p-name">${p.name}</div>
@@ -733,9 +978,9 @@ if ($q_bm && mysqli_num_rows($q_bm) > 0) {
         }
 
         function updateCountdown(now) {
-            let nextPrayerName = "";
-            let nextPrayerTimeDate = null;
-            let activeId = "";
+            let nextPrayerName = "",
+                nextPrayerTimeDate = null,
+                activeId = "";
 
             for (let i = 0; i < prayerConfig.length; i++) {
                 const p = prayerConfig[i];
@@ -761,9 +1006,7 @@ if ($q_bm && mysqli_num_rows($q_bm) > 0) {
             }
 
             document.querySelectorAll('.prayer-item').forEach(el => el.classList.remove('active'));
-            if (document.getElementById(`pr-${activeId}`)) {
-                document.getElementById(`pr-${activeId}`).classList.add('active');
-            }
+            if (document.getElementById(`pr-${activeId}`)) document.getElementById(`pr-${activeId}`).classList.add('active');
 
             const diffMs = nextPrayerTimeDate - now;
             const diffHrs = Math.floor((diffMs % 86400000) / 3600000);
@@ -774,9 +1017,7 @@ if ($q_bm && mysqli_num_rows($q_bm) > 0) {
             document.getElementById('countdown-text').innerHTML = `<span>${format(diffHrs)}:${format(diffMins)}:${format(diffSecs)}</span> menuju ${nextPrayerName}`;
         }
 
-        window.onload = () => {
-            getLocation();
-        };
+        window.onload = initLocation;
     </script>
 </body>
 

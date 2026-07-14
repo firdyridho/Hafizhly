@@ -401,15 +401,38 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
         }
 
         .surah-title-banner {
-            width: 100%;
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="30" viewBox="0 0 100 30" preserveAspectRatio="none"><rect x="0" y="0" width="100" height="30" fill="%23fefaf0" stroke="%23b4a269" stroke-width="2"/></svg>') no-repeat center;
-            background-size: 100% 100%;
+            width: 90%;
+            margin: 30px auto 20px auto;
             text-align: center;
             font-family: 'Uthmani', serif;
-            font-size: 1.8rem;
-            color: #857a55;
-            padding: 10px 0;
-            margin: 15px 0;
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            padding: 15px;
+            position: relative;
+            border: 2px solid #b4a269;
+            border-radius: 12px;
+            background: #fdfbf5;
+            box-shadow: inset 0 0 10px rgba(180, 162, 105, 0.2);
+        }
+
+        .surah-title-banner::before,
+        .surah-title-banner::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 30px;
+            height: 30px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23b4a269"><path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z"/></svg>') no-repeat center;
+        }
+
+        .surah-title-banner::before {
+            left: 15px;
+        }
+
+        .surah-title-banner::after {
+            right: 15px;
         }
 
         .bismillah {
@@ -526,6 +549,22 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             transition: 0.3s;
             z-index: 200;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        @media (max-width: 600px) {
+            .ayah-word {
+                font-size: 3.5vw;
+                padding: 0 1px;
+            }
+            .mushaf-container {
+                padding: 10px 5px;
+            }
+            .ayah-end {
+                width: 26px;
+                height: 26px;
+                font-size: 0.7rem;
+                margin: 0 2px;
+            }
         }
     </style>
 </head>
@@ -1900,13 +1939,13 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             recognition.onend = () => {
                 recognitionActive = false;
                 if (isRecording) {
-                    // Saat restart: hanya clear interim (volatile) dan reset tracker.
-                    // speechBuffer TIDAK dikosongkan supaya kata yang diucapkan di jeda
-                    // restart (200ms) tidak hilang dan tetap bisa dicocokkan.
-                    interimBuffer = '';
-                    lastProcessedIndex = 0;
-                    clearTimeout(restartTimer);
-                    restartTimer = setTimeout(startRecognition, RESTART_DELAY);
+                    // Google API menghentikan mic secara otomatis (biasanya karena diam).
+                    // Kita TIDAK LAGI memaksa restart otomatis di sini untuk menghilangkan
+                    // bunyi "ting tung" yang mengganggu.
+                    // Jika mic mati, user harus menekan tombol mic secara manual.
+                    isRecording = false;
+                    renderMicState();
+                    showToast("Mic mati otomatis (diam terlalu lama). Klik mic untuk lanjut.");
                 }
             };
         }
@@ -1965,11 +2004,14 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             if (spoken.length >= 4 && target.startsWith(spoken)) return true;
             if (target.length >= 4 && spoken.startsWith(target)) return true;
 
-            // Fuzzy Levenshtein: toleransi 1 huruf beda untuk kata ≥ 4 huruf,
-            //                    toleransi 2 huruf untuk kata ≥ 7 huruf
+            // Fuzzy Levenshtein: toleransi disesuaikan panjang kata agar lebih longgar
             if (spoken.length >= 4 && target.length >= 4) {
-                if (Math.abs(spoken.length - target.length) <= 2) {
-                    const maxDist = target.length >= 7 ? 2 : 1;
+                if (Math.abs(spoken.length - target.length) <= 3) {
+                    let maxDist = 0;
+                    if (target.length >= 8) maxDist = 3;
+                    else if (target.length >= 5) maxDist = 2;
+                    else if (target.length >= 3) maxDist = 1;
+                    
                     if (levenshtein(spoken, target) <= maxDist) return true;
                 }
             }

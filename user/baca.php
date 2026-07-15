@@ -1005,6 +1005,10 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
 
     <script>
         const noSurat = <?= $nomor_surat ?>;
+
+        // PENGATURAN AUDIO DINAMIS (Mengambil dari localStorage, jika kosong default ke '05' Misyari Rasyid)
+        const qariSetting = localStorage.getItem('qari_setting') || '05';
+
         let surahData = null;
         let tafsirData = null;
         let audioFullEl = document.getElementById('audioFull');
@@ -1062,6 +1066,7 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
                 let findTafsir = tafsirData.find(t => t.ayat == a.nomorAyat);
                 if (findTafsir) txtTafsir = findTafsir.teks;
 
+                // Menggunakan qariSetting untuk menentukan audio ayat yang dimainkan
                 html += `
                 <div class="ayat-card" id="ayat-${a.nomorAyat}">
                     <div class="ayat-header">
@@ -1069,7 +1074,7 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
                         <div class="ayat-actions">
                             <i class="fas fa-book-open ayat-action-btn" onclick="toggleTafsir(${a.nomorAyat})" title="Baca Tafsir"></i>
                             <i class="fas fa-bookmark ayat-action-btn" onclick="saveBookmark(${a.nomorAyat})" title="Tandai Terakhir Baca"></i>
-                            <i class="fas fa-play ayat-action-btn" id="btn-play-ayat-${a.nomorAyat}" onclick="playAyat('${a.audio['05']}', ${a.nomorAyat})" title="Putar Audio"></i>
+                            <i class="fas fa-play ayat-action-btn" id="btn-play-ayat-${a.nomorAyat}" onclick="playAyat('${a.audio[qariSetting]}', ${a.nomorAyat})" title="Putar Audio"></i>
                         </div>
                     </div>
                     <div class="teks-arab">${a.teksArab}</div>
@@ -1112,7 +1117,8 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             const btn = document.getElementById('btn-play-full');
 
             if (!isFullAudioLoaded) {
-                audioFullEl.src = surahData.audioFull['05'];
+                // Menggunakan qariSetting untuk menentukan audio full
+                audioFullEl.src = surahData.audioFull[qariSetting];
                 isFullAudioLoaded = true;
             }
 
@@ -1612,7 +1618,10 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             sheet.dataset.verse = verseKey;
             sheet.dataset.surah = s;
             sheet.dataset.ayat = a;
-            sheet.dataset.audio = ayatObj.audio['05'];
+
+            // Menggunakan qariSetting untuk menentukan audio ayat
+            sheet.dataset.audio = ayatObj.audio[qariSetting];
+
             sheet.style.display = 'flex';
             setTimeout(() => sheet.classList.add('show'), 10);
         }

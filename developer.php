@@ -430,8 +430,8 @@ session_start();
     <!-- HERO SECTION -->
     <section class="hero">
         <div class="hero-eyebrow">Tim Pengembang</div>
-        <h1>Membangun Hifzly dengan<br><em>Cinta &amp; Dedikasi</em></h1>
-        <p>Hifzly lahir dari keinginan untuk membantu umat Islam menjaga hafalannya dengan teknologi yang cerdas, mudah, dan menyenangkan. Kenali sosok di balik layar aplikasi ini.</p>
+        <h1>Membangun Hifzhly dengan<br><em>Cinta &amp; Dedikasi</em></h1>
+        <p>Hifzhly lahir dari keinginan untuk membantu umat Islam menjaga hafalannya dengan teknologi yang cerdas, mudah, dan menyenangkan. Kenali sosok di balik layar aplikasi ini.</p>
     </section>
 
     <!-- PROFIL TIM -->
@@ -451,7 +451,7 @@ session_start();
                 <h3 class="name">Faeyza Ardellein Y.</h3>
                 <div class="role">Full-Stack Developer</div>
                 <div class="divider-dot"></div>
-                <p class="bio">Bertanggung jawab merancang pengalaman pengguna yang nyaman dan intuitif, serta memastikan alur sistem Hifzly berjalan sesuai kebutuhan para penghafal Al-Qur'an.</p>
+                <p class="bio">Bertanggung jawab merancang pengalaman pengguna yang nyaman dan intuitif, serta memastikan alur sistem Hifzhly berjalan sesuai kebutuhan para penghafal Al-Qur'an.</p>
                 <div class="social-links">
                     <a href="https://www.instagram.com/fyzardell" target="_blank" rel="noopener" class="social-btn"><i class="fab fa-instagram"></i></a>
                     <a href="#" class="social-btn"><i class="fab fa-github"></i></a>
@@ -472,7 +472,7 @@ session_start();
                 <h3 class="name">Firdy Ridho Fillah</h3>
                 <div class="role">Full-Stack Developer</div>
                 <div class="divider-dot"></div>
-                <p class="bio">Mengeksekusi logika pemrograman dari sisi server hingga tampilan antarmuka, serta merancang arsitektur database Hifzly agar aplikasi berjalan cepat dan aman.</p>
+                <p class="bio">Mengeksekusi logika pemrograman dari sisi server hingga tampilan antarmuka, serta merancang arsitektur database Hifzhly agar aplikasi berjalan cepat dan aman.</p>
                 <div class="social-links">
                     <a href="https://instagram.com/firdyfillaa_" target="_blank" rel="noopener" class="social-btn"><i class="fab fa-instagram"></i></a>
                     <a href="#" class="social-btn"><i class="fab fa-github"></i></a>
@@ -486,7 +486,7 @@ session_start();
 
     <!-- TECH STACK -->
     <section class="tech-section">
-        <h2>Teknologi di Balik Hifzly</h2>
+        <h2>Teknologi di Balik Hifzhly</h2>
         <p class="tech-subtitle">Ditenagai oleh perangkat yang teruji dan andal</p>
         <div class="tech-grid">
             <div class="tech-item"><i class="fab fa-php" style="color:#a5b4fc;"></i> PHP 8</div>

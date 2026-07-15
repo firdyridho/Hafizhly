@@ -368,7 +368,7 @@ $user_data = mysqli_fetch_assoc($q_user);
                     <div class="si-icon quran"><i class="fas fa-volume-up"></i></div>
                     <div class="si-text">
                         <div class="si-title">Audio Al-Qur'an</div>
-                        <div class="si-text si-desc" id="lbl-qari">Mishary Rashid Alafasy</div>
+                        <div class="si-text si-desc" id="lbl-qari">Misyari Rasyid Al-Afasy</div>
                     </div>
                     <i class="fas fa-chevron-right si-arrow"></i>
                 </div>
@@ -420,34 +420,42 @@ $user_data = mysqli_fetch_assoc($q_user);
             <p style="margin-bottom:15px; color:var(--text-muted); font-size:0.9rem;">Pilih suara Qari yang akan digunakan saat memutar ayat Al-Qur'an.</p>
 
             <label class="radio-card">
-                <input type="radio" name="qari" value="ar.alafasy" onchange="saveQari('ar.alafasy', 'Mishary Rashid Alafasy')">
+                <input type="radio" name="qari" value="01" onchange="saveQari('01', 'Abdullah Al-Juhany')">
                 <div class="rc-content">
                     <div class="rc-circle"></div>
-                    <div class="rc-title">Mishary Rashid Alafasy</div>
+                    <div class="rc-title">Abdullah Al-Juhany</div>
                 </div>
             </label>
 
             <label class="radio-card">
-                <input type="radio" name="qari" value="ar.abdulbasitmurattal" onchange="saveQari('ar.abdulbasitmurattal', 'Abdul Basit (Murattal)')">
+                <input type="radio" name="qari" value="02" onchange="saveQari('02', 'Abdul Muhsin Al-Qasim')">
                 <div class="rc-content">
                     <div class="rc-circle"></div>
-                    <div class="rc-title">Abdul Basit (Murattal)</div>
+                    <div class="rc-title">Abdul Muhsin Al-Qasim</div>
                 </div>
             </label>
 
             <label class="radio-card">
-                <input type="radio" name="qari" value="ar.sudais" onchange="saveQari('ar.sudais', 'Abdurrahmaan As-Sudais')">
+                <input type="radio" name="qari" value="03" onchange="saveQari('03', 'Abdurrahman As-Sudais')">
                 <div class="rc-content">
                     <div class="rc-circle"></div>
-                    <div class="rc-title">Abdurrahmaan As-Sudais</div>
+                    <div class="rc-title">Abdurrahman As-Sudais</div>
                 </div>
             </label>
 
             <label class="radio-card">
-                <input type="radio" name="qari" value="ar.husary" onchange="saveQari('ar.husary', 'Mahmoud Khalil Al-Husary')">
+                <input type="radio" name="qari" value="04" onchange="saveQari('04', 'Ibrahim Al-Dossari')">
                 <div class="rc-content">
                     <div class="rc-circle"></div>
-                    <div class="rc-title">Mahmoud Khalil Al-Husary</div>
+                    <div class="rc-title">Ibrahim Al-Dossari</div>
+                </div>
+            </label>
+
+            <label class="radio-card">
+                <input type="radio" name="qari" value="05" onchange="saveQari('05', 'Misyari Rasyid Al-Afasy')">
+                <div class="rc-content">
+                    <div class="rc-circle"></div>
+                    <div class="rc-title">Misyari Rasyid Al-Afasy</div>
                 </div>
             </label>
         </div>
@@ -472,7 +480,7 @@ $user_data = mysqli_fetch_assoc($q_user);
 
     </div>
 
-    <!-- Panggil Navigasi Bawah (Jika kamu pakai komponen nav) -->
+    <!-- Panggil Navigasi Bawah -->
     <?php include '../components/nav.php'; ?>
 
     <script>
@@ -480,14 +488,10 @@ $user_data = mysqli_fetch_assoc($q_user);
         let currentView = 'menu';
 
         function switchView(viewId) {
-            // Sembunyikan semua view
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-
-            // Tampilkan view yang dipilih
             document.getElementById('view-' + viewId).classList.add('active');
             currentView = viewId;
 
-            // Ubah judul dan fungsi tombol back
             const headerTitle = document.getElementById('headerTitle');
             if (viewId === 'menu') {
                 headerTitle.innerText = "Pengaturan";
@@ -502,10 +506,8 @@ $user_data = mysqli_fetch_assoc($q_user);
 
         function goBack() {
             if (currentView === 'menu') {
-                // Jika sedang di menu utama, kembali ke dashboard.php
                 window.location.href = 'dashboard.php';
             } else {
-                // Jika sedang di dalam form, kembali ke menu pengaturan
                 switchView('menu');
             }
         }
@@ -524,8 +526,8 @@ $user_data = mysqli_fetch_assoc($q_user);
         // --- INISIALISASI DATA LOCALSTORAGE ---
         window.onload = function() {
             // Load Audio Qari
-            const savedQari = localStorage.getItem('hifzly_qari_id') || 'ar.alafasy';
-            const savedQariName = localStorage.getItem('hifzly_qari_name') || 'Mishary Rashid Alafasy';
+            const savedQari = localStorage.getItem('hifzly_qari_id') || '05';
+            const savedQariName = localStorage.getItem('hifzly_qari_name') || 'Misyari Rasyid Al-Afasy';
             document.getElementById('lbl-qari').innerText = savedQariName;
 
             // Set radio button aktif
@@ -561,8 +563,6 @@ $user_data = mysqli_fetch_assoc($q_user);
             const val = document.getElementById('lokasi-input').value;
             if (!val) return Swal.fire('Oops', 'Nama lokasi tidak boleh kosong', 'warning');
 
-            // Simpan nama kotanya saja. (Untuk fungsi jadwal sholat, di index.php nantinya butuh koordinat lat/lon, 
-            // tapi kita bisa andalkan sistem default jika hanya kota).
             localStorage.setItem('hifzly_city', val);
             document.getElementById('lbl-location').innerText = val;
 

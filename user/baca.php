@@ -1006,8 +1006,13 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
     <script>
         const noSurat = <?= $nomor_surat ?>;
 
-        // PENGATURAN AUDIO DINAMIS (Mengambil dari localStorage, jika kosong default ke '05' Misyari Rasyid)
-        const qariSetting = localStorage.getItem('qari_setting') || '05';
+        // PENGATURAN AUDIO DINAMIS & FAILSAFE (Cek kecocokan API)
+        let qariSetting = localStorage.getItem('hifzly_qari_id');
+
+        // Cek jika user masih pakai setting lama atau kosong, maka reset ke 05 (Misyari)
+        if (!['01', '02', '03', '04', '05'].includes(qariSetting)) {
+            qariSetting = '05';
+        }
 
         let surahData = null;
         let tafsirData = null;
@@ -1066,7 +1071,7 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
                 let findTafsir = tafsirData.find(t => t.ayat == a.nomorAyat);
                 if (findTafsir) txtTafsir = findTafsir.teks;
 
-                // Menggunakan qariSetting untuk menentukan audio ayat yang dimainkan
+                // Memakai Audio Berdasarkan Setting 
                 html += `
                 <div class="ayat-card" id="ayat-${a.nomorAyat}">
                     <div class="ayat-header">
@@ -1117,7 +1122,6 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             const btn = document.getElementById('btn-play-full');
 
             if (!isFullAudioLoaded) {
-                // Menggunakan qariSetting untuk menentukan audio full
                 audioFullEl.src = surahData.audioFull[qariSetting];
                 isFullAudioLoaded = true;
             }
@@ -1573,7 +1577,6 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
         }
 
         // --- AUDIO & INTERAKSI AYAT (MODE MUSHAF) ---
-        // Hanya dipanggil dari sheet (long-press), bukan tap.
         function playAyatMushaf(url, verseKey) {
             audioFullEl.pause();
             document.getElementById('btn-play-full').innerHTML = '<i class="fas fa-play-circle"></i>';
@@ -1619,7 +1622,7 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             sheet.dataset.surah = s;
             sheet.dataset.ayat = a;
 
-            // Menggunakan qariSetting untuk menentukan audio ayat
+            // Audio untuk Mushaf Mode juga disesuaikan
             sheet.dataset.audio = ayatObj.audio[qariSetting];
 
             sheet.style.display = 'flex';
@@ -1678,7 +1681,6 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             });
 
             page.addEventListener('pointerup', e => {
-                // Tidak lakukan apa-apa pada tap singkat
                 clearPress();
             });
 
@@ -1717,8 +1719,8 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
                 const dx = e.changedTouches[0].clientX - startX;
                 const dy = e.changedTouches[0].clientY - startY;
                 if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy)) {
-                    if (dx < 0) goNextPage(); // geser kiri = next
-                    else goPrevPage(); // geser kanan = prev
+                    if (dx < 0) goNextPage();
+                    else goPrevPage();
                 }
                 startX = null;
                 startY = null;

@@ -7,42 +7,75 @@ session_start();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Developer - Hifzly</title>
+    <title>Developer - Hifzhly</title>
     <link rel="icon" type="image/png" href="assets/icon/logo.png">
-    <!-- Google Fonts: Plus Jakarta Sans -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Google Fonts: Amiri (display) + Plus Jakarta Sans (body/UI) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
         :root {
-            --primary: #059669;
-            --primary-light: #d1fae5;
-            --dark: #0f172a;
-            --text-muted: #64748b;
-            --bg: #f8fafc;
-            --border: #e2e8f0;
+            --emerald-deep: #064e3b;
+            --primary: #0d7a5f;
+            --primary-soft: #e7f5ef;
+            --ivory: #fbfaf6;
+            --ivory-dim: #f3f1ea;
+            --ink: #10241d;
+            --ink-muted: #5b6b64;
+            --gold: #b6934a;
+            --gold-soft: #eadfc4;
+            --line: rgba(16, 36, 29, 0.09);
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        html {
+            scroll-behavior: smooth;
         }
 
         body {
-            background-color: var(--bg);
-            color: var(--dark);
-            line-height: 1.6;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--ivory);
+            color: var(--ink);
+            line-height: 1.65;
             overflow-x: hidden;
         }
 
-        /* NAVBAR */
+        h1,
+        h2,
+        h3,
+        .display {
+            font-family: 'Amiri', serif;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* ============ ARABESQUE BACKDROP ============ */
+        .arabesque-bg {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.05;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%23064e3b' stroke-width='1'%3E%3Cpath d='M60 6 L96 30 L96 90 L60 114 L24 90 L24 30 Z'/%3E%3Ccircle cx='60' cy='60' r='30'/%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        /* ============ NAVBAR ============ */
         .navbar {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
-            padding: 20px 5%;
+            background: rgba(251, 250, 246, 0.85);
+            backdrop-filter: blur(14px);
+            padding: 18px 6%;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -50,247 +83,341 @@ session_start();
             top: 0;
             width: 100%;
             z-index: 1000;
-            border-bottom: 1px solid var(--border);
+            border-bottom: 1px solid var(--line);
         }
 
         .nav-brand {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: var(--primary);
+            font-family: 'Amiri', serif;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--emerald-deep);
             text-decoration: none;
             display: flex;
             align-items: center;
             gap: 10px;
+            letter-spacing: 0.3px;
+        }
+
+        .nav-brand i {
+            color: var(--gold);
+            font-size: 1.2rem;
         }
 
         .btn-back {
-            background: var(--dark);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 12px;
+            background: var(--emerald-deep);
+            color: var(--ivory);
+            padding: 11px 24px;
+            border-radius: 999px;
             text-decoration: none;
-            font-weight: 700;
-            transition: 0.3s;
+            font-weight: 600;
+            font-size: 0.92rem;
+            letter-spacing: 0.2px;
+            transition: 0.35s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .btn-back:hover {
             background: var(--primary);
-            box-shadow: 0 4px 15px rgba(5, 150, 105, 0.3);
+            box-shadow: 0 8px 22px rgba(6, 78, 59, 0.28);
+            transform: translateY(-1px);
         }
 
-        /* HERO SECTION */
+        /* ============ HERO ============ */
         .hero {
-            padding: 150px 5% 80px;
+            position: relative;
+            padding: 168px 6% 100px;
             text-align: center;
-            background: linear-gradient(to bottom, #ecfdf5, var(--bg));
+            z-index: 1;
         }
 
-        .hero-badge {
-            display: inline-block;
-            background: var(--primary-light);
-            color: var(--primary);
-            padding: 8px 20px;
-            border-radius: 20px;
+        .hero::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 1px;
+            height: 90px;
+            background: linear-gradient(to bottom, transparent, var(--gold));
+        }
+
+        .hero-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--gold);
             font-weight: 700;
-            font-size: 0.9rem;
-            margin-bottom: 20px;
+            font-size: 0.8rem;
+            letter-spacing: 3px;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            margin-bottom: 26px;
+        }
+
+        .hero-eyebrow::before,
+        .hero-eyebrow::after {
+            content: "";
+            width: 28px;
+            height: 1px;
+            background: var(--gold);
         }
 
         .hero h1 {
-            font-size: 3rem;
-            font-weight: 800;
-            color: var(--dark);
-            margin-bottom: 20px;
-            line-height: 1.2;
+            font-size: clamp(2.3rem, 5vw, 3.6rem);
+            font-weight: 700;
+            color: var(--emerald-deep);
+            margin-bottom: 24px;
+            line-height: 1.25;
+        }
+
+        .hero h1 em {
+            font-style: italic;
+            color: var(--primary);
         }
 
         .hero p {
-            font-size: 1.1rem;
-            color: var(--text-muted);
-            max-width: 600px;
+            font-size: 1.08rem;
+            color: var(--ink-muted);
+            max-width: 620px;
             margin: 0 auto;
         }
 
-        /* PROFIL TIM */
+        /* ============ TEAM SECTION ============ */
+        .team-section {
+            position: relative;
+            z-index: 1;
+            padding: 0 6% 110px;
+        }
+
+        .section-label {
+            text-align: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--primary);
+            margin-bottom: 12px;
+        }
+
         .team-container {
-            max-width: 1000px;
-            margin: 0 auto 80px auto;
-            padding: 0 5%;
+            max-width: 980px;
+            margin: 40px auto 0;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 40px;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 44px;
         }
 
         .team-card {
-            background: white;
-            border-radius: 30px;
-            padding: 40px;
+            background: #ffffff;
+            border-radius: 26px;
+            padding: 46px 38px 38px;
             text-align: center;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
-            border: 1px solid var(--border);
-            transition: 0.4s;
+            box-shadow: 0 4px 24px rgba(6, 78, 59, 0.05);
+            border: 1px solid var(--line);
+            transition: 0.45s cubic-bezier(.2, .8, .2, 1);
             position: relative;
-            overflow: hidden;
         }
 
         .team-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 50px rgba(5, 150, 105, 0.1);
-            border-color: var(--primary);
+            transform: translateY(-8px);
+            box-shadow: 0 26px 60px rgba(6, 78, 59, 0.13);
+            border-color: var(--gold-soft);
         }
 
-        .avatar {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            margin: 0 auto 25px auto;
-            border: 5px solid white;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            position: relative;
-            z-index: 2;
+        /* Arch-shaped photo frame — nods to mihrab architecture */
+        .avatar-frame {
+            width: 160px;
+            height: 190px;
+            margin: 0 auto 26px;
+            border-radius: 80px 80px 12px 12px;
+            padding: 6px;
+            background: linear-gradient(160deg, var(--gold), var(--primary) 60%);
+            box-shadow: 0 14px 30px rgba(6, 78, 59, 0.18);
         }
 
-        /* Avatar Khusus Cewek (Faeyza) */
-        .avatar-female {
-            background: linear-gradient(135deg, #fce7f3, #fbcfe8);
+        .avatar-inner {
+            width: 100%;
+            height: 100%;
+            border-radius: 76px 76px 8px 8px;
+            overflow: hidden;
+            background: var(--primary-soft);
             display: flex;
-            justify-content: center;
             align-items: center;
-            font-size: 3.5rem;
-            color: #db2777;
+            justify-content: center;
         }
 
-        /* Avatar Khusus Cowok (Firdy) */
-        .avatar-male {
-            background: linear-gradient(135deg, #e0f2fe, #bae6fd);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 3.5rem;
-            color: #0284c7;
+        .avatar-inner img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .avatar-fallback {
+            font-size: 3.2rem;
+            color: var(--primary);
         }
 
         .name {
-            font-size: 1.4rem;
-            font-weight: 800;
-            color: var(--dark);
-            margin-bottom: 5px;
+            font-family: 'Amiri', serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--ink);
+            margin-bottom: 6px;
         }
 
         .role {
-            font-size: 0.95rem;
-            color: var(--primary);
+            font-size: 0.82rem;
+            color: var(--gold);
             font-weight: 700;
             margin-bottom: 20px;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
         }
 
         .bio {
-            color: var(--text-muted);
-            font-size: 0.95rem;
-            margin-bottom: 25px;
-            line-height: 1.7;
+            color: var(--ink-muted);
+            font-size: 0.96rem;
+            margin-bottom: 28px;
+            line-height: 1.75;
+        }
+
+        .divider-dot {
+            width: 30px;
+            height: 1px;
+            background: var(--line);
+            margin: 0 auto 22px;
         }
 
         .social-links {
             display: flex;
             justify-content: center;
-            gap: 15px;
+            gap: 12px;
         }
 
         .social-btn {
-            width: 45px;
-            height: 45px;
-            border-radius: 14px;
-            background: var(--bg);
-            color: var(--text-muted);
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: var(--primary-soft);
+            color: var(--primary);
             display: flex;
             justify-content: center;
             align-items: center;
             text-decoration: none;
-            font-size: 1.2rem;
+            font-size: 1.05rem;
             transition: 0.3s;
-            border: 1px solid var(--border);
+            border: 1px solid transparent;
         }
 
         .social-btn:hover {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
+            background: var(--emerald-deep);
+            color: var(--ivory);
             transform: translateY(-3px);
         }
 
-        /* TECH STACK SECTION */
+        /* ============ TECH STACK ============ */
         .tech-section {
-            background: white;
-            padding: 80px 5%;
+            background: var(--emerald-deep);
+            padding: 90px 6%;
             text-align: center;
-            border-top: 1px solid var(--border);
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .tech-section::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140'%3E%3Cg fill='none' stroke='%23ffffff' stroke-width='1'%3E%3Cpath d='M70 8 L112 35 L112 105 L70 132 L28 105 L28 35 Z'/%3E%3C/g%3E%3C/svg%3E");
+            opacity: 0.05;
         }
 
         .tech-section h2 {
-            font-size: 2rem;
-            font-weight: 800;
-            margin-bottom: 40px;
+            position: relative;
+            font-size: clamp(1.6rem, 3vw, 2.2rem);
+            font-weight: 700;
+            color: var(--ivory);
+            margin-bottom: 12px;
+        }
+
+        .tech-subtitle {
+            position: relative;
+            color: rgba(251, 250, 246, 0.65);
+            font-size: 0.95rem;
+            margin-bottom: 46px;
         }
 
         .tech-grid {
+            position: relative;
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            gap: 30px;
+            gap: 16px;
             max-width: 900px;
             margin: 0 auto;
         }
 
         .tech-item {
-            background: var(--bg);
-            padding: 20px 30px;
-            border-radius: 20px;
+            background: rgba(251, 250, 246, 0.06);
+            padding: 16px 26px;
+            border-radius: 14px;
             display: flex;
             align-items: center;
-            gap: 15px;
-            font-weight: 700;
-            color: var(--dark);
-            border: 1px solid var(--border);
+            gap: 12px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--ivory);
+            border: 1px solid rgba(251, 250, 246, 0.14);
             transition: 0.3s;
         }
 
         .tech-item:hover {
-            border-color: var(--primary);
-            background: var(--primary-light);
-            color: var(--primary);
+            border-color: var(--gold);
+            background: rgba(182, 147, 74, 0.14);
+            transform: translateY(-3px);
         }
 
         .tech-item i {
-            font-size: 1.8rem;
+            font-size: 1.4rem;
         }
 
-        /* FOOTER */
+        /* ============ FOOTER ============ */
         footer {
-            background: var(--dark);
-            color: white;
+            background: var(--ink);
+            color: rgba(251, 250, 246, 0.6);
             text-align: center;
-            padding: 30px;
-            font-size: 0.9rem;
+            padding: 34px;
+            font-size: 0.88rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        footer i {
+            color: var(--gold);
         }
 
         @media (max-width: 768px) {
-            .hero h1 {
-                font-size: 2.2rem;
+            .navbar {
+                padding: 16px 5%;
             }
 
-            .team-container {
-                grid-template-columns: 1fr;
+            .hero {
+                padding: 140px 6% 70px;
+            }
+
+            .team-card {
+                padding: 38px 26px 32px;
             }
         }
     </style>
 </head>
 
 <body>
+
+    <div class="arabesque-bg"></div>
 
     <!-- NAVBAR -->
     <nav class="navbar">
@@ -302,64 +429,77 @@ session_start();
 
     <!-- HERO SECTION -->
     <section class="hero">
-        <div class="hero-badge">Tim Pengembang</div>
-        <h1>Membangun Hifzly dengan<br><span style="color: var(--primary);">Cinta & Dedikasi</span></h1>
-        <p>Hifzly lahir dari keinginan untuk membantu umat Islam menjaga hafalannya dengan teknologi cerdas, mudah, dan menyenangkan. Kenali sosok di balik layar aplikasi ini.</p>
+        <div class="hero-eyebrow">Tim Pengembang</div>
+        <h1>Membangun Hifzly dengan<br><em>Cinta &amp; Dedikasi</em></h1>
+        <p>Hifzly lahir dari keinginan untuk membantu umat Islam menjaga hafalannya dengan teknologi yang cerdas, mudah, dan menyenangkan. Kenali sosok di balik layar aplikasi ini.</p>
     </section>
 
     <!-- PROFIL TIM -->
-    <section class="team-container">
+    <section class="team-section">
+        <div class="section-label">Sang Perancang</div>
+        <div class="team-container">
 
-        <!-- PROFIL 1: FAEYZA (CEWEK) -->
-        <div class="team-card">
-            <!-- Bisa diganti dengan tag <img> jika sudah punya foto asli -->
-            <div class="avatar avatar-female">
-                <i class="fas fa-user-graduate"></i>
+            <!-- PROFIL 1: FAEYZA -->
+            <div class="team-card">
+                <div class="avatar-frame">
+                    <div class="avatar-inner">
+                        <img src="assets/images/pija.webp"
+                            alt="Foto Faeyza Ardellein Y."
+                            onerror="this.parentElement.innerHTML='<i class=\'fas fa-user-graduate avatar-fallback\'></i>';">
+                    </div>
+                </div>
+                <h3 class="name">Faeyza Ardellein Y.</h3>
+                <div class="role">Full-Stack Developer</div>
+                <div class="divider-dot"></div>
+                <p class="bio">Bertanggung jawab merancang pengalaman pengguna yang nyaman dan intuitif, serta memastikan alur sistem Hifzly berjalan sesuai kebutuhan para penghafal Al-Qur'an.</p>
+                <div class="social-links">
+                    <a href="https://www.instagram.com/fyzardell" target="_blank" rel="noopener" class="social-btn"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="social-btn"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="#" class="social-btn"><i class="fas fa-envelope"></i></a>
+                </div>
             </div>
-            <h3 class="name">Faeyza Ardellein Y.</h3>
-            <div class="role">System Analyst & UI/UX</div>
-            <p class="bio">Bertanggung jawab dalam merancang pengalaman pengguna (User Experience) yang nyaman dan intuitif, serta memastikan alur sistem Hifzly berjalan sesuai dengan kebutuhan para penghafal Al-Qur'an.</p>
-            <div class="social-links">
-                <a href="#" class="social-btn"><i class="fab fa-instagram"></i></a>
-                <a href="#" class="social-btn"><i class="fab fa-linkedin-in"></i></a>
-                <a href="#" class="social-btn"><i class="fas fa-envelope"></i></a>
+
+            <!-- PROFIL 2: FIRDY -->
+            <div class="team-card">
+                <div class="avatar-frame">
+                    <div class="avatar-inner">
+                        <img src="assets/images/firdy.webp"
+                            alt="Foto Firdy Ridho Fillah"
+                            onerror="this.parentElement.innerHTML='<i class=\'fas fa-laptop-code avatar-fallback\'></i>';">
+                    </div>
+                </div>
+                <h3 class="name">Firdy Ridho Fillah</h3>
+                <div class="role">Full-Stack Developer</div>
+                <div class="divider-dot"></div>
+                <p class="bio">Mengeksekusi logika pemrograman dari sisi server hingga tampilan antarmuka, serta merancang arsitektur database Hifzly agar aplikasi berjalan cepat dan aman.</p>
+                <div class="social-links">
+                    <a href="https://instagram.com/firdyfillaa_" target="_blank" rel="noopener" class="social-btn"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="social-btn"><i class="fab fa-github"></i></a>
+                    <a href="#" class="social-btn"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="#" class="social-btn"><i class="fas fa-envelope"></i></a>
+                </div>
             </div>
+
         </div>
-
-        <!-- PROFIL 2: FIRDY (COWOK) -->
-        <div class="team-card">
-            <!-- Bisa diganti dengan tag <img> jika sudah punya foto asli -->
-            <div class="avatar avatar-male">
-                <i class="fas fa-laptop-code"></i>
-            </div>
-            <h3 class="name">Firdy Ridho Fillah</h3>
-            <div class="role">Full-Stack Developer</div>
-            <p class="bio">Mengeksekusi logika pemrograman dari sisi server (Backend) hingga tampilan antarmuka (Frontend), serta merancang arsitektur database Hifzly agar aplikasi berjalan cepat dan aman.</p>
-            <div class="social-links">
-                <a href="#" class="social-btn"><i class="fab fa-github"></i></a>
-                <a href="#" class="social-btn"><i class="fab fa-linkedin-in"></i></a>
-                <a href="#" class="social-btn"><i class="fas fa-envelope"></i></a>
-            </div>
-        </div>
-
     </section>
 
     <!-- TECH STACK -->
     <section class="tech-section">
         <h2>Teknologi di Balik Hifzly</h2>
+        <p class="tech-subtitle">Ditenagai oleh perangkat yang teruji dan andal</p>
         <div class="tech-grid">
-            <div class="tech-item"><i class="fab fa-php" style="color: #777bb4;"></i> PHP 8</div>
-            <div class="tech-item"><i class="fas fa-database" style="color: #4479a1;"></i> MySQL</div>
-            <div class="tech-item"><i class="fab fa-html5" style="color: #e34f26;"></i> HTML5</div>
-            <div class="tech-item"><i class="fab fa-css3-alt" style="color: #1572b6;"></i> CSS3</div>
-            <div class="tech-item"><i class="fab fa-js" style="color: #f7df1e;"></i> JavaScript</div>
-            <div class="tech-item"><i class="fas fa-server" style="color: var(--primary);"></i> Al Quran Cloud API</div>
+            <div class="tech-item"><i class="fab fa-php" style="color:#a5b4fc;"></i> PHP 8</div>
+            <div class="tech-item"><i class="fas fa-database" style="color:#7dd3fc;"></i> MySQL</div>
+            <div class="tech-item"><i class="fab fa-html5" style="color:#fca5a5;"></i> HTML5</div>
+            <div class="tech-item"><i class="fab fa-css3-alt" style="color:#93c5fd;"></i> CSS3</div>
+            <div class="tech-item"><i class="fab fa-js" style="color:#fde68a;"></i> JavaScript</div>
+            <div class="tech-item"><i class="fas fa-server" style="color:var(--gold);"></i> Al Quran Cloud API</div>
         </div>
     </section>
 
     <!-- FOOTER -->
     <footer>
-        <p>&copy; <?= date('Y') ?> Hifzly App. Dibuat dengan <i class="fas fa-heart" style="color: #ef4444;"></i> untuk umat.</p>
+        <p>&copy; <?= date('Y') ?> Hifzhly App &mdash; Dibuat dengan <i class="fas fa-heart"></i> untuk umat.</p>
     </footer>
 
 </body>

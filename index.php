@@ -1931,6 +1931,8 @@ if (isset($_SESSION['user_id'])) {
                 <a href="privacy.php">Kebijakan Privasi</a>
                 <span style="color: #cbd5e1;">|</span>
                 <a href="terms.php">Syarat & Ketentuan</a>
+                <span style="color: #cbd5e1;">|</span>
+                <a href="developer.php">Developer</a>
             </div>
         </div>
     </footer>

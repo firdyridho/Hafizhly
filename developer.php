@@ -422,7 +422,7 @@ session_start();
     <!-- NAVBAR -->
     <nav class="navbar">
         <a href="index.php" class="nav-brand">
-            <i class="fas fa-leaf"></i> Hifzly
+            Hifzhly
         </a>
         <a href="index.php" class="btn-back"><i class="fas fa-home"></i> Beranda</a>
     </nav>

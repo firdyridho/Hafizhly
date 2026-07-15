@@ -540,6 +540,73 @@ if (isset($_SESSION['alert'])) {
             transform: translateY(0);
         }
 
+        /* --- TOGGLE SWITCH AUTO-SAVE --- */
+        .auto-save-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--muted);
+            margin-right: 15px;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 36px;
+            height: 20px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #cbd5e1;
+            transition: .3s;
+            border-radius: 20px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+
+        .switch input:checked+.slider {
+            background-color: var(--primary);
+        }
+
+        .switch input:checked+.slider:before {
+            transform: translateX(16px);
+        }
+
+        .save-indicator {
+            font-size: 0.75rem;
+            color: var(--primary-light);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .save-indicator.show {
+            opacity: 1;
+        }
+
         .stepper {
             display: flex;
             justify-content: space-between;
@@ -837,6 +904,11 @@ if (isset($_SESSION['alert'])) {
         }
 
         @media (max-width: 640px) {
+            .auto-save-wrapper {
+                margin-bottom: 10px;
+                width: 100%;
+                justify-content: flex-end;
+            }
 
             .grid-2,
             .grid-4 {
@@ -924,7 +996,20 @@ if (isset($_SESSION['alert'])) {
         <div id="formArea">
             <div class="header-top" style="margin-bottom:8px;">
                 <h2 id="formTitle" style="font-size:clamp(1.2rem,3vw,1.5rem); font-weight:800; margin:0;">Buat Materi Baru</h2>
-                <button type="button" class="btn btn-secondary" onclick="closeForm()"><i class="fas fa-times"></i> Batal</button>
+
+                <div style="display:flex; align-items:center; flex-wrap:wrap; gap:10px;">
+                    <!-- Area Auto Save -->
+                    <div class="auto-save-wrapper" id="autoSaveArea">
+                        <span class="save-indicator" id="saveIndicator"><i class="fas fa-check-double"></i> Draft tersimpan</span>
+                        <span>Auto-Save</span>
+                        <label class="switch">
+                            <input type="checkbox" id="autoSaveToggle" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <button type="button" class="btn btn-secondary" onclick="closeForm()"><i class="fas fa-times"></i> Batal</button>
+                </div>
             </div>
 
             <div class="stepper">
@@ -1121,6 +1206,41 @@ if (isset($_SESSION['alert'])) {
             document.getElementById('stepperFill').style.width = stepFills[step];
         }
 
+        // ==========================================
+        // FITUR AUTO-SAVE DRAFT KE LOCAL STORAGE
+        // ==========================================
+        let autoSaveInterval;
+        const autoSaveToggle = document.getElementById('autoSaveToggle');
+        const saveIndicator = document.getElementById('saveIndicator');
+
+        function startAutoSave() {
+            // Bersihkan interval sebelumnya jika ada
+            if (autoSaveInterval) clearInterval(autoSaveInterval);
+
+            autoSaveInterval = setInterval(() => {
+                const isFormVisible = document.getElementById('formArea').classList.contains('visible');
+                const isNewMateri = document.getElementById('id_materi').value == 0;
+
+                if (isFormVisible && isNewMateri && autoSaveToggle.checked) {
+                    const draftData = {
+                        judul: document.getElementById('f_judul').value,
+                        youtube: document.getElementById('f_youtube').value,
+                        konten: myEditor ? myEditor.getData() : ''
+                    };
+
+                    localStorage.setItem('hifzly_draft_tajwid', JSON.stringify(draftData));
+
+                    saveIndicator.classList.add('show');
+                    setTimeout(() => saveIndicator.classList.remove('show'), 2000);
+                }
+            }, 10000); // 10 Detik
+        }
+
+        autoSaveToggle.addEventListener('change', function(e) {
+            if (e.target.checked) startAutoSave();
+            else clearInterval(autoSaveInterval);
+        });
+
         function openForm() {
             document.getElementById('listView').style.display = 'none';
             const formArea = document.getElementById('formArea');
@@ -1128,6 +1248,8 @@ if (isset($_SESSION['alert'])) {
             requestAnimationFrame(() => formArea.classList.add('visible'));
 
             document.getElementById('formTitle').innerText = 'Buat Materi Baru';
+            document.getElementById('autoSaveArea').style.display = 'flex'; // Munculkan toggle
+
             document.getElementById('mainForm').reset();
             document.getElementById('id_materi').value = 0;
             document.getElementById('lbl_cover').innerText = 'Klik atau seret foto (JPG/PNG/WEBP, maks 5MB)';
@@ -1137,6 +1259,29 @@ if (isset($_SESSION['alert'])) {
             document.getElementById('quizContainer').innerHTML = '';
             toggleQuizEmpty();
             goToStep(1);
+
+            // Cek apakah ada draft tersimpan
+            const savedDraft = localStorage.getItem('hifzly_draft_tajwid');
+            if (savedDraft) {
+                Swal.fire({
+                    title: 'Draft Ditemukan!',
+                    text: "Ada ketikan materi sebelumnya yang belum tersimpan. Ingin melanjutkannya?",
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya, Lanjutkan',
+                    cancelButtonText: 'Tidak, Mulai Baru'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const draft = JSON.parse(savedDraft);
+                        document.getElementById('f_judul').value = draft.judul || '';
+                        document.getElementById('f_youtube').value = draft.youtube || '';
+                        if (myEditor && draft.konten) myEditor.setData(draft.konten);
+                    } else {
+                        localStorage.removeItem('hifzly_draft_tajwid'); // Hapus draft lama
+                    }
+                });
+            }
+            startAutoSave();
         }
 
         function closeForm() {
@@ -1146,15 +1291,22 @@ if (isset($_SESSION['alert'])) {
                 formArea.style.display = 'none';
                 document.getElementById('listView').style.display = 'block';
             }, 250);
+
+            if (autoSaveInterval) clearInterval(autoSaveInterval); // Hentikan auto-save
         }
 
         function editMateri(data) {
-            openForm();
+            openForm(); // Jalankan open form dasar
+            if (autoSaveInterval) clearInterval(autoSaveInterval); // Matikan auto-save untuk mode edit
+
             document.getElementById('formTitle').innerText = 'Edit Materi';
+            document.getElementById('autoSaveArea').style.display = 'none'; // Sembunyikan toggle auto-save
+
             document.getElementById('id_materi').value = data.id;
             document.getElementById('f_judul').value = data.judul;
             document.getElementById('f_youtube').value = data.youtube_url || '';
             document.getElementById('f_waktu').value = data.waktu_kuis;
+
             if (data.cover_image) {
                 document.getElementById('lbl_cover').innerText = 'Cover tersimpan: ' + data.cover_image;
                 const prev = document.getElementById('preview_cover');
@@ -1300,6 +1452,10 @@ if (isset($_SESSION['alert'])) {
                 return;
             }
             if (myEditor) document.getElementById('editor').value = myEditor.getData();
+
+            // Hapus draft saat materi berhasil di-submit
+            localStorage.removeItem('hifzly_draft_tajwid');
+
             document.getElementById('submitBtn').classList.add('loading');
             document.getElementById('submitBtn').setAttribute('disabled', 'true');
         });

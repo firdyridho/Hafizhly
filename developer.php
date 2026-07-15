@@ -454,6 +454,7 @@ session_start();
                 <p class="bio">Bertanggung jawab merancang pengalaman pengguna yang nyaman dan intuitif, serta memastikan alur sistem Hifzly berjalan sesuai kebutuhan para penghafal Al-Qur'an.</p>
                 <div class="social-links">
                     <a href="https://www.instagram.com/fyzardell" target="_blank" rel="noopener" class="social-btn"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="social-btn"><i class="fab fa-github"></i></a>
                     <a href="#" class="social-btn"><i class="fab fa-linkedin-in"></i></a>
                     <a href="#" class="social-btn"><i class="fas fa-envelope"></i></a>
                 </div>

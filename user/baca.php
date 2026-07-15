@@ -1005,6 +1005,15 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
 
     <script>
         const noSurat = <?= $nomor_surat ?>;
+
+        // PENGATURAN AUDIO DINAMIS & FAILSAFE (Cek kecocokan API)
+        let qariSetting = localStorage.getItem('hifzly_qari_id');
+
+        // Cek jika user masih pakai setting lama atau kosong, maka reset ke 05 (Misyari)
+        if (!['01', '02', '03', '04', '05'].includes(qariSetting)) {
+            qariSetting = '05';
+        }
+
         let surahData = null;
         let tafsirData = null;
         let audioFullEl = document.getElementById('audioFull');
@@ -1062,6 +1071,7 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
                 let findTafsir = tafsirData.find(t => t.ayat == a.nomorAyat);
                 if (findTafsir) txtTafsir = findTafsir.teks;
 
+                // Memakai Audio Berdasarkan Setting 
                 html += `
                 <div class="ayat-card" id="ayat-${a.nomorAyat}">
                     <div class="ayat-header">
@@ -1069,7 +1079,7 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
                         <div class="ayat-actions">
                             <i class="fas fa-book-open ayat-action-btn" onclick="toggleTafsir(${a.nomorAyat})" title="Baca Tafsir"></i>
                             <i class="fas fa-bookmark ayat-action-btn" onclick="saveBookmark(${a.nomorAyat})" title="Tandai Terakhir Baca"></i>
-                            <i class="fas fa-play ayat-action-btn" id="btn-play-ayat-${a.nomorAyat}" onclick="playAyat('${a.audio['05']}', ${a.nomorAyat})" title="Putar Audio"></i>
+                            <i class="fas fa-play ayat-action-btn" id="btn-play-ayat-${a.nomorAyat}" onclick="playAyat('${a.audio[qariSetting]}', ${a.nomorAyat})" title="Putar Audio"></i>
                         </div>
                     </div>
                     <div class="teks-arab">${a.teksArab}</div>
@@ -1112,7 +1122,7 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             const btn = document.getElementById('btn-play-full');
 
             if (!isFullAudioLoaded) {
-                audioFullEl.src = surahData.audioFull['05'];
+                audioFullEl.src = surahData.audioFull[qariSetting];
                 isFullAudioLoaded = true;
             }
 
@@ -1567,7 +1577,6 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
         }
 
         // --- AUDIO & INTERAKSI AYAT (MODE MUSHAF) ---
-        // Hanya dipanggil dari sheet (long-press), bukan tap.
         function playAyatMushaf(url, verseKey) {
             audioFullEl.pause();
             document.getElementById('btn-play-full').innerHTML = '<i class="fas fa-play-circle"></i>';
@@ -1612,7 +1621,10 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             sheet.dataset.verse = verseKey;
             sheet.dataset.surah = s;
             sheet.dataset.ayat = a;
-            sheet.dataset.audio = ayatObj.audio['05'];
+
+            // Audio untuk Mushaf Mode juga disesuaikan
+            sheet.dataset.audio = ayatObj.audio[qariSetting];
+
             sheet.style.display = 'flex';
             setTimeout(() => sheet.classList.add('show'), 10);
         }
@@ -1669,7 +1681,6 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             });
 
             page.addEventListener('pointerup', e => {
-                // Tidak lakukan apa-apa pada tap singkat
                 clearPress();
             });
 
@@ -1708,8 +1719,8 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
                 const dx = e.changedTouches[0].clientX - startX;
                 const dy = e.changedTouches[0].clientY - startY;
                 if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy)) {
-                    if (dx < 0) goNextPage(); // geser kiri = next
-                    else goPrevPage(); // geser kanan = prev
+                    if (dx < 0) goNextPage();
+                    else goPrevPage();
                 }
                 startX = null;
                 startY = null;

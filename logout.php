@@ -2,8 +2,8 @@
 session_start();
 session_unset();
 session_destroy();
-// Sesi sudah dihancurkan di sini juga (server-side), jadi aman —
-// halaman di bawah cuma nampilin animasi sebelum redirect ke index.php
+// Sesi tetap langsung dihancurkan di server sebelum HTML dikirim —
+// bagian di bawah cuma animasi transisi sebelum redirect ke index.php
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -12,6 +12,7 @@ session_destroy();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Sampai Jumpa · Hifzhly</title>
+    <link rel="icon" type="image/png" href="assets/icon/logo.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <style>
         :root {
@@ -34,7 +35,10 @@ session_destroy();
 
         body {
             font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif;
-            background: radial-gradient(circle at 50% 20%, #0a2e24 0%, #062018 45%, #030f0b 100%);
+            background:
+                radial-gradient(circle at 15% 15%, rgba(52, 211, 153, 0.16), transparent 45%),
+                radial-gradient(circle at 85% 85%, rgba(201, 162, 39, 0.12), transparent 45%),
+                #fbfdfc;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -43,39 +47,41 @@ session_destroy();
             padding: 20px;
         }
 
-        /* Orb cahaya ambient yang mengambang pelan */
+        /* Orb cahaya lembut yang mengambang pelan */
         .orb {
             position: absolute;
             border-radius: 50%;
-            filter: blur(60px);
-            opacity: 0.35;
+            filter: blur(70px);
+            opacity: 0.4;
             pointer-events: none;
         }
 
         .orb-1 {
-            width: 280px;
-            height: 280px;
+            width: 300px;
+            height: 300px;
             background: var(--nav-primary-light);
-            top: -60px;
-            left: -60px;
+            top: -80px;
+            left: -80px;
             animation: floatOrb 9s ease-in-out infinite;
         }
 
         .orb-2 {
-            width: 220px;
-            height: 220px;
+            width: 240px;
+            height: 240px;
             background: var(--nav-gold);
-            bottom: -40px;
-            right: -40px;
+            bottom: -60px;
+            right: -60px;
+            opacity: 0.28;
             animation: floatOrb 11s ease-in-out infinite reverse;
         }
 
         .orb-3 {
-            width: 160px;
-            height: 160px;
+            width: 170px;
+            height: 170px;
             background: var(--nav-primary);
-            bottom: 10%;
-            left: 8%;
+            bottom: 12%;
+            left: 6%;
+            opacity: 0.16;
             animation: floatOrb 7.5s ease-in-out infinite;
             animation-delay: -3s;
         }
@@ -111,11 +117,11 @@ session_destroy();
             }
 
             10% {
-                opacity: 0.8;
+                opacity: 0.7;
             }
 
             90% {
-                opacity: 0.4;
+                opacity: 0.35;
             }
 
             100% {
@@ -124,48 +130,31 @@ session_destroy();
             }
         }
 
-        .card {
+        /* Konten langsung ngambang di atas background, gak dikotakin */
+        .content {
             position: relative;
             z-index: 2;
             width: 100%;
-            max-width: 380px;
+            max-width: 360px;
             text-align: center;
-            padding: 46px 34px 38px;
-            border-radius: 28px;
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            backdrop-filter: blur(26px) saturate(160%);
-            -webkit-backdrop-filter: blur(26px) saturate(160%);
-            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
             opacity: 0;
-            transform: translateY(26px) scale(0.96);
-            animation: cardIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.15s forwards;
+            transform: translateY(20px);
+            animation: contentIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
         }
 
-        @keyframes cardIn {
+        @keyframes contentIn {
             to {
                 opacity: 1;
-                transform: translateY(0) scale(1);
+                transform: translateY(0);
             }
         }
 
-        .card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 18%;
-            right: 18%;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, var(--nav-gold), transparent);
-            opacity: 0.7;
-        }
-
-        /* Lingkaran ikon + ring animasi check */
+        /* Lingkaran ikon + ring animasi */
         .icon-stage {
             position: relative;
             width: 108px;
             height: 108px;
-            margin: 0 auto 26px;
+            margin: 0 auto 28px;
         }
 
         .ring-pulse {
@@ -188,7 +177,7 @@ session_destroy();
             }
 
             25% {
-                opacity: 0.6;
+                opacity: 0.55;
             }
 
             100% {
@@ -205,35 +194,36 @@ session_destroy();
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 18px 40px rgba(5, 150, 105, 0.45), 0 0 0 6px rgba(52, 211, 153, 0.08);
+            box-shadow: 0 18px 40px rgba(5, 150, 105, 0.28), 0 0 0 6px rgba(52, 211, 153, 0.1);
+            transform: scale(0.5);
+            opacity: 0;
+            animation: iconPop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) 0.35s forwards;
         }
 
-        .icon-circle svg {
-            width: 46px;
-            height: 46px;
-        }
-
-        .icon-circle .check-path {
-            fill: none;
-            stroke: #fff;
-            stroke-width: 3.5;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-            stroke-dasharray: 40;
-            stroke-dashoffset: 40;
-            animation: drawCheck 0.5s cubic-bezier(0.65, 0, 0.35, 1) 0.9s forwards;
-        }
-
-        @keyframes drawCheck {
+        @keyframes iconPop {
             to {
-                stroke-dashoffset: 0;
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .icon-circle i {
+            font-size: 2.1rem;
+            color: #fff;
+            opacity: 0;
+            animation: iconFade 0.4s ease 0.75s forwards;
+        }
+
+        @keyframes iconFade {
+            to {
+                opacity: 1;
             }
         }
 
         .title {
-            font-size: 1.35rem;
+            font-size: 1.4rem;
             font-weight: 800;
-            color: #fff;
+            color: #0f172a;
             letter-spacing: -0.3px;
             margin-bottom: 8px;
             opacity: 0;
@@ -242,7 +232,7 @@ session_destroy();
 
         .subtitle {
             font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.6);
+            color: #64748b;
             line-height: 1.6;
             margin-bottom: 30px;
             opacity: 0;
@@ -250,7 +240,7 @@ session_destroy();
         }
 
         .subtitle b {
-            color: var(--nav-gold);
+            color: var(--nav-primary-dark);
             font-weight: 700;
         }
 
@@ -272,7 +262,7 @@ session_destroy();
             width: 100%;
             height: 4px;
             border-radius: 4px;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(5, 150, 105, 0.1);
             overflow: hidden;
             margin-bottom: 14px;
             opacity: 0;
@@ -285,7 +275,7 @@ session_destroy();
             width: 0%;
             border-radius: 4px;
             background: linear-gradient(90deg, var(--nav-primary-light), var(--nav-gold));
-            box-shadow: 0 0 10px rgba(52, 211, 153, 0.6);
+            box-shadow: 0 0 10px rgba(52, 211, 153, 0.5);
             animation: fillBar 2.2s cubic-bezier(0.65, 0, 0.35, 1) 0.9s forwards;
         }
 
@@ -297,7 +287,7 @@ session_destroy();
 
         .redirect-label {
             font-size: 0.76rem;
-            color: rgba(255, 255, 255, 0.45);
+            color: #94a3b8;
             opacity: 0;
             animation: fadeUp 0.6s ease 0.85s forwards;
         }
@@ -306,10 +296,10 @@ session_destroy();
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            margin-top: 20px;
+            margin-top: 22px;
             font-size: 0.82rem;
             font-weight: 700;
-            color: var(--nav-primary-light);
+            color: var(--nav-primary-dark);
             text-decoration: none;
             opacity: 0;
             animation: fadeUp 0.6s ease 1s forwards;
@@ -326,7 +316,8 @@ session_destroy();
             .orb,
             .particle,
             .ring-pulse,
-            .card {
+            .content,
+            .icon-circle {
                 animation-duration: 0.01ms !important;
             }
         }
@@ -340,19 +331,17 @@ session_destroy();
     <div class="orb orb-3"></div>
     <div id="particles"></div>
 
-    <div class="card">
+    <div class="content">
         <div class="icon-stage">
             <span class="ring-pulse"></span>
             <span class="ring-pulse delay"></span>
             <div class="icon-circle">
-                <svg viewBox="0 0 24 24">
-                    <path class="check-path" d="M4 12.5L9.5 18L20 6" />
-                </svg>
+                <i class="fa-solid fa-circle-check"></i>
             </div>
         </div>
 
         <h1 class="title">Sampai Jumpa!</h1>
-        <p class="subtitle">Kamu sudah berhasil keluar. Sampai ketemu lagi di<br><b>hafalan berikutnya</b> ✨</p>
+        <p class="subtitle">Kamu sudah berhasil keluar. Sampai ketemu lagi di<br><b>hafalan berikutnya</b></p>
 
         <div class="redirect-track">
             <div class="redirect-fill"></div>

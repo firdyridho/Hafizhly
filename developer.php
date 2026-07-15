@@ -25,7 +25,7 @@ session_start();
 
     <style>
         :root {
-            --emerald-deep: #073b2c;
+            --emerald-deep: #0ed79eff;
             --emerald: #0e7a5c;
             --emerald-bright: #14a37d;
             --mint-50: #f2faf6;

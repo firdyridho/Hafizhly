@@ -487,7 +487,7 @@ if (isset($_SESSION['user_id'])) {
         }
 
         .hero p.lead-custom {
-            font-size: 1.08rem;
+            font-size: clamp(0.95rem, 2.2vw, 1.08rem);
             color: var(--muted);
             max-width: 520px;
             line-height: 1.7;
@@ -752,7 +752,7 @@ if (isset($_SESSION['user_id'])) {
         }
 
         .feature-card h3 {
-            font-size: 1.2rem;
+            font-size: clamp(1.05rem, 2.4vw, 1.2rem);
             font-weight: 700;
             margin-bottom: 10px;
         }
@@ -767,7 +767,7 @@ if (isset($_SESSION['user_id'])) {
         /* ===== 3D Mushaf page-flip carousel (signature) ===== */
         .book-scroll-section {
             position: relative;
-            height: 340vh;
+            height: 260vh;
         }
 
         .book-sticky {
@@ -804,7 +804,7 @@ if (isset($_SESSION['user_id'])) {
         .book {
             position: relative;
             width: min(300px, 68vw);
-            height: min(400px, 60vh);
+            height: min(400px, 55vh);
             transform-style: preserve-3d;
             will-change: transform;
         }
@@ -1478,7 +1478,7 @@ if (isset($_SESSION['user_id'])) {
             }
 
             .book-scroll-section {
-                height: 300vh;
+                height: 220vh;
             }
 
             .book-3d-wrap {
@@ -1530,6 +1530,64 @@ if (isset($_SESSION['user_id'])) {
             }
         }
 
+        @media (max-width: 380px) {
+            .container {
+                padding-left: 14px;
+                padding-right: 14px;
+            }
+
+            .hero h1 {
+                font-size: 1.8rem;
+            }
+
+            .hero-badge {
+                font-size: 0.7rem;
+                padding: 7px 14px;
+            }
+
+            .listening-card {
+                padding: 18px 14px;
+                border-radius: 20px;
+            }
+
+            .ayat-box {
+                font-size: 0.92rem;
+                padding: 12px;
+            }
+
+            .section-title {
+                font-size: 1.55rem;
+            }
+
+            .feature-card,
+            .game-card {
+                padding: 20px 16px;
+            }
+
+            .cta-section h2 {
+                font-size: 1.5rem;
+            }
+        }
+
+        @media (max-height: 560px) and (orientation: landscape) {
+            .hero {
+                min-height: auto;
+                padding: 110px 0 40px;
+            }
+
+            .book-scroll-section {
+                height: 240vh;
+            }
+
+            .phone-sticky-col {
+                position: static;
+            }
+
+            #preloader {
+                gap: 10px;
+            }
+        }
+
         @media (hover: none) {
 
             .feature-card:hover,
@@ -1537,6 +1595,63 @@ if (isset($_SESSION['user_id'])) {
             .game-card:hover {
                 transform: none;
             }
+        }
+
+        /* ===== Preloader — mo.js powered entrance ===== */
+        .preloader-stage {
+            position: relative;
+            width: clamp(120px, 30vw, 160px);
+            height: clamp(120px, 30vw, 160px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mojs-ring,
+        .mojs-burst {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+        }
+
+        .preloader-stage .preloader-mark {
+            position: relative;
+            z-index: 2;
+            animation: none;
+        }
+
+        .preloader-brand {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 800;
+            font-size: clamp(1.35rem, 5vw, 1.9rem);
+            color: var(--dark);
+            letter-spacing: 0.01em;
+        }
+
+        .preloader-brand .pb-letter {
+            display: inline-block;
+            opacity: 0;
+        }
+
+        .no-mojs .preloader-brand .pb-letter {
+            opacity: 1;
+        }
+
+        .no-mojs .preloader-stage .preloader-ring-wrap {
+            display: flex;
+        }
+
+        .preloader-stage .preloader-ring-wrap {
+            display: none;
+            position: absolute;
+            inset: 0;
+            margin: auto;
         }
     </style>
 </head>
@@ -1546,11 +1661,16 @@ if (isset($_SESSION['user_id'])) {
     <div id="preloader">
         <div class="preloader-orb o1"></div>
         <div class="preloader-orb o2"></div>
-        <div class="preloader-ring-wrap">
-            <div class="preloader-ring"></div>
-            <div class="preloader-mark"><img src="assets/icon/logo.png" alt="Hafizhly"></div>
+        <div class="preloader-stage">
+            <div class="mojs-ring" id="mojsRing"></div>
+            <div class="preloader-ring-wrap">
+                <div class="preloader-ring"></div>
+            </div>
+            <div class="preloader-mark" id="preloaderMark"><img src="assets/icon/logo.png" alt="Hafizhly"></div>
+            <div class="mojs-burst" id="mojsBurst"></div>
         </div>
-        <div class="preloader-text">Menyiapkan Hafizhly</div>
+        <div class="preloader-brand" id="preloaderBrand" data-text="Hafizhly">Hafizhly</div>
+        <div class="preloader-text" id="preloaderTagline">Menyiapkan Hafizhly</div>
         <div class="preloader-bar">
             <div class="preloader-bar-fill"></div>
         </div>
@@ -1698,16 +1818,6 @@ if (isset($_SESSION['user_id'])) {
                                     <div class="mushaf-juz">Juz 30 &middot; Al-Ikhlas</div>
                                 </div>
                                 <div class="book-page-card" data-page="3">
-                                    <div class="mushaf-label">QS. Ar-Rahman &middot; Ayat 13</div>
-                                    <div class="ayat-box"><span class="word">فَبِأَيِّ</span> <span class="word">آلَاءِ</span> <span class="word">رَبِّكُمَا</span> <span class="word">تُكَذِّبَانِ</span></div>
-                                    <div class="mushaf-juz">Juz 27 &middot; Ar-Rahman</div>
-                                </div>
-                                <div class="book-page-card" data-page="4">
-                                    <div class="mushaf-label">QS. Yasin &middot; Ayat 1-2</div>
-                                    <div class="ayat-box"><span class="word">يس</span> <span class="word">وَالْقُرْآنِ</span> <span class="word">الْحَكِيمِ</span></div>
-                                    <div class="mushaf-juz">Juz 22 &middot; Yasin</div>
-                                </div>
-                                <div class="book-page-card" data-page="5">
                                     <div class="mushaf-label">QS. An-Naba &middot; Ayat 1-2</div>
                                     <div class="ayat-box"><span class="word">عَمَّ</span> <span class="word">يَتَسَاءَلُونَ</span> <span class="word">عَنِ</span> <span class="word">النَّبَإِ</span> <span class="word">الْعَظِيمِ</span></div>
                                     <div class="mushaf-juz">Juz 30 &middot; An-Naba</div>
@@ -1720,7 +1830,7 @@ if (isset($_SESSION['user_id'])) {
                                 </div>
                             </div>
                             <div class="book-dots" id="bookDots">
-                                <span></span><span></span><span></span><span></span><span></span>
+                                <span></span><span></span><span></span>
                             </div>
                         </div>
                     </div>
@@ -1728,7 +1838,7 @@ if (isset($_SESSION['user_id'])) {
                     <div class="col-lg-7 order-lg-1" data-aos="fade-right">
                         <span class="section-eyebrow">114 Surat Dalam Genggaman</span>
                         <h2 class="section-title mb-3">Terus Scroll, Terus Berpindah Surah</h2>
-                        <p class="lead-custom">Ini gambaran koleksi Al-Qur'an digital di Hafizhly. Setiap scroll membuka lembar baru dan berpindah ke surah berikutnya, dari Al-Fatihah sampai juz 30, lengkap dengan penanda juz agar kamu tetap tahu posisi bacaanmu.</p>
+                        <p class="lead-custom">Ini gambaran koleksi Al-Qur'an digital di Hafizhly. Setiap scroll membuka lembar baru dan berpindah ke surah berikutnya, lengkap dengan penanda juz agar kamu tetap tahu posisi bacaanmu.</p>
                         <div class="book-progress-track">
                             <div class="book-progress-fill" id="bookProgressFill"></div>
                         </div>
@@ -1938,12 +2048,196 @@ if (isset($_SESSION['user_id'])) {
     </footer>
 
     <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@mojs/core/dist/mo.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.1/aos.js"></script>
     <script>
-        window.addEventListener('load', function() {
-            document.getElementById('preloader').classList.add('hide');
-        });
+        /* ===== Preloader entrance, powered by mo.js ===== */
+        (function() {
+            const preloaderEl = document.getElementById('preloader');
+            const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            const hasMojs = typeof mojs !== 'undefined';
+
+            if (!hasMojs || reduceMotion) {
+                preloaderEl.classList.add('no-mojs');
+            } else {
+                try {
+                    // Split brand text into individually animatable letters
+                    const brandEl = document.getElementById('preloaderBrand');
+                    const text = brandEl.getAttribute('data-text') || brandEl.textContent;
+                    brandEl.innerHTML = '';
+                    Array.from(text).forEach(function(ch) {
+                        const span = document.createElement('span');
+                        span.className = 'pb-letter';
+                        span.textContent = ch === ' ' ? '\u00A0' : ch;
+                        brandEl.appendChild(span);
+                    });
+
+                    // Drawn ring that spins open around the mark
+                    const ringDraw = new mojs.Shape({
+                        parent: '#mojsRing',
+                        shape: 'circle',
+                        radius: 58,
+                        stroke: '#059669',
+                        strokeWidth: {
+                            5: 0
+                        },
+                        strokeDasharray: '365',
+                        strokeDashoffset: {
+                            365: 0
+                        },
+                        fill: 'none',
+                        opacity: {
+                            1: 0.85
+                        },
+                        duration: 1100,
+                        easing: 'cubic.out',
+                        isShowStart: true
+                    });
+
+                    const ringDraw2 = new mojs.Shape({
+                        parent: '#mojsRing',
+                        shape: 'circle',
+                        radius: 50,
+                        stroke: '#6ee7b7',
+                        strokeWidth: 2,
+                        strokeDasharray: '314',
+                        strokeDashoffset: {
+                            314: 0
+                        },
+                        fill: 'none',
+                        rotate: {
+                            0: 180
+                        },
+                        duration: 1300,
+                        delay: 120,
+                        easing: 'elastic.out',
+                        isShowStart: true
+                    });
+
+                    // Radiating particle burst behind the logo mark
+                    const burst = new mojs.Burst({
+                        parent: '#mojsBurst',
+                        radius: {
+                            0: 74
+                        },
+                        count: 9,
+                        angle: 20,
+                        children: {
+                            shape: 'circle',
+                            radius: {
+                                7: 0
+                            },
+                            fill: ['#059669', '#34d399', '#6ee7b7'],
+                            duration: 850,
+                            easing: 'cubic.out'
+                        },
+                        delay: 260
+                    });
+
+                    // Logo mark: pop-in with a gentle overshoot
+                    const markPop = new mojs.Html({
+                        target: '#preloaderMark',
+                        scale: {
+                            0.3: 1
+                        },
+                        rotate: {
+                            '-25': 0
+                        },
+                        opacity: {
+                            0: 1
+                        },
+                        duration: 750,
+                        delay: 180,
+                        easing: 'elastic.out'
+                    });
+
+                    // Brand letters stagger up into place
+                    const lettersIn = new mojs.Html({
+                        target: '.pb-letter',
+                        y: {
+                            26: 0
+                        },
+                        opacity: {
+                            0: 1
+                        },
+                        scale: {
+                            0.5: 1
+                        },
+                        duration: 650,
+                        delay: 520,
+                        stagger: 45,
+                        easing: 'elastic.out'
+                    });
+
+                    // Tagline fades up last
+                    const taglineIn = new mojs.Html({
+                        target: '#preloaderTagline',
+                        y: {
+                            12: 0
+                        },
+                        opacity: {
+                            0: 1
+                        },
+                        duration: 550,
+                        delay: 950,
+                        easing: 'cubic.out'
+                    });
+
+                    const timeline = new mojs.Timeline();
+                    timeline.add(ringDraw, ringDraw2, burst, markPop, lettersIn, taglineIn);
+                    timeline.play();
+
+                    // Idle breathing pulse on the mark while assets keep loading
+                    const idlePulse = new mojs.Html({
+                        target: '#preloaderMark',
+                        scale: {
+                            1: 1.07
+                        },
+                        duration: 1000,
+                        delay: 1650,
+                        easing: 'sin.inOut',
+                        repeat: 999,
+                        yoyo: true
+                    });
+                    idlePulse.play();
+                    window.__hafizhlyIdlePulse = idlePulse;
+                } catch (e) {
+                    preloaderEl.classList.add('no-mojs');
+                }
+            }
+
+            // Safety net: guarantee everything is visible even if animation setup fails
+            setTimeout(function() {
+                preloaderEl.classList.add('no-mojs');
+            }, 1600);
+
+            window.addEventListener('load', function() {
+                if (window.__hafizhlyIdlePulse) {
+                    try {
+                        window.__hafizhlyIdlePulse.stop();
+                    } catch (e) {}
+                }
+                if (hasMojs && !reduceMotion) {
+                    try {
+                        new mojs.Html({
+                            target: '.preloader-stage, .preloader-brand, #preloaderTagline, .preloader-bar',
+                            scale: {
+                                1: 0.92
+                            },
+                            opacity: {
+                                1: 0
+                            },
+                            duration: 380,
+                            easing: 'cubic.in'
+                        }).play();
+                    } catch (e) {}
+                }
+                setTimeout(function() {
+                    preloaderEl.classList.add('hide');
+                }, 260);
+            });
+        })();
 
         AOS.init({
             duration: 700,

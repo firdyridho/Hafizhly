@@ -89,6 +89,82 @@ if (isset($_GET['export']) && $_GET['export'] == 'doc') {
     echo "</body></html>";
     exit;
 }
+
+// ==========================================
+// FITUR EKSPOR REKAP KE EXCEL (.XLS)
+// ==========================================
+if (isset($_GET['export']) && $_GET['export'] == 'excel') {
+    $m_exp = (int)$_GET['m'];
+    $y_exp = (int)$_GET['y'];
+    $days_in_month = cal_days_in_month(CAL_GREGORIAN, $m_exp, $y_exp);
+    $month_name_exp = date('F Y', mktime(0, 0, 0, $m_exp, 1, $y_exp));
+
+    // Ambil data dan kelompokkan berdasarkan tipe aktivitas & tanggal (hari)
+    $q_exp = mysqli_query($conn, "SELECT activity_type, DAY(activity_date) as tgl, COUNT(id) as jml FROM mutabaah WHERE user_id = '$user_id' AND MONTH(activity_date) = $m_exp AND YEAR(activity_date) = $y_exp GROUP BY activity_type, DAY(activity_date)");
+
+    // Matrix data kosong (semua di-set 0)
+    $data_matrix = [
+        'tilawah' => array_fill(1, $days_in_month, 0),
+        'murojaah' => array_fill(1, $days_in_month, 0),
+        'hafalan_baru' => array_fill(1, $days_in_month, 0),
+        'setoran' => array_fill(1, $days_in_month, 0)
+    ];
+
+    while ($r = mysqli_fetch_assoc($q_exp)) {
+        $data_matrix[$r['activity_type']][$r['tgl']] = $r['jml'];
+    }
+
+    $filename = "Rekap_Mutabaah_" . str_replace(' ', '_', $month_name_exp) . ".xls";
+    header("Content-Type: application/vnd.ms-excel");
+    header("Content-Disposition: attachment; filename=\"$filename\"");
+
+    // Style sederhana agar tabel Excel rapi
+    echo "<style>
+            table { border-collapse: collapse; width: 100%; }
+            th, td { border: 1px solid #000; padding: 5px; text-align: center; }
+            th { background-color: #059669; color: white; font-weight: bold; }
+            .kategori { text-align: left; font-weight: bold; }
+          </style>";
+
+    echo "<table>";
+    echo "<tr><th colspan='" . ($days_in_month + 3) . "' style='font-size:16pt; padding:10px;'>Rekap Aktivitas Mutabaah - $month_name_exp</th></tr>";
+
+    // Header Kolom
+    echo "<tr>";
+    echo "<th width='40'>No</th><th width='150'>Kategori Aktivitas</th>";
+    for ($i = 1; $i <= $days_in_month; $i++) {
+        echo "<th width='35'>$i</th>";
+    }
+    echo "<th width='80'>Total</th>";
+    echo "</tr>";
+
+    // Isi Baris
+    $no = 1;
+    $labels = [
+        'tilawah' => 'Tilawah',
+        'murojaah' => 'Murojaah',
+        'hafalan_baru' => 'Hafalan Baru',
+        'setoran' => 'Setoran'
+    ];
+
+    foreach ($labels as $key => $label) {
+        echo "<tr>";
+        echo "<td>$no</td><td class='kategori'>$label</td>";
+        $total_baris = 0;
+        for ($i = 1; $i <= $days_in_month; $i++) {
+            $jml = $data_matrix[$key][$i];
+            $total_baris += $jml;
+            // Cetak jumlah, jika 0 cetak strip (-)
+            $cetak = $jml > 0 ? $jml : '-';
+            echo "<td>$cetak</td>";
+        }
+        echo "<td><strong>$total_baris</strong></td>";
+        echo "</tr>";
+        $no++;
+    }
+    echo "</table>";
+    exit;
+}
 // ==========================================
 
 // Menangani Form Tambah Aktivitas
@@ -119,13 +195,13 @@ $hari_aktif_q = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(DISTINCT ac
 $hari_aktif = $hari_aktif_q['aktif'];
 
 // ==========================================
-// PERBAIKAN LOGIKA STREAK (KONSISTENSI)
+// LOGIKA STREAK (KONSISTENSI)
 // ==========================================
 $streak = 0;
 $today = date('Y-m-d');
 $yesterday = date('Y-m-d', strtotime('-1 day'));
 
-// Ambil semua tanggal unik user ini urut dari terbaru
+// Ambil semua tanggal unik aktivitas user (terbaru ke terlama)
 $q_dates = mysqli_query($conn, "SELECT DISTINCT activity_date FROM mutabaah WHERE user_id = '$user_id' ORDER BY activity_date DESC");
 $user_dates = [];
 while ($r = mysqli_fetch_assoc($q_dates)) {
@@ -133,7 +209,7 @@ while ($r = mysqli_fetch_assoc($q_dates)) {
 }
 
 $current_check = $today;
-// Jika hari ini belum ngaji tapi kemarin ngaji, streak hitungnya mundur dari kemarin
+// Jika hari ini belum aktivitas tapi kemarin sudah, toleransi hitungan mundur dimulai dari kemarin
 if (!in_array($today, $user_dates) && in_array($yesterday, $user_dates)) {
     $current_check = $yesterday;
 }
@@ -141,15 +217,15 @@ if (!in_array($today, $user_dates) && in_array($yesterday, $user_dates)) {
 foreach ($user_dates as $d) {
     if ($d == $current_check) {
         $streak++;
-        $current_check = date('Y-m-d', strtotime("-1 day", strtotime($current_check)));
+        $current_check = date('Y-m-d', strtotime("-1 day", strtotime($current_check))); // Cek hari sebelumnya
     } elseif ($d > $current_check) {
         continue;
     } else {
-        break; // Streak terputus
+        break; // Streak terputus karena ada hari yang bolong
     }
 }
 
-// Menentukan Level Streak untuk Warna dan Icon (SEMUA MENGGUNAKAN fas fa-)
+// Menentukan Level Streak untuk Warna dan Icon
 $streak_class = 'streak-normal';
 $streak_icon = 'fas fa-fire';
 if ($streak >= 30) {
@@ -815,10 +891,15 @@ while ($row = mysqli_fetch_assoc($time_q)) {
                     </div>
                 </div>
 
-                <!-- Tombol Ekspor MS Word -->
-                <a href="?export=doc&m=<?= $m ?>&y=<?= $y ?>" class="btn btn-outline-success w-100 rounded-4 py-3 fw-bold mb-4 shadow-sm text-decoration-none d-flex justify-content-center align-items-center">
-                    <i class="fas fa-file-word me-2 fs-5"></i> Ekspor Laporan Word
-                </a>
+                <!-- Tombol Ekspor (Word & Excel) -->
+                <div class="d-flex gap-2 mb-4">
+                    <a href="?export=doc&m=<?= $m ?>&y=<?= $y ?>" class="btn btn-outline-primary flex-fill rounded-4 py-3 fw-bold shadow-sm text-decoration-none d-flex justify-content-center align-items-center">
+                        <i class="fas fa-file-word me-2 fs-5"></i> Word
+                    </a>
+                    <a href="?export=excel&m=<?= $m ?>&y=<?= $y ?>" class="btn btn-outline-success flex-fill rounded-4 py-3 fw-bold shadow-sm text-decoration-none d-flex justify-content-center align-items-center">
+                        <i class="fas fa-file-excel me-2 fs-5"></i> Excel
+                    </a>
+                </div>
             </div>
 
             <!-- KOLOM KANAN: TIMELINE -->
@@ -893,15 +974,19 @@ while ($row = mysqli_fetch_assoc($time_q)) {
                 <button type="button" class="btn-close shadow-none" onclick="closeModal('modalAdd')"></button>
             </div>
             <form method="POST">
+
+                <!-- Kategori dengan Dynamic Icon (Hanya pakai fas fa-) -->
                 <div class="mb-3">
                     <label class="form-label fw-bold text-secondary">Kategori Aktivitas</label>
                     <div class="input-group">
-                        <span class="input-group-text bg-light border-end-0"><i class="fas fa-tasks text-muted"></i></span>
-                        <select name="activity_type" class="form-select border-start-0 ps-0 bg-light" required>
-                            <option value="tilawah">&#128214; Tilawah</option>
-                            <option value="murojaah">&#128259; Murojaah</option>
-                            <option value="hafalan_baru">&#10024; Hafalan Baru</option>
-                            <option value="setoran">&#127897; Setoran</option>
+                        <span class="input-group-text bg-light border-end-0">
+                            <i id="cat_icon" class="fas fa-book-open text-primary"></i>
+                        </span>
+                        <select name="activity_type" id="activity_type" class="form-select border-start-0 ps-0 bg-light fw-medium" required onchange="updateCatIcon()">
+                            <option value="tilawah">Tilawah</option>
+                            <option value="murojaah">Murojaah</option>
+                            <option value="hafalan_baru">Hafalan Baru</option>
+                            <option value="setoran">Setoran</option>
                         </select>
                     </div>
                 </div>
@@ -911,7 +996,7 @@ while ($row = mysqli_fetch_assoc($time_q)) {
                     <input type="hidden" name="surah" id="hidden_surah" required>
                     <div class="input-group">
                         <span class="input-group-text bg-light border-end-0"><i class="fas fa-search text-muted"></i></span>
-                        <input type="text" id="search_surah" class="form-control border-start-0 ps-0 bg-light" placeholder="Ketik & cari nama surah..." autocomplete="off" required>
+                        <input type="text" id="search_surah" class="form-control border-start-0 ps-0 bg-light fw-medium" placeholder="Ketik & cari nama surah..." autocomplete="off" required>
                     </div>
                     <div class="dropdown-list" id="surah_dropdown">
                         <div class="p-3 text-center text-muted small"><i class="fas fa-spinner fa-spin me-2"></i>Memuat data surah...</div>
@@ -921,28 +1006,28 @@ while ($row = mysqli_fetch_assoc($time_q)) {
                 <div class="row g-3 mb-3">
                     <div class="col-6">
                         <label class="form-label fw-bold text-secondary">Ayat Awal</label>
-                        <input type="number" name="ayah_start" id="ayah_start" class="form-control bg-light" required min="1" disabled placeholder="Pilih Surah">
+                        <input type="number" name="ayah_start" id="ayah_start" class="form-control bg-light fw-medium" required min="1" disabled placeholder="Pilih Surah">
                     </div>
                     <div class="col-6">
                         <label class="form-label fw-bold text-secondary">Ayat Akhir</label>
-                        <input type="number" name="ayah_end" id="ayah_end" class="form-control bg-light" required min="1" disabled placeholder="Pilih Surah">
+                        <input type="number" name="ayah_end" id="ayah_end" class="form-control bg-light fw-medium" required min="1" disabled placeholder="Pilih Surah">
                     </div>
                 </div>
 
                 <div class="row g-3 mb-3">
                     <div class="col-6">
                         <label class="form-label fw-bold text-secondary">Tanggal</label>
-                        <input type="date" name="activity_date" class="form-control bg-light" value="<?= date('Y-m-d') ?>" required>
+                        <input type="date" name="activity_date" class="form-control bg-light fw-medium" value="<?= date('Y-m-d') ?>" required>
                     </div>
                     <div class="col-6">
                         <label class="form-label fw-bold text-secondary">Jam</label>
-                        <input type="time" name="activity_time" class="form-control bg-light" value="<?= date('H:i') ?>" required>
+                        <input type="time" name="activity_time" class="form-control bg-light fw-medium" value="<?= date('H:i') ?>" required>
                     </div>
                 </div>
 
                 <div class="mb-4">
                     <label class="form-label fw-bold text-secondary">Catatan (Opsional)</label>
-                    <textarea name="notes" class="form-control bg-light" rows="2" placeholder="Bagaimana kelancaran hafalanmu?"></textarea>
+                    <textarea name="notes" class="form-control bg-light fw-medium" rows="2" placeholder="Bagaimana kelancaran hafalanmu?"></textarea>
                 </div>
 
                 <button type="submit" name="simpan_aktivitas" class="btn btn-success w-100 py-3 rounded-4 fw-bold shadow-sm">
@@ -965,6 +1050,16 @@ while ($row = mysqli_fetch_assoc($time_q)) {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // LOGIKA ICON KATEGORI DINAMIS
+        function updateCatIcon() {
+            const val = document.getElementById('activity_type').value;
+            const icon = document.getElementById('cat_icon');
+            icon.className = 'fas text-primary ' +
+                (val === 'tilawah' ? 'fa-book-open' :
+                    val === 'murojaah' ? 'fa-sync-alt' :
+                    val === 'hafalan_baru' ? 'fa-star' : 'fa-microphone');
+        }
+
         // LOGIKA PAGINATION & FILTER TIMELINE
         const ITEMS_PER_PAGE = 10;
         let currentFilter = 'all';
@@ -1016,10 +1111,17 @@ while ($row = mysqli_fetch_assoc($time_q)) {
             document.body.style.overflow = '';
         }
 
-        document.querySelectorAll('.modal-backdrop-custom').forEach(backdrop => {
-            backdrop.addEventListener('click', function(e) {
-                if (e.target === this) closeModal(this.id);
+        // BUG FIX SURAH KLIK: Menyembunyikan Dropdown dan Modal saat klik di luar area 
+        document.addEventListener('click', function(e) {
+            // Tutup Modal
+            document.querySelectorAll('.modal-backdrop-custom').forEach(backdrop => {
+                if (e.target === backdrop) closeModal(backdrop.id);
             });
+
+            // Tutup Dropdown Pencarian Surah
+            if (!searchInput.contains(e.target) && !dropdownList.contains(e.target)) {
+                dropdownList.classList.remove('show');
+            }
         });
 
         // DETAIL HARIAN DARI KALENDER
@@ -1057,7 +1159,7 @@ while ($row = mysqli_fetch_assoc($time_q)) {
             openModal('modalDetail');
         }
 
-        // SURAH SEARCH LOGIC (Diperbaiki)
+        // SURAH SEARCH LOGIC (DIPERBAIKI)
         let surahData = [];
         const searchInput = document.getElementById('search_surah');
         const dropdownList = document.getElementById('surah_dropdown');
@@ -1083,8 +1185,9 @@ while ($row = mysqli_fetch_assoc($time_q)) {
             }
             let html = '';
             dataList.forEach(surah => {
+                // Bug fix utama: Diubah menggunakan onclick (mousedown dan event blur sudah dihapus)
                 html += `
-                <div class="dropdown-item-custom" onmousedown="selectSurah('${surah.namaLatin}', ${surah.jumlahAyat})">
+                <div class="dropdown-item-custom" onclick="selectSurah('${surah.namaLatin}', ${surah.jumlahAyat})">
                     <span class="s-name">${surah.nomor}. ${surah.namaLatin}</span>
                     <span class="s-ayat">${surah.jumlahAyat} Ayat</span>
                 </div>`;
@@ -1122,10 +1225,6 @@ while ($row = mysqli_fetch_assoc($time_q)) {
 
         searchInput.addEventListener('focus', () => {
             if (surahData.length > 0) dropdownList.classList.add('show');
-        });
-
-        searchInput.addEventListener('blur', () => {
-            setTimeout(() => dropdownList.classList.remove('show'), 150);
         });
 
         inputAyahEnd.addEventListener('change', function() {

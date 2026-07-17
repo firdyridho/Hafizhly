@@ -1597,14 +1597,23 @@ if (isset($_SESSION['user_id'])) {
             }
         }
 
-        /* ===== Preloader — mo.js powered entrance ===== */
-        .preloader-stage {
-            position: relative;
-            width: clamp(120px, 30vw, 160px);
-            height: clamp(120px, 30vw, 160px);
+        /* ===== Preloader — mo.js powered logo reveal ===== */
+        .preloader-brandrow {
             display: flex;
             align-items: center;
             justify-content: center;
+            gap: clamp(12px, 3.2vw, 22px);
+            flex-wrap: wrap;
+        }
+
+        .preloader-stage {
+            position: relative;
+            width: clamp(60px, 16vw, 92px);
+            height: clamp(60px, 16vw, 92px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
         }
 
         .mojs-ring,
@@ -1615,12 +1624,43 @@ if (isset($_SESSION['user_id'])) {
             align-items: center;
             justify-content: center;
             pointer-events: none;
+            overflow: visible;
         }
 
         .preloader-stage .preloader-mark {
             position: relative;
             z-index: 2;
             animation: none;
+            overflow: hidden;
+            clip-path: none;
+            transition: clip-path 0.9s cubic-bezier(.16, 1, .3, 1);
+        }
+
+        .preloader-stage .preloader-mark.reveal-init {
+            clip-path: circle(0% at 50% 50%);
+        }
+
+        .preloader-stage .preloader-mark.revealed {
+            clip-path: circle(75% at 50% 50%);
+        }
+
+        .preloader-stage .preloader-mark::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, 0.65) 50%, transparent 65%);
+            transform: translateX(-140%);
+            pointer-events: none;
+        }
+
+        .preloader-stage .preloader-mark.shine::after {
+            animation: shineSweep 0.9s ease forwards;
+        }
+
+        @keyframes shineSweep {
+            to {
+                transform: translateX(140%);
+            }
         }
 
         .preloader-brand {
@@ -1629,7 +1669,7 @@ if (isset($_SESSION['user_id'])) {
             flex-wrap: wrap;
             font-family: 'Plus Jakarta Sans', sans-serif;
             font-weight: 800;
-            font-size: clamp(1.35rem, 5vw, 1.9rem);
+            font-size: clamp(1.55rem, 6.5vw, 2.15rem);
             color: var(--dark);
             letter-spacing: 0.01em;
         }
@@ -1637,10 +1677,20 @@ if (isset($_SESSION['user_id'])) {
         .preloader-brand .pb-letter {
             display: inline-block;
             opacity: 0;
+            will-change: transform, opacity;
         }
 
         .no-mojs .preloader-brand .pb-letter {
             opacity: 1;
+            transform: none !important;
+        }
+
+        .no-mojs .preloader-stage .preloader-mark {
+            clip-path: none !important;
+        }
+
+        .no-mojs .preloader-stage .preloader-mark::after {
+            display: none;
         }
 
         .no-mojs .preloader-stage .preloader-ring-wrap {
@@ -1661,15 +1711,17 @@ if (isset($_SESSION['user_id'])) {
     <div id="preloader">
         <div class="preloader-orb o1"></div>
         <div class="preloader-orb o2"></div>
-        <div class="preloader-stage">
-            <div class="mojs-ring" id="mojsRing"></div>
-            <div class="preloader-ring-wrap">
-                <div class="preloader-ring"></div>
+        <div class="preloader-brandrow">
+            <div class="preloader-stage">
+                <div class="mojs-ring" id="mojsRing"></div>
+                <div class="preloader-ring-wrap">
+                    <div class="preloader-ring"></div>
+                </div>
+                <div class="preloader-mark" id="preloaderMark"><img src="assets/icon/logo.png" alt="Hafizhly"></div>
+                <div class="mojs-burst" id="mojsBurst"></div>
             </div>
-            <div class="preloader-mark" id="preloaderMark"><img src="assets/icon/logo.png" alt="Hafizhly"></div>
-            <div class="mojs-burst" id="mojsBurst"></div>
+            <div class="preloader-brand" id="preloaderBrand" data-text="Hafizhly">Hafizhly</div>
         </div>
-        <div class="preloader-brand" id="preloaderBrand" data-text="Hafizhly">Hafizhly</div>
         <div class="preloader-text" id="preloaderTagline">Menyiapkan Hafizhly</div>
         <div class="preloader-bar">
             <div class="preloader-bar-fill"></div>
@@ -2062,6 +2114,8 @@ if (isset($_SESSION['user_id'])) {
                 preloaderEl.classList.add('no-mojs');
             } else {
                 try {
+                    const markEl = document.getElementById('preloaderMark');
+
                     // Split brand text into individually animatable letters
                     const brandEl = document.getElementById('preloaderBrand');
                     const text = brandEl.getAttribute('data-text') || brandEl.textContent;
@@ -2072,25 +2126,26 @@ if (isset($_SESSION['user_id'])) {
                         span.textContent = ch === ' ' ? '\u00A0' : ch;
                         brandEl.appendChild(span);
                     });
+                    const letterEls = brandEl.querySelectorAll('.pb-letter');
 
                     // Drawn ring that spins open around the mark
                     const ringDraw = new mojs.Shape({
                         parent: '#mojsRing',
                         shape: 'circle',
-                        radius: 58,
+                        radius: 34,
                         stroke: '#059669',
                         strokeWidth: {
-                            5: 0
+                            4: 0
                         },
-                        strokeDasharray: '365',
+                        strokeDasharray: '214',
                         strokeDashoffset: {
-                            365: 0
+                            214: 0
                         },
                         fill: 'none',
                         opacity: {
                             1: 0.85
                         },
-                        duration: 1100,
+                        duration: 950,
                         easing: 'cubic.out',
                         isShowStart: true
                     });
@@ -2098,76 +2153,96 @@ if (isset($_SESSION['user_id'])) {
                     const ringDraw2 = new mojs.Shape({
                         parent: '#mojsRing',
                         shape: 'circle',
-                        radius: 50,
+                        radius: 29,
                         stroke: '#6ee7b7',
                         strokeWidth: 2,
-                        strokeDasharray: '314',
+                        strokeDasharray: '182',
                         strokeDashoffset: {
-                            314: 0
+                            182: 0
                         },
                         fill: 'none',
                         rotate: {
                             0: 180
                         },
-                        duration: 1300,
-                        delay: 120,
+                        duration: 1150,
+                        delay: 100,
                         easing: 'elastic.out',
                         isShowStart: true
                     });
 
-                    // Radiating particle burst behind the logo mark
+                    // Radiating particle burst — the "flash" behind the logo reveal
                     const burst = new mojs.Burst({
                         parent: '#mojsBurst',
                         radius: {
-                            0: 74
+                            0: 56
                         },
-                        count: 9,
+                        count: 8,
                         angle: 20,
                         children: {
                             shape: 'circle',
                             radius: {
-                                7: 0
+                                5: 0
                             },
                             fill: ['#059669', '#34d399', '#6ee7b7'],
-                            duration: 850,
+                            duration: 700,
                             easing: 'cubic.out'
                         },
-                        delay: 260
+                        delay: 180
                     });
 
-                    // Logo mark: pop-in with a gentle overshoot
+                    // Logo mark: elastic pop-in, paired with the iris mask + shine below
                     const markPop = new mojs.Html({
                         target: '#preloaderMark',
                         scale: {
-                            0.3: 1
+                            0.25: 1
                         },
                         rotate: {
-                            '-25': 0
+                            '-40': 0
                         },
-                        opacity: {
-                            0: 1
-                        },
-                        duration: 750,
-                        delay: 180,
+                        duration: 700,
+                        delay: 160,
                         easing: 'elastic.out'
                     });
 
-                    // Brand letters stagger up into place
-                    const lettersIn = new mojs.Html({
-                        target: '.pb-letter',
-                        y: {
-                            26: 0
-                        },
-                        opacity: {
-                            0: 1
-                        },
-                        scale: {
-                            0.5: 1
-                        },
-                        duration: 650,
-                        delay: 520,
-                        stagger: 45,
-                        easing: 'elastic.out'
+                    // --- Logo reveal: iris mask opens + a light sweep crosses the mark ---
+                    markEl.classList.add('reveal-init');
+                    setTimeout(function() {
+                        markEl.classList.add('revealed');
+                        markEl.classList.add('shine');
+                    }, 160);
+
+                    // Brand letters fly in from random directions around the page,
+                    // then settle into their normal reading position, staggered.
+                    const letterAnims = [];
+                    letterEls.forEach(function(el, i) {
+                        const angle = Math.random() * Math.PI * 2;
+                        const dist = 70 + Math.random() * 110;
+                        const dx = Math.round(Math.cos(angle) * dist);
+                        const dy = Math.round(Math.sin(angle) * dist);
+                        const rot = Math.round((Math.random() - 0.5) * 260);
+                        const startScale = (Math.random() > 0.5 ? 0.25 : 1.9).toFixed(2);
+                        const anim = new mojs.Html({
+                            target: el,
+                            x: {
+                                [dx]: 0
+                            },
+                            y: {
+                                [dy]: 0
+                            },
+                            rotate: {
+                                [rot]: 0
+                            },
+                            scale: {
+                                [startScale]: 1
+                            },
+                            opacity: {
+                                0: 1
+                            },
+                            duration: 750,
+                            delay: 480 + i * 40 + Math.random() * 60,
+                            easing: 'elastic.out'
+                        });
+                        letterAnims.push(anim);
                     });
 
                     // Tagline fades up last
@@ -2180,22 +2255,22 @@ if (isset($_SESSION['user_id'])) {
                             0: 1
                         },
                         duration: 550,
-                        delay: 950,
+                        delay: 480 + letterEls.length * 40 + 380,
                         easing: 'cubic.out'
                     });
 
                     const timeline = new mojs.Timeline();
-                    timeline.add(ringDraw, ringDraw2, burst, markPop, lettersIn, taglineIn);
+                    timeline.add.apply(timeline, [ringDraw, ringDraw2, burst, markPop].concat(letterAnims).concat([taglineIn]));
                     timeline.play();
 
                     // Idle breathing pulse on the mark while assets keep loading
                     const idlePulse = new mojs.Html({
                         target: '#preloaderMark',
                         scale: {
-                            1: 1.07
+                            1: 1.06
                         },
                         duration: 1000,
-                        delay: 1650,
+                        delay: 480 + letterEls.length * 40 + 900,
                         easing: 'sin.inOut',
                         repeat: 999,
                         yoyo: true
@@ -2221,7 +2296,7 @@ if (isset($_SESSION['user_id'])) {
                 if (hasMojs && !reduceMotion) {
                     try {
                         new mojs.Html({
-                            target: '.preloader-stage, .preloader-brand, #preloaderTagline, .preloader-bar',
+                            target: '.preloader-brandrow, #preloaderTagline, .preloader-bar',
                             scale: {
                                 1: 0.92
                             },

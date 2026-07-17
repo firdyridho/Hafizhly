@@ -18,6 +18,79 @@ $y = isset($_GET['y']) ? (int)$_GET['y'] : (int)date('Y');
 $month_name = date('F Y', mktime(0, 0, 0, $m, 1, $y));
 $days_in_month = cal_days_in_month(CAL_GREGORIAN, $m, $y);
 
+// ==========================================
+// FITUR EKSPOR LAPORAN KE MS WORD (.DOC)
+// ==========================================
+if (isset($_GET['export']) && $_GET['export'] == 'doc') {
+    $m_exp = (int)$_GET['m'];
+    $y_exp = (int)$_GET['y'];
+    $month_name_exp = date('F Y', mktime(0, 0, 0, $m_exp, 1, $y_exp));
+
+    $q_exp = mysqli_query($conn, "SELECT * FROM mutabaah WHERE user_id = '$user_id' AND MONTH(activity_date) = $m_exp AND YEAR(activity_date) = $y_exp ORDER BY activity_date ASC, activity_time ASC");
+    $data_exp = [];
+    while ($r = mysqli_fetch_assoc($q_exp)) {
+        $data_exp[$r['activity_date']][] = $r;
+    }
+
+    $nama_user = htmlspecialchars($_SESSION['nama_lengkap'] ?? 'Pengguna');
+    $filename = "Laporan_Mutabaah_" . str_replace(' ', '_', $month_name_exp) . ".doc";
+
+    header("Content-Type: application/vnd.ms-word");
+    header("Expires: 0");
+    header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+    header("content-disposition: attachment;filename={$filename}");
+
+    echo "<html><head><meta charset='utf-8'>";
+    echo "<style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; color: #1e293b; background: #ffffff; }
+        .header { text-align: center; border-bottom: 3px solid #059669; padding-bottom: 20px; margin-bottom: 30px; }
+        .title { font-size: 28pt; color: #059669; font-weight: bold; margin: 0; }
+        .subtitle { font-size: 12pt; color: #64748b; margin-top: 5px; }
+        .day-block { margin-bottom: 25px; border-left: 4px solid #059669; padding-left: 15px; }
+        .day-title { font-size: 14pt; font-weight: bold; color: #0f172a; margin-bottom: 10px; background: #f8fafc; padding: 5px 10px; border-radius: 5px; }
+        .act-item { margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px dashed #cbd5e1; }
+        .act-badge { background: #d1fae5; color: #047857; padding: 4px 10px; font-size: 9pt; font-weight: bold; border: 1px solid #059669; border-radius: 12px; display: inline-block; }
+        .act-time { color: #64748b; font-size: 10pt; margin-left: 10px; }
+        .act-surah { font-size: 12pt; font-weight: bold; color: #0f172a; margin: 8px 0 4px 0; }
+        .act-notes { font-style: italic; color: #475569; font-size: 11pt; padding-left: 10px; border-left: 2px solid #94a3b8; }
+        .empty-msg { color: #94a3b8; font-style: italic; font-size: 11pt; }
+    </style></head><body>";
+
+    echo "<div class='header'>";
+    echo "<div class='title'>Laporan Mutabaah</div>";
+    echo "<div class='subtitle'>Bulan: {$month_name_exp} &bull; Nama: {$nama_user}</div>";
+    echo "</div>";
+
+    for ($d = 1; $d <= $days_in_month; $d++) {
+        $dateStr = sprintf("%04d-%02d-%02d", $y_exp, $m_exp, $d);
+        $printDate = date('d F Y', strtotime($dateStr));
+
+        echo "<div class='day-block'>";
+        echo "<div class='day-title'>&#128197; {$printDate}</div>";
+
+        if (isset($data_exp[$dateStr])) {
+            foreach ($data_exp[$dateStr] as $act) {
+                $type = strtoupper(str_replace('_', ' ', $act['activity_type']));
+                $time = date('H:i', strtotime($act['activity_time']));
+                echo "<div class='act-item'>";
+                echo "<div><span class='act-badge'>{$type}</span><span class='act-time'>&#128337; Pukul {$time}</span></div>";
+                echo "<div class='act-surah'>Surah {$act['surah']} (Ayat {$act['ayah_start']} - {$act['ayah_end']})</div>";
+                if (!empty($act['notes'])) {
+                    echo "<div class='act-notes'>\"{$act['notes']}\"</div>";
+                }
+                echo "</div>";
+            }
+        } else {
+            echo "<div class='empty-msg'>- Tidak ada aktivitas -</div>";
+        }
+        echo "</div>";
+    }
+
+    echo "</body></html>";
+    exit;
+}
+// ==========================================
+
 // Menangani Form Tambah Aktivitas
 if (isset($_POST['simpan_aktivitas'])) {
     $type = mysqli_real_escape_string($conn, $_POST['activity_type']);
@@ -45,24 +118,38 @@ while ($row = mysqli_fetch_assoc($stat_q)) {
 $hari_aktif_q = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(DISTINCT activity_date) as aktif FROM mutabaah WHERE user_id = '$user_id' AND MONTH(activity_date) = $m AND YEAR(activity_date) = $y"));
 $hari_aktif = $hari_aktif_q['aktif'];
 
-// Hitung Streak
+// ==========================================
+// PERBAIKAN LOGIKA STREAK (KONSISTENSI)
+// ==========================================
 $streak = 0;
-$cek_tgl = date('Y-m-d');
-while (true) {
-    $cek_q = mysqli_query($conn, "SELECT id FROM mutabaah WHERE user_id = '$user_id' AND activity_date = '$cek_tgl' LIMIT 1");
-    if (mysqli_num_rows($cek_q) > 0) {
+$today = date('Y-m-d');
+$yesterday = date('Y-m-d', strtotime('-1 day'));
+
+// Ambil semua tanggal unik user ini urut dari terbaru
+$q_dates = mysqli_query($conn, "SELECT DISTINCT activity_date FROM mutabaah WHERE user_id = '$user_id' ORDER BY activity_date DESC");
+$user_dates = [];
+while ($r = mysqli_fetch_assoc($q_dates)) {
+    $user_dates[] = $r['activity_date'];
+}
+
+$current_check = $today;
+// Jika hari ini belum ngaji tapi kemarin ngaji, streak hitungnya mundur dari kemarin
+if (!in_array($today, $user_dates) && in_array($yesterday, $user_dates)) {
+    $current_check = $yesterday;
+}
+
+foreach ($user_dates as $d) {
+    if ($d == $current_check) {
         $streak++;
-        $cek_tgl = date('Y-m-d', strtotime("-1 day", strtotime($cek_tgl)));
+        $current_check = date('Y-m-d', strtotime("-1 day", strtotime($current_check)));
+    } elseif ($d > $current_check) {
+        continue;
     } else {
-        if ($streak == 0 && $cek_tgl == date('Y-m-d')) {
-            $cek_tgl = date('Y-m-d', strtotime("-1 day", strtotime($cek_tgl)));
-            continue;
-        }
-        break;
+        break; // Streak terputus
     }
 }
 
-// Menentukan Level Streak untuk Warna dan Icon
+// Menentukan Level Streak untuk Warna dan Icon (SEMUA MENGGUNAKAN fas fa-)
 $streak_class = 'streak-normal';
 $streak_icon = 'fas fa-fire';
 if ($streak >= 30) {
@@ -73,10 +160,10 @@ if ($streak >= 30) {
     $streak_icon = 'fas fa-crown';
 } elseif ($streak >= 10) {
     $streak_class = 'streak-purple';
-    $streak_icon = 'fas fa-fire-alt';
+    $streak_icon = 'fas fa-meteor';
 } elseif ($streak >= 5) {
     $streak_class = 'streak-blue';
-    $streak_icon = 'fas fa-fire-alt';
+    $streak_icon = 'fas fa-bolt';
 }
 
 // 2. Data Kalender
@@ -91,16 +178,6 @@ $time_q = mysqli_query($conn, "SELECT * FROM mutabaah WHERE user_id = '$user_id'
 $timeline = [];
 while ($row = mysqli_fetch_assoc($time_q)) {
     $timeline[] = $row;
-}
-
-// 4. Persiapan Data Untuk Laporan PDF (Semua hari dalam bulan tersebut)
-$report_data = [];
-for ($d = 1; $d <= $days_in_month; $d++) {
-    $date_str = sprintf("%04d-%02d-%02d", $y, $m, $d);
-    $report_data[$date_str] = [];
-}
-foreach ($timeline as $tl) {
-    $report_data[$tl['activity_date']][] = $tl;
 }
 ?>
 
@@ -620,107 +697,6 @@ foreach ($timeline as $tl) {
             border-radius: 10px;
             font-weight: 700;
         }
-
-        /* PRINT CSS - UNTUK PDF YANG RAPI & BAGUS */
-        @media print {
-            body * {
-                visibility: hidden;
-            }
-
-            #print-area,
-            #print-area * {
-                visibility: visible;
-            }
-
-            #print-area {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-                background: white;
-                color: black;
-                font-family: 'Inter', sans-serif;
-            }
-
-            .print-header {
-                text-align: center;
-                margin-bottom: 20px;
-                padding-bottom: 15px;
-                border-bottom: 3px solid #059669;
-            }
-
-            .print-header h2 {
-                color: #059669;
-                margin: 0;
-                font-size: 24px;
-                font-weight: 800;
-            }
-
-            .print-header p {
-                margin: 5px 0 0;
-                font-size: 14px;
-                color: #555;
-            }
-
-            .print-table {
-                width: 100%;
-                border-collapse: collapse;
-                margin-top: 20px;
-            }
-
-            .print-table th {
-                background-color: #059669 !important;
-                color: white !important;
-                font-weight: 700;
-                padding: 12px;
-                border: 1px solid #059669;
-                -webkit-print-color-adjust: exact;
-            }
-
-            .print-table td {
-                padding: 10px 12px;
-                border: 1px solid #ddd;
-                vertical-align: top;
-                font-size: 13px;
-            }
-
-            .print-table tr:nth-child(even) td {
-                background-color: #f8fafc !important;
-                -webkit-print-color-adjust: exact;
-            }
-
-            .print-date {
-                font-weight: 700;
-                width: 120px;
-                white-space: nowrap;
-            }
-
-            .print-badge {
-                background: #d1fae5 !important;
-                color: #065f46 !important;
-                padding: 2px 6px;
-                border-radius: 4px;
-                font-size: 11px;
-                font-weight: bold;
-                display: inline-block;
-                margin-bottom: 4px;
-                border: 1px solid #10b981;
-                -webkit-print-color-adjust: exact;
-            }
-
-            .print-notes {
-                font-style: italic;
-                color: #666;
-                font-size: 11px;
-                margin-top: 3px;
-            }
-
-            .print-empty {
-                text-align: center;
-                color: #999;
-                font-style: italic;
-            }
-        }
     </style>
 </head>
 
@@ -839,10 +815,10 @@ foreach ($timeline as $tl) {
                     </div>
                 </div>
 
-                <!-- Tombol Download Laporan -->
-                <button class="btn btn-outline-success w-100 rounded-4 py-3 fw-bold mb-4 shadow-sm" onclick="window.print()">
-                    <i class="fas fa-file-pdf me-2"></i> Ekspor Laporan PDF
-                </button>
+                <!-- Tombol Ekspor MS Word -->
+                <a href="?export=doc&m=<?= $m ?>&y=<?= $y ?>" class="btn btn-outline-success w-100 rounded-4 py-3 fw-bold mb-4 shadow-sm text-decoration-none d-flex justify-content-center align-items-center">
+                    <i class="fas fa-file-word me-2 fs-5"></i> Ekspor Laporan Word
+                </a>
             </div>
 
             <!-- KOLOM KANAN: TIMELINE -->
@@ -853,7 +829,7 @@ foreach ($timeline as $tl) {
 
                         <!-- Filter -->
                         <div class="filter-scroll">
-                            <button class="filter-btn-custom active" onclick="filterTimeline('all', this)">Semua</button>
+                            <button class="filter-btn-custom active" onclick="filterTimeline('all', this)"><i class="fas fa-list me-1"></i> Semua</button>
                             <button class="filter-btn-custom" onclick="filterTimeline('tilawah', this)"><i class="fas fa-book-open me-1"></i> Tilawah</button>
                             <button class="filter-btn-custom" onclick="filterTimeline('murojaah', this)"><i class="fas fa-sync-alt me-1"></i> Murojaah</button>
                             <button class="filter-btn-custom" onclick="filterTimeline('hafalan_baru', this)"><i class="fas fa-star me-1"></i> Hafalan Baru</button>
@@ -904,45 +880,6 @@ foreach ($timeline as $tl) {
         </div>
     </div>
 
-    <!-- AREA CETAK PDF (Hanya terlihat saat diprint) -->
-    <div id="print-area" class="d-none">
-        <div class="print-header">
-            <h2>Laporan Aktivitas Mutabaah</h2>
-            <p>Bulan: <?= $month_name ?> | Nama Pengguna: <?= htmlspecialchars($_SESSION['nama_lengkap'] ?? 'Pengguna') ?></p>
-        </div>
-        <table class="print-table">
-            <thead>
-                <tr>
-                    <th style="width: 15%;">Tanggal</th>
-                    <th style="width: 85%;">Aktivitas / Capaian</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($report_data as $date => $activities): ?>
-                    <tr>
-                        <td class="print-date"><?= date('d F Y', strtotime($date)) ?></td>
-                        <td>
-                            <?php if (empty($activities)): ?>
-                                <div class="print-empty">- Tidak ada aktivitas -</div>
-                            <?php else: ?>
-                                <?php foreach ($activities as $act): ?>
-                                    <div style="margin-bottom: 8px;">
-                                        <span class="print-badge"><?= strtoupper(str_replace('_', ' ', $act['activity_type'])) ?></span>
-                                        <strong>Surah <?= htmlspecialchars($act['surah']) ?></strong> (Ayat <?= $act['ayah_start'] ?> - <?= $act['ayah_end'] ?>)
-                                        <span style="color:#666; font-size:11px;">[<?= date('H:i', strtotime($act['activity_time'])) ?>]</span>
-                                        <?php if ($act['notes']): ?>
-                                            <div class="print-notes">Catatan: <?= htmlspecialchars($act['notes']) ?></div>
-                                        <?php endif; ?>
-                                    </div>
-                                <?php endforeach; ?>
-                            <?php endif; ?>
-                        </td>
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-    </div>
-
     <!-- FAB -->
     <button class="fab shadow-lg" onclick="openModal('modalAdd')" title="Catat Aktivitas Baru">
         <i class="fas fa-pen"></i>
@@ -961,10 +898,10 @@ foreach ($timeline as $tl) {
                     <div class="input-group">
                         <span class="input-group-text bg-light border-end-0"><i class="fas fa-tasks text-muted"></i></span>
                         <select name="activity_type" class="form-select border-start-0 ps-0 bg-light" required>
-                            <option value="tilawah">📖 Tilawah</option>
-                            <option value="murojaah">🔄 Murojaah</option>
-                            <option value="hafalan_baru">✨ Hafalan Baru</option>
-                            <option value="setoran">🎙️ Setoran</option>
+                            <option value="tilawah">&#128214; Tilawah</option>
+                            <option value="murojaah">&#128259; Murojaah</option>
+                            <option value="hafalan_baru">&#10024; Hafalan Baru</option>
+                            <option value="setoran">&#127897; Setoran</option>
                         </select>
                     </div>
                 </div>
@@ -1028,7 +965,7 @@ foreach ($timeline as $tl) {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // LOGIKA PAGINATION & FILTER TIMELINE (Maksimal 10 awal)
+        // LOGIKA PAGINATION & FILTER TIMELINE
         const ITEMS_PER_PAGE = 10;
         let currentFilter = 'all';
         let visibleCount = ITEMS_PER_PAGE;
@@ -1038,15 +975,12 @@ foreach ($timeline as $tl) {
         function updateTimelineDisplay() {
             let filteredItems = allItems.filter(item => currentFilter === 'all' || item.getAttribute('data-type') === currentFilter);
 
-            // Sembunyikan semua dulu
             allItems.forEach(item => item.style.display = 'none');
 
-            // Tampilkan sesuai jumlah visibleCount
             for (let i = 0; i < Math.min(visibleCount, filteredItems.length); i++) {
                 filteredItems[i].style.display = 'block';
             }
 
-            // Tampilkan/Sembunyikan tombol Load More
             if (filteredItems.length > visibleCount) {
                 loadMoreWrapper.classList.remove('d-none');
             } else {
@@ -1058,7 +992,7 @@ foreach ($timeline as $tl) {
             document.querySelectorAll('.filter-btn-custom').forEach(el => el.classList.remove('active'));
             btn.classList.add('active');
             currentFilter = type;
-            visibleCount = ITEMS_PER_PAGE; // Reset load more
+            visibleCount = ITEMS_PER_PAGE;
             updateTimelineDisplay();
         }
 
@@ -1067,7 +1001,6 @@ foreach ($timeline as $tl) {
             updateTimelineDisplay();
         }
 
-        // Jalankan saat pertama kali diload
         updateTimelineDisplay();
 
         // MODAL / BOTTOM SHEET LOGIC
@@ -1091,7 +1024,6 @@ foreach ($timeline as $tl) {
 
         // DETAIL HARIAN DARI KALENDER
         function showDaily(dateStr) {
-            // Format tanggal yang cantik
             const dateObj = new Date(dateStr);
             const options = {
                 day: 'numeric',
@@ -1109,7 +1041,7 @@ foreach ($timeline as $tl) {
                 if (item.getAttribute('data-date') === dateStr) {
                     const clone = item.cloneNode(true);
                     clone.style.display = 'block';
-                    clone.style.animation = 'none'; // hapus animasi agar langsung muncul
+                    clone.style.animation = 'none';
                     container.appendChild(clone);
                     found = true;
                 }
@@ -1151,7 +1083,6 @@ foreach ($timeline as $tl) {
             }
             let html = '';
             dataList.forEach(surah => {
-                // MENGGUNAKAN onmousedown UNTUK MENCEGAH BUG BLUR SAAT KLIK
                 html += `
                 <div class="dropdown-item-custom" onmousedown="selectSurah('${surah.namaLatin}', ${surah.jumlahAyat})">
                     <span class="s-name">${surah.nomor}. ${surah.namaLatin}</span>
@@ -1194,7 +1125,6 @@ foreach ($timeline as $tl) {
         });
 
         searchInput.addEventListener('blur', () => {
-            // Memberi sedikit delay agar mousedown pada item tereksekusi duluan
             setTimeout(() => dropdownList.classList.remove('show'), 150);
         });
 

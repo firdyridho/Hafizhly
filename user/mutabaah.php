@@ -10,7 +10,29 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
 }
 
 $user_id = $_SESSION['user_id'];
-$pesan = '';
+
+// ==========================================
+// AJAX HANDLER: SIMPAN AKTIVITAS
+// ==========================================
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_action']) && $_POST['ajax_action'] === 'simpan_aktivitas') {
+    $type = mysqli_real_escape_string($conn, $_POST['activity_type']);
+    $date = mysqli_real_escape_string($conn, $_POST['activity_date']);
+    $time = mysqli_real_escape_string($conn, $_POST['activity_time']);
+    $surah = mysqli_real_escape_string($conn, $_POST['surah']);
+    $a_start = (int)$_POST['ayah_start'];
+    $a_end = (int)$_POST['ayah_end'];
+    $notes = mysqli_real_escape_string($conn, $_POST['notes']);
+
+    $q_insert = "INSERT INTO mutabaah (user_id, activity_type, activity_date, activity_time, surah, ayah_start, ayah_end, notes) 
+                 VALUES ('$user_id', '$type', '$date', '$time', '$surah', '$a_start', '$a_end', '$notes')";
+
+    if (mysqli_query($conn, $q_insert)) {
+        echo json_encode(['status' => 'success', 'message' => 'Aktivitas berhasil dicatat!']);
+    } else {
+        echo json_encode(['status' => 'error', 'message' => 'Gagal mencatat aktivitas.']);
+    }
+    exit();
+}
 
 // Waktu saat ini untuk filter bulan
 $m = isset($_GET['m']) ? (int)$_GET['m'] : (int)date('m');
@@ -99,10 +121,8 @@ if (isset($_GET['export']) && $_GET['export'] == 'excel') {
     $days_in_month = cal_days_in_month(CAL_GREGORIAN, $m_exp, $y_exp);
     $month_name_exp = date('F Y', mktime(0, 0, 0, $m_exp, 1, $y_exp));
 
-    // Ambil data dan kelompokkan berdasarkan tipe aktivitas & tanggal (hari)
     $q_exp = mysqli_query($conn, "SELECT activity_type, DAY(activity_date) as tgl, COUNT(id) as jml FROM mutabaah WHERE user_id = '$user_id' AND MONTH(activity_date) = $m_exp AND YEAR(activity_date) = $y_exp GROUP BY activity_type, DAY(activity_date)");
 
-    // Matrix data kosong (semua di-set 0)
     $data_matrix = [
         'tilawah' => array_fill(1, $days_in_month, 0),
         'murojaah' => array_fill(1, $days_in_month, 0),
@@ -118,7 +138,6 @@ if (isset($_GET['export']) && $_GET['export'] == 'excel') {
     header("Content-Type: application/vnd.ms-excel");
     header("Content-Disposition: attachment; filename=\"$filename\"");
 
-    // Style sederhana agar tabel Excel rapi
     echo "<style>
             table { border-collapse: collapse; width: 100%; }
             th, td { border: 1px solid #000; padding: 5px; text-align: center; }
@@ -129,16 +148,12 @@ if (isset($_GET['export']) && $_GET['export'] == 'excel') {
     echo "<table>";
     echo "<tr><th colspan='" . ($days_in_month + 3) . "' style='font-size:16pt; padding:10px;'>Rekap Aktivitas Mutabaah - $month_name_exp</th></tr>";
 
-    // Header Kolom
     echo "<tr>";
     echo "<th width='40'>No</th><th width='150'>Kategori Aktivitas</th>";
-    for ($i = 1; $i <= $days_in_month; $i++) {
-        echo "<th width='35'>$i</th>";
-    }
+    for ($i = 1; $i <= $days_in_month; $i++) echo "<th width='35'>$i</th>";
     echo "<th width='80'>Total</th>";
     echo "</tr>";
 
-    // Isi Baris
     $no = 1;
     $labels = [
         'tilawah' => 'Tilawah',
@@ -154,7 +169,6 @@ if (isset($_GET['export']) && $_GET['export'] == 'excel') {
         for ($i = 1; $i <= $days_in_month; $i++) {
             $jml = $data_matrix[$key][$i];
             $total_baris += $jml;
-            // Cetak jumlah, jika 0 cetak strip (-)
             $cetak = $jml > 0 ? $jml : '-';
             echo "<td>$cetak</td>";
         }
@@ -164,24 +178,6 @@ if (isset($_GET['export']) && $_GET['export'] == 'excel') {
     }
     echo "</table>";
     exit;
-}
-// ==========================================
-
-// Menangani Form Tambah Aktivitas
-if (isset($_POST['simpan_aktivitas'])) {
-    $type = mysqli_real_escape_string($conn, $_POST['activity_type']);
-    $date = mysqli_real_escape_string($conn, $_POST['activity_date']);
-    $time = mysqli_real_escape_string($conn, $_POST['activity_time']);
-    $surah = mysqli_real_escape_string($conn, $_POST['surah']);
-    $a_start = (int)$_POST['ayah_start'];
-    $a_end = (int)$_POST['ayah_end'];
-    $notes = mysqli_real_escape_string($conn, $_POST['notes']);
-
-    $q_insert = "INSERT INTO mutabaah (user_id, activity_type, activity_date, activity_time, surah, ayah_start, ayah_end, notes) 
-                 VALUES ('$user_id', '$type', '$date', '$time', '$surah', '$a_start', '$a_end', '$notes')";
-    if (mysqli_query($conn, $q_insert)) {
-        $pesan = "<div class='alert alert-success d-flex align-items-center mb-4 border-0 shadow-sm' style='background-color:#d1fae5; color:#065f46;'><i class='fas fa-check-circle me-2 fs-5'></i> Aktivitas berhasil dicatat!</div>";
-    }
 }
 
 // 1. Hitung Statistik Bulanan
@@ -195,52 +191,48 @@ $hari_aktif_q = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(DISTINCT ac
 $hari_aktif = $hari_aktif_q['aktif'];
 
 // ==========================================
-// LOGIKA STREAK (KONSISTENSI)
+// LOGIKA STREAK (KONSISTENSI) DINAMIS
 // ==========================================
-$streak = 0;
-$today = date('Y-m-d');
-$yesterday = date('Y-m-d', strtotime('-1 day'));
+function getStreak($conn, $user_id, $type = null)
+{
+    $today = date('Y-m-d');
+    $yesterday = date('Y-m-d', strtotime('-1 day'));
 
-// Ambil semua tanggal unik aktivitas user (terbaru ke terlama)
-$q_dates = mysqli_query($conn, "SELECT DISTINCT activity_date FROM mutabaah WHERE user_id = '$user_id' ORDER BY activity_date DESC");
-$user_dates = [];
-while ($r = mysqli_fetch_assoc($q_dates)) {
-    $user_dates[] = $r['activity_date'];
-}
+    $query = "SELECT DISTINCT activity_date FROM mutabaah WHERE user_id = '$user_id'";
+    if ($type) $query .= " AND activity_type = '$type'";
+    $query .= " ORDER BY activity_date DESC";
 
-$current_check = $today;
-// Jika hari ini belum aktivitas tapi kemarin sudah, toleransi hitungan mundur dimulai dari kemarin
-if (!in_array($today, $user_dates) && in_array($yesterday, $user_dates)) {
-    $current_check = $yesterday;
-}
-
-foreach ($user_dates as $d) {
-    if ($d == $current_check) {
-        $streak++;
-        $current_check = date('Y-m-d', strtotime("-1 day", strtotime($current_check))); // Cek hari sebelumnya
-    } elseif ($d > $current_check) {
-        continue;
-    } else {
-        break; // Streak terputus karena ada hari yang bolong
+    $q_dates = mysqli_query($conn, $query);
+    $user_dates = [];
+    while ($r = mysqli_fetch_assoc($q_dates)) {
+        $user_dates[] = $r['activity_date'];
     }
+
+    $streak = 0;
+    $current_check = $today;
+
+    if (!in_array($today, $user_dates) && in_array($yesterday, $user_dates)) {
+        $current_check = $yesterday;
+    }
+
+    foreach ($user_dates as $d) {
+        if ($d == $current_check) {
+            $streak++;
+            $current_check = date('Y-m-d', strtotime("-1 day", strtotime($current_check)));
+        } elseif ($d > $current_check) {
+            continue;
+        } else {
+            break;
+        }
+    }
+    return $streak;
 }
 
-// Menentukan Level Streak untuk Warna dan Icon
-$streak_class = 'streak-normal';
-$streak_icon = 'fas fa-fire';
-if ($streak >= 30) {
-    $streak_class = 'streak-diamond';
-    $streak_icon = 'fas fa-gem';
-} elseif ($streak >= 20) {
-    $streak_class = 'streak-gold';
-    $streak_icon = 'fas fa-crown';
-} elseif ($streak >= 10) {
-    $streak_class = 'streak-purple';
-    $streak_icon = 'fas fa-meteor';
-} elseif ($streak >= 5) {
-    $streak_class = 'streak-blue';
-    $streak_icon = 'fas fa-bolt';
-}
+$streak_all = getStreak($conn, $user_id);
+$streak_tilawah = getStreak($conn, $user_id, 'tilawah');
+$streak_murojaah = getStreak($conn, $user_id, 'murojaah');
+$streak_hafalan = getStreak($conn, $user_id, 'hafalan_baru');
+$streak_setoran = getStreak($conn, $user_id, 'setoran');
 
 // 2. Data Kalender
 $cal_q = mysqli_query($conn, "SELECT activity_date, COUNT(id) as jml FROM mutabaah WHERE user_id = '$user_id' AND MONTH(activity_date) = $m AND YEAR(activity_date) = $y GROUP BY activity_date");
@@ -268,6 +260,7 @@ while ($row = mysqli_fetch_assoc($time_q)) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         :root {
             --primary: #059669;
@@ -358,80 +351,13 @@ while ($row = mysqli_fetch_assoc($time_q)) {
             margin-top: 5px;
         }
 
-        /* DYNAMIC STREAK STYLES */
+        /* DYNAMIC STREAK STYLES (ORANGE THEME) */
         .streak-card {
             border: none;
+            background: linear-gradient(135deg, #f97316, #ea580c);
+            color: white;
             position: relative;
             overflow: hidden;
-        }
-
-        .streak-card::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 50%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.2);
-            transform: skewX(-20deg);
-            animation: shine 3s infinite;
-        }
-
-        @keyframes shine {
-            0% {
-                left: -100%;
-            }
-
-            20% {
-                left: 200%;
-            }
-
-            100% {
-                left: 200%;
-            }
-        }
-
-        @keyframes pulse-icon {
-            0% {
-                transform: scale(1);
-            }
-
-            50% {
-                transform: scale(1.2);
-            }
-
-            100% {
-                transform: scale(1);
-            }
-        }
-
-        .streak-normal {
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
-        }
-
-        .streak-blue {
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
-            color: white;
-            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
-        }
-
-        .streak-purple {
-            background: linear-gradient(135deg, #8b5cf6, #6d28d9);
-            color: white;
-            box-shadow: 0 8px 20px rgba(109, 40, 217, 0.3);
-        }
-
-        .streak-gold {
-            background: linear-gradient(135deg, #fbbf24, #d97706);
-            color: white;
-            box-shadow: 0 8px 20px rgba(217, 119, 6, 0.3);
-        }
-
-        .streak-diamond {
-            background: linear-gradient(135deg, #ef4444, #be123c);
-            color: white;
-            box-shadow: 0 8px 20px rgba(190, 18, 60, 0.4);
         }
 
         .streak-card .stat-label,
@@ -439,9 +365,32 @@ while ($row = mysqli_fetch_assoc($time_q)) {
             color: white;
         }
 
+        .streak-anim-wrapper {
+            transition: opacity 0.5s ease-in-out;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        @keyframes firePulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.15);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
         .streak-icon-anim {
-            animation: pulse-icon 1.5s infinite;
+            animation: firePulse 1.5s infinite ease-in-out;
             display: inline-block;
+            transition: all 0.5s ease;
         }
 
         /* KALENDER */
@@ -514,13 +463,13 @@ while ($row = mysqli_fetch_assoc($time_q)) {
             border: 2px solid white;
         }
 
-        /* TIMELINE */
+        /* TIMELINE & FILTER */
         .filter-scroll {
             display: flex;
             gap: 10px;
             overflow-x: auto;
             padding-bottom: 10px;
-            margin-bottom: 1rem;
+            margin-bottom: 15px;
         }
 
         .filter-scroll::-webkit-scrollbar {
@@ -546,6 +495,27 @@ while ($row = mysqli_fetch_assoc($time_q)) {
             color: white;
             border-color: var(--primary);
             box-shadow: 0 4px 10px rgba(5, 150, 105, 0.2);
+        }
+
+        .search-box-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            padding: 10px 15px;
+            font-size: 0.9rem;
+            width: 100%;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
         }
 
         .tl-card {
@@ -599,17 +569,33 @@ while ($row = mysqli_fetch_assoc($time_q)) {
             border-left: 3px solid #cbd5e1;
         }
 
-        #btn-load-more {
-            background: var(--primary-light);
-            color: var(--primary-hover);
+        /* PAGINATION */
+        .pagination {
+            margin-top: 25px;
+            margin-bottom: 0;
+            gap: 5px;
+        }
+
+        .page-item .page-link {
+            border-radius: 10px;
             border: none;
-            font-weight: 700;
+            color: var(--text-muted);
+            background: var(--bg);
+            font-weight: 600;
+            padding: 8px 14px;
             transition: 0.3s;
         }
 
-        #btn-load-more:hover {
+        .page-item.active .page-link,
+        .page-item .page-link:hover {
             background: var(--primary);
             color: white;
+            box-shadow: 0 4px 10px rgba(5, 150, 105, 0.2);
+        }
+
+        .page-item.disabled .page-link {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
 
         /* FAB */
@@ -806,11 +792,6 @@ while ($row = mysqli_fetch_assoc($time_q)) {
             </a>
         </div>
 
-        <!-- PESAN ALERT -->
-        <?php if ($pesan): ?>
-            <?= $pesan ?>
-        <?php endif; ?>
-
         <!-- GRID UTAMA -->
         <div class="row g-4">
             <!-- KOLOM KIRI: STATS + KALENDER + EXPORT -->
@@ -845,15 +826,17 @@ while ($row = mysqli_fetch_assoc($time_q)) {
                                 </div>
                             </div>
                             <div class="col-12">
-                                <div class="stat-card streak-card <?= $streak_class ?> d-flex justify-content-between align-items-center p-4">
-                                    <div class="d-flex align-items-center gap-3">
-                                        <i class="<?= $streak_icon ?> streak-icon-anim fs-2"></i>
-                                        <div>
-                                            <div class="stat-label text-white opacity-75">Konsistensi</div>
-                                            <div class="stat-value text-white mb-0 fs-3">Streak Api</div>
+                                <div class="stat-card streak-card p-4">
+                                    <div class="streak-anim-wrapper" id="streak-anim-wrapper">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <i id="streak-icon" class="fas fa-fire streak-icon-anim fs-2"></i>
+                                            <div>
+                                                <div class="stat-label text-white opacity-75" id="streak-title">Konsistensi Semua</div>
+                                                <div class="stat-value text-white mb-0 fs-3">Streak Api</div>
+                                            </div>
                                         </div>
+                                        <div class="fs-1 fw-bold text-white"><span id="streak-val"><?= $streak_all ?></span> <span class="fs-5 fw-normal">Hari</span></div>
                                     </div>
-                                    <div class="fs-1 fw-bold text-white"><?= $streak ?> <span class="fs-5 fw-normal">Hari</span></div>
                                 </div>
                             </div>
                         </div>
@@ -908,21 +891,27 @@ while ($row = mysqli_fetch_assoc($time_q)) {
                     <div class="card-body p-4">
                         <h5 class="fw-bold mb-4"><i class="fas fa-history me-2 text-primary"></i> Jejak Langkah</h5>
 
-                        <!-- Filter -->
+                        <!-- Filter Kategori -->
                         <div class="filter-scroll">
-                            <button class="filter-btn-custom active" onclick="filterTimeline('all', this)"><i class="fas fa-list me-1"></i> Semua</button>
-                            <button class="filter-btn-custom" onclick="filterTimeline('tilawah', this)"><i class="fas fa-book-open me-1"></i> Tilawah</button>
-                            <button class="filter-btn-custom" onclick="filterTimeline('murojaah', this)"><i class="fas fa-sync-alt me-1"></i> Murojaah</button>
-                            <button class="filter-btn-custom" onclick="filterTimeline('hafalan_baru', this)"><i class="fas fa-star me-1"></i> Hafalan Baru</button>
-                            <button class="filter-btn-custom" onclick="filterTimeline('setoran', this)"><i class="fas fa-microphone me-1"></i> Setoran</button>
+                            <button class="filter-btn-custom active" onclick="filterCategory('all', this)"><i class="fas fa-list me-1"></i> Semua</button>
+                            <button class="filter-btn-custom" onclick="filterCategory('tilawah', this)"><i class="fas fa-book-open me-1"></i> Tilawah</button>
+                            <button class="filter-btn-custom" onclick="filterCategory('murojaah', this)"><i class="fas fa-sync-alt me-1"></i> Murojaah</button>
+                            <button class="filter-btn-custom" onclick="filterCategory('hafalan_baru', this)"><i class="fas fa-star me-1"></i> Hafalan Baru</button>
+                            <button class="filter-btn-custom" onclick="filterCategory('setoran', this)"><i class="fas fa-microphone me-1"></i> Setoran</button>
                         </div>
 
-                        <!-- Timeline -->
+                        <!-- Kolom Pencarian -->
+                        <div class="search-box-container">
+                            <input type="date" id="search_date" class="search-input" title="Cari berdasarkan tanggal" onchange="runSearchAndFilter()">
+                            <input type="text" id="search_notes" class="search-input" placeholder="Cari catatan/pesan..." onkeyup="runSearchAndFilter()">
+                        </div>
+
+                        <!-- Timeline List -->
                         <div id="timeline-container" class="d-flex flex-column gap-3">
                             <?php foreach ($timeline as $tl):
                                 $type_label = str_replace('_', ' ', $tl['activity_type']);
                             ?>
-                                <div class="tl-card tl-item" data-type="<?= $tl['activity_type'] ?>" data-date="<?= $tl['activity_date'] ?>">
+                                <div class="tl-card tl-item" data-type="<?= $tl['activity_type'] ?>" data-date="<?= $tl['activity_date'] ?>" data-notes="<?= htmlspecialchars($tl['notes']) ?>">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <span class="tl-type"><i class="fas fa-tag me-1"></i> <?= $type_label ?></span>
                                         <div class="text-muted small fw-medium">
@@ -940,21 +929,17 @@ while ($row = mysqli_fetch_assoc($time_q)) {
                                 </div>
                             <?php endforeach; ?>
 
-                            <?php if (empty($timeline)): ?>
-                                <div class="text-center py-5 text-muted">
-                                    <i class="fas fa-folder-open fa-3x mb-3 opacity-25"></i>
-                                    <h5 class="fw-bold">Belum ada aktivitas</h5>
-                                    <p>Yuk, mulai catat perjalanan hafalanmu hari ini!</p>
-                                </div>
-                            <?php endif; ?>
+                            <div id="empty-state" class="text-center py-5 text-muted" style="display: <?= empty($timeline) ? 'block' : 'none' ?>;">
+                                <i class="fas fa-folder-open fa-3x mb-3 opacity-25"></i>
+                                <h5 class="fw-bold">Tidak ada aktivitas</h5>
+                                <p>Coba sesuaikan filter atau pencarianmu.</p>
+                            </div>
                         </div>
 
-                        <!-- Tombol Load More (Di-handle via JS) -->
-                        <div class="text-center mt-4 d-none" id="load-more-wrapper">
-                            <button class="btn rounded-pill px-4 py-2" id="btn-load-more" onclick="loadMoreTimeline()">
-                                <i class="fas fa-chevron-down me-1"></i> Tampilkan Lebih Banyak
-                            </button>
-                        </div>
+                        <!-- Navigasi Pagination Angka -->
+                        <ul class="pagination justify-content-center" id="pagination-nav">
+                            <!-- Di-generate via JS -->
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -973,9 +958,8 @@ while ($row = mysqli_fetch_assoc($time_q)) {
                 <h5 class="fw-bold mb-0 text-dark"><i class="fas fa-plus-circle text-primary me-2"></i>Catat Aktivitas</h5>
                 <button type="button" class="btn-close shadow-none" onclick="closeModal('modalAdd')"></button>
             </div>
-            <form method="POST">
 
-                <!-- Kategori dengan Dynamic Icon (Hanya pakai fas fa-) -->
+            <form id="formMutabaah">
                 <div class="mb-3">
                     <label class="form-label fw-bold text-secondary">Kategori Aktivitas</label>
                     <div class="input-group">
@@ -1030,7 +1014,7 @@ while ($row = mysqli_fetch_assoc($time_q)) {
                     <textarea name="notes" class="form-control bg-light fw-medium" rows="2" placeholder="Bagaimana kelancaran hafalanmu?"></textarea>
                 </div>
 
-                <button type="submit" name="simpan_aktivitas" class="btn btn-success w-100 py-3 rounded-4 fw-bold shadow-sm">
+                <button type="submit" class="btn btn-success w-100 py-3 rounded-4 fw-bold shadow-sm" id="btn-submit-ajax">
                     <i class="fas fa-save me-2"></i> Simpan Catatan
                 </button>
             </form>
@@ -1050,7 +1034,200 @@ while ($row = mysqli_fetch_assoc($time_q)) {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // LOGIKA ICON KATEGORI DINAMIS
+        // =====================================
+        // STREAK DINAMIS & EFEK API
+        // =====================================
+        const streakData = [{
+                title: 'Konsistensi Semua',
+                val: <?= $streak_all ?>,
+                icon: 'fas fa-fire'
+            },
+            {
+                title: 'Konsistensi Tilawah',
+                val: <?= $streak_tilawah ?>,
+                icon: 'fas fa-book-open'
+            },
+            {
+                title: 'Konsistensi Murojaah',
+                val: <?= $streak_murojaah ?>,
+                icon: 'fas fa-sync-alt'
+            },
+            {
+                title: 'Konsistensi Hafalan',
+                val: <?= $streak_hafalan ?>,
+                icon: 'fas fa-star'
+            },
+            {
+                title: 'Konsistensi Setoran',
+                val: <?= $streak_setoran ?>,
+                icon: 'fas fa-microphone'
+            }
+        ];
+
+        let currentStreakIdx = 0;
+
+        function updateStreakDisplay() {
+            const sd = streakData[currentStreakIdx];
+            const titleEl = document.getElementById('streak-title');
+            const iconEl = document.getElementById('streak-icon');
+            const valEl = document.getElementById('streak-val');
+            const animEl = document.getElementById('streak-anim-wrapper');
+
+            animEl.style.opacity = 0; // Fade out
+
+            setTimeout(() => {
+                titleEl.innerText = sd.title;
+                iconEl.className = sd.icon + ' streak-icon-anim fs-2';
+                valEl.innerText = sd.val;
+
+                // Efek Api (Fire Effect) berdasarkan nilai
+                let fireLevel = Math.floor(sd.val / 5);
+                iconEl.style.textShadow = getFireShadow(fireLevel);
+
+                // Sedikit warna kuning pada icon jika sudah terbakar
+                iconEl.style.color = fireLevel > 0 ? '#fef08a' : '#ffffff';
+
+                animEl.style.opacity = 1; // Fade in
+            }, 500);
+
+            currentStreakIdx = (currentStreakIdx + 1) % streakData.length;
+        }
+
+        function getFireShadow(level) {
+            if (level === 0) return 'none';
+            if (level === 1) return '0 0 10px #fef08a';
+            if (level === 2) return '0 0 10px #fef08a, 0 0 20px #ef4444';
+            if (level >= 3) return '0 0 15px #fef08a, 0 0 30px #ef4444, 0 0 40px #f97316';
+            return 'none';
+        }
+
+        setInterval(updateStreakDisplay, 10000); // Putar setiap 10 detik
+
+        // =====================================
+        // AJAX: SUBMIT FORM AKTIVITAS
+        // =====================================
+        document.getElementById('formMutabaah').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-submit-ajax');
+            const oriBtnText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Menyimpan...';
+            btn.disabled = true;
+
+            const formData = new FormData(this);
+            formData.append('ajax_action', 'simpan_aktivitas');
+
+            fetch(window.location.href, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil',
+                            text: data.message,
+                            timer: 1500,
+                            showConfirmButton: false
+                        }).then(() => {
+                            // Refresh halaman dengan halus untuk mengupdate timeline dan kalender
+                            window.location.reload();
+                        });
+                    } else {
+                        Swal.fire('Gagal', data.message, 'error');
+                        btn.innerHTML = oriBtnText;
+                        btn.disabled = false;
+                    }
+                }).catch(err => {
+                    Swal.fire('Error', 'Terjadi kesalahan sistem.', 'error');
+                    btn.innerHTML = oriBtnText;
+                    btn.disabled = false;
+                });
+        });
+
+        // =====================================
+        // FILTER, PENCARIAN, & PAGINATION
+        // =====================================
+        const ITEMS_PER_PAGE = 7;
+        let currentPage = 1;
+        let currentCategory = 'all';
+        const allItems = Array.from(document.querySelectorAll('.tl-item'));
+
+        function filterCategory(type, btn) {
+            document.querySelectorAll('.filter-btn-custom').forEach(el => el.classList.remove('active'));
+            btn.classList.add('active');
+            currentCategory = type;
+            runSearchAndFilter();
+        }
+
+        function runSearchAndFilter() {
+            const sDate = document.getElementById('search_date').value;
+            const sNotes = document.getElementById('search_notes').value.toLowerCase();
+
+            // 1. Saring Data
+            let filteredItems = allItems.filter(item => {
+                let matchCat = (currentCategory === 'all' || item.getAttribute('data-type') === currentCategory);
+                let matchDate = (sDate === '' || item.getAttribute('data-date') === sDate);
+                let matchNotes = (sNotes === '' || item.getAttribute('data-notes').toLowerCase().includes(sNotes));
+                return matchCat && matchDate && matchNotes;
+            });
+
+            // 2. Pagination Math
+            const totalPages = Math.ceil(filteredItems.length / ITEMS_PER_PAGE) || 1;
+            if (currentPage > totalPages) currentPage = totalPages;
+            if (currentPage < 1) currentPage = 1;
+
+            // 3. Tampilkan Data Sesuai Halaman
+            allItems.forEach(item => item.style.display = 'none');
+            let startIdx = (currentPage - 1) * ITEMS_PER_PAGE;
+            let endIdx = startIdx + ITEMS_PER_PAGE;
+
+            for (let i = startIdx; i < Math.min(endIdx, filteredItems.length); i++) {
+                filteredItems[i].style.display = 'block';
+            }
+
+            // Empty State
+            document.getElementById('empty-state').style.display = filteredItems.length === 0 ? 'block' : 'none';
+
+            // 4. Render Tombol Angka Pagination
+            renderPagination(totalPages);
+        }
+
+        function renderPagination(totalPages) {
+            const nav = document.getElementById('pagination-nav');
+            nav.innerHTML = '';
+
+            if (totalPages <= 1) return; // Jika cuma 1 halaman, hilangkan navigasi
+
+            // Tombol Prev
+            nav.innerHTML += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                <button class="page-link" onclick="goToPage(${currentPage - 1})"><i class="fas fa-chevron-left"></i></button>
+            </li>`;
+
+            // Tombol Angka
+            for (let p = 1; p <= totalPages; p++) {
+                nav.innerHTML += `<li class="page-item ${p === currentPage ? 'active' : ''}">
+                    <button class="page-link" onclick="goToPage(${p})">${p}</button>
+                </li>`;
+            }
+
+            // Tombol Next
+            nav.innerHTML += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                <button class="page-link" onclick="goToPage(${currentPage + 1})"><i class="fas fa-chevron-right"></i></button>
+            </li>`;
+        }
+
+        function goToPage(pageNum) {
+            currentPage = pageNum;
+            runSearchAndFilter();
+        }
+
+        // Jalankan Filter Pertama Kali
+        runSearchAndFilter();
+
+        // =====================================
+        // ICON KATEGORI DINAMIS FORM MODAL
+        // =====================================
         function updateCatIcon() {
             const val = document.getElementById('activity_type').value;
             const icon = document.getElementById('cat_icon');
@@ -1060,45 +1237,9 @@ while ($row = mysqli_fetch_assoc($time_q)) {
                     val === 'hafalan_baru' ? 'fa-star' : 'fa-microphone');
         }
 
-        // LOGIKA PAGINATION & FILTER TIMELINE
-        const ITEMS_PER_PAGE = 10;
-        let currentFilter = 'all';
-        let visibleCount = ITEMS_PER_PAGE;
-        const allItems = Array.from(document.querySelectorAll('.tl-item'));
-        const loadMoreWrapper = document.getElementById('load-more-wrapper');
-
-        function updateTimelineDisplay() {
-            let filteredItems = allItems.filter(item => currentFilter === 'all' || item.getAttribute('data-type') === currentFilter);
-
-            allItems.forEach(item => item.style.display = 'none');
-
-            for (let i = 0; i < Math.min(visibleCount, filteredItems.length); i++) {
-                filteredItems[i].style.display = 'block';
-            }
-
-            if (filteredItems.length > visibleCount) {
-                loadMoreWrapper.classList.remove('d-none');
-            } else {
-                loadMoreWrapper.classList.add('d-none');
-            }
-        }
-
-        function filterTimeline(type, btn) {
-            document.querySelectorAll('.filter-btn-custom').forEach(el => el.classList.remove('active'));
-            btn.classList.add('active');
-            currentFilter = type;
-            visibleCount = ITEMS_PER_PAGE;
-            updateTimelineDisplay();
-        }
-
-        function loadMoreTimeline() {
-            visibleCount += ITEMS_PER_PAGE;
-            updateTimelineDisplay();
-        }
-
-        updateTimelineDisplay();
-
-        // MODAL / BOTTOM SHEET LOGIC
+        // =====================================
+        // MODAL / BOTTOM SHEET
+        // =====================================
         function openModal(id) {
             const modal = document.getElementById(id);
             modal.classList.add('show');
@@ -1111,14 +1252,11 @@ while ($row = mysqli_fetch_assoc($time_q)) {
             document.body.style.overflow = '';
         }
 
-        // BUG FIX SURAH KLIK: Menyembunyikan Dropdown dan Modal saat klik di luar area 
+        // BUG FIX SURAH KLIK: Menyembunyikan Dropdown dan Modal saat klik di luar area
         document.addEventListener('click', function(e) {
-            // Tutup Modal
             document.querySelectorAll('.modal-backdrop-custom').forEach(backdrop => {
                 if (e.target === backdrop) closeModal(backdrop.id);
             });
-
-            // Tutup Dropdown Pencarian Surah
             if (!searchInput.contains(e.target) && !dropdownList.contains(e.target)) {
                 dropdownList.classList.remove('show');
             }
@@ -1159,7 +1297,9 @@ while ($row = mysqli_fetch_assoc($time_q)) {
             openModal('modalDetail');
         }
 
-        // SURAH SEARCH LOGIC (DIPERBAIKI)
+        // =====================================
+        // SURAH SEARCH LOGIC & BUG FIX
+        // =====================================
         let surahData = [];
         const searchInput = document.getElementById('search_surah');
         const dropdownList = document.getElementById('surah_dropdown');
@@ -1185,10 +1325,11 @@ while ($row = mysqli_fetch_assoc($time_q)) {
             }
             let html = '';
             dataList.forEach(surah => {
-                // Bug fix utama: Diubah menggunakan onclick (mousedown dan event blur sudah dihapus)
+                // BUG FIX UTAMA: replace ' dengan \' agar onclick pada js tidak patah
+                const safeName = surah.namaLatin.replace(/'/g, "\\'");
                 html += `
-                <div class="dropdown-item-custom" onclick="selectSurah('${surah.namaLatin}', ${surah.jumlahAyat})">
-                    <span class="s-name">${surah.nomor}. ${surah.namaLatin}</span>
+                <div class="dropdown-item-custom" onclick="selectSurah('${safeName}', ${surah.jumlahAyat})">
+                    <span class="s-name"><i class="fas fa-quran me-2 opacity-50"></i>${surah.nomor}. ${surah.namaLatin}</span>
                     <span class="s-ayat">${surah.jumlahAyat} Ayat</span>
                 </div>`;
             });
@@ -1229,7 +1370,7 @@ while ($row = mysqli_fetch_assoc($time_q)) {
 
         inputAyahEnd.addEventListener('change', function() {
             if (parseInt(this.value) < parseInt(inputAyahStart.value)) {
-                alert("Ayat Akhir tidak boleh lebih kecil dari Ayat Awal.");
+                Swal.fire('Peringatan', 'Ayat Akhir tidak boleh lebih kecil dari Ayat Awal.', 'warning');
                 this.value = inputAyahStart.value;
             }
         });

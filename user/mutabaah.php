@@ -16,6 +16,7 @@ $pesan = '';
 $m = isset($_GET['m']) ? (int)$_GET['m'] : (int)date('m');
 $y = isset($_GET['y']) ? (int)$_GET['y'] : (int)date('Y');
 $month_name = date('F Y', mktime(0, 0, 0, $m, 1, $y));
+$days_in_month = cal_days_in_month(CAL_GREGORIAN, $m, $y);
 
 // Menangani Form Tambah Aktivitas
 if (isset($_POST['simpan_aktivitas'])) {
@@ -30,7 +31,7 @@ if (isset($_POST['simpan_aktivitas'])) {
     $q_insert = "INSERT INTO mutabaah (user_id, activity_type, activity_date, activity_time, surah, ayah_start, ayah_end, notes) 
                  VALUES ('$user_id', '$type', '$date', '$time', '$surah', '$a_start', '$a_end', '$notes')";
     if (mysqli_query($conn, $q_insert)) {
-        $pesan = "<div class='alert alert-success d-flex align-items-center'><i class='fas fa-check-circle me-2'></i> Aktivitas berhasil dicatat!</div>";
+        $pesan = "<div class='alert alert-success d-flex align-items-center mb-4 border-0 shadow-sm' style='background-color:#d1fae5; color:#065f46;'><i class='fas fa-check-circle me-2 fs-5'></i> Aktivitas berhasil dicatat!</div>";
     }
 }
 
@@ -61,6 +62,23 @@ while (true) {
     }
 }
 
+// Menentukan Level Streak untuk Warna dan Icon
+$streak_class = 'streak-normal';
+$streak_icon = 'fas fa-fire';
+if ($streak >= 30) {
+    $streak_class = 'streak-diamond';
+    $streak_icon = 'fas fa-gem';
+} elseif ($streak >= 20) {
+    $streak_class = 'streak-gold';
+    $streak_icon = 'fas fa-crown';
+} elseif ($streak >= 10) {
+    $streak_class = 'streak-purple';
+    $streak_icon = 'fas fa-fire-alt';
+} elseif ($streak >= 5) {
+    $streak_class = 'streak-blue';
+    $streak_icon = 'fas fa-fire-alt';
+}
+
 // 2. Data Kalender
 $cal_q = mysqli_query($conn, "SELECT activity_date, COUNT(id) as jml FROM mutabaah WHERE user_id = '$user_id' AND MONTH(activity_date) = $m AND YEAR(activity_date) = $y GROUP BY activity_date");
 $cal_data = [];
@@ -74,6 +92,16 @@ $timeline = [];
 while ($row = mysqli_fetch_assoc($time_q)) {
     $timeline[] = $row;
 }
+
+// 4. Persiapan Data Untuk Laporan PDF (Semua hari dalam bulan tersebut)
+$report_data = [];
+for ($d = 1; $d <= $days_in_month; $d++) {
+    $date_str = sprintf("%04d-%02d-%02d", $y, $m, $d);
+    $report_data[$date_str] = [];
+}
+foreach ($timeline as $tl) {
+    $report_data[$tl['activity_date']][] = $tl;
+}
 ?>
 
 <!DOCTYPE html>
@@ -84,11 +112,9 @@ while ($row = mysqli_fetch_assoc($time_q)) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mutabaah - Hifzly</title>
     <link rel="icon" type="image/png" href="../assets/icon/logo.png">
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #059669;
@@ -111,42 +137,41 @@ while ($row = mysqli_fetch_assoc($time_q)) {
         body {
             background-color: var(--bg);
             color: var(--dark);
-            padding-bottom: 80px;
+            padding-bottom: 90px;
         }
 
         /* HEADER BULAN */
         .month-header {
             background: var(--card-bg);
-            padding: 1rem 1.5rem;
+            padding: 1.2rem;
             border-radius: 20px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
             margin-top: 1.5rem;
             margin-bottom: 1.5rem;
         }
 
         .month-header h2 {
-            font-weight: 700;
+            font-weight: 800;
             color: var(--dark);
+            font-size: 1.25rem;
         }
 
         .month-nav-link {
-            color: var(--text-muted);
+            color: var(--primary);
             font-weight: 600;
             padding: 0.5rem 1rem;
             border-radius: 12px;
-            background: var(--bg);
+            background: var(--primary-light);
             transition: all 0.3s ease;
             text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .month-nav-link:hover {
-            background: var(--border);
-            color: var(--dark);
-        }
-
-        .alert {
-            border-radius: 12px;
-            font-weight: 500;
+            background: var(--primary);
+            color: white;
         }
 
         /* STATISTIK */
@@ -155,29 +180,105 @@ while ($row = mysqli_fetch_assoc($time_q)) {
             border-radius: 16px;
             padding: 1.2rem;
             border: 1px solid var(--border);
-            transition: transform 0.2s ease;
+            transition: all 0.3s ease;
+            height: 100%;
         }
 
         .stat-card:hover {
-            transform: translateY(-3px);
+            transform: translateY(-5px);
+            border-color: var(--primary-light);
+            box-shadow: 0 10px 20px rgba(5, 150, 105, 0.08);
         }
 
         .stat-label {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: var(--text-muted);
-            font-weight: 500;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .stat-value {
             font-size: 1.8rem;
             font-weight: 800;
             color: var(--primary);
+            margin-top: 5px;
         }
 
+        /* DYNAMIC STREAK STYLES */
         .streak-card {
-            background: linear-gradient(135deg, #f59e0b, #d97706);
-            color: white;
             border: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .streak-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: skewX(-20deg);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% {
+                left: -100%;
+            }
+
+            20% {
+                left: 200%;
+            }
+
+            100% {
+                left: 200%;
+            }
+        }
+
+        @keyframes pulse-icon {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.2);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .streak-normal {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .streak-blue {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+        }
+
+        .streak-purple {
+            background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+            color: white;
+            box-shadow: 0 8px 20px rgba(109, 40, 217, 0.3);
+        }
+
+        .streak-gold {
+            background: linear-gradient(135deg, #fbbf24, #d97706);
+            color: white;
+            box-shadow: 0 8px 20px rgba(217, 119, 6, 0.3);
+        }
+
+        .streak-diamond {
+            background: linear-gradient(135deg, #ef4444, #be123c);
+            color: white;
+            box-shadow: 0 8px 20px rgba(190, 18, 60, 0.4);
         }
 
         .streak-card .stat-label,
@@ -185,77 +286,115 @@ while ($row = mysqli_fetch_assoc($time_q)) {
             color: white;
         }
 
+        .streak-icon-anim {
+            animation: pulse-icon 1.5s infinite;
+            display: inline-block;
+        }
+
         /* KALENDER */
         .cal-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            gap: 6px;
+            gap: 8px;
         }
 
         .cal-day-label {
             text-align: center;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: var(--text-muted);
-            font-weight: 600;
-            margin-bottom: 4px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 5px;
         }
 
         .cal-box {
             aspect-ratio: 1;
-            border-radius: 10px;
+            border-radius: 12px;
             background-color: #f1f5f9;
             position: relative;
             cursor: pointer;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 600;
             font-size: 0.95rem;
-            color: rgba(0, 0, 0, 0.25);
+            color: rgba(0, 0, 0, 0.3);
             user-select: none;
+            border: 2px solid transparent;
         }
 
         .cal-box.active {
             background-color: var(--primary);
-            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.35);
             color: white;
-            font-weight: 700;
+            font-weight: 800;
+            box-shadow: 0 4px 10px rgba(5, 150, 105, 0.3);
         }
 
         .cal-box:hover {
-            transform: translateY(-3px);
-            border-color: var(--primary);
+            transform: translateY(-3px) scale(1.05);
+            border-color: var(--primary-light);
             color: var(--dark);
+            z-index: 2;
         }
 
         .cal-box.active:hover {
-            border-color: transparent;
-            transform: scale(1.08);
+            border-color: white;
             color: white;
         }
 
         .cal-badge {
             position: absolute;
-            top: -8px;
-            right: -8px;
-            font-size: 0.7rem;
+            top: -6px;
+            right: -6px;
+            font-size: 0.65rem;
             background: #ef4444;
             color: white;
             border-radius: 50%;
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 700;
-            box-shadow: 0 2px 5px rgba(239, 68, 68, 0.5);
+            font-weight: 800;
+            box-shadow: 0 2px 4px rgba(239, 68, 68, 0.4);
             border: 2px solid white;
-            z-index: 5;
         }
 
         /* TIMELINE */
+        .filter-scroll {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            margin-bottom: 1rem;
+        }
+
+        .filter-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .filter-btn-custom {
+            padding: 0.5rem 1.2rem;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            font-size: 0.85rem;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .filter-btn-custom.active,
+        .filter-btn-custom:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 4px 10px rgba(5, 150, 105, 0.2);
+        }
+
         .tl-card {
             background: var(--card-bg);
             padding: 1.2rem;
@@ -263,31 +402,61 @@ while ($row = mysqli_fetch_assoc($time_q)) {
             border: 1px solid var(--border);
             border-left: 6px solid var(--primary);
             transition: all 0.3s ease;
+            animation: slideIn 0.3s ease forwards;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
 
         .tl-card:hover {
-            transform: translateX(5px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+            transform: translateX(8px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+            border-left-color: var(--primary-hover);
         }
 
         .tl-type {
             font-size: 0.75rem;
-            padding: 0.3rem 0.8rem;
-            border-radius: 12px;
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
             background: var(--primary-light);
             color: var(--primary-hover);
             text-transform: uppercase;
-            font-weight: 700;
+            font-weight: 800;
             letter-spacing: 0.5px;
+            display: inline-block;
         }
 
         .tl-notes {
             font-style: italic;
             background: var(--bg);
-            padding: 0.8rem;
-            border-radius: 10px;
-            margin-top: 0.8rem;
+            padding: 0.8rem 1rem;
+            border-radius: 12px;
+            margin-top: 1rem;
             color: #475569;
+            font-size: 0.9rem;
+            border-left: 3px solid #cbd5e1;
+        }
+
+        #btn-load-more {
+            background: var(--primary-light);
+            color: var(--primary-hover);
+            border: none;
+            font-weight: 700;
+            transition: 0.3s;
+        }
+
+        #btn-load-more:hover {
+            background: var(--primary);
+            color: white;
         }
 
         /* FAB */
@@ -295,8 +464,8 @@ while ($row = mysqli_fetch_assoc($time_q)) {
             position: fixed;
             bottom: 100px;
             right: 25px;
-            width: 60px;
-            height: 60px;
+            width: 65px;
+            height: 65px;
             background: var(--primary);
             color: white;
             border-radius: 50%;
@@ -304,19 +473,35 @@ while ($row = mysqli_fetch_assoc($time_q)) {
             align-items: center;
             justify-content: center;
             font-size: 1.8rem;
-            box-shadow: 0 8px 25px rgba(5, 150, 105, 0.4);
+            box-shadow: 0 10px 25px rgba(5, 150, 105, 0.4);
             cursor: pointer;
             z-index: 1000;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             border: none;
+            animation: bounceIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes bounceIn {
+            0% {
+                transform: scale(0);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+            }
         }
 
         .fab:hover {
-            transform: translateY(-5px) scale(1.05);
-            box-shadow: 0 12px 30px rgba(5, 150, 105, 0.5);
+            transform: translateY(-8px) scale(1.05);
+            box-shadow: 0 15px 35px rgba(5, 150, 105, 0.5);
+            background: var(--primary-hover);
         }
 
-        /* MODAL & BOTTOM SHEET */
+        /* MODAL / BOTTOM SHEET */
         .modal-backdrop-custom {
             position: fixed;
             top: 0;
@@ -324,7 +509,7 @@ while ($row = mysqli_fetch_assoc($time_q)) {
             right: 0;
             bottom: 0;
             background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(4px);
+            backdrop-filter: blur(5px);
             z-index: 1050;
             display: flex;
             align-items: center;
@@ -348,15 +533,14 @@ while ($row = mysqli_fetch_assoc($time_q)) {
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
             max-height: 90vh;
             overflow-y: auto;
-            transform: translateY(20px);
-            transition: transform 0.3s ease;
+            transform: translateY(30px) scale(0.95);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         .modal-backdrop-custom.show .modal-content-custom {
-            transform: translateY(0);
+            transform: translateY(0) scale(1);
         }
 
-        /* BOTTOM SHEET UNTUK MOBILE */
         @media (max-width: 767.98px) {
             .modal-backdrop-custom {
                 align-items: flex-end;
@@ -367,6 +551,7 @@ while ($row = mysqli_fetch_assoc($time_q)) {
                 border-radius: 24px 24px 0 0;
                 max-height: 85vh;
                 transform: translateY(100%);
+                padding: 1.5rem;
             }
 
             .modal-backdrop-custom.show .modal-content-custom {
@@ -374,42 +559,12 @@ while ($row = mysqli_fetch_assoc($time_q)) {
             }
 
             .fab {
-                bottom: 90px;
+                bottom: 85px;
                 right: 20px;
+                width: 60px;
+                height: 60px;
+                font-size: 1.5rem;
             }
-        }
-
-        /* FILTER BUTTONS */
-        .filter-scroll {
-            display: flex;
-            gap: 8px;
-            overflow-x: auto;
-            padding-bottom: 0.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .filter-scroll::-webkit-scrollbar {
-            height: 0;
-        }
-
-        .filter-btn-custom {
-            padding: 0.5rem 1.2rem;
-            border-radius: 20px;
-            border: 1px solid var(--border);
-            background: var(--card-bg);
-            font-size: 0.9rem;
-            cursor: pointer;
-            white-space: nowrap;
-            transition: all 0.3s ease;
-            color: var(--text-muted);
-            font-weight: 500;
-        }
-
-        .filter-btn-custom.active,
-        .filter-btn-custom:hover {
-            background: var(--dark);
-            color: white;
-            border-color: var(--dark);
         }
 
         /* DROPDOWN SURAH */
@@ -448,10 +603,6 @@ while ($row = mysqli_fetch_assoc($time_q)) {
             transition: 0.2s;
         }
 
-        .dropdown-item-custom:last-child {
-            border-bottom: none;
-        }
-
         .dropdown-item-custom:hover {
             background: var(--primary-light);
             color: var(--primary-hover);
@@ -462,11 +613,113 @@ while ($row = mysqli_fetch_assoc($time_q)) {
         }
 
         .dropdown-item-custom .s-ayat {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-         background: var(--bg);
+            font-size: 0.75rem;
+            color: var(--primary-hover);
+            background: var(--primary-light);
             padding: 0.2rem 0.6rem;
             border-radius: 10px;
+            font-weight: 700;
+        }
+
+        /* PRINT CSS - UNTUK PDF YANG RAPI & BAGUS */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+
+            #print-area,
+            #print-area * {
+                visibility: visible;
+            }
+
+            #print-area {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                background: white;
+                color: black;
+                font-family: 'Inter', sans-serif;
+            }
+
+            .print-header {
+                text-align: center;
+                margin-bottom: 20px;
+                padding-bottom: 15px;
+                border-bottom: 3px solid #059669;
+            }
+
+            .print-header h2 {
+                color: #059669;
+                margin: 0;
+                font-size: 24px;
+                font-weight: 800;
+            }
+
+            .print-header p {
+                margin: 5px 0 0;
+                font-size: 14px;
+                color: #555;
+            }
+
+            .print-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 20px;
+            }
+
+            .print-table th {
+                background-color: #059669 !important;
+                color: white !important;
+                font-weight: 700;
+                padding: 12px;
+                border: 1px solid #059669;
+                -webkit-print-color-adjust: exact;
+            }
+
+            .print-table td {
+                padding: 10px 12px;
+                border: 1px solid #ddd;
+                vertical-align: top;
+                font-size: 13px;
+            }
+
+            .print-table tr:nth-child(even) td {
+                background-color: #f8fafc !important;
+                -webkit-print-color-adjust: exact;
+            }
+
+            .print-date {
+                font-weight: 700;
+                width: 120px;
+                white-space: nowrap;
+            }
+
+            .print-badge {
+                background: #d1fae5 !important;
+                color: #065f46 !important;
+                padding: 2px 6px;
+                border-radius: 4px;
+                font-size: 11px;
+                font-weight: bold;
+                display: inline-block;
+                margin-bottom: 4px;
+                border: 1px solid #10b981;
+                -webkit-print-color-adjust: exact;
+            }
+
+            .print-notes {
+                font-style: italic;
+                color: #666;
+                font-size: 11px;
+                margin-top: 3px;
+            }
+
+            .print-empty {
+                text-align: center;
+                color: #999;
+                font-style: italic;
+            }
         }
     </style>
 </head>
@@ -475,7 +728,7 @@ while ($row = mysqli_fetch_assoc($time_q)) {
 
     <?php include '../components/nav.php'; ?>
 
-    <div class="container">
+    <div class="container screen-area">
         <!-- HEADER BULAN -->
         <div class="month-header d-flex justify-content-between align-items-center">
             <?php
@@ -492,12 +745,12 @@ while ($row = mysqli_fetch_assoc($time_q)) {
                 $next_y++;
             }
             ?>
-            <a href="?m=<?= $prev_m ?>&y=<?= $prev_y ?>" class="month-nav-link">
-                <i class="fas fa-chevron-left me-1"></i> Sebelumnya
+            <a href="?m=<?= $prev_m ?>&y=<?= $prev_y ?>" class="month-nav-link shadow-sm">
+                <i class="fas fa-chevron-left"></i> <span class="d-none d-md-inline">Sebelumnya</span>
             </a>
-            <h2 class="mb-0 fs-4"><?= $month_name ?></h2>
-            <a href="?m=<?= $next_m ?>&y=<?= $next_y ?>" class="month-nav-link">
-                Selanjutnya <i class="fas fa-chevron-right ms-1"></i>
+            <h2 class="mb-0 text-center flex-grow-1"><?= $month_name ?></h2>
+            <a href="?m=<?= $next_m ?>&y=<?= $next_y ?>" class="month-nav-link shadow-sm">
+                <span class="d-none d-md-inline">Selanjutnya</span> <i class="fas fa-chevron-right"></i>
             </a>
         </div>
 
@@ -512,37 +765,43 @@ while ($row = mysqli_fetch_assoc($time_q)) {
             <div class="col-lg-5">
                 <!-- Ringkasan Aktivitas -->
                 <div class="card border-0 shadow-sm rounded-4 mb-4">
-                    <div class="card-body">
-                        <h5 class="fw-bold mb-3"><i class="fas fa-chart-pie me-2"></i>Ringkasan Aktivitas</h5>
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-4"><i class="fas fa-chart-pie me-2 text-primary"></i> Ringkasan Aktivitas</h5>
                         <div class="row g-3">
                             <div class="col-6">
                                 <div class="stat-card">
                                     <div class="stat-label">Hari Aktif</div>
-                                    <div class="stat-value"><?= $hari_aktif ?></div>
+                                    <div class="stat-value"><?= $hari_aktif ?> <span class="fs-6 text-muted fw-medium">hari</span></div>
                                 </div>
                             </div>
                             <div class="col-6">
                                 <div class="stat-card">
                                     <div class="stat-label">Tilawah</div>
-                                    <div class="stat-value"><?= $stats['tilawah'] ?></div>
+                                    <div class="stat-value"><?= $stats['tilawah'] ?> <span class="fs-6 text-muted fw-medium">kali</span></div>
                                 </div>
                             </div>
                             <div class="col-6">
                                 <div class="stat-card">
                                     <div class="stat-label">Murojaah</div>
-                                    <div class="stat-value"><?= $stats['murojaah'] ?></div>
+                                    <div class="stat-value"><?= $stats['murojaah'] ?> <span class="fs-6 text-muted fw-medium">kali</span></div>
                                 </div>
                             </div>
                             <div class="col-6">
                                 <div class="stat-card">
                                     <div class="stat-label">Setoran</div>
-                                    <div class="stat-value"><?= $stats['setoran'] ?></div>
+                                    <div class="stat-value"><?= $stats['setoran'] ?> <span class="fs-6 text-muted fw-medium">kali</span></div>
                                 </div>
                             </div>
                             <div class="col-12">
-                                <div class="stat-card streak-card d-flex justify-content-between align-items-center">
-                                    <span class="stat-label"><i class="fas fa-fire me-1"></i> Streak Saat Ini</span>
-                                    <span class="stat-value"><?= $streak ?> Hari</span>
+                                <div class="stat-card streak-card <?= $streak_class ?> d-flex justify-content-between align-items-center p-4">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <i class="<?= $streak_icon ?> streak-icon-anim fs-2"></i>
+                                        <div>
+                                            <div class="stat-label text-white opacity-75">Konsistensi</div>
+                                            <div class="stat-value text-white mb-0 fs-3">Streak Api</div>
+                                        </div>
+                                    </div>
+                                    <div class="fs-1 fw-bold text-white"><?= $streak ?> <span class="fs-5 fw-normal">Hari</span></div>
                                 </div>
                             </div>
                         </div>
@@ -551,8 +810,8 @@ while ($row = mysqli_fetch_assoc($time_q)) {
 
                 <!-- Kalender Kontribusi -->
                 <div class="card border-0 shadow-sm rounded-4 mb-4">
-                    <div class="card-body">
-                        <h5 class="fw-bold mb-3"><i class="fas fa-calendar-check me-2"></i>Kalender Kontribusi</h5>
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-4"><i class="fas fa-calendar-check me-2 text-primary"></i> Kalender Kontribusi</h5>
                         <div class="cal-grid">
                             <div class="cal-day-label">Min</div>
                             <div class="cal-day-label">Sen</div>
@@ -562,9 +821,7 @@ while ($row = mysqli_fetch_assoc($time_q)) {
                             <div class="cal-day-label">Jum</div>
                             <div class="cal-day-label">Sab</div>
                             <?php
-                            $days_in_month = cal_days_in_month(CAL_GREGORIAN, $m, $y);
                             $first_day = date('w', mktime(0, 0, 0, $m, 1, $y));
-
                             for ($i = 0; $i < $first_day; $i++) echo "<div></div>";
 
                             for ($d = 1; $d <= $days_in_month; $d++) {
@@ -572,9 +829,8 @@ while ($row = mysqli_fetch_assoc($time_q)) {
                                 $count = isset($cal_data[$date_str]) ? $cal_data[$date_str] : 0;
                                 $class = $count > 0 ? 'active' : '';
                                 $badge = $count > 1 ? "<div class='cal-badge'>$count</div>" : "";
-                                // Angka tanggal dengan opasitas semi transparan
                                 echo "<div class='cal-box $class' onclick='showDaily(\"$date_str\")'>
-                                        <span style='opacity: 0.7;'>$d</span>
+                                        <span style='opacity: " . ($class ? "1" : "0.6") . ";'>$d</span>
                                         $badge
                                       </div>";
                             }
@@ -584,24 +840,24 @@ while ($row = mysqli_fetch_assoc($time_q)) {
                 </div>
 
                 <!-- Tombol Download Laporan -->
-                <button class="btn btn-outline-secondary w-100 rounded-3 py-3 fw-semibold" onclick="window.print()">
-                    <i class="fas fa-file-pdf me-2"></i> Download Laporan Bulanan
+                <button class="btn btn-outline-success w-100 rounded-4 py-3 fw-bold mb-4 shadow-sm" onclick="window.print()">
+                    <i class="fas fa-file-pdf me-2"></i> Ekspor Laporan PDF
                 </button>
             </div>
 
             <!-- KOLOM KANAN: TIMELINE -->
             <div class="col-lg-7">
                 <div class="card border-0 shadow-sm rounded-4">
-                    <div class="card-body">
-                        <h5 class="fw-bold mb-3"><i class="fas fa-history me-2"></i>Jejak Langkah (Timeline)</h5>
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-4"><i class="fas fa-history me-2 text-primary"></i> Jejak Langkah</h5>
 
                         <!-- Filter -->
                         <div class="filter-scroll">
                             <button class="filter-btn-custom active" onclick="filterTimeline('all', this)">Semua</button>
-                            <button class="filter-btn-custom" onclick="filterTimeline('tilawah', this)">Tilawah</button>
-                            <button class="filter-btn-custom" onclick="filterTimeline('murojaah', this)">Murojaah</button>
-                            <button class="filter-btn-custom" onclick="filterTimeline('hafalan_baru', this)">Hafalan Baru</button>
-                            <button class="filter-btn-custom" onclick="filterTimeline('setoran', this)">Setoran</button>
+                            <button class="filter-btn-custom" onclick="filterTimeline('tilawah', this)"><i class="fas fa-book-open me-1"></i> Tilawah</button>
+                            <button class="filter-btn-custom" onclick="filterTimeline('murojaah', this)"><i class="fas fa-sync-alt me-1"></i> Murojaah</button>
+                            <button class="filter-btn-custom" onclick="filterTimeline('hafalan_baru', this)"><i class="fas fa-star me-1"></i> Hafalan Baru</button>
+                            <button class="filter-btn-custom" onclick="filterTimeline('setoran', this)"><i class="fas fa-microphone me-1"></i> Setoran</button>
                         </div>
 
                         <!-- Timeline -->
@@ -610,28 +866,37 @@ while ($row = mysqli_fetch_assoc($time_q)) {
                                 $type_label = str_replace('_', ' ', $tl['activity_type']);
                             ?>
                                 <div class="tl-card tl-item" data-type="<?= $tl['activity_type'] ?>" data-date="<?= $tl['activity_date'] ?>">
-                                    <div class="d-flex justify-content-between text-muted small mb-2">
-                                        <span><i class="fas fa-calendar-alt me-1"></i> <?= date('d M Y', strtotime($tl['activity_date'])) ?></span>
-                                        <span><i class="fas fa-clock me-1"></i> <?= date('H:i', strtotime($tl['activity_time'])) ?></span>
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <span class="tl-type"><i class="fas fa-tag me-1"></i> <?= $type_label ?></span>
+                                        <div class="text-muted small fw-medium">
+                                            <span><i class="fas fa-calendar-day me-1"></i> <?= date('d M Y', strtotime($tl['activity_date'])) ?></span> &bull;
+                                            <span><i class="fas fa-clock me-1"></i> <?= date('H:i', strtotime($tl['activity_time'])) ?></span>
+                                        </div>
                                     </div>
-                                    <span class="tl-type mb-2"><?= $type_label ?></span>
-                                    <div class="fw-bold fs-6">Surah <?= htmlspecialchars($tl['surah']) ?></div>
-                                    <div class="text-muted small fw-medium">
-                                        Ayat <?= $tl['ayah_start'] ?> - <?= $tl['ayah_end'] ?>
+                                    <div class="fw-bold fs-5 text-dark mb-1">Surah <?= htmlspecialchars($tl['surah']) ?></div>
+                                    <div class="text-secondary fw-medium mb-2">
+                                        <i class="fas fa-bookmark me-1 opacity-75"></i> Ayat <?= $tl['ayah_start'] ?> - <?= $tl['ayah_end'] ?>
                                     </div>
                                     <?php if ($tl['notes']): ?>
-                                        <div class="tl-notes">"<?= htmlspecialchars($tl['notes']) ?>"</div>
+                                        <div class="tl-notes"><i class="fas fa-quote-left me-2 opacity-50"></i><?= htmlspecialchars($tl['notes']) ?></div>
                                     <?php endif; ?>
                                 </div>
                             <?php endforeach; ?>
 
                             <?php if (empty($timeline)): ?>
                                 <div class="text-center py-5 text-muted">
-                                    <i class="fas fa-seedling fa-3x mb-3 opacity-50"></i>
-                                    <h5>Belum ada aktivitas</h5>
+                                    <i class="fas fa-folder-open fa-3x mb-3 opacity-25"></i>
+                                    <h5 class="fw-bold">Belum ada aktivitas</h5>
                                     <p>Yuk, mulai catat perjalanan hafalanmu hari ini!</p>
                                 </div>
                             <?php endif; ?>
+                        </div>
+
+                        <!-- Tombol Load More (Di-handle via JS) -->
+                        <div class="text-center mt-4 d-none" id="load-more-wrapper">
+                            <button class="btn rounded-pill px-4 py-2" id="btn-load-more" onclick="loadMoreTimeline()">
+                                <i class="fas fa-chevron-down me-1"></i> Tampilkan Lebih Banyak
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -639,65 +904,111 @@ while ($row = mysqli_fetch_assoc($time_q)) {
         </div>
     </div>
 
+    <!-- AREA CETAK PDF (Hanya terlihat saat diprint) -->
+    <div id="print-area" class="d-none">
+        <div class="print-header">
+            <h2>Laporan Aktivitas Mutabaah</h2>
+            <p>Bulan: <?= $month_name ?> | Nama Pengguna: <?= htmlspecialchars($_SESSION['nama_lengkap'] ?? 'Pengguna') ?></p>
+        </div>
+        <table class="print-table">
+            <thead>
+                <tr>
+                    <th style="width: 15%;">Tanggal</th>
+                    <th style="width: 85%;">Aktivitas / Capaian</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($report_data as $date => $activities): ?>
+                    <tr>
+                        <td class="print-date"><?= date('d F Y', strtotime($date)) ?></td>
+                        <td>
+                            <?php if (empty($activities)): ?>
+                                <div class="print-empty">- Tidak ada aktivitas -</div>
+                            <?php else: ?>
+                                <?php foreach ($activities as $act): ?>
+                                    <div style="margin-bottom: 8px;">
+                                        <span class="print-badge"><?= strtoupper(str_replace('_', ' ', $act['activity_type'])) ?></span>
+                                        <strong>Surah <?= htmlspecialchars($act['surah']) ?></strong> (Ayat <?= $act['ayah_start'] ?> - <?= $act['ayah_end'] ?>)
+                                        <span style="color:#666; font-size:11px;">[<?= date('H:i', strtotime($act['activity_time'])) ?>]</span>
+                                        <?php if ($act['notes']): ?>
+                                            <div class="print-notes">Catatan: <?= htmlspecialchars($act['notes']) ?></div>
+                                        <?php endif; ?>
+                                    </div>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+
     <!-- FAB -->
-    <button class="fab" onclick="openModal('modalAdd')">
-        <i class="fas fa-plus"></i>
+    <button class="fab shadow-lg" onclick="openModal('modalAdd')" title="Catat Aktivitas Baru">
+        <i class="fas fa-pen"></i>
     </button>
 
     <!-- MODAL / BOTTOM SHEET: Tambah Aktivitas -->
     <div class="modal-backdrop-custom" id="modalAdd">
-        <div class="modal-content-custom">
+        <div class="modal-content-custom border-0">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h5 class="fw-bold mb-0">Catat Aktivitas</h5>
-                <button type="button" class="btn-close" onclick="closeModal('modalAdd')"></button>
+                <h5 class="fw-bold mb-0 text-dark"><i class="fas fa-plus-circle text-primary me-2"></i>Catat Aktivitas</h5>
+                <button type="button" class="btn-close shadow-none" onclick="closeModal('modalAdd')"></button>
             </div>
             <form method="POST">
                 <div class="mb-3">
-                    <label class="form-label fw-semibold">Kategori Aktivitas</label>
-                    <select name="activity_type" class="form-select rounded-3" required>
-                        <option value="tilawah">📖 Tilawah</option>
-                        <option value="murojaah">🔄 Murojaah</option>
-                        <option value="hafalan_baru">✨ Hafalan Baru</option>
-                        <option value="setoran">🎙️ Setoran</option>
-                    </select>
+                    <label class="form-label fw-bold text-secondary">Kategori Aktivitas</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="fas fa-tasks text-muted"></i></span>
+                        <select name="activity_type" class="form-select border-start-0 ps-0 bg-light" required>
+                            <option value="tilawah">📖 Tilawah</option>
+                            <option value="murojaah">🔄 Murojaah</option>
+                            <option value="hafalan_baru">✨ Hafalan Baru</option>
+                            <option value="setoran">🎙️ Setoran</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div class="mb-3 custom-select-wrapper">
-                    <label class="form-label fw-semibold">Nama Surah</label>
+                    <label class="form-label fw-bold text-secondary">Nama Surah</label>
                     <input type="hidden" name="surah" id="hidden_surah" required>
-                    <input type="text" id="search_surah" class="form-control rounded-3" placeholder="🔍 Ketik & cari nama surah..." autocomplete="off" required>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="fas fa-search text-muted"></i></span>
+                        <input type="text" id="search_surah" class="form-control border-start-0 ps-0 bg-light" placeholder="Ketik & cari nama surah..." autocomplete="off" required>
+                    </div>
                     <div class="dropdown-list" id="surah_dropdown">
-                        <div class="p-3 text-center text-muted small">Memuat data surah...</div>
+                        <div class="p-3 text-center text-muted small"><i class="fas fa-spinner fa-spin me-2"></i>Memuat data surah...</div>
                     </div>
                 </div>
 
-                <div class="row g-3">
+                <div class="row g-3 mb-3">
                     <div class="col-6">
-                        <label class="form-label fw-semibold">Ayat Awal</label>
-                        <input type="number" name="ayah_start" id="ayah_start" class="form-control rounded-3" required min="1" disabled placeholder="Pilih Surah">
+                        <label class="form-label fw-bold text-secondary">Ayat Awal</label>
+                        <input type="number" name="ayah_start" id="ayah_start" class="form-control bg-light" required min="1" disabled placeholder="Pilih Surah">
                     </div>
                     <div class="col-6">
-                        <label class="form-label fw-semibold">Ayat Akhir</label>
-                        <input type="number" name="ayah_end" id="ayah_end" class="form-control rounded-3" required min="1" disabled placeholder="Pilih Surah">
-                    </div>
-                </div>
-
-                <div class="row g-3 mt-2">
-                    <div class="col-6">
-                        <label class="form-label fw-semibold">Tanggal</label>
-                        <input type="date" name="activity_date" class="form-control rounded-3" value="<?= date('Y-m-d') ?>" required>
-                    </div>
-                    <div class="col-6">
-                        <label class="form-label fw-semibold">Jam</label>
-                        <input type="time" name="activity_time" class="form-control rounded-3" value="<?= date('H:i') ?>" required>
+                        <label class="form-label fw-bold text-secondary">Ayat Akhir</label>
+                        <input type="number" name="ayah_end" id="ayah_end" class="form-control bg-light" required min="1" disabled placeholder="Pilih Surah">
                     </div>
                 </div>
 
-                <div class="mb-3 mt-3">
-                    <label class="form-label fw-semibold">Catatan (Opsional)</label>
-                    <textarea name="notes" class="form-control rounded-3" rows="2" placeholder="Bagaimana kelancaran hafalanmu?"></textarea>
+                <div class="row g-3 mb-3">
+                    <div class="col-6">
+                        <label class="form-label fw-bold text-secondary">Tanggal</label>
+                        <input type="date" name="activity_date" class="form-control bg-light" value="<?= date('Y-m-d') ?>" required>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label fw-bold text-secondary">Jam</label>
+                        <input type="time" name="activity_time" class="form-control bg-light" value="<?= date('H:i') ?>" required>
+                    </div>
                 </div>
-                <button type="submit" name="simpan_aktivitas" class="btn btn-success w-100 py-3 rounded-3 fw-bold mt-2">
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold text-secondary">Catatan (Opsional)</label>
+                    <textarea name="notes" class="form-control bg-light" rows="2" placeholder="Bagaimana kelancaran hafalanmu?"></textarea>
+                </div>
+
+                <button type="submit" name="simpan_aktivitas" class="btn btn-success w-100 py-3 rounded-4 fw-bold shadow-sm">
                     <i class="fas fa-save me-2"></i> Simpan Catatan
                 </button>
             </form>
@@ -706,18 +1017,59 @@ while ($row = mysqli_fetch_assoc($time_q)) {
 
     <!-- MODAL / BOTTOM SHEET: Detail Harian -->
     <div class="modal-backdrop-custom" id="modalDetail">
-        <div class="modal-content-custom">
+        <div class="modal-content-custom border-0">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h5 class="fw-bold mb-0" id="detail-date-title">Aktivitas Harian</h5>
-                <button type="button" class="btn-close" onclick="closeModal('modalDetail')"></button>
+                <h5 class="fw-bold mb-0 text-dark" id="detail-date-title"><i class="fas fa-calendar-day text-primary me-2"></i>Aktivitas Harian</h5>
+                <button type="button" class="btn-close shadow-none" onclick="closeModal('modalDetail')"></button>
             </div>
             <div id="daily-timeline-container" class="d-flex flex-column gap-3"></div>
         </div>
     </div>
 
-    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // LOGIKA PAGINATION & FILTER TIMELINE (Maksimal 10 awal)
+        const ITEMS_PER_PAGE = 10;
+        let currentFilter = 'all';
+        let visibleCount = ITEMS_PER_PAGE;
+        const allItems = Array.from(document.querySelectorAll('.tl-item'));
+        const loadMoreWrapper = document.getElementById('load-more-wrapper');
+
+        function updateTimelineDisplay() {
+            let filteredItems = allItems.filter(item => currentFilter === 'all' || item.getAttribute('data-type') === currentFilter);
+
+            // Sembunyikan semua dulu
+            allItems.forEach(item => item.style.display = 'none');
+
+            // Tampilkan sesuai jumlah visibleCount
+            for (let i = 0; i < Math.min(visibleCount, filteredItems.length); i++) {
+                filteredItems[i].style.display = 'block';
+            }
+
+            // Tampilkan/Sembunyikan tombol Load More
+            if (filteredItems.length > visibleCount) {
+                loadMoreWrapper.classList.remove('d-none');
+            } else {
+                loadMoreWrapper.classList.add('d-none');
+            }
+        }
+
+        function filterTimeline(type, btn) {
+            document.querySelectorAll('.filter-btn-custom').forEach(el => el.classList.remove('active'));
+            btn.classList.add('active');
+            currentFilter = type;
+            visibleCount = ITEMS_PER_PAGE; // Reset load more
+            updateTimelineDisplay();
+        }
+
+        function loadMoreTimeline() {
+            visibleCount += ITEMS_PER_PAGE;
+            updateTimelineDisplay();
+        }
+
+        // Jalankan saat pertama kali diload
+        updateTimelineDisplay();
+
         // MODAL / BOTTOM SHEET LOGIC
         function openModal(id) {
             const modal = document.getElementById(id);
@@ -730,45 +1082,50 @@ while ($row = mysqli_fetch_assoc($time_q)) {
             modal.classList.remove('show');
             document.body.style.overflow = '';
         }
-        // Tutup modal jika klik di luar area konten
+
         document.querySelectorAll('.modal-backdrop-custom').forEach(backdrop => {
             backdrop.addEventListener('click', function(e) {
-                if (e.target === this) {
-                    closeModal(this.id);
-                }
+                if (e.target === this) closeModal(this.id);
             });
         });
 
-        // FILTER TIMELINE
-        function filterTimeline(type, btn) {
-            document.querySelectorAll('.filter-btn-custom').forEach(el => el.classList.remove('active'));
-            btn.classList.add('active');
-            document.querySelectorAll('.tl-item').forEach(item => {
-                item.style.display = (type === 'all' || item.getAttribute('data-type') === type) ? 'block' : 'none';
-            });
-        }
-
         // DETAIL HARIAN DARI KALENDER
         function showDaily(dateStr) {
-            document.getElementById('detail-date-title').innerText = "Catatan: " + dateStr;
+            // Format tanggal yang cantik
+            const dateObj = new Date(dateStr);
+            const options = {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            };
+            const formattedDate = dateObj.toLocaleDateString('id-ID', options);
+
+            document.getElementById('detail-date-title').innerHTML = `<i class="fas fa-calendar-day text-primary me-2"></i> ${formattedDate}`;
             const container = document.getElementById('daily-timeline-container');
             container.innerHTML = "";
             let found = false;
-            document.querySelectorAll('.tl-item').forEach(item => {
+
+            allItems.forEach(item => {
                 if (item.getAttribute('data-date') === dateStr) {
                     const clone = item.cloneNode(true);
                     clone.style.display = 'block';
+                    clone.style.animation = 'none'; // hapus animasi agar langsung muncul
                     container.appendChild(clone);
                     found = true;
                 }
             });
+
             if (!found) {
-                container.innerHTML = `<div class="text-center py-4 text-muted bg-light rounded-3">Belum ada aktivitas pada tanggal ini.</div>`;
+                container.innerHTML = `
+                    <div class="text-center py-5 text-muted bg-light rounded-4 border border-dashed">
+                        <i class="fas fa-bed fa-2x mb-2 opacity-50"></i>
+                        <p class="mb-0 fw-medium">Tidak ada catatan aktivitas.</p>
+                    </div>`;
             }
             openModal('modalDetail');
         }
 
-        // SURAH SEARCH LOGIC
+        // SURAH SEARCH LOGIC (Diperbaiki)
         let surahData = [];
         const searchInput = document.getElementById('search_surah');
         const dropdownList = document.getElementById('surah_dropdown');
@@ -783,7 +1140,7 @@ while ($row = mysqli_fetch_assoc($time_q)) {
                 surahData = json.data;
                 renderDropdown(surahData);
             } catch (error) {
-                dropdownList.innerHTML = `<div class="p-3 text-center text-danger">Gagal memuat data surah. Periksa koneksi internet.</div>`;
+                dropdownList.innerHTML = `<div class="p-3 text-center text-danger"><i class="fas fa-exclamation-triangle me-2"></i>Gagal memuat data surah.</div>`;
             }
         }
 
@@ -794,8 +1151,9 @@ while ($row = mysqli_fetch_assoc($time_q)) {
             }
             let html = '';
             dataList.forEach(surah => {
+                // MENGGUNAKAN onmousedown UNTUK MENCEGAH BUG BLUR SAAT KLIK
                 html += `
-                <div class="dropdown-item-custom" onclick="selectSurah('${surah.namaLatin}', ${surah.jumlahAyat})">
+                <div class="dropdown-item-custom" onmousedown="selectSurah('${surah.namaLatin}', ${surah.jumlahAyat})">
                     <span class="s-name">${surah.nomor}. ${surah.namaLatin}</span>
                     <span class="s-ayat">${surah.jumlahAyat} Ayat</span>
                 </div>`;
@@ -831,12 +1189,13 @@ while ($row = mysqli_fetch_assoc($time_q)) {
             }
         });
 
-        searchInput.addEventListener('focus', () => dropdownList.classList.add('show'));
+        searchInput.addEventListener('focus', () => {
+            if (surahData.length > 0) dropdownList.classList.add('show');
+        });
 
-        document.addEventListener('click', function(e) {
-            if (!searchInput.contains(e.target) && !dropdownList.contains(e.target)) {
-                dropdownList.classList.remove('show');
-            }
+        searchInput.addEventListener('blur', () => {
+            // Memberi sedikit delay agar mousedown pada item tereksekusi duluan
+            setTimeout(() => dropdownList.classList.remove('show'), 150);
         });
 
         inputAyahEnd.addEventListener('change', function() {

@@ -136,7 +136,6 @@
             width: 100%;
             height: 100%;
             object-fit: contain;
-            /* recolor the mark to plain white, no background box */
             filter: brightness(0) invert(1);
         }
 
@@ -159,7 +158,7 @@
 
         .hero-copy {
             position: relative;
-            z-index: 3;
+            z-index: 10;
             text-align: center;
             max-width: 680px;
             margin: 40px auto 0;
@@ -189,19 +188,19 @@
             color: var(--white);
             font-size: 3.5rem;
             font-weight: 800;
-            line-height: 1.1;
+            line-height: 1.15;
             letter-spacing: -1.8px;
         }
 
-        /* ===== Phone stage: centered directly under the title ===== */
         .phone-stage {
             position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
             min-height: 430px;
-            margin-top: 37 px;
+            margin-top: 37px;
             perspective: 1400px;
+            z-index: 5;
         }
 
         .phone-aura {
@@ -293,7 +292,6 @@
                 0 1px 0 rgba(255, 255, 255, 0.18) inset;
         }
 
-        /* side buttons for a more realistic bezel */
         .phone-frame::before {
             content: '';
             position: absolute;
@@ -550,51 +548,48 @@
             }
         }
 
-        /* Full-bleed fade so the phone dissolves smoothly into the hero
-           background, edge-to-edge (not clipped to the inner container) */
+        /* FIXED FADE BLUR UNTUK MOBILE */
+        /* Kita buang mask-image yang bikin blur hilang di HP, ganti dengan gradient transparan ke solid */
         .hero-bottom-fade {
             position: absolute;
             left: 0;
             right: 0;
             bottom: 0;
-            height: 310px;
+            height: 280px;
             background: linear-gradient(to bottom,
                     rgba(52, 211, 153, 0) 0%,
-                    rgba(52, 211, 153, 0.5) 28%,
-                    var(--hero-bottom) 72%);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            /* fade the blur itself in gradually so there's no hard blur edge */
-            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 30%);
-            mask-image: linear-gradient(to bottom, transparent 0%, black 30%);
+                    rgba(52, 211, 153, 0.6) 35%,
+                    var(--hero-bottom) 90%);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
             pointer-events: none;
-            z-index: 4;
+            z-index: 6;
+            /* Naikin z-index agar cover hp dengan baik */
         }
 
-        /* Text + download row sitting under the phone */
         .hero-sub {
             position: relative;
-            z-index: 9;
+            z-index: 10;
             text-align: center;
             max-width: 480px;
-            margin: -46px auto 0;
+            margin: -20px auto 0;
         }
 
         .hero-sub p.lede {
-            color: rgba(255, 255, 255, 0.92);
-            font-size: 1.02rem;
-            line-height: 1.7;
+            color: rgba(255, 255, 255, 0.95);
+            font-size: 1.05rem;
+            line-height: 1.6;
         }
 
         .store-buttons {
             position: relative;
-            z-index: 9;
+            z-index: 10;
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
             gap: 12px;
-            margin: 26px auto 0;
-            padding-bottom: 56px;
+            margin: 24px auto 0;
+            padding-bottom: 60px;
             max-width: 640px;
         }
 
@@ -622,7 +617,7 @@
         .btn-store.ghost {
             background: rgba(255, 255, 255, 0.14);
             border: 1px solid rgba(255, 255, 255, 0.3);
-            color: rgba(255, 255, 255, 0.8);
+            color: rgba(255, 255, 255, 0.9);
             cursor: not-allowed;
             position: relative;
         }
@@ -669,7 +664,7 @@
         /* ============ QUICK HIGHLIGHTS STRIP ============ */
         .highlights {
             position: relative;
-            z-index: 6;
+            z-index: 10;
             background: var(--paper);
             padding: 26px 0 0;
         }
@@ -1110,10 +1105,7 @@
                 width: 0%;
             }
 
-            60% {
-                width: 100%;
-            }
-
+            60%,
             100% {
                 width: 100%;
             }
@@ -1236,15 +1228,18 @@
             font-size: 0.82rem;
         }
 
+        /* ============ RESPONSIVE MEDIA QUERIES ============ */
+
+        /* Tablet & Kecil */
         @media (max-width: 980px) {
             .hero h1 {
-                font-size: 2.6rem;
+                font-size: 2.8rem;
             }
 
             .feature-row,
             .feature-row.reverse {
                 flex-direction: column;
-                gap: 32px;
+                gap: 40px;
             }
 
             .feature-row-text p,
@@ -1263,14 +1258,55 @@
             }
         }
 
-        @media (max-width: 560px) {
-            .container {
-                padding: 0 20px;
+        /* HP (Mobile) */
+        @media (max-width: 768px) {
+            .hero-arabic-mark {
+                font-size: 8rem;
+                top: 0;
+            }
+
+            .navbar {
+                flex-direction: column;
+                gap: 15px;
             }
 
             .hero h1 {
-                font-size: 2rem;
+                font-size: 2.2rem;
                 letter-spacing: -1px;
+            }
+
+            .hero-copy {
+                margin-top: 25px;
+            }
+
+            .phone-stage {
+                min-height: 380px;
+                /* Kurangi space agar hp tidak terlalu jauh ke bawah */
+                margin-top: 20px;
+            }
+
+            /* Sesuaikan ukuran mockup HP biar tidak terlalu besar/meluber */
+            .phone-frame {
+                width: 220px;
+                height: 460px;
+                padding: 10px;
+            }
+
+            .phone-notch {
+                width: 70px;
+                height: 20px;
+            }
+
+            .screen-status {
+                margin-bottom: 10px;
+            }
+
+            .juz-ring-wrap {
+                padding: 6px;
+            }
+
+            .hero-sub {
+                margin-top: 10px;
             }
 
             .store-buttons {
@@ -1283,14 +1319,26 @@
                 justify-content: center;
             }
 
-            .phone-frame {
-                width: 210px;
-                height: 428px;
-            }
-
+            /* Perkecil bayangan HP mini di list fitur */
             .row-mini-phone {
                 width: 160px;
                 height: 270px;
+            }
+        }
+
+        /* Ekstra Kecil (Misal HP Layar Sempit) */
+        @media (max-width: 480px) {
+            .container {
+                padding: 0 20px;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .hero-bottom-fade {
+                height: 240px;
+                /* Disesuaikan dengan tinggi sisa hp */
             }
         }
     </style>
@@ -1315,7 +1363,7 @@
                 <h1>Genggam hafalanmu, ke mana pun melangkah.</h1>
             </div>
 
-            <!-- Phone mockup, centered right under the title -->
+            <!-- Phone mockup -->
             <div class="phone-stage" id="phoneStage">
                 <div class="phone-aura"></div>
                 <span class="mote" style="left:38%; width:4px; height:4px; animation-duration:4.2s; animation-delay:0.2s; --drift:14px;"></span>
@@ -1389,34 +1437,34 @@
             </div>
         </div>
 
-        <!-- Full-bleed fade: stretches edge-to-edge across the whole hero,
-             not clipped to the inner container, so it blends cleanly left/right -->
+        <!-- Full-bleed fade: now using safe robust gradients for Mobile -->
         <div class="hero-bottom-fade"></div>
     </section>
 
     <!-- ============ QUICK HIGHLIGHTS ============ -->
     <section class="highlights">
         <div class="container">
+            <!-- Diubah ke sistem grid Bootstrap standar agar tidak menumpuk aneh di HP -->
             <div class="row g-3">
-                <div class="col-6 col-md-3">
+                <div class="col-12 col-sm-6 col-lg-3">
                     <div class="highlight-chip">
                         <span class="hi-icon"><i class="fa-solid fa-cloud"></i></span>
                         <span><strong>Auto-sync</strong><span>Realtime ke semua device</span></span>
                     </div>
                 </div>
-                <div class="col-6 col-md-3">
+                <div class="col-12 col-sm-6 col-lg-3">
                     <div class="highlight-chip">
                         <span class="hi-icon"><i class="fa-solid fa-fire"></i></span>
                         <span><strong>Streak harian</strong><span>Pengingat tepat waktu</span></span>
                     </div>
                 </div>
-                <div class="col-6 col-md-3">
+                <div class="col-12 col-sm-6 col-lg-3">
                     <div class="highlight-chip">
                         <span class="hi-icon"><i class="fa-solid fa-file-export"></i></span>
                         <span><strong>Laporan siap pakai</strong><span>Ekspor PDF & Excel</span></span>
                     </div>
                 </div>
-                <div class="col-6 col-md-3">
+                <div class="col-12 col-sm-6 col-lg-3">
                     <div class="highlight-chip">
                         <span class="hi-icon"><i class="fa-solid fa-shield-heart"></i></span>
                         <span><strong>Ramah musyrif</strong><span>Pantau progres santri</span></span>

@@ -378,6 +378,180 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             text-transform: uppercase;
         }
 
+        /* ================================================================ */
+        /* ===================  TAJWID INTERAKTIF (BARU)  =================== */
+        /* ================================================================ */
+
+        tajweed {
+            color: inherit;
+            cursor: pointer;
+            border-radius: 4px;
+            padding: 0 1px;
+            transition: background 0.2s;
+        }
+
+        tajweed:hover,
+        tajweed:active {
+            background: rgba(184, 145, 47, 0.15);
+        }
+
+        .tajwid-off tajweed {
+            color: inherit !important;
+            background: none !important;
+        }
+
+        .teks-arab span.end,
+        .mushaf-line-text span.end {
+            display: none;
+        }
+
+        .teks-arab tajweed.ham_wasl,
+        .teks-arab tajweed.silent,
+        .teks-arab tajweed.laam_shamsiyah {
+            color: #AAAAAA;
+        }
+
+        .teks-arab tajweed.madda_normal {
+            color: #537FFF;
+        }
+
+        .teks-arab tajweed.madda_permissible {
+            color: #4050FF;
+        }
+
+        .teks-arab tajweed.madda_necessary {
+            color: #000EBC;
+        }
+
+        .teks-arab tajweed.qalaqah,
+        .teks-arab tajweed.qalqalah {
+            color: #DD0008;
+        }
+
+        .teks-arab tajweed.madda_obligatory {
+            color: #2144C1;
+        }
+
+        .teks-arab tajweed.ikhafa_shafawi {
+            color: #D500B7;
+        }
+
+        .teks-arab tajweed.ikhafa {
+            color: #9400A8;
+        }
+
+        .teks-arab tajweed.idgham_shafawi {
+            color: #58B800;
+        }
+
+        .teks-arab tajweed.iqlab {
+            color: #26BFFD;
+        }
+
+        .teks-arab tajweed.idgham_ghunnah {
+            color: #169777;
+        }
+
+        .teks-arab tajweed.idgham_wo_ghunnah {
+            color: #169200;
+        }
+
+        .teks-arab tajweed.idgham_mutajanisayn,
+        .teks-arab tajweed.idgham_mutaqaribayn {
+            color: #A1A1A1;
+        }
+
+        .teks-arab tajweed.ghunnah {
+            color: #FF7E1E;
+        }
+
+        .tajwid-tooltip {
+            position: fixed;
+            z-index: 5000;
+            max-width: 260px;
+            background: var(--dark);
+            color: #fff;
+            padding: 12px 14px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            line-height: 1.5;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            transform: translateY(6px) scale(0.96);
+            transition: 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+        }
+
+        .tajwid-tooltip.show {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        .tt-title {
+            font-weight: 700;
+            font-size: 0.85rem;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+        }
+
+        .tt-swatch {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 6px;
+            flex-shrink: 0;
+        }
+
+        .tt-ar {
+            font-family: 'Amiri', serif;
+            opacity: 0.85;
+            font-size: 0.78rem;
+        }
+
+        .legend-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 10px;
+            border-radius: 12px;
+            background: var(--bg);
+        }
+
+        .legend-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .legend-name {
+            font-weight: 700;
+            font-size: 0.88rem;
+            color: var(--dark);
+        }
+
+        .legend-name .ar {
+            font-family: 'Amiri', serif;
+            font-weight: 400;
+            color: var(--text-muted);
+            margin-left: 6px;
+        }
+
+        .legend-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
         .islamic-alert {
             position: fixed;
             top: -100px;
@@ -915,6 +1089,8 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
                 <div class="h-btn" onclick="changeFontSize(1)"><i class="fas fa-plus"></i></div>
             </div>
             <div class="h-btn active" id="btn-terjemah" onclick="toggleTerjemah()" title="Terjemahan"><i class="fas fa-language"></i></div>
+            <div class="h-btn active" id="btn-tajwid" onclick="toggleTajwid()" title="Warna Tajwid (mode daftar)"><i class="fas fa-highlighter"></i></div>
+            <div class="h-btn" onclick="openLegendModal()" title="Panduan Warna Tajwid"><i class="fas fa-palette"></i></div>
             <div class="h-btn" id="btn-play-full" onclick="togglePlayFull()" title="Putar Murottal"><i class="fas fa-play-circle"></i></div>
             <div class="h-btn" onclick="openInfoModal()" title="Asbabun Nuzul"><i class="fas fa-info-circle"></i></div>
         </div>
@@ -984,6 +1160,17 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
         </div>
     </div>
 
+    <!-- Modal Panduan Warna Tajwid -->
+    <div class="modal" id="legendModal" onclick="closeLegendModal(event)">
+        <div class="modal-content">
+            <h2 class="modal-title"><i class="fas fa-palette"></i> Panduan Warna Tajwid</h2>
+            <div class="legend-list" id="legendList"></div>
+        </div>
+    </div>
+
+    <!-- Tooltip Tajwid -->
+    <div class="tajwid-tooltip" id="tajwidTooltip"></div>
+
     <!-- Ayah Action Sheet (mode mushaf) -->
     <div class="modal" id="ayahSheet" onclick="closeAyahSheet(event)">
         <div class="modal-content" style="position:relative;">
@@ -1016,8 +1203,128 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
 
         let surahData = null;
         let tafsirData = null;
+        let tajwidMap = {}; // { nomorAyat: 'html teks arab ber-tag <tajweed>' }
         let audioFullEl = document.getElementById('audioFull');
         let audioAyatEl = document.getElementById('audioAyat');
+
+        // --- PENGATURAN TAJWID ---
+        let isTajwidOn = localStorage.getItem('hifzly_tajwid_on') !== '0';
+        if (!isTajwidOn) {
+            document.getElementById('baca-body').classList.add('tajwid-off');
+            document.getElementById('btn-tajwid').classList.remove('active');
+        }
+
+        // Kamus aturan tajwid: kelas dari API -> nama, arab, warna, penjelasan singkat
+        const TAJWID_RULES = {
+            ham_wasl: {
+                color: '#AAAAAA',
+                name: 'Hamzah Wasal',
+                ar: 'همزة الوصل',
+                desc: 'Hamzah yang tidak dibaca (mati) di awal kata, hanya dilafalkan jika mengawali bacaan.'
+            },
+            silent: {
+                color: '#AAAAAA',
+                name: 'Huruf Tidak Dibaca',
+                ar: 'حرف ساكن',
+                desc: 'Huruf atau harakat yang tidak dilafalkan sama sekali.'
+            },
+            laam_shamsiyah: {
+                color: '#AAAAAA',
+                name: 'Lam Syamsiyah',
+                ar: 'لام شمسية',
+                desc: 'Huruf lam yang melebur (tidak dibaca) karena diikuti huruf syamsiyah.'
+            },
+            madda_normal: {
+                color: '#537FFF',
+                name: "Mad Thobi'i (Mad Asli)",
+                ar: 'مد عادي',
+                desc: 'Bacaan panjang standar, dibaca 2 harakat.'
+            },
+            madda_permissible: {
+                color: '#4050FF',
+                name: "Mad Ja'iz / Mad Far'i",
+                ar: 'مد جائز',
+                desc: 'Bacaan panjang yang boleh dibaca 2, 4, atau 6 harakat.'
+            },
+            madda_necessary: {
+                color: '#000EBC',
+                name: 'Mad Wajib',
+                ar: 'مد واجب',
+                desc: 'Bacaan panjang wajib, dibaca 6 harakat.'
+            },
+            qalaqah: {
+                color: '#DD0008',
+                name: 'Qalqalah',
+                ar: 'قلقلة',
+                desc: 'Pantulan suara pada huruf ق ط ب ج د ketika berharakat sukun.'
+            },
+            qalqalah: {
+                color: '#DD0008',
+                name: 'Qalqalah',
+                ar: 'قلقلة',
+                desc: 'Pantulan suara pada huruf ق ط ب ج د ketika berharakat sukun.'
+            },
+            madda_obligatory: {
+                color: '#2144C1',
+                name: 'Mad Lazim',
+                ar: 'مد لازم',
+                desc: 'Bacaan panjang wajib 4-5 harakat karena bertemu huruf bertasydid atau sukun tetap.'
+            },
+            ikhafa_shafawi: {
+                color: '#D500B7',
+                name: "Ikhfa' Syafawi",
+                ar: 'إخفاء شفوي',
+                desc: 'Mim sukun bertemu huruf ba, dibaca samar disertai dengung.'
+            },
+            ikhafa: {
+                color: '#9400A8',
+                name: "Ikhfa'",
+                ar: 'إخفاء',
+                desc: 'Nun sukun/tanwin bertemu huruf ikhfa, dibaca samar disertai dengung.'
+            },
+            idgham_shafawi: {
+                color: '#58B800',
+                name: 'Idgham Syafawi',
+                ar: 'إدغام شفوي',
+                desc: 'Mim sukun bertemu huruf mim, melebur disertai dengung.'
+            },
+            iqlab: {
+                color: '#26BFFD',
+                name: 'Iqlab',
+                ar: 'إقلاب',
+                desc: 'Nun sukun/tanwin bertemu huruf ba, diganti menjadi bunyi mim.'
+            },
+            idgham_ghunnah: {
+                color: '#169777',
+                name: 'Idgham Bighunnah',
+                ar: 'إدغام بغنة',
+                desc: 'Nun sukun/tanwin melebur ke huruf berikutnya disertai dengung.'
+            },
+            idgham_wo_ghunnah: {
+                color: '#169200',
+                name: 'Idgham Bilaghunnah',
+                ar: 'إدغام بلا غنة',
+                desc: 'Nun sukun/tanwin melebur ke huruf berikutnya tanpa dengung.'
+            },
+            idgham_mutajanisayn: {
+                color: '#A1A1A1',
+                name: 'Idgham Mutajanisain',
+                ar: 'إدغام متجانسين',
+                desc: 'Peleburan dua huruf yang sama makhraj namun berbeda sifat.'
+            },
+            idgham_mutaqaribayn: {
+                color: '#A1A1A1',
+                name: 'Idgham Mutaqaribain',
+                ar: 'إدغام متقاربين',
+                desc: 'Peleburan dua huruf yang makhrajnya berdekatan.'
+            },
+            ghunnah: {
+                color: '#FF7E1E',
+                name: 'Ghunnah',
+                ar: 'غنة',
+                desc: 'Dengung yang ditahan selama 2 harakat.'
+            }
+        };
 
         async function fetchAlQuranData() {
             try {
@@ -1039,8 +1346,106 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
 
                 setupUI();
                 renderAyat(surahData.ayat);
+                loadTajwidData(noSurat); // ambil warna tajwid setelah teks utama tampil
             } catch (e) {
                 document.getElementById('loading').innerHTML = "Gagal memuat ayat. Periksa koneksi internet.";
+            }
+        }
+
+        // Ambil teks ber-tajwid dari Al Quran Cloud API, lalu suntikkan ke ayat yang sudah tampil.
+        // Kalau gagal/API down, teks arab biasa (dari equran.id) tetap tampil seperti semula.
+        async function loadTajwidData(nomor) {
+            try {
+                const res = await fetch(`https://api.alquran.cloud/v1/surah/${nomor}/quran-tajweed`);
+                if (!res.ok) throw new Error('Tajwid API gagal');
+                const json = await res.json();
+                tajwidMap = {};
+                (json.data.ayahs || []).forEach(ay => {
+                    tajwidMap[ay.numberInSurah] = ay.text;
+                });
+                applyTajwidToDom();
+            } catch (e) {
+                tajwidMap = {};
+            }
+        }
+
+        function applyTajwidToDom() {
+            Object.keys(tajwidMap).forEach(no => {
+                const el = document.querySelector(`#ayat-${no} .teks-arab`);
+                if (el) el.innerHTML = tajwidMap[no];
+            });
+        }
+
+        function toggleTajwid() {
+            isTajwidOn = !isTajwidOn;
+            document.getElementById('baca-body').classList.toggle('tajwid-off', !isTajwidOn);
+            document.getElementById('btn-tajwid').classList.toggle('active', isTajwidOn);
+            try {
+                localStorage.setItem('hifzly_tajwid_on', isTajwidOn ? '1' : '0');
+            } catch (e) {}
+        }
+
+        // Cari info aturan tajwid dari elemen <tajweed class="..."> yang di-tap
+        function findTajwidInfo(el) {
+            const classes = (el.className || '').split(/\s+/);
+            for (const c of classes) {
+                if (TAJWID_RULES[c]) return TAJWID_RULES[c];
+            }
+            return null;
+        }
+
+        function showTajwidTooltip(el, x, y) {
+            const info = findTajwidInfo(el);
+            const tooltip = document.getElementById('tajwidTooltip');
+            if (!info) {
+                tooltip.classList.remove('show');
+                return;
+            }
+            tooltip.innerHTML = `
+                <div class="tt-title"><span class="tt-swatch" style="background:${info.color}"></span>${info.name}</div>
+                <div class="tt-ar">${info.ar}</div>
+                <div style="margin-top:6px;">${info.desc}</div>
+            `;
+            const vw = window.innerWidth,
+                vh = window.innerHeight;
+            let left = Math.min(Math.max(x - 130, 10), vw - 270);
+            let top = y + 16;
+            if (top + 130 > vh) top = Math.max(y - 140, 10);
+            tooltip.style.left = left + 'px';
+            tooltip.style.top = top + 'px';
+            tooltip.classList.add('show');
+            clearTimeout(showTajwidTooltip._timer);
+            showTajwidTooltip._timer = setTimeout(() => tooltip.classList.remove('show'), 4500);
+        }
+
+        function buildLegend() {
+            const seen = new Set();
+            let html = '';
+            Object.keys(TAJWID_RULES).forEach(key => {
+                const info = TAJWID_RULES[key];
+                if (seen.has(info.name)) return;
+                seen.add(info.name);
+                html += `<div class="legend-item">
+                    <div class="legend-dot" style="background:${info.color}"></div>
+                    <div>
+                        <div class="legend-name">${info.name}<span class="ar">${info.ar}</span></div>
+                        <div class="legend-desc">${info.desc}</div>
+                    </div>
+                </div>`;
+            });
+            document.getElementById('legendList').innerHTML = html;
+        }
+
+        function openLegendModal() {
+            buildLegend();
+            document.getElementById('legendModal').style.display = 'flex';
+            setTimeout(() => document.getElementById('legendModal').classList.add('show'), 10);
+        }
+
+        function closeLegendModal(e) {
+            if (!e || e.target.id === 'legendModal' || e.target.classList.contains('close-btn')) {
+                document.getElementById('legendModal').classList.remove('show');
+                setTimeout(() => document.getElementById('legendModal').style.display = 'none', 300);
             }
         }
 
@@ -1094,7 +1499,26 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
                 </div>`;
             });
             container.innerHTML = html;
+
+            // Kalau data tajwid sudah lebih dulu ada di cache (mis. balik dari mode lain), langsung terapkan
+            if (Object.keys(tajwidMap).length) applyTajwidToDom();
         }
+
+        // Event delegation: tap/klik pada elemen <tajweed> di mode List untuk lihat penjelasan aturan
+        document.getElementById('ayatList').addEventListener('click', (e) => {
+            const el = e.target.closest('tajweed');
+            if (!el || !isTajwidOn) {
+                document.getElementById('tajwidTooltip').classList.remove('show');
+                return;
+            }
+            showTajwidTooltip(el, e.clientX, e.clientY);
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('tajweed') && !e.target.closest('.tajwid-tooltip')) {
+                document.getElementById('tajwidTooltip').classList.remove('show');
+            }
+        });
 
         let isTerjemahTampil = true;
 

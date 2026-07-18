@@ -385,9 +385,9 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
         tajweed {
             color: inherit;
             cursor: pointer;
-            border-radius: 4px;
-            padding: 0 1px;
-            transition: background 0.2s;
+            /* Sengaja TANPA padding/border-radius/margin: elemen ini membungkus
+               huruf/harakat Arab satu per satu, dan properti kotak (padding dll)
+               menyisipkan jarak visual yang memutus sambungan huruf (cursive). */
         }
 
         tajweed:hover,

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#04140f">
+    <meta name="theme-color" content="#059669">
     <title>Get Early Access - Hifzhly</title>
     <link rel="icon" type="image/png" href="assets/icon/logo.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
@@ -13,14 +13,14 @@
 
     <style>
         :root {
-            --primary: #059669;
-            --primary-dark: #04785a;
-            --primary-light: #34d399;
+            --primary: #10b981;
+            --primary-dark: #059669;
+            --primary-light: #6ee7b7;
+            --hero-top: #0ea371;
+            --hero-bottom: #34d399;
             --gold: #c9a227;
             --gold-light: #e8c85f;
             --ink: #0f172a;
-            --night: #041711;
-            --night-mid: #0f2e22;
             --muted: #64748b;
             --paper: #f7faf8;
             --white: #ffffff;
@@ -76,18 +76,16 @@
         /* ============ HERO ============ */
         .hero {
             position: relative;
-            background: radial-gradient(120% 90% at 50% 0%, #113d2c 0%, var(--night-mid) 45%, var(--night) 100%);
-            padding-bottom: 70px;
+            background: linear-gradient(180deg, var(--hero-top) 0%, var(--hero-bottom) 100%);
+            padding-bottom: 0;
             overflow: hidden;
-            border-bottom-left-radius: 42px;
-            border-bottom-right-radius: 42px;
         }
 
         .hero::before {
             content: '';
             position: absolute;
             inset: 0;
-            background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+            background-image: radial-gradient(rgba(255, 255, 255, 0.09) 1px, transparent 1px);
             background-size: 26px 26px;
             opacity: 0.5;
             pointer-events: none;
@@ -96,9 +94,9 @@
         .hero-arabic-mark {
             position: absolute;
             font-family: 'Amiri', serif;
-            font-size: 12rem;
-            color: rgba(255, 255, 255, 0.035);
-            top: -20px;
+            font-size: 11rem;
+            color: rgba(255, 255, 255, 0.06);
+            top: -10px;
             right: -10px;
             line-height: 1;
             pointer-events: none;
@@ -107,7 +105,7 @@
 
         .navbar {
             position: relative;
-            z-index: 5;
+            z-index: 6;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -128,56 +126,54 @@
             width: 34px;
             height: 34px;
             border-radius: 10px 4px 10px 10px;
-            background: linear-gradient(135deg, var(--primary-light), var(--primary));
+            background: rgba(255, 255, 255, 0.18);
+            border: 1px solid rgba(255, 255, 255, 0.3);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 0.9rem;
             color: #fff;
-            box-shadow: 0 8px 18px rgba(5, 150, 105, 0.4);
         }
 
         .navbar .nav-cta {
-            color: rgba(255, 255, 255, 0.75);
+            color: rgba(255, 255, 255, 0.85);
             font-size: 0.85rem;
             font-weight: 600;
             display: flex;
             align-items: center;
             gap: 8px;
             padding: 9px 16px;
-            border: 1px solid rgba(255, 255, 255, 0.18);
+            border: 1px solid rgba(255, 255, 255, 0.3);
             border-radius: 30px;
             transition: all 0.25s ease;
         }
 
         .navbar .nav-cta:hover {
-            border-color: rgba(255, 255, 255, 0.4);
-            color: #fff;
+            border-color: rgba(255, 255, 255, 0.6);
         }
 
-        /* Centered hero copy, matching reference layout */
         .hero-copy {
             position: relative;
             z-index: 3;
             text-align: center;
-            max-width: 700px;
-            margin: 44px auto 0;
+            max-width: 680px;
+            margin: 40px auto 0;
         }
 
         .hero-eyebrow {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            background: rgba(201, 162, 39, 0.14);
-            border: 1px solid rgba(201, 162, 39, 0.4);
-            color: var(--gold-light);
+            background: rgba(255, 255, 255, 0.16);
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            color: #fff;
             padding: 7px 16px 7px 12px;
             border-radius: 30px;
             font-size: 0.72rem;
             font-weight: 700;
             letter-spacing: 1.6px;
             text-transform: uppercase;
-            margin-bottom: 22px;
+            margin-bottom: 20px;
         }
 
         .hero-eyebrow i {
@@ -186,125 +182,30 @@
 
         .hero h1 {
             color: var(--white);
-            font-size: 3.6rem;
+            font-size: 3.5rem;
             font-weight: 800;
-            line-height: 1.08;
+            line-height: 1.1;
             letter-spacing: -1.8px;
-            margin-bottom: 18px;
         }
 
-        .hero h1 em {
-            font-style: normal;
-            display: block;
-            background: linear-gradient(100deg, var(--gold-light), var(--primary-light) 75%);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-
-        .hero p.lede {
-            color: rgba(255, 255, 255, 0.68);
-            font-size: 1.05rem;
-            line-height: 1.7;
-            max-width: 480px;
-            margin: 0 auto 34px;
-        }
-
-        /* Store buttons, centered */
-        .store-buttons {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 12px;
-            margin-bottom: 8px;
-        }
-
-        .btn-store {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 20px;
-            border-radius: 14px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        .btn-store.primary {
-            background: linear-gradient(135deg, var(--primary-light), var(--primary));
-            color: #fff;
-            box-shadow: 0 14px 28px rgba(5, 150, 105, 0.35);
-        }
-
-        .btn-store.primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 18px 34px rgba(5, 150, 105, 0.45);
-        }
-
-        .btn-store.ghost {
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.16);
-            color: rgba(255, 255, 255, 0.55);
-            cursor: not-allowed;
-            position: relative;
-        }
-
-        .btn-store .icon {
-            font-size: 1.4rem;
-            width: 20px;
-            text-align: center;
-        }
-
-        .btn-store .txt {
-            display: flex;
-            flex-direction: column;
-            text-align: left;
-            line-height: 1.25;
-        }
-
-        .btn-store .txt small {
-            font-size: 0.6rem;
-            text-transform: uppercase;
-            font-weight: 700;
-            letter-spacing: 0.6px;
-            opacity: 0.85;
-        }
-
-        .btn-store .txt span {
-            font-size: 0.95rem;
-        }
-
-        .soon-chip {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background: var(--gold);
-            color: var(--night);
-            font-size: 0.55rem;
-            font-weight: 800;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            padding: 3px 8px;
-            border-radius: 20px;
-        }
-
-        /* ===== Phone stage — large, centered below hero copy (signature element) ===== */
+        /* ===== Phone stage: centered directly under the title, fading at the bottom ===== */
         .phone-stage {
             position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
-            min-height: 480px;
-            margin-top: 26px;
+            min-height: 430px;
+            margin-top: 8px;
             perspective: 1400px;
         }
 
         .phone-aura {
             position: absolute;
-            width: 420px;
-            height: 420px;
+            width: 400px;
+            height: 400px;
             border-radius: 50%;
-            background: radial-gradient(circle, rgba(52, 211, 153, 0.35), rgba(52, 211, 153, 0) 70%);
-            filter: blur(10px);
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0) 70%);
+            filter: blur(6px);
             animation: auraPulse 5s ease-in-out infinite;
         }
 
@@ -317,7 +218,7 @@
             }
 
             50% {
-                transform: scale(1.12);
+                transform: scale(1.1);
                 opacity: 1;
             }
         }
@@ -325,8 +226,8 @@
         .mote {
             position: absolute;
             border-radius: 50%;
-            background: var(--gold-light);
-            box-shadow: 0 0 8px 2px rgba(232, 200, 95, 0.6);
+            background: #fff;
+            box-shadow: 0 0 8px 2px rgba(255, 255, 255, 0.7);
             opacity: 0;
             animation: moteRise linear infinite;
         }
@@ -342,17 +243,19 @@
             }
 
             85% {
-                opacity: 0.5;
+                opacity: 0.4;
             }
 
             100% {
-                transform: translateY(-260px) translateX(var(--drift, 20px));
+                transform: translateY(-240px) translateX(var(--drift, 20px));
                 opacity: 0;
             }
         }
 
         .phone-float {
             animation: floatY 5.5s ease-in-out infinite;
+            position: relative;
+            z-index: 2;
         }
 
         @keyframes floatY {
@@ -363,7 +266,7 @@
             }
 
             50% {
-                transform: translateY(-16px);
+                transform: translateY(-14px);
             }
         }
 
@@ -374,23 +277,23 @@
 
         .phone-frame {
             position: relative;
-            width: 264px;
-            height: 536px;
-            background: linear-gradient(160deg, #10241c, #04140f);
-            border-radius: 46px;
-            padding: 12px;
-            box-shadow: 0 40px 70px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.06) inset;
+            width: 250px;
+            height: 508px;
+            background: linear-gradient(160deg, #1c2b26, #0c1712);
+            border-radius: 44px;
+            padding: 11px;
+            box-shadow: 0 30px 60px rgba(4, 30, 20, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.08) inset;
         }
 
         .phone-notch {
             position: absolute;
-            top: 12px;
+            top: 11px;
             left: 50%;
             transform: translateX(-50%);
-            width: 90px;
-            height: 20px;
-            background: #04140f;
-            border-radius: 0 0 16px 16px;
+            width: 84px;
+            height: 18px;
+            background: #0c1712;
+            border-radius: 0 0 14px 14px;
             z-index: 4;
         }
 
@@ -398,10 +301,10 @@
             width: 100%;
             height: 100%;
             background: linear-gradient(180deg, #ffffff, #f4faf7);
-            border-radius: 36px;
+            border-radius: 34px;
             overflow: hidden;
             position: relative;
-            padding: 34px 18px 18px;
+            padding: 32px 17px 17px;
             display: flex;
             flex-direction: column;
         }
@@ -409,14 +312,14 @@
         .screen-status {
             display: flex;
             justify-content: space-between;
-            font-size: 0.62rem;
+            font-size: 0.6rem;
             font-weight: 700;
             color: var(--ink);
-            margin-bottom: 16px;
+            margin-bottom: 14px;
         }
 
         .screen-greet {
-            font-size: 0.68rem;
+            font-size: 0.66rem;
             color: var(--muted);
             font-weight: 600;
         }
@@ -424,7 +327,7 @@
         .screen-greet strong {
             display: block;
             color: var(--ink);
-            font-size: 1rem;
+            font-size: 0.98rem;
             font-weight: 800;
             margin-top: 2px;
         }
@@ -433,17 +336,17 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            margin: 16px 0 14px;
+            margin: 14px 0 12px;
             background: #eef7f2;
             border-radius: 16px;
-            padding: 10px 12px;
+            padding: 9px 11px;
         }
 
         .juz-ring {
-            width: 40px;
-            height: 40px;
+            width: 38px;
+            height: 38px;
             border-radius: 50%;
-            background: conic-gradient(var(--primary) 0deg, var(--primary) var(--pct, 220deg), #dbe9e2 var(--pct, 220deg));
+            background: conic-gradient(var(--primary-dark) 0deg, var(--primary-dark) var(--pct, 220deg), #dbe9e2 var(--pct, 220deg));
             display: flex;
             align-items: center;
             justify-content: center;
@@ -465,15 +368,15 @@
 
         .juz-ring::after {
             content: '';
-            width: 28px;
-            height: 28px;
+            width: 26px;
+            height: 26px;
             background: #eef7f2;
             border-radius: 50%;
         }
 
         .juz-text small {
             display: block;
-            font-size: 0.58rem;
+            font-size: 0.56rem;
             color: var(--muted);
             font-weight: 700;
             text-transform: uppercase;
@@ -481,14 +384,14 @@
         }
 
         .juz-text strong {
-            font-size: 0.78rem;
+            font-size: 0.75rem;
             color: var(--ink);
         }
 
         .ayat-list {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 7px;
             list-style: none;
             flex: 1;
         }
@@ -496,34 +399,34 @@
         .ayat-row {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 9px;
             background: #fff;
             border: 1px solid var(--border);
             border-radius: 12px;
-            padding: 9px 10px;
+            padding: 8px 9px;
         }
 
         .ayat-check {
-            width: 18px;
-            height: 18px;
+            width: 17px;
+            height: 17px;
             border-radius: 6px;
             border: 1.5px solid #cfe3d9;
             flex-shrink: 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.55rem;
+            font-size: 0.52rem;
             color: #fff;
         }
 
         .ayat-row .name {
-            font-size: 0.66rem;
+            font-size: 0.64rem;
             font-weight: 700;
             color: var(--ink);
         }
 
         .ayat-row .sub {
-            font-size: 0.56rem;
+            font-size: 0.54rem;
             color: var(--muted);
         }
 
@@ -549,8 +452,8 @@
 
             35%,
             90% {
-                background: var(--primary);
-                border-color: var(--primary);
+                background: var(--primary-dark);
+                border-color: var(--primary-dark);
             }
 
             96%,
@@ -593,16 +496,125 @@
             }
         }
 
-        /* ============ FEATURES ============ */
+        /* Blurred fade so the phone dissolves into the hero background at the bottom */
+        .phone-fade {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 190px;
+            background: linear-gradient(to bottom, rgba(52, 211, 153, 0) 0%, var(--hero-bottom) 78%);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        /* Text + download row sitting under the phone, slightly overlapping the fade */
+        .hero-sub {
+            position: relative;
+            z-index: 6;
+            text-align: center;
+            max-width: 480px;
+            margin: -46px auto 0;
+        }
+
+        .hero-sub p.lede {
+            color: rgba(255, 255, 255, 0.92);
+            font-size: 1.02rem;
+            line-height: 1.7;
+        }
+
+        .store-buttons {
+            position: relative;
+            z-index: 6;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            margin: 26px auto 0;
+            padding-bottom: 56px;
+            max-width: 640px;
+        }
+
+        .btn-store {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            border-radius: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-store.primary {
+            background: #fff;
+            color: var(--primary-dark);
+            box-shadow: 0 14px 28px rgba(4, 30, 20, 0.2);
+        }
+
+        .btn-store.primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 18px 34px rgba(4, 30, 20, 0.28);
+        }
+
+        .btn-store.ghost {
+            background: rgba(255, 255, 255, 0.14);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: rgba(255, 255, 255, 0.8);
+            cursor: not-allowed;
+            position: relative;
+        }
+
+        .btn-store .icon {
+            font-size: 1.4rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        .btn-store .txt {
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+            line-height: 1.25;
+        }
+
+        .btn-store .txt small {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.6px;
+            opacity: 0.85;
+        }
+
+        .btn-store .txt span {
+            font-size: 0.95rem;
+        }
+
+        .soon-chip {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--gold);
+            color: #1a1400;
+            font-size: 0.55rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            padding: 3px 8px;
+            border-radius: 20px;
+        }
+
+        /* ============ FEATURES (zig-zag) ============ */
         .features {
-            padding: 92px 0 100px;
+            padding: 84px 0 100px;
             background: var(--paper);
         }
 
         .section-head {
             text-align: center;
             max-width: 560px;
-            margin: 0 auto 56px;
+            margin: 0 auto 64px;
         }
 
         .section-eyebrow {
@@ -615,7 +627,7 @@
         }
 
         .section-head h2 {
-            font-size: 2.35rem;
+            font-size: 2.3rem;
             font-weight: 800;
             letter-spacing: -1px;
             color: var(--ink);
@@ -628,81 +640,77 @@
             line-height: 1.6;
         }
 
-        .feature-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 24px;
-        }
-
-        .feature-card {
-            background: #fff;
-            border: 1px solid var(--border);
-            border-radius: 24px;
-            padding: 26px 26px 30px;
-            transition: transform 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease;
-        }
-
-        .feature-card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 24px 46px rgba(5, 150, 105, 0.1);
-            border-color: rgba(5, 150, 105, 0.28);
-        }
-
-        /* ---- device simulation area ---- */
-        .device-sim {
-            position: relative;
-            height: 210px;
-            border-radius: 18px;
-            background: linear-gradient(165deg, #eef7f2, #e4f0e9);
-            margin-bottom: 22px;
+        .feature-row {
             display: flex;
-            align-items: flex-end;
-            justify-content: center;
-            overflow: hidden;
+            align-items: center;
+            gap: 64px;
+            margin-bottom: 96px;
+            opacity: 0;
+            transform: translateY(36px);
+            transition: opacity 0.7s ease, transform 0.7s ease;
         }
 
-        .mini-phone {
-            width: 118px;
-            height: 190px;
-            margin-bottom: -14px;
-            background: linear-gradient(160deg, #10241c, #04140f);
-            border-radius: 20px;
-            padding: 7px;
-            box-shadow: 0 20px 34px rgba(4, 20, 15, 0.28);
+        .feature-row.in-view {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .feature-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .feature-row.reverse {
+            flex-direction: row-reverse;
+        }
+
+        .feature-row-media {
+            flex: 0 0 300px;
+            display: flex;
+            justify-content: center;
+            position: relative;
+        }
+
+        .row-mini-phone {
+            width: 190px;
+            height: 320px;
+            background: linear-gradient(160deg, #1c2b26, #0c1712);
+            border-radius: 32px;
+            padding: 9px;
+            box-shadow: 0 24px 44px rgba(4, 30, 20, 0.16);
             animation: floatY 5.5s ease-in-out infinite;
         }
 
-        .mini-screen {
+        .row-mini-screen {
             width: 100%;
             height: 100%;
-            background: #ffffff;
-            border-radius: 14px;
+            background: #fff;
+            border-radius: 24px;
             position: relative;
             overflow: hidden;
-            padding: 14px 10px;
+            padding: 20px 16px;
             display: flex;
             flex-direction: column;
         }
 
-        .floating-chip {
+        .row-chip {
             position: absolute;
             display: flex;
             align-items: center;
             gap: 7px;
             background: #fff;
             border-radius: 12px;
-            padding: 8px 12px;
-            font-size: 0.66rem;
+            padding: 9px 13px;
+            font-size: 0.72rem;
             font-weight: 700;
             color: var(--ink);
-            box-shadow: 0 12px 24px rgba(15, 23, 42, 0.14);
+            box-shadow: 0 14px 26px rgba(15, 23, 42, 0.14);
             animation: chipFloat 4s ease-in-out infinite;
             z-index: 3;
         }
 
-        .floating-chip i {
-            color: var(--primary);
-            font-size: 0.72rem;
+        .row-chip i {
+            color: var(--primary-dark);
+            font-size: 0.78rem;
         }
 
         @keyframes chipFloat {
@@ -713,39 +721,75 @@
             }
 
             50% {
-                transform: translateY(-8px);
+                transform: translateY(-9px);
             }
         }
 
-        /* Card 1: mutaba'ah mini list */
+        .feature-row-text {
+            flex: 1;
+        }
+
+        .feature-row-icon {
+            width: 46px;
+            height: 46px;
+            border-radius: 13px;
+            background: rgba(16, 185, 129, 0.12);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-dark);
+            font-size: 1.1rem;
+            margin-bottom: 18px;
+        }
+
+        .feature-row-text h3 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--ink);
+            margin-bottom: 10px;
+            letter-spacing: -0.4px;
+        }
+
+        .feature-row-text p {
+            color: var(--muted);
+            font-size: 0.97rem;
+            line-height: 1.75;
+            max-width: 400px;
+        }
+
+        .feature-row.reverse .feature-row-text p {
+            margin-left: auto;
+        }
+
+        /* --- Simulation 1: checklist --- */
         .sim-checklist {
             display: flex;
             flex-direction: column;
-            gap: 7px;
-            margin-top: 4px;
+            gap: 10px;
+            margin-top: 8px;
         }
 
         .sim-checklist .row {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
         }
 
         .sim-checklist .box {
-            width: 12px;
-            height: 12px;
-            border-radius: 4px;
-            border: 1.4px solid #cfe3d9;
+            width: 15px;
+            height: 15px;
+            border-radius: 5px;
+            border: 1.5px solid #cfe3d9;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.42rem;
+            font-size: 0.5rem;
             color: #fff;
             flex-shrink: 0;
         }
 
         .sim-checklist .bar {
-            height: 5px;
+            height: 6px;
             border-radius: 4px;
             background: #e2edea;
             flex: 1;
@@ -775,41 +819,36 @@
             width: 60%;
         }
 
-        .chip-1 {
-            top: 14px;
-            left: -8px;
-        }
-
-        /* Card 2: streak mini counter */
+        /* --- Simulation 2: streak --- */
         .sim-streak {
             flex: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 10px;
         }
 
         .sim-streak .flame-big {
-            font-size: 1.6rem;
+            font-size: 2rem;
             color: #f59e0b;
             animation: flameFlicker 1.4s ease-in-out infinite;
         }
 
         .sim-streak .count {
-            font-size: 1.3rem;
+            font-size: 1.6rem;
             font-weight: 800;
             color: var(--ink);
         }
 
         .sim-streak .row {
             display: flex;
-            gap: 4px;
+            gap: 5px;
         }
 
         .sim-streak .dot {
-            width: 10px;
-            height: 10px;
+            width: 12px;
+            height: 12px;
             border-radius: 50%;
             background: #e2edea;
         }
@@ -843,7 +882,7 @@
 
             16%,
             92% {
-                background: var(--primary);
+                background: var(--primary-dark);
             }
 
             100% {
@@ -863,32 +902,26 @@
             }
         }
 
-        .chip-2 {
-            top: 10px;
-            right: -10px;
-        }
-
-        /* Card 3: export mini */
+        /* --- Simulation 3: export --- */
         .sim-export {
             flex: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            position: relative;
+            gap: 14px;
         }
 
         .sim-export .file-icon {
-            width: 34px;
-            height: 34px;
-            border-radius: 8px;
-            background: var(--primary);
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            background: var(--primary-dark);
             color: #fff;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.85rem;
+            font-size: 1rem;
             animation: pulseScale 3.6s ease-in-out infinite;
         }
 
@@ -905,8 +938,8 @@
         }
 
         .sim-export .track {
-            width: 78%;
-            height: 5px;
+            width: 80%;
+            height: 6px;
             border-radius: 4px;
             background: #e2edea;
             overflow: hidden;
@@ -915,7 +948,7 @@
         .sim-export .track .fill {
             height: 100%;
             width: 0%;
-            background: var(--primary);
+            background: var(--primary-dark);
             border-radius: 4px;
             animation: fillBar 3.6s ease-in-out infinite;
         }
@@ -934,58 +967,53 @@
             }
         }
 
-        .chip-3 {
-            top: 12px;
-            left: -10px;
-        }
-
-        /* Card 4: sync mini */
+        /* --- Simulation 4: sync --- */
         .sim-sync {
             flex: 1;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 18px;
+            gap: 26px;
             position: relative;
         }
 
         .sim-sync .node {
-            width: 28px;
-            height: 28px;
-            border-radius: 8px;
+            width: 34px;
+            height: 34px;
+            border-radius: 9px;
             background: #eef7f2;
-            color: var(--primary);
+            color: var(--primary-dark);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.75rem;
+            font-size: 0.85rem;
         }
 
         .sim-sync .track2 {
             position: absolute;
-            left: 36px;
-            right: 36px;
+            left: 44px;
+            right: 44px;
             top: 50%;
             height: 2px;
-            background: repeating-linear-gradient(90deg, #cfe3d9 0 5px, transparent 5px 10px);
+            background: repeating-linear-gradient(90deg, #cfe3d9 0 6px, transparent 6px 12px);
         }
 
         .sim-sync .pulse2 {
             position: absolute;
             top: 50%;
-            left: 36px;
-            width: 6px;
-            height: 6px;
-            margin-top: -3px;
+            left: 44px;
+            width: 7px;
+            height: 7px;
+            margin-top: -3.5px;
             border-radius: 50%;
             background: var(--primary-light);
-            box-shadow: 0 0 6px 2px rgba(52, 211, 153, 0.6);
+            box-shadow: 0 0 7px 2px rgba(110, 231, 183, 0.7);
             animation: pulseMove2 2.2s linear infinite;
         }
 
         @keyframes pulseMove2 {
             0% {
-                left: 36px;
+                left: 44px;
                 opacity: 0;
             }
 
@@ -998,33 +1026,15 @@
             }
 
             100% {
-                left: calc(100% - 42px);
+                left: calc(100% - 52px);
                 opacity: 0;
             }
         }
 
-        .chip-4 {
-            top: 8px;
-            right: -10px;
-        }
-
-        .feature-title {
-            font-size: 1.12rem;
-            font-weight: 800;
-            color: var(--ink);
-            margin-bottom: 8px;
-        }
-
-        .feature-desc {
-            color: var(--muted);
-            font-size: 0.88rem;
-            line-height: 1.6;
-        }
-
         /* ============ FOOTER ============ */
         .site-footer {
-            background: var(--night);
-            color: rgba(255, 255, 255, 0.55);
+            background: var(--primary-dark);
+            color: rgba(255, 255, 255, 0.75);
             padding: 30px 0;
             text-align: center;
             font-size: 0.82rem;
@@ -1032,11 +1042,27 @@
 
         @media (max-width: 980px) {
             .hero h1 {
-                font-size: 2.7rem;
+                font-size: 2.6rem;
             }
 
-            .feature-grid {
-                grid-template-columns: 1fr;
+            .feature-row,
+            .feature-row.reverse {
+                flex-direction: column;
+                gap: 32px;
+            }
+
+            .feature-row-text p,
+            .feature-row.reverse .feature-row-text p {
+                margin-left: 0;
+            }
+
+            .feature-row-text {
+                text-align: center;
+            }
+
+            .feature-row-icon {
+                margin-left: auto;
+                margin-right: auto;
             }
         }
 
@@ -1046,7 +1072,7 @@
             }
 
             .hero h1 {
-                font-size: 2.1rem;
+                font-size: 2rem;
                 letter-spacing: -1px;
             }
 
@@ -1061,13 +1087,13 @@
             }
 
             .phone-frame {
-                width: 220px;
-                height: 448px;
+                width: 210px;
+                height: 428px;
             }
 
-            .floating-chip {
-                font-size: 0.6rem;
-                padding: 6px 9px;
+            .row-mini-phone {
+                width: 160px;
+                height: 270px;
             }
         }
     </style>
@@ -1089,35 +1115,16 @@
 
             <div class="hero-copy">
                 <div class="hero-eyebrow"><i class="fa-solid fa-sparkles"></i> Segera hadir di ponselmu</div>
-                <h1>Genggam hafalanmu<em>ke mana pun melangkah.</em></h1>
-                <p class="lede">Aplikasi mobile Hifzhly sedang di tahap penyempurnaan akhir. Murojaah, mutaba'ah, dan progres hafalanmu, kini bisa kamu bawa ke mana saja.</p>
-
-                <div class="store-buttons">
-                    <a href="#" class="btn-store primary" title="Gunakan versi Web/Desktop sekarang">
-                        <span class="icon"><i class="fa-solid fa-desktop"></i></span>
-                        <span class="txt"><small>Tersedia sekarang</small><span>Buka Versi Web</span></span>
-                    </a>
-                    <a href="#" class="btn-store ghost" onclick="event.preventDefault()">
-                        <span class="soon-chip">Soon</span>
-                        <span class="icon"><i class="fa-brands fa-google-play"></i></span>
-                        <span class="txt"><small>Get it on</small><span>Google Play</span></span>
-                    </a>
-                    <a href="#" class="btn-store ghost" onclick="event.preventDefault()">
-                        <span class="soon-chip">Soon</span>
-                        <span class="icon"><i class="fa-brands fa-apple"></i></span>
-                        <span class="txt"><small>Download on the</small><span>App Store</span></span>
-                    </a>
-                </div>
+                <h1>Genggam hafalanmu, ke mana pun melangkah.</h1>
             </div>
 
-            <!-- Large centered phone mockup below hero copy, matching reference layout -->
+            <!-- Phone mockup, centered right under the title -->
             <div class="phone-stage" id="phoneStage">
                 <div class="phone-aura"></div>
                 <span class="mote" style="left:38%; width:4px; height:4px; animation-duration:4.2s; animation-delay:0.2s; --drift:14px;"></span>
                 <span class="mote" style="left:58%; width:3px; height:3px; animation-duration:5.1s; animation-delay:1.4s; --drift:-18px;"></span>
                 <span class="mote" style="left:48%; width:5px; height:5px; animation-duration:4.7s; animation-delay:2.1s; --drift:10px;"></span>
                 <span class="mote" style="left:66%; width:3px; height:3px; animation-duration:3.9s; animation-delay:0.8s; --drift:-8px;"></span>
-                <span class="mote" style="left:30%; width:3px; height:3px; animation-duration:5.6s; animation-delay:2.8s; --drift:16px;"></span>
 
                 <div class="phone-float">
                     <div class="phone-tilt" id="phoneTilt">
@@ -1159,107 +1166,142 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="phone-fade"></div>
+            </div>
+
+            <!-- Text under the phone -->
+            <div class="hero-sub">
+                <p class="lede">Aplikasi mobile Hifzhly sedang di tahap penyempurnaan akhir. Murojaah, mutaba'ah, dan progres hafalanmu, kini bisa kamu bawa ke mana saja.</p>
+            </div>
+
+            <!-- Download row under the text -->
+            <div class="store-buttons">
+                <a href="#" class="btn-store primary" title="Gunakan versi Web/Desktop sekarang">
+                    <span class="icon"><i class="fa-solid fa-desktop"></i></span>
+                    <span class="txt"><small>Tersedia sekarang</small><span>Buka Versi Web</span></span>
+                </a>
+                <a href="#" class="btn-store ghost" onclick="event.preventDefault()">
+                    <span class="soon-chip">Soon</span>
+                    <span class="icon"><i class="fa-brands fa-google-play"></i></span>
+                    <span class="txt"><small>Get it on</small><span>Google Play</span></span>
+                </a>
+                <a href="#" class="btn-store ghost" onclick="event.preventDefault()">
+                    <span class="soon-chip">Soon</span>
+                    <span class="icon"><i class="fa-brands fa-apple"></i></span>
+                    <span class="txt"><small>Download on the</small><span>App Store</span></span>
+                </a>
             </div>
         </div>
     </section>
 
-    <!-- ============ FEATURES ============ -->
+    <!-- ============ FEATURES (zig-zag) ============ -->
     <section class="features">
         <div class="container">
             <div class="section-head">
                 <div class="section-eyebrow">Kenapa Hifzhly</div>
                 <h2>Dibangun untuk konsistensi hafalanmu</h2>
-                <p>Empat kebiasaan kecil yang dijaga aplikasinya, dilihat langsung lewat simulasi tampilan appnya di bawah ini.</p>
+                <p>Empat kebiasaan kecil yang dijaga aplikasinya — lihat langsung simulasi tampilannya di sebelah penjelasan tiap fitur.</p>
             </div>
 
-            <div class="feature-grid">
-                <!-- Feature 1: Mutaba'ah Cerdas -->
-                <div class="feature-card">
-                    <div class="device-sim">
-                        <div class="floating-chip chip-1"><i class="fa-solid fa-check"></i> Tersimpan otomatis</div>
-                        <div class="mini-phone">
-                            <div class="mini-screen">
-                                <div class="sim-checklist">
-                                    <div class="row row1">
-                                        <div class="box"><i class="fa-solid fa-check"></i></div>
-                                        <div class="bar"></div>
-                                    </div>
-                                    <div class="row row2">
-                                        <div class="box"><i class="fa-solid fa-check"></i></div>
-                                        <div class="bar"></div>
-                                    </div>
-                                    <div class="row row3">
-                                        <div class="box"><i class="fa-solid fa-check"></i></div>
-                                        <div class="bar"></div>
-                                    </div>
+            <!-- Row 1 -->
+            <div class="feature-row">
+                <div class="feature-row-media">
+                    <div class="row-chip" style="top:6px; left:-10px;"><i class="fa-solid fa-check"></i> Tersimpan otomatis</div>
+                    <div class="row-mini-phone">
+                        <div class="row-mini-screen">
+                            <div class="sim-checklist">
+                                <div class="row row1">
+                                    <div class="box"><i class="fa-solid fa-check"></i></div>
+                                    <div class="bar"></div>
+                                </div>
+                                <div class="row row2">
+                                    <div class="box"><i class="fa-solid fa-check"></i></div>
+                                    <div class="bar"></div>
+                                </div>
+                                <div class="row row3">
+                                    <div class="box"><i class="fa-solid fa-check"></i></div>
+                                    <div class="bar"></div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <h3 class="feature-title">Mutaba'ah Cerdas</h3>
-                    <p class="feature-desc">Catat setiap aktivitas tilawah, murojaah, dan hafalan barumu dengan cepat dan rapi, langsung tercentang otomatis begitu selesai.</p>
                 </div>
-
-                <!-- Feature 2: Streak -->
-                <div class="feature-card">
-                    <div class="device-sim">
-                        <div class="floating-chip chip-2"><i class="fa-solid fa-fire"></i> 7 hari beruntun</div>
-                        <div class="mini-phone">
-                            <div class="mini-screen">
-                                <div class="sim-streak">
-                                    <div class="flame-big"><i class="fa-solid fa-fire"></i></div>
-                                    <div class="count">7</div>
-                                    <div class="row">
-                                        <div class="dot"></div>
-                                        <div class="dot"></div>
-                                        <div class="dot"></div>
-                                        <div class="dot"></div>
-                                        <div class="dot"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <h3 class="feature-title">Konsistensi &amp; Streak</h3>
-                    <p class="feature-desc">Pertahankan api semangatmu setiap hari. Jangan biarkan streak-mu terputus, aplikasi akan mengingatkanmu tepat waktu.</p>
+                <div class="feature-row-text">
+                    <div class="feature-row-icon"><i class="fa-solid fa-list-check"></i></div>
+                    <h3>Mutaba'ah Cerdas</h3>
+                    <p>Catat setiap aktivitas tilawah, murojaah, dan hafalan barumu dengan cepat dan rapi, langsung tercentang otomatis begitu selesai.</p>
                 </div>
+            </div>
 
-                <!-- Feature 3: Ekspor Laporan -->
-                <div class="feature-card">
-                    <div class="device-sim">
-                        <div class="floating-chip chip-3"><i class="fa-solid fa-file-arrow-down"></i> Laporan_Juli.pdf</div>
-                        <div class="mini-phone">
-                            <div class="mini-screen">
-                                <div class="sim-export">
-                                    <div class="file-icon"><i class="fa-solid fa-file-lines"></i></div>
-                                    <div class="track">
-                                        <div class="fill"></div>
-                                    </div>
+            <!-- Row 2 (reversed) -->
+            <div class="feature-row reverse">
+                <div class="feature-row-media">
+                    <div class="row-chip" style="top:2px; right:-10px;"><i class="fa-solid fa-fire"></i> 7 hari beruntun</div>
+                    <div class="row-mini-phone">
+                        <div class="row-mini-screen">
+                            <div class="sim-streak">
+                                <div class="flame-big"><i class="fa-solid fa-fire"></i></div>
+                                <div class="count">7</div>
+                                <div class="row">
+                                    <div class="dot"></div>
+                                    <div class="dot"></div>
+                                    <div class="dot"></div>
+                                    <div class="dot"></div>
+                                    <div class="dot"></div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <h3 class="feature-title">Ekspor Laporan</h3>
-                    <p class="feature-desc">Unduh rekap aktivitas bulananmu ke dalam format PDF atau Excel, siap dibagikan ke musyrif atau orang tua.</p>
                 </div>
+                <div class="feature-row-text">
+                    <div class="feature-row-icon"><i class="fa-solid fa-fire"></i></div>
+                    <h3>Konsistensi &amp; Streak</h3>
+                    <p>Pertahankan api semangatmu setiap hari. Jangan biarkan streak-mu terputus, aplikasi akan mengingatkanmu tepat waktu.</p>
+                </div>
+            </div>
 
-                <!-- Feature 4: Multi-Platform -->
-                <div class="feature-card">
-                    <div class="device-sim">
-                        <div class="floating-chip chip-4"><i class="fa-solid fa-check"></i> Tersinkron</div>
-                        <div class="mini-phone">
-                            <div class="mini-screen">
-                                <div class="sim-sync">
-                                    <div class="node"><i class="fa-solid fa-desktop"></i></div>
-                                    <div class="track2"></div>
-                                    <div class="pulse2"></div>
-                                    <div class="node"><i class="fa-solid fa-mobile-screen"></i></div>
+            <!-- Row 3 -->
+            <div class="feature-row">
+                <div class="feature-row-media">
+                    <div class="row-chip" style="top:8px; left:-14px;"><i class="fa-solid fa-file-arrow-down"></i> Laporan_Juli.pdf</div>
+                    <div class="row-mini-phone">
+                        <div class="row-mini-screen">
+                            <div class="sim-export">
+                                <div class="file-icon"><i class="fa-solid fa-file-lines"></i></div>
+                                <div class="track">
+                                    <div class="fill"></div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <h3 class="feature-title">Multi-Platform</h3>
-                    <p class="feature-desc">Sinkronisasi sempurna. Akses data hafalanmu dari Desktop, Android, maupun iOS, selalu terbarui otomatis.</p>
+                </div>
+                <div class="feature-row-text">
+                    <div class="feature-row-icon"><i class="fa-solid fa-file-export"></i></div>
+                    <h3>Ekspor Laporan</h3>
+                    <p>Unduh rekap aktivitas bulananmu ke dalam format PDF atau Excel, siap dibagikan ke musyrif atau orang tua.</p>
+                </div>
+            </div>
+
+            <!-- Row 4 (reversed) -->
+            <div class="feature-row reverse">
+                <div class="feature-row-media">
+                    <div class="row-chip" style="top:4px; right:-10px;"><i class="fa-solid fa-check"></i> Tersinkron</div>
+                    <div class="row-mini-phone">
+                        <div class="row-mini-screen">
+                            <div class="sim-sync">
+                                <div class="node"><i class="fa-solid fa-desktop"></i></div>
+                                <div class="track2"></div>
+                                <div class="pulse2"></div>
+                                <div class="node"><i class="fa-solid fa-mobile-screen"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="feature-row-text">
+                    <div class="feature-row-icon"><i class="fa-solid fa-arrows-rotate"></i></div>
+                    <h3>Multi-Platform</h3>
+                    <p>Sinkronisasi sempurna. Akses data hafalanmu dari Desktop, Android, maupun iOS, selalu terbarui otomatis.</p>
                 </div>
             </div>
         </div>
@@ -1271,7 +1313,7 @@
     </footer>
 
     <script>
-        // Gentle cursor-follow tilt on the hero phone mockup (desktop only, disabled for reduced-motion users)
+        // Gentle cursor-follow tilt on the hero phone mockup
         const stage = document.getElementById('phoneStage');
         const tilt = document.getElementById('phoneTilt');
         const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -1286,6 +1328,24 @@
             stage.addEventListener('mouseleave', () => {
                 tilt.style.transform = 'rotateY(0deg) rotateX(0deg)';
             });
+        }
+
+        // Reveal each zig-zag feature row as it scrolls into view
+        const rows = document.querySelectorAll('.feature-row');
+        if ('IntersectionObserver' in window && !prefersReduced) {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('in-view');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, {
+                threshold: 0.25
+            });
+            rows.forEach((row) => observer.observe(row));
+        } else {
+            rows.forEach((row) => row.classList.add('in-view'));
         }
     </script>
 

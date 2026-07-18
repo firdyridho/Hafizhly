@@ -329,6 +329,8 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             color: var(--quran-text);
             margin-bottom: 20px;
             direction: rtl;
+            text-rendering: optimizeLegibility;
+            font-feature-settings: "liga" 1, "calt" 1;
         }
 
         .teks-container {
@@ -383,6 +385,14 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
         /* ================================================================ */
 
         tajweed {
+            display: inline;
+            font: inherit;
+            font-family: inherit;
+            font-size: inherit;
+            line-height: inherit;
+            vertical-align: baseline;
+            direction: rtl;
+            unicode-bidi: normal;
             color: inherit;
             cursor: pointer;
             /* Sengaja TANPA padding/border-radius/margin: elemen ini membungkus
@@ -815,6 +825,8 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             border-bottom: 1px solid #e0dbcd;
             /* Garis tipis warna krem keemasan */
             padding-bottom: 2px;
+            text-rendering: optimizeLegibility;
+            font-feature-settings: "liga" 1, "calt" 1;
         }
 
         /* Header surah & basmala tidak memiliki garis bawah */

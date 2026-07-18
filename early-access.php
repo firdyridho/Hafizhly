@@ -8,6 +8,7 @@
     <title>Get Early Access - Hifzhly</title>
     <link rel="icon" type="image/png" href="assets/icon/logo.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
 
@@ -123,16 +124,24 @@
         }
 
         .brand-mark {
-            width: 34px;
-            height: 34px;
+            width: 36px;
+            height: 36px;
             border-radius: 10px 4px 10px 10px;
-            background: rgba(255, 255, 255, 0.18);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 4px 10px rgba(4, 30, 20, 0.18);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.9rem;
-            color: #fff;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .brand-mark img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 5px;
         }
 
         .navbar .nav-cta {
@@ -188,7 +197,7 @@
             letter-spacing: -1.8px;
         }
 
-        /* ===== Phone stage: centered directly under the title, fading at the bottom ===== */
+        /* ===== Phone stage: centered directly under the title ===== */
         .phone-stage {
             position: relative;
             display: flex;
@@ -496,21 +505,23 @@
             }
         }
 
-        /* Blurred fade so the phone dissolves into the hero background at the bottom */
-        .phone-fade {
+        /* Full-bleed fade so the phone dissolves smoothly into the hero
+           background, edge-to-edge (not clipped to the inner container) */
+        .hero-bottom-fade {
             position: absolute;
             left: 0;
             right: 0;
             bottom: 0;
-            height: 190px;
-            background: linear-gradient(to bottom, rgba(52, 211, 153, 0) 0%, var(--hero-bottom) 78%);
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
+            height: 260px;
+            background: linear-gradient(to bottom,
+                    rgba(52, 211, 153, 0) 0%,
+                    rgba(52, 211, 153, 0.55) 42%,
+                    var(--hero-bottom) 82%);
             pointer-events: none;
-            z-index: 5;
+            z-index: 4;
         }
 
-        /* Text + download row sitting under the phone, slightly overlapping the fade */
+        /* Text + download row sitting under the phone */
         .hero-sub {
             position: relative;
             z-index: 6;
@@ -605,9 +616,59 @@
             border-radius: 20px;
         }
 
+        /* ============ QUICK HIGHLIGHTS STRIP ============ */
+        .highlights {
+            position: relative;
+            z-index: 6;
+            background: var(--paper);
+            padding: 26px 0 0;
+        }
+
+        .highlight-chip {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 14px 16px;
+            height: 100%;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .highlight-chip:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08);
+        }
+
+        .highlight-chip .hi-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 11px;
+            background: rgba(16, 185, 129, 0.12);
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .highlight-chip strong {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--ink);
+            font-weight: 700;
+        }
+
+        .highlight-chip span {
+            font-size: 0.74rem;
+            color: var(--muted);
+        }
+
         /* ============ FEATURES (zig-zag) ============ */
         .features {
-            padding: 84px 0 100px;
+            padding: 70px 0 100px;
             background: var(--paper);
         }
 
@@ -670,7 +731,23 @@
             position: relative;
         }
 
+        .media-glow {
+            position: absolute;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.16), rgba(16, 185, 129, 0) 70%);
+            filter: blur(2px);
+            z-index: 0;
+        }
+
+        .feature-row:nth-child(even) .media-glow {
+            background: radial-gradient(circle, rgba(201, 162, 39, 0.16), rgba(201, 162, 39, 0) 70%);
+        }
+
         .row-mini-phone {
+            position: relative;
+            z-index: 1;
             width: 190px;
             height: 320px;
             background: linear-gradient(160deg, #1c2b26, #0c1712);
@@ -698,6 +775,7 @@
             align-items: center;
             gap: 7px;
             background: #fff;
+            border: 1px solid var(--border);
             border-radius: 12px;
             padding: 9px 13px;
             font-size: 0.72rem;
@@ -729,6 +807,16 @@
             flex: 1;
         }
 
+        .feature-index {
+            display: inline-block;
+            font-size: 0.7rem;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            color: var(--gold);
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
         .feature-row-icon {
             width: 46px;
             height: 46px;
@@ -758,6 +846,11 @@
         }
 
         .feature-row.reverse .feature-row-text p {
+            margin-left: auto;
+        }
+
+        .feature-row.reverse .feature-index,
+        .feature-row.reverse .feature-row-icon {
             margin-left: auto;
         }
 
@@ -1031,6 +1124,50 @@
             }
         }
 
+        /* ============ CLOSING CTA ============ */
+        .closing-cta {
+            position: relative;
+            background: linear-gradient(135deg, var(--hero-top), var(--hero-bottom));
+            padding: 64px 0;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .closing-cta::before {
+            content: '\0627\0642\0631\0623';
+            position: absolute;
+            font-family: 'Amiri', serif;
+            font-size: 9rem;
+            color: rgba(255, 255, 255, 0.06);
+            bottom: -30px;
+            left: -10px;
+            line-height: 1;
+            pointer-events: none;
+        }
+
+        .closing-cta h2 {
+            position: relative;
+            color: #fff;
+            font-size: 1.9rem;
+            font-weight: 800;
+            letter-spacing: -0.6px;
+            margin-bottom: 12px;
+        }
+
+        .closing-cta p {
+            position: relative;
+            color: rgba(255, 255, 255, 0.88);
+            max-width: 460px;
+            margin: 0 auto 26px;
+            font-size: 0.96rem;
+            line-height: 1.6;
+        }
+
+        .closing-cta .btn-store {
+            position: relative;
+            display: inline-flex;
+        }
+
         /* ============ FOOTER ============ */
         .site-footer {
             background: var(--primary-dark);
@@ -1060,7 +1197,8 @@
                 text-align: center;
             }
 
-            .feature-row-icon {
+            .feature-row-icon,
+            .feature-index {
                 margin-left: auto;
                 margin-right: auto;
             }
@@ -1107,7 +1245,7 @@
         <div class="container">
             <nav class="navbar">
                 <a class="brand" href="index.php">
-                    <span class="brand-mark"><i class="fa-solid fa-book-open-reader"></i></span>
+                    <span class="brand-mark"><img src="assets/icon/logo.png" alt="Logo Hifzhly"></span>
                     Hifzhly
                 </a>
                 <a class="nav-cta" href="login.php">Sudah punya akun? Masuk <i class="fa-solid fa-arrow-right"></i></a>
@@ -1166,8 +1304,6 @@
                         </div>
                     </div>
                 </div>
-
-                <div class="phone-fade"></div>
             </div>
 
             <!-- Text under the phone -->
@@ -1193,6 +1329,42 @@
                 </a>
             </div>
         </div>
+
+        <!-- Full-bleed fade: stretches edge-to-edge across the whole hero,
+             not clipped to the inner container, so it blends cleanly left/right -->
+        <div class="hero-bottom-fade"></div>
+    </section>
+
+    <!-- ============ QUICK HIGHLIGHTS ============ -->
+    <section class="highlights">
+        <div class="container">
+            <div class="row g-3">
+                <div class="col-6 col-md-3">
+                    <div class="highlight-chip">
+                        <span class="hi-icon"><i class="fa-solid fa-cloud"></i></span>
+                        <span><strong>Auto-sync</strong><span>Realtime ke semua device</span></span>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="highlight-chip">
+                        <span class="hi-icon"><i class="fa-solid fa-fire"></i></span>
+                        <span><strong>Streak harian</strong><span>Pengingat tepat waktu</span></span>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="highlight-chip">
+                        <span class="hi-icon"><i class="fa-solid fa-file-export"></i></span>
+                        <span><strong>Laporan siap pakai</strong><span>Ekspor PDF & Excel</span></span>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="highlight-chip">
+                        <span class="hi-icon"><i class="fa-solid fa-shield-heart"></i></span>
+                        <span><strong>Ramah musyrif</strong><span>Pantau progres santri</span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
     </section>
 
     <!-- ============ FEATURES (zig-zag) ============ -->
@@ -1207,6 +1379,7 @@
             <!-- Row 1 -->
             <div class="feature-row">
                 <div class="feature-row-media">
+                    <div class="media-glow"></div>
                     <div class="row-chip" style="top:6px; left:-10px;"><i class="fa-solid fa-check"></i> Tersimpan otomatis</div>
                     <div class="row-mini-phone">
                         <div class="row-mini-screen">
@@ -1228,6 +1401,7 @@
                     </div>
                 </div>
                 <div class="feature-row-text">
+                    <span class="feature-index">Fitur 01</span>
                     <div class="feature-row-icon"><i class="fa-solid fa-list-check"></i></div>
                     <h3>Mutaba'ah Cerdas</h3>
                     <p>Catat setiap aktivitas tilawah, murojaah, dan hafalan barumu dengan cepat dan rapi, langsung tercentang otomatis begitu selesai.</p>
@@ -1237,6 +1411,7 @@
             <!-- Row 2 (reversed) -->
             <div class="feature-row reverse">
                 <div class="feature-row-media">
+                    <div class="media-glow"></div>
                     <div class="row-chip" style="top:2px; right:-10px;"><i class="fa-solid fa-fire"></i> 7 hari beruntun</div>
                     <div class="row-mini-phone">
                         <div class="row-mini-screen">
@@ -1255,6 +1430,7 @@
                     </div>
                 </div>
                 <div class="feature-row-text">
+                    <span class="feature-index">Fitur 02</span>
                     <div class="feature-row-icon"><i class="fa-solid fa-fire"></i></div>
                     <h3>Konsistensi &amp; Streak</h3>
                     <p>Pertahankan api semangatmu setiap hari. Jangan biarkan streak-mu terputus, aplikasi akan mengingatkanmu tepat waktu.</p>
@@ -1264,6 +1440,7 @@
             <!-- Row 3 -->
             <div class="feature-row">
                 <div class="feature-row-media">
+                    <div class="media-glow"></div>
                     <div class="row-chip" style="top:8px; left:-14px;"><i class="fa-solid fa-file-arrow-down"></i> Laporan_Juli.pdf</div>
                     <div class="row-mini-phone">
                         <div class="row-mini-screen">
@@ -1277,6 +1454,7 @@
                     </div>
                 </div>
                 <div class="feature-row-text">
+                    <span class="feature-index">Fitur 03</span>
                     <div class="feature-row-icon"><i class="fa-solid fa-file-export"></i></div>
                     <h3>Ekspor Laporan</h3>
                     <p>Unduh rekap aktivitas bulananmu ke dalam format PDF atau Excel, siap dibagikan ke musyrif atau orang tua.</p>
@@ -1286,6 +1464,7 @@
             <!-- Row 4 (reversed) -->
             <div class="feature-row reverse">
                 <div class="feature-row-media">
+                    <div class="media-glow"></div>
                     <div class="row-chip" style="top:4px; right:-10px;"><i class="fa-solid fa-check"></i> Tersinkron</div>
                     <div class="row-mini-phone">
                         <div class="row-mini-screen">
@@ -1299,11 +1478,24 @@
                     </div>
                 </div>
                 <div class="feature-row-text">
+                    <span class="feature-index">Fitur 04</span>
                     <div class="feature-row-icon"><i class="fa-solid fa-arrows-rotate"></i></div>
                     <h3>Multi-Platform</h3>
                     <p>Sinkronisasi sempurna. Akses data hafalanmu dari Desktop, Android, maupun iOS, selalu terbarui otomatis.</p>
                 </div>
             </div>
+        </div>
+    </section>
+
+    <!-- ============ CLOSING CTA ============ -->
+    <section class="closing-cta">
+        <div class="container">
+            <h2>Siap jaga hafalanmu setiap hari?</h2>
+            <p>Coba versi web-nya sekarang, gratis, sambil menunggu aplikasi mobile-nya rilis di Google Play dan App Store.</p>
+            <a href="#" class="btn-store primary">
+                <span class="icon"><i class="fa-solid fa-desktop"></i></span>
+                <span class="txt"><small>Mulai sekarang</small><span>Buka Versi Web</span></span>
+            </a>
         </div>
     </section>
 

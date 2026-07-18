@@ -106,7 +106,7 @@
 
         .navbar {
             position: relative;
-            z-index: 6;
+            z-index: 10;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -124,16 +124,11 @@
         }
 
         .brand-mark {
-            width: 36px;
-            height: 36px;
-            border-radius: 10px 4px 10px 10px;
-            background: rgba(255, 255, 255, 0.92);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            box-shadow: 0 4px 10px rgba(4, 30, 20, 0.18);
+            width: 32px;
+            height: 32px;
             display: flex;
             align-items: center;
             justify-content: center;
-            overflow: hidden;
             flex-shrink: 0;
         }
 
@@ -141,7 +136,8 @@
             width: 100%;
             height: 100%;
             object-fit: contain;
-            padding: 5px;
+            /* recolor the mark to plain white, no background box */
+            filter: brightness(0) invert(1);
         }
 
         .navbar .nav-cta {
@@ -204,7 +200,7 @@
             align-items: center;
             justify-content: center;
             min-height: 430px;
-            margin-top: 8px;
+            margin-top: -22px;
             perspective: 1400px;
         }
 
@@ -264,7 +260,7 @@
         .phone-float {
             animation: floatY 5.5s ease-in-out infinite;
             position: relative;
-            z-index: 2;
+            z-index: 5;
         }
 
         @keyframes floatY {
@@ -288,34 +284,83 @@
             position: relative;
             width: 250px;
             height: 508px;
-            background: linear-gradient(160deg, #1c2b26, #0c1712);
-            border-radius: 44px;
-            padding: 11px;
-            box-shadow: 0 30px 60px rgba(4, 30, 20, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+            background: linear-gradient(155deg, #33453d 0%, #16211c 45%, #0a1310 100%);
+            border-radius: 48px;
+            padding: 12px;
+            box-shadow:
+                0 34px 64px rgba(4, 30, 20, 0.4),
+                0 0 0 1px rgba(255, 255, 255, 0.12) inset,
+                0 1px 0 rgba(255, 255, 255, 0.18) inset;
+        }
+
+        /* side buttons for a more realistic bezel */
+        .phone-frame::before {
+            content: '';
+            position: absolute;
+            left: -3px;
+            top: 116px;
+            width: 3px;
+            height: 30px;
+            border-radius: 2px 0 0 2px;
+            background: linear-gradient(180deg, #3d5148, #0c1712);
+        }
+
+        .phone-frame::after {
+            content: '';
+            position: absolute;
+            right: -3px;
+            top: 150px;
+            width: 3px;
+            height: 62px;
+            border-radius: 0 2px 2px 0;
+            background: linear-gradient(180deg, #3d5148, #0c1712);
         }
 
         .phone-notch {
             position: absolute;
-            top: 11px;
+            top: 16px;
             left: 50%;
             transform: translateX(-50%);
-            width: 84px;
-            height: 18px;
-            background: #0c1712;
-            border-radius: 0 0 14px 14px;
+            width: 88px;
+            height: 25px;
+            background: #060a08;
+            border-radius: 20px;
+            box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
             z-index: 4;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 9px;
+        }
+
+        .phone-notch::after {
+            content: '';
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #1c2b26;
+            box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08) inset;
         }
 
         .phone-screen {
             width: 100%;
             height: 100%;
             background: linear-gradient(180deg, #ffffff, #f4faf7);
-            border-radius: 34px;
+            border-radius: 36px;
             overflow: hidden;
             position: relative;
             padding: 32px 17px 17px;
             display: flex;
             flex-direction: column;
+        }
+
+        .phone-screen::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(120deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0) 26%);
+            pointer-events: none;
+            z-index: 5;
         }
 
         .screen-status {
@@ -512,11 +557,16 @@
             left: 0;
             right: 0;
             bottom: 0;
-            height: 260px;
+            height: 310px;
             background: linear-gradient(to bottom,
                     rgba(52, 211, 153, 0) 0%,
-                    rgba(52, 211, 153, 0.55) 42%,
-                    var(--hero-bottom) 82%);
+                    rgba(52, 211, 153, 0.5) 28%,
+                    var(--hero-bottom) 72%);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            /* fade the blur itself in gradually so there's no hard blur edge */
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 30%);
+            mask-image: linear-gradient(to bottom, transparent 0%, black 30%);
             pointer-events: none;
             z-index: 4;
         }
@@ -524,7 +574,7 @@
         /* Text + download row sitting under the phone */
         .hero-sub {
             position: relative;
-            z-index: 6;
+            z-index: 9;
             text-align: center;
             max-width: 480px;
             margin: -46px auto 0;
@@ -538,7 +588,7 @@
 
         .store-buttons {
             position: relative;
-            z-index: 6;
+            z-index: 9;
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
@@ -767,6 +817,15 @@
             padding: 20px 16px;
             display: flex;
             flex-direction: column;
+        }
+
+        .row-mini-screen::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(120deg, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0) 24%);
+            pointer-events: none;
+            z-index: 5;
         }
 
         .row-chip {
@@ -1270,7 +1329,7 @@
                             <div class="phone-notch"></div>
                             <div class="phone-screen">
                                 <div class="screen-status"><span>9:41</span><span><i class="fa-solid fa-signal"></i> <i class="fa-solid fa-wifi"></i> <i class="fa-solid fa-battery-three-quarters"></i></span></div>
-                                <div class="screen-greet">Assalamu'alaikum,<strong>Aisyah 👋</strong></div>
+                                <div class="screen-greet">Assalamu'alaikum,<strong>Aisyah <i class="fa-solid fa-hand"></i></strong></div>
 
                                 <div class="juz-ring-wrap">
                                     <div class="juz-ring"></div>

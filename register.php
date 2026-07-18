@@ -504,23 +504,6 @@ if (isset($_POST['register'])) {
             transform: translateY(-1px);
         }
 
-        .policy-link.visited {
-            border-color: var(--primary);
-            background: rgba(5, 150, 105, 0.08);
-        }
-
-        .policy-link.visited i.ext-icon {
-            color: var(--primary-dark);
-        }
-
-        .policy-link.visited::after {
-            content: '\f00c';
-            font-family: 'Font Awesome 6 Free';
-            font-weight: 900;
-            color: var(--primary-dark);
-            font-size: 0.68rem;
-        }
-
         .policy-checkbox-wrap {
             display: flex;
             align-items: flex-start;
@@ -538,14 +521,6 @@ if (isset($_POST['register'])) {
             accent-color: var(--primary);
             flex-shrink: 0;
             cursor: pointer;
-        }
-
-        .policy-checkbox-wrap input[type="checkbox"]:disabled {
-            cursor: not-allowed;
-        }
-
-        .policy-checkbox-wrap.locked {
-            color: var(--muted);
         }
 
         .policy-hint {
@@ -823,14 +798,10 @@ if (isset($_POST['register'])) {
                             </a>
                         </div>
 
-                        <label class="policy-checkbox-wrap locked" id="policyCheckboxWrap" for="agreePolicy">
-                            <input type="checkbox" id="agreePolicy" disabled>
+                        <label class="policy-checkbox-wrap" id="policyCheckboxWrap" for="agreePolicy">
+                            <input type="checkbox" id="agreePolicy">
                             <span>Saya sudah membaca dan menyetujui <strong>Kebijakan Privasi</strong> dan <strong>Syarat &amp; Ketentuan</strong> Hafizhly.</span>
                         </label>
-
-                        <div class="policy-hint" id="policyHint">
-                            <i class="fa-solid fa-circle-info"></i> Buka kedua tautan di atas dulu untuk mengaktifkan centang persetujuan.
-                        </div>
                     </div>
 
                     <button type="submit" name="register" class="btn" id="btn-register">
@@ -947,45 +918,9 @@ if (isset($_POST['register'])) {
 
         confirmInput.addEventListener('input', checkMatch);
 
-        // ===== Wajib buka Kebijakan Privasi & Syarat Ketentuan sebelum bisa centang setuju =====
+        // ===== Persetujuan cukup dengan centang langsung (tautan tersedia sebagai referensi) =====
         const policyBox = document.getElementById('policyBox');
-        const policyLinks = document.querySelectorAll('.policy-link');
         const agreeCheckbox = document.getElementById('agreePolicy');
-        const policyCheckboxWrap = document.getElementById('policyCheckboxWrap');
-        const policyHint = document.getElementById('policyHint');
-
-        const visited = {
-            privacy: false,
-            terms: false
-        };
-
-        function updatePolicyState() {
-            const allVisited = visited.privacy && visited.terms;
-
-            if (allVisited) {
-                agreeCheckbox.disabled = false;
-                policyCheckboxWrap.classList.remove('locked');
-                policyBox.classList.add('unlocked');
-                policyHint.classList.remove('error');
-                policyHint.classList.add('ready');
-                policyHint.innerHTML = '<i class="fa-solid fa-circle-check"></i> Kedua dokumen sudah dibuka. Silakan centang persetujuan di atas.';
-            } else {
-                const sisa = [];
-                if (!visited.privacy) sisa.push('Kebijakan Privasi');
-                if (!visited.terms) sisa.push('Syarat & Ketentuan');
-                policyHint.classList.remove('error', 'ready');
-                policyHint.innerHTML = '<i class="fa-solid fa-circle-info"></i> Buka dulu: ' + sisa.join(' &amp; ') + '.';
-            }
-        }
-
-        policyLinks.forEach((link) => {
-            link.addEventListener('click', function() {
-                const key = this.dataset.policy;
-                visited[key] = true;
-                this.classList.add('visited');
-                updatePolicyState();
-            });
-        });
 
         // ===== Validasi sebelum submit (tanpa alert() native, biar tetap premium) =====
         function validasiForm() {
@@ -1001,13 +936,6 @@ if (isset($_POST['register'])) {
 
             if (!agreeCheckbox.checked) {
                 policyBox.classList.add('shake');
-                policyHint.classList.remove('ready');
-                policyHint.classList.add('error');
-                if (!(visited.privacy && visited.terms)) {
-                    policyHint.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> Buka dan baca kedua tautan di atas dulu sebelum mendaftar.';
-                } else {
-                    policyHint.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> Centang dulu persetujuan sebelum mendaftar.';
-                }
                 setTimeout(() => policyBox.classList.remove('shake'), 400);
                 policyBox.scrollIntoView({
                     behavior: 'smooth',

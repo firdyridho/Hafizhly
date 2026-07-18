@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#04140f">
-    <title>Get Early Access - Hifzly</title>
+    <title>Get Early Access - Hifzhly</title>
     <link rel="icon" type="image/png" href="assets/icon/logo.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -68,7 +68,7 @@
 
         .container {
             width: 100%;
-            max-width: 1180px;
+            max-width: 1080px;
             margin: 0 auto;
             padding: 0 32px;
         }
@@ -76,9 +76,11 @@
         /* ============ HERO ============ */
         .hero {
             position: relative;
-            background: radial-gradient(120% 90% at 15% 0%, #113d2c 0%, var(--night-mid) 42%, var(--night) 100%);
-            padding-bottom: 90px;
+            background: radial-gradient(120% 90% at 50% 0%, #113d2c 0%, var(--night-mid) 45%, var(--night) 100%);
+            padding-bottom: 70px;
             overflow: hidden;
+            border-bottom-left-radius: 42px;
+            border-bottom-right-radius: 42px;
         }
 
         .hero::before {
@@ -94,9 +96,9 @@
         .hero-arabic-mark {
             position: absolute;
             font-family: 'Amiri', serif;
-            font-size: 13rem;
+            font-size: 12rem;
             color: rgba(255, 255, 255, 0.035);
-            top: -30px;
+            top: -20px;
             right: -10px;
             line-height: 1;
             pointer-events: none;
@@ -137,7 +139,7 @@
 
         .navbar .nav-cta {
             color: rgba(255, 255, 255, 0.75);
-            font-size: 0.88rem;
+            font-size: 0.85rem;
             font-weight: 600;
             display: flex;
             align-items: center;
@@ -153,14 +155,13 @@
             color: #fff;
         }
 
-        .hero-grid {
+        /* Centered hero copy, matching reference layout */
+        .hero-copy {
             position: relative;
             z-index: 3;
-            display: grid;
-            grid-template-columns: 1.05fr 0.95fr;
-            align-items: center;
-            gap: 40px;
-            margin-top: 48px;
+            text-align: center;
+            max-width: 700px;
+            margin: 44px auto 0;
         }
 
         .hero-eyebrow {
@@ -185,15 +186,16 @@
 
         .hero h1 {
             color: var(--white);
-            font-size: 3.35rem;
+            font-size: 3.6rem;
             font-weight: 800;
             line-height: 1.08;
-            letter-spacing: -1.6px;
-            margin-bottom: 20px;
+            letter-spacing: -1.8px;
+            margin-bottom: 18px;
         }
 
         .hero h1 em {
             font-style: normal;
+            display: block;
             background: linear-gradient(100deg, var(--gold-light), var(--primary-light) 75%);
             -webkit-background-clip: text;
             background-clip: text;
@@ -202,17 +204,19 @@
 
         .hero p.lede {
             color: rgba(255, 255, 255, 0.68);
-            font-size: 1.06rem;
+            font-size: 1.05rem;
             line-height: 1.7;
-            max-width: 460px;
-            margin-bottom: 34px;
+            max-width: 480px;
+            margin: 0 auto 34px;
         }
 
-        /* Store buttons */
+        /* Store buttons, centered */
         .store-buttons {
             display: flex;
             flex-wrap: wrap;
+            justify-content: center;
             gap: 12px;
+            margin-bottom: 8px;
         }
 
         .btn-store {
@@ -245,8 +249,8 @@
         }
 
         .btn-store .icon {
-            font-size: 1.5rem;
-            width: 22px;
+            font-size: 1.4rem;
+            width: 20px;
             text-align: center;
         }
 
@@ -258,7 +262,7 @@
         }
 
         .btn-store .txt small {
-            font-size: 0.62rem;
+            font-size: 0.6rem;
             text-transform: uppercase;
             font-weight: 700;
             letter-spacing: 0.6px;
@@ -266,7 +270,7 @@
         }
 
         .btn-store .txt span {
-            font-size: 0.98rem;
+            font-size: 0.95rem;
         }
 
         .soon-chip {
@@ -283,20 +287,21 @@
             border-radius: 20px;
         }
 
-        /* ===== Phone stage (signature element) ===== */
+        /* ===== Phone stage — large, centered below hero copy (signature element) ===== */
         .phone-stage {
             position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
-            min-height: 560px;
+            min-height: 480px;
+            margin-top: 26px;
             perspective: 1400px;
         }
 
         .phone-aura {
             position: absolute;
-            width: 380px;
-            height: 380px;
+            width: 420px;
+            height: 420px;
             border-radius: 50%;
             background: radial-gradient(circle, rgba(52, 211, 153, 0.35), rgba(52, 211, 153, 0) 70%);
             filter: blur(10px);
@@ -369,14 +374,12 @@
 
         .phone-frame {
             position: relative;
-            width: 252px;
-            height: 512px;
+            width: 264px;
+            height: 536px;
             background: linear-gradient(160deg, #10241c, #04140f);
             border-radius: 46px;
             padding: 12px;
-            box-shadow:
-                0 40px 70px rgba(0, 0, 0, 0.55),
-                0 0 0 1px rgba(255, 255, 255, 0.06) inset;
+            box-shadow: 0 40px 70px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.06) inset;
         }
 
         .phone-notch {
@@ -628,15 +631,14 @@
         .feature-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 22px;
+            gap: 24px;
         }
 
         .feature-card {
             background: #fff;
             border: 1px solid var(--border);
-            border-radius: 22px;
-            padding: 28px 28px 0;
-            overflow: hidden;
+            border-radius: 24px;
+            padding: 26px 26px 30px;
             transition: transform 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease;
         }
 
@@ -646,165 +648,197 @@
             border-color: rgba(5, 150, 105, 0.28);
         }
 
-        .feature-icon-wrapper {
-            width: 46px;
-            height: 46px;
-            border-radius: 13px;
-            background: rgba(5, 150, 105, 0.09);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 18px;
-            color: var(--primary);
-            font-size: 1.1rem;
-        }
-
-        .feature-title {
-            font-size: 1.12rem;
-            font-weight: 800;
-            color: var(--ink);
-            margin-bottom: 8px;
-        }
-
-        .feature-desc {
-            color: var(--muted);
-            font-size: 0.88rem;
-            line-height: 1.6;
-            margin-bottom: 22px;
-        }
-
-        .feature-visual {
-            height: 128px;
-            background: linear-gradient(180deg, #f4faf7, #eef5f1);
-            border-radius: 16px 16px 0 0;
-            margin: 0 -28px;
-            padding: 18px 28px 0;
+        /* ---- device simulation area ---- */
+        .device-sim {
             position: relative;
-            overflow: hidden;
+            height: 210px;
+            border-radius: 18px;
+            background: linear-gradient(165deg, #eef7f2, #e4f0e9);
+            margin-bottom: 22px;
             display: flex;
             align-items: flex-end;
+            justify-content: center;
+            overflow: hidden;
         }
 
-        /* --- Visual 1: mutaba'ah checklist ticking --- */
-        .v-checklist {
+        .mini-phone {
+            width: 118px;
+            height: 190px;
+            margin-bottom: -14px;
+            background: linear-gradient(160deg, #10241c, #04140f);
+            border-radius: 20px;
+            padding: 7px;
+            box-shadow: 0 20px 34px rgba(4, 20, 15, 0.28);
+            animation: floatY 5.5s ease-in-out infinite;
+        }
+
+        .mini-screen {
             width: 100%;
+            height: 100%;
+            background: #ffffff;
+            border-radius: 14px;
+            position: relative;
+            overflow: hidden;
+            padding: 14px 10px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .floating-chip {
+            position: absolute;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            background: #fff;
+            border-radius: 12px;
+            padding: 8px 12px;
+            font-size: 0.66rem;
+            font-weight: 700;
+            color: var(--ink);
+            box-shadow: 0 12px 24px rgba(15, 23, 42, 0.14);
+            animation: chipFloat 4s ease-in-out infinite;
+            z-index: 3;
+        }
+
+        .floating-chip i {
+            color: var(--primary);
+            font-size: 0.72rem;
+        }
+
+        @keyframes chipFloat {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-8px);
+            }
+        }
+
+        /* Card 1: mutaba'ah mini list */
+        .sim-checklist {
             display: flex;
             flex-direction: column;
             gap: 7px;
-            padding-bottom: 16px;
+            margin-top: 4px;
         }
 
-        .v-checklist .line {
+        .sim-checklist .row {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
 
-        .v-checklist .box {
-            width: 14px;
-            height: 14px;
+        .sim-checklist .box {
+            width: 12px;
+            height: 12px;
             border-radius: 4px;
-            border: 1.5px solid #cfe3d9;
+            border: 1.4px solid #cfe3d9;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.5rem;
+            font-size: 0.42rem;
             color: #fff;
             flex-shrink: 0;
         }
 
-        .v-checklist .bar {
-            height: 6px;
+        .sim-checklist .bar {
+            height: 5px;
             border-radius: 4px;
-            background: #dfeae4;
+            background: #e2edea;
             flex: 1;
         }
 
-        .v-checklist .line1 .box {
+        .sim-checklist .row1 .box {
             animation: checkFill 4.5s ease-in-out infinite;
         }
 
-        .v-checklist .line2 .box {
+        .sim-checklist .row2 .box {
             animation: checkFill 4.5s ease-in-out infinite 1.5s;
         }
 
-        .v-checklist .line3 .box {
+        .sim-checklist .row3 .box {
             animation: checkFill 4.5s ease-in-out infinite 3s;
         }
 
-        .v-checklist .line1 .bar {
-            width: 70%;
+        .sim-checklist .row1 .bar {
+            width: 68%;
         }
 
-        .v-checklist .line2 .bar {
-            width: 55%;
+        .sim-checklist .row2 .bar {
+            width: 50%;
         }
 
-        .v-checklist .line3 .bar {
-            width: 62%;
+        .sim-checklist .row3 .bar {
+            width: 60%;
         }
 
-        /* --- Visual 2: streak days --- */
-        .v-streak {
-            width: 100%;
+        .chip-1 {
+            top: 14px;
+            left: -8px;
+        }
+
+        /* Card 2: streak mini counter */
+        .sim-streak {
+            flex: 1;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 7px;
-            padding-bottom: 22px;
+            gap: 8px;
         }
 
-        .v-streak .dot {
-            width: 20px;
-            height: 20px;
+        .sim-streak .flame-big {
+            font-size: 1.6rem;
+            color: #f59e0b;
+            animation: flameFlicker 1.4s ease-in-out infinite;
+        }
+
+        .sim-streak .count {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--ink);
+        }
+
+        .sim-streak .row {
+            display: flex;
+            gap: 4px;
+        }
+
+        .sim-streak .dot {
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
-            background: #dfeae4;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.6rem;
-            color: transparent;
+            background: #e2edea;
         }
 
-        .v-streak .dot:nth-child(1) {
+        .sim-streak .dot:nth-child(1) {
             animation: dotLight 5.6s ease-in-out infinite 0s;
         }
 
-        .v-streak .dot:nth-child(2) {
+        .sim-streak .dot:nth-child(2) {
             animation: dotLight 5.6s ease-in-out infinite 0.35s;
         }
 
-        .v-streak .dot:nth-child(3) {
+        .sim-streak .dot:nth-child(3) {
             animation: dotLight 5.6s ease-in-out infinite 0.7s;
         }
 
-        .v-streak .dot:nth-child(4) {
+        .sim-streak .dot:nth-child(4) {
             animation: dotLight 5.6s ease-in-out infinite 1.05s;
         }
 
-        .v-streak .dot:nth-child(5) {
+        .sim-streak .dot:nth-child(5) {
             animation: dotLight 5.6s ease-in-out infinite 1.4s;
-        }
-
-        .v-streak .flame {
-            width: 26px;
-            height: 26px;
-            border-radius: 50%;
-            background: #fff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #f59e0b;
-            font-size: 0.85rem;
-            box-shadow: 0 6px 14px rgba(245, 158, 11, 0.28);
-            animation: flameFlicker 1.4s ease-in-out infinite;
         }
 
         @keyframes dotLight {
 
             0%,
             8% {
-                background: #dfeae4;
+                background: #e2edea;
             }
 
             16%,
@@ -813,7 +847,7 @@
             }
 
             100% {
-                background: #dfeae4;
+                background: #e2edea;
             }
         }
 
@@ -829,153 +863,129 @@
             }
         }
 
-        /* --- Visual 3: export sliding into tray --- */
-        .v-export {
-            width: 100%;
-            position: relative;
-            height: 100%;
-            padding-bottom: 0;
+        .chip-2 {
+            top: 10px;
+            right: -10px;
         }
 
-        .v-export .doc {
-            position: absolute;
-            left: 50%;
-            top: 0;
-            width: 46px;
-            height: 32px;
-            background: #fff;
-            border: 1.5px solid #cfe3d9;
-            border-radius: 6px;
-            transform: translateX(-50%);
+        /* Card 3: export mini */
+        .sim-export {
+            flex: 1;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            color: var(--primary);
-            font-size: 0.7rem;
-            animation: docDrop 3.6s ease-in-out infinite;
-            box-shadow: 0 6px 14px rgba(15, 23, 42, 0.08);
-        }
-
-        @keyframes docDrop {
-            0% {
-                top: 0;
-                opacity: 0;
-            }
-
-            18% {
-                opacity: 1;
-            }
-
-            45%,
-            65% {
-                top: 46px;
-                opacity: 1;
-            }
-
-            85% {
-                opacity: 0;
-                top: 60px;
-            }
-
-            100% {
-                top: 0;
-                opacity: 0;
-            }
-        }
-
-        .v-export .tray {
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 84px;
-            height: 34px;
-            border: 2px dashed #b9d8ca;
-            border-top: none;
-            border-radius: 0 0 14px 14px;
-        }
-
-        .v-export .pct {
-            position: absolute;
-            bottom: 8px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 0.58rem;
-            font-weight: 800;
-            color: var(--primary-dark);
-            animation: pctShow 3.6s ease-in-out infinite;
-            opacity: 0;
-        }
-
-        @keyframes pctShow {
-
-            0%,
-            45% {
-                opacity: 0;
-            }
-
-            55%,
-            80% {
-                opacity: 1;
-            }
-
-            95%,
-            100% {
-                opacity: 0;
-            }
-        }
-
-        /* --- Visual 4: multi-platform sync --- */
-        .v-sync {
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 26px;
-            padding-bottom: 22px;
+            gap: 10px;
             position: relative;
         }
 
-        .v-sync .node {
+        .sim-export .file-icon {
             width: 34px;
             height: 34px;
-            border-radius: 10px;
-            background: #fff;
-            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            background: var(--primary);
+            color: #fff;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--primary);
             font-size: 0.85rem;
-            box-shadow: 0 6px 14px rgba(15, 23, 42, 0.06);
-            z-index: 2;
+            animation: pulseScale 3.6s ease-in-out infinite;
         }
 
-        .v-sync .track {
+        @keyframes pulseScale {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        .sim-export .track {
+            width: 78%;
+            height: 5px;
+            border-radius: 4px;
+            background: #e2edea;
+            overflow: hidden;
+        }
+
+        .sim-export .track .fill {
+            height: 100%;
+            width: 0%;
+            background: var(--primary);
+            border-radius: 4px;
+            animation: fillBar 3.6s ease-in-out infinite;
+        }
+
+        @keyframes fillBar {
+            0% {
+                width: 0%;
+            }
+
+            60% {
+                width: 100%;
+            }
+
+            100% {
+                width: 100%;
+            }
+        }
+
+        .chip-3 {
+            top: 12px;
+            left: -10px;
+        }
+
+        /* Card 4: sync mini */
+        .sim-sync {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 18px;
+            position: relative;
+        }
+
+        .sim-sync .node {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            background: #eef7f2;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+        }
+
+        .sim-sync .track2 {
             position: absolute;
-            left: 42px;
-            right: 42px;
+            left: 36px;
+            right: 36px;
             top: 50%;
             height: 2px;
-            background: repeating-linear-gradient(90deg, #cfe3d9 0 6px, transparent 6px 12px);
+            background: repeating-linear-gradient(90deg, #cfe3d9 0 5px, transparent 5px 10px);
         }
 
-        .v-sync .pulse {
+        .sim-sync .pulse2 {
             position: absolute;
             top: 50%;
-            left: 42px;
-            width: 8px;
-            height: 8px;
-            margin-top: -4px;
+            left: 36px;
+            width: 6px;
+            height: 6px;
+            margin-top: -3px;
             border-radius: 50%;
             background: var(--primary-light);
-            box-shadow: 0 0 8px 2px rgba(52, 211, 153, 0.6);
-            animation: pulseMove 2.4s linear infinite;
+            box-shadow: 0 0 6px 2px rgba(52, 211, 153, 0.6);
+            animation: pulseMove2 2.2s linear infinite;
         }
 
-        @keyframes pulseMove {
+        @keyframes pulseMove2 {
             0% {
-                left: 42px;
+                left: 36px;
                 opacity: 0;
             }
 
@@ -988,9 +998,27 @@
             }
 
             100% {
-                left: calc(100% - 50px);
+                left: calc(100% - 42px);
                 opacity: 0;
             }
+        }
+
+        .chip-4 {
+            top: 8px;
+            right: -10px;
+        }
+
+        .feature-title {
+            font-size: 1.12rem;
+            font-weight: 800;
+            color: var(--ink);
+            margin-bottom: 8px;
+        }
+
+        .feature-desc {
+            color: var(--muted);
+            font-size: 0.88rem;
+            line-height: 1.6;
         }
 
         /* ============ FOOTER ============ */
@@ -1003,17 +1031,8 @@
         }
 
         @media (max-width: 980px) {
-            .hero-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .phone-stage {
-                min-height: 420px;
-                margin-top: 20px;
-            }
-
             .hero h1 {
-                font-size: 2.5rem;
+                font-size: 2.7rem;
             }
 
             .feature-grid {
@@ -1027,16 +1046,28 @@
             }
 
             .hero h1 {
-                font-size: 2.05rem;
+                font-size: 2.1rem;
                 letter-spacing: -1px;
             }
 
             .store-buttons {
                 flex-direction: column;
+                align-items: stretch;
             }
 
             .btn-store {
                 width: 100%;
+                justify-content: center;
+            }
+
+            .phone-frame {
+                width: 220px;
+                height: 448px;
+            }
+
+            .floating-chip {
+                font-size: 0.6rem;
+                padding: 6px 9px;
             }
         }
     </style>
@@ -1051,81 +1082,79 @@
             <nav class="navbar">
                 <a class="brand" href="index.php">
                     <span class="brand-mark"><i class="fa-solid fa-book-open-reader"></i></span>
-                    Hifzly
+                    Hifzhly
                 </a>
                 <a class="nav-cta" href="login.php">Sudah punya akun? Masuk <i class="fa-solid fa-arrow-right"></i></a>
             </nav>
 
-            <div class="hero-grid">
-                <div class="hero-copy">
-                    <div class="hero-eyebrow"><i class="fa-solid fa-sparkles"></i> Segera hadir di ponselmu</div>
-                    <h1>Bawa hafalanmu, <em>ke mana pun</em> melangkah.</h1>
-                    <p class="lede">Aplikasi mobile Hifzly sedang di tahap penyempurnaan akhir. Murojaah, mutaba'ah, dan progres hafalanmu, kini bisa kamu genggam kapan saja.</p>
+            <div class="hero-copy">
+                <div class="hero-eyebrow"><i class="fa-solid fa-sparkles"></i> Segera hadir di ponselmu</div>
+                <h1>Genggam hafalanmu<em>ke mana pun melangkah.</em></h1>
+                <p class="lede">Aplikasi mobile Hifzhly sedang di tahap penyempurnaan akhir. Murojaah, mutaba'ah, dan progres hafalanmu, kini bisa kamu bawa ke mana saja.</p>
 
-                    <div class="store-buttons">
-                        <a href="#" class="btn-store primary" title="Gunakan versi Web/Desktop sekarang">
-                            <span class="icon"><i class="fa-solid fa-desktop"></i></span>
-                            <span class="txt"><small>Tersedia sekarang</small><span>Buka Versi Web</span></span>
-                        </a>
-                        <a href="#" class="btn-store ghost" onclick="event.preventDefault()">
-                            <span class="soon-chip">Soon</span>
-                            <span class="icon"><i class="fa-brands fa-google-play"></i></span>
-                            <span class="txt"><small>Get it on</small><span>Google Play</span></span>
-                        </a>
-                        <a href="#" class="btn-store ghost" onclick="event.preventDefault()">
-                            <span class="soon-chip">Soon</span>
-                            <span class="icon"><i class="fa-brands fa-apple"></i></span>
-                            <span class="txt"><small>Download on the</small><span>App Store</span></span>
-                        </a>
-                    </div>
+                <div class="store-buttons">
+                    <a href="#" class="btn-store primary" title="Gunakan versi Web/Desktop sekarang">
+                        <span class="icon"><i class="fa-solid fa-desktop"></i></span>
+                        <span class="txt"><small>Tersedia sekarang</small><span>Buka Versi Web</span></span>
+                    </a>
+                    <a href="#" class="btn-store ghost" onclick="event.preventDefault()">
+                        <span class="soon-chip">Soon</span>
+                        <span class="icon"><i class="fa-brands fa-google-play"></i></span>
+                        <span class="txt"><small>Get it on</small><span>Google Play</span></span>
+                    </a>
+                    <a href="#" class="btn-store ghost" onclick="event.preventDefault()">
+                        <span class="soon-chip">Soon</span>
+                        <span class="icon"><i class="fa-brands fa-apple"></i></span>
+                        <span class="txt"><small>Download on the</small><span>App Store</span></span>
+                    </a>
                 </div>
+            </div>
 
-                <div class="phone-stage" id="phoneStage">
-                    <div class="phone-aura"></div>
-                    <!-- light motes -->
-                    <span class="mote" style="left:38%; width:4px; height:4px; animation-duration:4.2s; animation-delay:0.2s; --drift:14px;"></span>
-                    <span class="mote" style="left:58%; width:3px; height:3px; animation-duration:5.1s; animation-delay:1.4s; --drift:-18px;"></span>
-                    <span class="mote" style="left:48%; width:5px; height:5px; animation-duration:4.7s; animation-delay:2.1s; --drift:10px;"></span>
-                    <span class="mote" style="left:66%; width:3px; height:3px; animation-duration:3.9s; animation-delay:0.8s; --drift:-8px;"></span>
-                    <span class="mote" style="left:30%; width:3px; height:3px; animation-duration:5.6s; animation-delay:2.8s; --drift:16px;"></span>
+            <!-- Large centered phone mockup below hero copy, matching reference layout -->
+            <div class="phone-stage" id="phoneStage">
+                <div class="phone-aura"></div>
+                <span class="mote" style="left:38%; width:4px; height:4px; animation-duration:4.2s; animation-delay:0.2s; --drift:14px;"></span>
+                <span class="mote" style="left:58%; width:3px; height:3px; animation-duration:5.1s; animation-delay:1.4s; --drift:-18px;"></span>
+                <span class="mote" style="left:48%; width:5px; height:5px; animation-duration:4.7s; animation-delay:2.1s; --drift:10px;"></span>
+                <span class="mote" style="left:66%; width:3px; height:3px; animation-duration:3.9s; animation-delay:0.8s; --drift:-8px;"></span>
+                <span class="mote" style="left:30%; width:3px; height:3px; animation-duration:5.6s; animation-delay:2.8s; --drift:16px;"></span>
 
-                    <div class="phone-float">
-                        <div class="phone-tilt" id="phoneTilt">
-                            <div class="phone-frame">
-                                <div class="phone-notch"></div>
-                                <div class="phone-screen">
-                                    <div class="screen-status"><span>9:41</span><span><i class="fa-solid fa-signal"></i> <i class="fa-solid fa-wifi"></i> <i class="fa-solid fa-battery-three-quarters"></i></span></div>
-                                    <div class="screen-greet">Assalamu'alaikum,<strong>Aisyah 👋</strong></div>
+                <div class="phone-float">
+                    <div class="phone-tilt" id="phoneTilt">
+                        <div class="phone-frame">
+                            <div class="phone-notch"></div>
+                            <div class="phone-screen">
+                                <div class="screen-status"><span>9:41</span><span><i class="fa-solid fa-signal"></i> <i class="fa-solid fa-wifi"></i> <i class="fa-solid fa-battery-three-quarters"></i></span></div>
+                                <div class="screen-greet">Assalamu'alaikum,<strong>Aisyah 👋</strong></div>
 
-                                    <div class="juz-ring-wrap">
-                                        <div class="juz-ring"></div>
-                                        <div class="juz-text"><small>Progres</small><strong>Juz 5 &middot; sedang berjalan</strong></div>
-                                    </div>
-
-                                    <ul class="ayat-list">
-                                        <li class="ayat-row r1">
-                                            <div class="ayat-check"><i class="fa-solid fa-check"></i></div>
-                                            <div>
-                                                <div class="name">QS. Al-Baqarah 1-5</div>
-                                                <div class="sub">Murojaah pagi</div>
-                                            </div>
-                                        </li>
-                                        <li class="ayat-row r2">
-                                            <div class="ayat-check"><i class="fa-solid fa-check"></i></div>
-                                            <div>
-                                                <div class="name">QS. Al-Baqarah 6-10</div>
-                                                <div class="sub">Hafalan baru</div>
-                                            </div>
-                                        </li>
-                                        <li class="ayat-row r3">
-                                            <div class="ayat-check"><i class="fa-solid fa-check"></i></div>
-                                            <div>
-                                                <div class="name">QS. Al-Baqarah 11-15</div>
-                                                <div class="sub">Target sore ini</div>
-                                            </div>
-                                        </li>
-                                    </ul>
+                                <div class="juz-ring-wrap">
+                                    <div class="juz-ring"></div>
+                                    <div class="juz-text"><small>Progres</small><strong>Juz 5 &middot; sedang berjalan</strong></div>
                                 </div>
+
+                                <ul class="ayat-list">
+                                    <li class="ayat-row r1">
+                                        <div class="ayat-check"><i class="fa-solid fa-check"></i></div>
+                                        <div>
+                                            <div class="name">QS. Al-Baqarah 1-5</div>
+                                            <div class="sub">Murojaah pagi</div>
+                                        </div>
+                                    </li>
+                                    <li class="ayat-row r2">
+                                        <div class="ayat-check"><i class="fa-solid fa-check"></i></div>
+                                        <div>
+                                            <div class="name">QS. Al-Baqarah 6-10</div>
+                                            <div class="sub">Hafalan baru</div>
+                                        </div>
+                                    </li>
+                                    <li class="ayat-row r3">
+                                        <div class="ayat-check"><i class="fa-solid fa-check"></i></div>
+                                        <div>
+                                            <div class="name">QS. Al-Baqarah 11-15</div>
+                                            <div class="sub">Target sore ini</div>
+                                        </div>
+                                    </li>
+                                </ul>
                             </div>
                         </div>
                     </div>
@@ -1138,79 +1167,99 @@
     <section class="features">
         <div class="container">
             <div class="section-head">
-                <div class="section-eyebrow">Kenapa Hifzly</div>
+                <div class="section-eyebrow">Kenapa Hifzhly</div>
                 <h2>Dibangun untuk konsistensi hafalanmu</h2>
-                <p>Empat kebiasaan kecil yang dijaga aplikasinya, supaya hafalanmu tumbuh setiap hari tanpa terasa berat.</p>
+                <p>Empat kebiasaan kecil yang dijaga aplikasinya, dilihat langsung lewat simulasi tampilan appnya di bawah ini.</p>
             </div>
 
             <div class="feature-grid">
-                <!-- Feature 1 -->
+                <!-- Feature 1: Mutaba'ah Cerdas -->
                 <div class="feature-card">
-                    <div class="feature-icon-wrapper"><i class="fa-solid fa-list-check"></i></div>
+                    <div class="device-sim">
+                        <div class="floating-chip chip-1"><i class="fa-solid fa-check"></i> Tersimpan otomatis</div>
+                        <div class="mini-phone">
+                            <div class="mini-screen">
+                                <div class="sim-checklist">
+                                    <div class="row row1">
+                                        <div class="box"><i class="fa-solid fa-check"></i></div>
+                                        <div class="bar"></div>
+                                    </div>
+                                    <div class="row row2">
+                                        <div class="box"><i class="fa-solid fa-check"></i></div>
+                                        <div class="bar"></div>
+                                    </div>
+                                    <div class="row row3">
+                                        <div class="box"><i class="fa-solid fa-check"></i></div>
+                                        <div class="bar"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <h3 class="feature-title">Mutaba'ah Cerdas</h3>
-                    <p class="feature-desc">Catat setiap aktivitas tilawah, murojaah, dan hafalan barumu dengan cepat dan rapi, langsung tercentang otomatis.</p>
-                    <div class="feature-visual">
-                        <div class="v-checklist">
-                            <div class="line line1">
-                                <div class="box"><i class="fa-solid fa-check"></i></div>
-                                <div class="bar"></div>
-                            </div>
-                            <div class="line line2">
-                                <div class="box"><i class="fa-solid fa-check"></i></div>
-                                <div class="bar"></div>
-                            </div>
-                            <div class="line line3">
-                                <div class="box"><i class="fa-solid fa-check"></i></div>
-                                <div class="bar"></div>
+                    <p class="feature-desc">Catat setiap aktivitas tilawah, murojaah, dan hafalan barumu dengan cepat dan rapi, langsung tercentang otomatis begitu selesai.</p>
+                </div>
+
+                <!-- Feature 2: Streak -->
+                <div class="feature-card">
+                    <div class="device-sim">
+                        <div class="floating-chip chip-2"><i class="fa-solid fa-fire"></i> 7 hari beruntun</div>
+                        <div class="mini-phone">
+                            <div class="mini-screen">
+                                <div class="sim-streak">
+                                    <div class="flame-big"><i class="fa-solid fa-fire"></i></div>
+                                    <div class="count">7</div>
+                                    <div class="row">
+                                        <div class="dot"></div>
+                                        <div class="dot"></div>
+                                        <div class="dot"></div>
+                                        <div class="dot"></div>
+                                        <div class="dot"></div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <!-- Feature 2 -->
-                <div class="feature-card">
-                    <div class="feature-icon-wrapper"><i class="fa-solid fa-fire"></i></div>
                     <h3 class="feature-title">Konsistensi &amp; Streak</h3>
-                    <p class="feature-desc">Pertahankan api semangatmu setiap hari. Jangan biarkan streak-mu terputus, aplikasi akan mengingatkanmu.</p>
-                    <div class="feature-visual">
-                        <div class="v-streak">
-                            <div class="dot"></div>
-                            <div class="dot"></div>
-                            <div class="dot"></div>
-                            <div class="dot"></div>
-                            <div class="dot"></div>
-                            <div class="flame"><i class="fa-solid fa-fire"></i></div>
-                        </div>
-                    </div>
+                    <p class="feature-desc">Pertahankan api semangatmu setiap hari. Jangan biarkan streak-mu terputus, aplikasi akan mengingatkanmu tepat waktu.</p>
                 </div>
 
-                <!-- Feature 3 -->
+                <!-- Feature 3: Ekspor Laporan -->
                 <div class="feature-card">
-                    <div class="feature-icon-wrapper"><i class="fa-solid fa-file-export"></i></div>
+                    <div class="device-sim">
+                        <div class="floating-chip chip-3"><i class="fa-solid fa-file-arrow-down"></i> Laporan_Juli.pdf</div>
+                        <div class="mini-phone">
+                            <div class="mini-screen">
+                                <div class="sim-export">
+                                    <div class="file-icon"><i class="fa-solid fa-file-lines"></i></div>
+                                    <div class="track">
+                                        <div class="fill"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <h3 class="feature-title">Ekspor Laporan</h3>
                     <p class="feature-desc">Unduh rekap aktivitas bulananmu ke dalam format PDF atau Excel, siap dibagikan ke musyrif atau orang tua.</p>
-                    <div class="feature-visual">
-                        <div class="v-export">
-                            <div class="doc"><i class="fa-solid fa-file-lines"></i></div>
-                            <div class="pct">100%</div>
-                            <div class="tray"></div>
-                        </div>
-                    </div>
                 </div>
 
-                <!-- Feature 4 -->
+                <!-- Feature 4: Multi-Platform -->
                 <div class="feature-card">
-                    <div class="feature-icon-wrapper"><i class="fa-solid fa-arrows-rotate"></i></div>
-                    <h3 class="feature-title">Multi-Platform</h3>
-                    <p class="feature-desc">Sinkronisasi sempurna. Akses data hafalanmu dari Desktop, Android, maupun iOS, selalu terbarui otomatis.</p>
-                    <div class="feature-visual">
-                        <div class="v-sync">
-                            <div class="node"><i class="fa-solid fa-desktop"></i></div>
-                            <div class="track"></div>
-                            <div class="pulse"></div>
-                            <div class="node"><i class="fa-solid fa-mobile-screen"></i></div>
+                    <div class="device-sim">
+                        <div class="floating-chip chip-4"><i class="fa-solid fa-check"></i> Tersinkron</div>
+                        <div class="mini-phone">
+                            <div class="mini-screen">
+                                <div class="sim-sync">
+                                    <div class="node"><i class="fa-solid fa-desktop"></i></div>
+                                    <div class="track2"></div>
+                                    <div class="pulse2"></div>
+                                    <div class="node"><i class="fa-solid fa-mobile-screen"></i></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
+                    <h3 class="feature-title">Multi-Platform</h3>
+                    <p class="feature-desc">Sinkronisasi sempurna. Akses data hafalanmu dari Desktop, Android, maupun iOS, selalu terbarui otomatis.</p>
                 </div>
             </div>
         </div>
@@ -1218,11 +1267,11 @@
 
     <!-- ============ FOOTER ============ -->
     <footer class="site-footer">
-        <div class="container">&copy; <?= date('Y') ?> Hifzly. Pendamping Murojaah Al-Qur'an Berbasis AI.</div>
+        <div class="container">&copy; <?= date('Y') ?> Hifzhly. Pendamping Murojaah Al-Qur'an Berbasis AI.</div>
     </footer>
 
     <script>
-        // Gentle cursor-follow tilt on the phone mockup (desktop only, disabled for reduced-motion users)
+        // Gentle cursor-follow tilt on the hero phone mockup (desktop only, disabled for reduced-motion users)
         const stage = document.getElementById('phoneStage');
         const tilt = document.getElementById('phoneTilt');
         const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;

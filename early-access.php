@@ -200,7 +200,7 @@
             align-items: center;
             justify-content: center;
             min-height: 430px;
-            margin-top: 21px;
+            margin-top: 37 px;
             perspective: 1400px;
         }
 

@@ -1214,7 +1214,7 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             document.getElementById('btn-tajwid').classList.remove('active');
         }
 
-        // Kamus aturan tajwid: kelas dari API -> nama, arab, warna, penjelasan singkat
+        // Kamus aturan tajwid: kelas CSS -> nama, arab, warna, penjelasan singkat
         const TAJWID_RULES = {
             ham_wasl: {
                 color: '#AAAAAA',
@@ -1253,12 +1253,6 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
                 desc: 'Bacaan panjang wajib, dibaca 6 harakat.'
             },
             qalaqah: {
-                color: '#DD0008',
-                name: 'Qalqalah',
-                ar: 'قلقلة',
-                desc: 'Pantulan suara pada huruf ق ط ب ج د ketika berharakat sukun.'
-            },
-            qalqalah: {
                 color: '#DD0008',
                 name: 'Qalqalah',
                 ar: 'قلقلة',
@@ -1326,6 +1320,37 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
             }
         };
 
+        // Kode 1 huruf dari API (format mentah: [kode:nomor[teks] atau [kode[teks]) -> kelas CSS di atas
+        const TAJWID_CODE_MAP = {
+            h: 'ham_wasl',
+            s: 'silent',
+            l: 'laam_shamsiyah',
+            n: 'madda_normal',
+            p: 'madda_permissible',
+            m: 'madda_necessary',
+            q: 'qalaqah',
+            o: 'madda_obligatory',
+            c: 'ikhafa_shafawi',
+            f: 'ikhafa',
+            w: 'idgham_shafawi',
+            i: 'iqlab',
+            a: 'idgham_ghunnah',
+            u: 'idgham_wo_ghunnah',
+            d: 'idgham_mutajanisayn',
+            b: 'idgham_mutaqaribayn',
+            g: 'ghunnah'
+        };
+
+        // Ubah teks mentah dari edisi quran-tajweed (format [kode:nomor[teks]) jadi HTML <tajweed>
+        function parseTajwidMarkup(raw) {
+            if (!raw) return raw;
+            return raw.replace(/\[([a-z]):?(\d+)?\[([^\]]*)\]/g, (match, code, num, content) => {
+                const cls = TAJWID_CODE_MAP[code];
+                if (!cls) return content; // kode tak dikenal, tampilkan teks polos saja
+                return `<tajweed class="${cls}">${content}</tajweed>`;
+            });
+        }
+
         async function fetchAlQuranData() {
             try {
                 const [resSurat, resTafsir] = await Promise.all([
@@ -1361,7 +1386,7 @@ $nomor_surat = isset($_GET['nomor']) ? (int)$_GET['nomor'] : 1;
                 const json = await res.json();
                 tajwidMap = {};
                 (json.data.ayahs || []).forEach(ay => {
-                    tajwidMap[ay.numberInSurah] = ay.text;
+                    tajwidMap[ay.numberInSurah] = parseTajwidMarkup(ay.text);
                 });
                 applyTajwidToDom();
             } catch (e) {

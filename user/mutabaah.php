@@ -249,6 +249,17 @@ $streak_murojaah = getStreak($conn, $user_id, 'murojaah');
 $streak_hafalan = getStreak($conn, $user_id, 'hafalan_baru');
 $streak_setoran = getStreak($conn, $user_id, 'setoran');
 
+// Menyimpan data streak untuk digunakan di Javascript AJAX
+$app_data = [
+    'streakData' => [
+        ['title' => 'Konsistensi Semua', 'val' => $streak_all, 'icon' => 'fas fa-fire'],
+        ['title' => 'Konsistensi Tilawah', 'val' => $streak_tilawah, 'icon' => 'fas fa-book-open'],
+        ['title' => 'Konsistensi Murojaah', 'val' => $streak_murojaah, 'icon' => 'fas fa-sync-alt'],
+        ['title' => 'Konsistensi Hafalan', 'val' => $streak_hafalan, 'icon' => 'fas fa-star'],
+        ['title' => 'Konsistensi Setoran', 'val' => $streak_setoran, 'icon' => 'fas fa-microphone']
+    ]
+];
+
 // 2. Data Kalender
 $cal_q = mysqli_query($conn, "SELECT activity_date, COUNT(id) as jml FROM mutabaah WHERE user_id = '$user_id' AND MONTH(activity_date) = $m AND YEAR(activity_date) = $y GROUP BY activity_date");
 $cal_data = [];
@@ -276,6 +287,10 @@ while ($row = mysqli_fetch_assoc($time_q)) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Data State JavaScript JSON -->
+    <script type="application/json" id="app-data">
+        <?= json_encode($app_data) ?>
+    </script>
     <style>
         :root {
             --primary: #059669;
@@ -826,8 +841,8 @@ while ($row = mysqli_fetch_assoc($time_q)) {
         <div class="row g-4">
             <!-- KOLOM KIRI: STATS + KALENDER + EXPORT -->
             <div class="col-lg-5">
-                <!-- Ringkasan Aktivitas -->
-                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <!-- Ringkasan Aktivitas (Dibungkus agar mudah diupdate via AJAX) -->
+                <div id="stats-grid" class="card border-0 shadow-sm rounded-4 mb-4">
                     <div class="card-body p-4">
                         <h5 class="fw-bold mb-4"><i class="fas fa-chart-pie me-2 text-primary"></i> Ringkasan Aktivitas</h5>
                         <div class="row g-3">
@@ -856,7 +871,7 @@ while ($row = mysqli_fetch_assoc($time_q)) {
                                 </div>
                             </div>
 
-                            <!-- KARTU STREAK (Dengan Navigasi Kanan-Kiri) -->
+                            <!-- KARTU STREAK -->
                             <div class="col-12">
                                 <div class="stat-card streak-card p-4 d-flex align-items-center justify-content-between">
                                     <button class="streak-nav-btn" onclick="prevStreak()"><i class="fas fa-chevron-left"></i></button>
@@ -878,7 +893,7 @@ while ($row = mysqli_fetch_assoc($time_q)) {
                 </div>
 
                 <!-- Kalender Kontribusi -->
-                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div id="calendar-grid" class="card border-0 shadow-sm rounded-4 mb-4">
                     <div class="card-body p-4">
                         <h5 class="fw-bold mb-4"><i class="fas fa-calendar-check me-2 text-primary"></i> Kalender Kontribusi</h5>
                         <div class="cal-grid">
@@ -940,46 +955,47 @@ while ($row = mysqli_fetch_assoc($time_q)) {
                             <input type="text" id="search_notes" class="search-input" placeholder="Cari catatan/pesan..." onkeyup="runSearchAndFilter()">
                         </div>
 
-                        <!-- Timeline List -->
-                        <div id="timeline-container" class="d-flex flex-column gap-3">
-                            <?php foreach ($timeline as $tl):
-                                $type_label = str_replace('_', ' ', $tl['activity_type']);
-                                // Escape notes untuk ditaruh di JS function
-                                $safe_notes = htmlspecialchars($tl['notes'], ENT_QUOTES);
-                                $safe_surah = htmlspecialchars($tl['surah'], ENT_QUOTES);
-                            ?>
-                                <div class="tl-card tl-item" data-type="<?= $tl['activity_type'] ?>" data-date="<?= $tl['activity_date'] ?>" data-notes="<?= htmlspecialchars($tl['notes']) ?>">
-                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <span class="tl-type"><i class="fas fa-tag me-1"></i> <?= $type_label ?></span>
-                                        <div class="text-muted small fw-medium">
-                                            <span><i class="fas fa-calendar-day me-1"></i> <?= date('d M Y', strtotime($tl['activity_date'])) ?></span> &bull;
-                                            <span><i class="fas fa-clock me-1"></i> <?= date('H:i', strtotime($tl['activity_time'])) ?></span>
+                        <!-- Timeline List Wrapper -->
+                        <div id="timeline-wrapper">
+                            <div id="timeline-container" class="d-flex flex-column gap-3">
+                                <?php foreach ($timeline as $tl):
+                                    $type_label = str_replace('_', ' ', $tl['activity_type']);
+                                    $safe_notes = htmlspecialchars($tl['notes'], ENT_QUOTES);
+                                    $safe_surah = htmlspecialchars($tl['surah'], ENT_QUOTES);
+                                ?>
+                                    <div class="tl-card tl-item" data-type="<?= $tl['activity_type'] ?>" data-date="<?= $tl['activity_date'] ?>" data-notes="<?= htmlspecialchars($tl['notes']) ?>">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <span class="tl-type"><i class="fas fa-tag me-1"></i> <?= $type_label ?></span>
+                                            <div class="text-muted small fw-medium">
+                                                <span><i class="fas fa-calendar-day me-1"></i> <?= date('d M Y', strtotime($tl['activity_date'])) ?></span> &bull;
+                                                <span><i class="fas fa-clock me-1"></i> <?= date('H:i', strtotime($tl['activity_time'])) ?></span>
+                                            </div>
+                                        </div>
+                                        <div class="fw-bold fs-5 text-dark mb-1">Surah <?= $safe_surah ?></div>
+                                        <div class="text-secondary fw-medium mb-2">
+                                            <i class="fas fa-bookmark me-1 opacity-75"></i> Ayat <?= $tl['ayah_start'] ?> - <?= $tl['ayah_end'] ?>
+                                        </div>
+                                        <?php if ($tl['notes']): ?>
+                                            <div class="tl-notes"><i class="fas fa-quote-left me-2 opacity-50"></i><?= htmlspecialchars($tl['notes']) ?></div>
+                                        <?php endif; ?>
+
+                                        <!-- Tombol Aksi (CRUD) -->
+                                        <div class="d-flex justify-content-end gap-2 mt-3 pt-3 border-top">
+                                            <button class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold" onclick="editAktivitas(<?= $tl['id'] ?>, '<?= $tl['activity_type'] ?>', '<?= $tl['activity_date'] ?>', '<?= $tl['activity_time'] ?>', '<?= $safe_surah ?>', <?= $tl['ayah_start'] ?>, <?= $tl['ayah_end'] ?>, '<?= $safe_notes ?>')">
+                                                <i class="fas fa-edit"></i> Edit
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold" onclick="deleteAktivitas(<?= $tl['id'] ?>)">
+                                                <i class="fas fa-trash-alt"></i> Hapus
+                                            </button>
                                         </div>
                                     </div>
-                                    <div class="fw-bold fs-5 text-dark mb-1">Surah <?= $safe_surah ?></div>
-                                    <div class="text-secondary fw-medium mb-2">
-                                        <i class="fas fa-bookmark me-1 opacity-75"></i> Ayat <?= $tl['ayah_start'] ?> - <?= $tl['ayah_end'] ?>
-                                    </div>
-                                    <?php if ($tl['notes']): ?>
-                                        <div class="tl-notes"><i class="fas fa-quote-left me-2 opacity-50"></i><?= htmlspecialchars($tl['notes']) ?></div>
-                                    <?php endif; ?>
+                                <?php endforeach; ?>
 
-                                    <!-- Tombol Aksi (CRUD) -->
-                                    <div class="d-flex justify-content-end gap-2 mt-3 pt-3 border-top">
-                                        <button class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold" onclick="editAktivitas(<?= $tl['id'] ?>, '<?= $tl['activity_type'] ?>', '<?= $tl['activity_date'] ?>', '<?= $tl['activity_time'] ?>', '<?= $safe_surah ?>', <?= $tl['ayah_start'] ?>, <?= $tl['ayah_end'] ?>, '<?= $safe_notes ?>')">
-                                            <i class="fas fa-edit"></i> Edit
-                                        </button>
-                                        <button class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold" onclick="deleteAktivitas(<?= $tl['id'] ?>)">
-                                            <i class="fas fa-trash-alt"></i> Hapus
-                                        </button>
-                                    </div>
+                                <div id="empty-state" class="text-center py-5 text-muted" style="display: <?= empty($timeline) ? 'block' : 'none' ?>;">
+                                    <i class="fas fa-folder-open fa-3x mb-3 opacity-25"></i>
+                                    <h5 class="fw-bold">Tidak ada aktivitas</h5>
+                                    <p>Coba sesuaikan filter atau pencarianmu.</p>
                                 </div>
-                            <?php endforeach; ?>
-
-                            <div id="empty-state" class="text-center py-5 text-muted" style="display: <?= empty($timeline) ? 'block' : 'none' ?>;">
-                                <i class="fas fa-folder-open fa-3x mb-3 opacity-25"></i>
-                                <h5 class="fw-bold">Tidak ada aktivitas</h5>
-                                <p>Coba sesuaikan filter atau pencarianmu.</p>
                             </div>
                         </div>
 
@@ -1082,37 +1098,59 @@ while ($row = mysqli_fetch_assoc($time_q)) {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // =====================================
-        // MANUAL STREAK SLIDER & EFEK API
+        // VARIABEL GLOBAL SPA (SINGLE PAGE)
         // =====================================
-        const streakData = [{
-                title: 'Konsistensi Semua',
-                val: <?= $streak_all ?>,
-                icon: 'fas fa-fire'
-            },
-            {
-                title: 'Konsistensi Tilawah',
-                val: <?= $streak_tilawah ?>,
-                icon: 'fas fa-book-open'
-            },
-            {
-                title: 'Konsistensi Murojaah',
-                val: <?= $streak_murojaah ?>,
-                icon: 'fas fa-sync-alt'
-            },
-            {
-                title: 'Konsistensi Hafalan',
-                val: <?= $streak_hafalan ?>,
-                icon: 'fas fa-star'
-            },
-            {
-                title: 'Konsistensi Setoran',
-                val: <?= $streak_setoran ?>,
-                icon: 'fas fa-microphone'
-            }
-        ];
+        const ITEMS_PER_PAGE = 7;
+        let currentPage = 1;
+        let currentCategory = 'all';
+        let allItems = Array.from(document.querySelectorAll('.tl-item'));
 
+        let streakData = JSON.parse(document.getElementById('app-data').textContent).streakData;
         let currentStreakIdx = 0;
 
+        // =====================================
+        // FUNGSI RE-RENDER UI TANPA REFRESH
+        // =====================================
+        async function refreshUIWithoutReload() {
+            try {
+                // Fetch isi halaman terbaru dari server secara background
+                const response = await fetch(window.location.href);
+                const htmlText = await response.text();
+
+                // Parsing HTML menjadi DOM bayangan (Virtual DOM sederhana)
+                const parser = new DOMParser();
+                const newDoc = parser.parseFromString(htmlText, 'text/html');
+
+                // 1. Ganti konten Statistik
+                document.getElementById('stats-grid').innerHTML = newDoc.getElementById('stats-grid').innerHTML;
+
+                // 2. Ganti konten Kalender
+                document.getElementById('calendar-grid').innerHTML = newDoc.getElementById('calendar-grid').innerHTML;
+
+                // 3. Ganti konten Timeline
+                document.getElementById('timeline-wrapper').innerHTML = newDoc.getElementById('timeline-wrapper').innerHTML;
+
+                // 4. Update data JavaScript untuk Streak
+                const newAppData = JSON.parse(newDoc.getElementById('app-data').textContent);
+                streakData = newAppData.streakData;
+                updateStreakUI(); // Refresh tampilan streak
+
+                // 5. Inisialisasi ulang item timeline untuk fitur filter & pagination
+                allItems = Array.from(document.querySelectorAll('.tl-item'));
+                runSearchAndFilter();
+
+                // 6. Tutup modal form 
+                closeModal('modalForm');
+
+            } catch (error) {
+                console.error("Gagal refresh UI, fallback ke reload biasa.", error);
+                window.location.reload();
+            }
+        }
+
+        // =====================================
+        // MANUAL STREAK SLIDER & EFEK API
+        // =====================================
         function updateStreakUI() {
             const sd = streakData[currentStreakIdx];
             const titleEl = document.getElementById('streak-title');
@@ -1123,13 +1161,15 @@ while ($row = mysqli_fetch_assoc($time_q)) {
             animEl.style.opacity = 0; // Fade out
 
             setTimeout(() => {
-                titleEl.innerText = sd.title;
-                iconEl.className = sd.icon + ' streak-icon-anim fs-1 mb-2';
-                valEl.innerText = sd.val;
+                if (titleEl) titleEl.innerText = sd.title;
+                if (iconEl) iconEl.className = sd.icon + ' streak-icon-anim fs-1 mb-2';
+                if (valEl) valEl.innerText = sd.val;
 
                 let fireLevel = Math.floor(sd.val / 5);
-                iconEl.style.textShadow = getFireShadow(fireLevel);
-                iconEl.style.color = fireLevel > 0 ? '#fef08a' : '#ffffff';
+                if (iconEl) {
+                    iconEl.style.textShadow = getFireShadow(fireLevel);
+                    iconEl.style.color = fireLevel > 0 ? '#fef08a' : '#ffffff';
+                }
 
                 animEl.style.opacity = 1; // Fade in
             }, 250);
@@ -1152,7 +1192,6 @@ while ($row = mysqli_fetch_assoc($time_q)) {
             currentStreakIdx = (currentStreakIdx - 1 + streakData.length) % streakData.length;
             updateStreakUI();
         }
-        // Inisialisasi efek api saat load pertama
         setTimeout(updateStreakUI, 100);
 
         // =====================================
@@ -1163,7 +1202,6 @@ while ($row = mysqli_fetch_assoc($time_q)) {
             document.getElementById('form_action').value = 'simpan_aktivitas';
             document.getElementById('form_id').value = '';
 
-            // Reset fields
             document.getElementById('activity_type').value = 'tilawah';
             document.getElementById('search_surah').value = '';
             document.getElementById('hidden_surah').value = '';
@@ -1182,14 +1220,12 @@ while ($row = mysqli_fetch_assoc($time_q)) {
             document.getElementById('form_action').value = 'edit_aktivitas';
             document.getElementById('form_id').value = id;
 
-            // Isi fields dengan data lama
             document.getElementById('activity_type').value = type;
             document.getElementById('activity_date').value = date;
             document.getElementById('activity_time').value = time;
             document.getElementById('search_surah').value = surah;
             document.getElementById('hidden_surah').value = surah;
 
-            // Enable inputs ayat karena surah sudah terisi
             let aStart = document.getElementById('ayah_start');
             let aEnd = document.getElementById('ayah_end');
             aStart.disabled = false;
@@ -1226,9 +1262,14 @@ while ($row = mysqli_fetch_assoc($time_q)) {
                             icon: 'success',
                             title: 'Berhasil',
                             text: data.message,
-                            timer: 1500,
+                            timer: 1200,
                             showConfirmButton: false
-                        }).then(() => window.location.reload());
+                        }).then(() => {
+                            // Memanggil fungsi re-render (TANPA RELOAD)
+                            refreshUIWithoutReload();
+                            btn.innerHTML = oriBtnText;
+                            btn.disabled = false;
+                        });
                     } else {
                         Swal.fire('Gagal', data.message, 'error');
                         btn.innerHTML = oriBtnText;
@@ -1271,9 +1312,12 @@ while ($row = mysqli_fetch_assoc($time_q)) {
                                     icon: 'success',
                                     title: 'Terhapus!',
                                     text: data.message,
-                                    timer: 1500,
+                                    timer: 1200,
                                     showConfirmButton: false
-                                }).then(() => window.location.reload());
+                                }).then(() => {
+                                    // Memanggil fungsi re-render (TANPA RELOAD)
+                                    refreshUIWithoutReload();
+                                });
                             } else {
                                 Swal.fire('Gagal', data.message, 'error');
                             }
@@ -1285,16 +1329,11 @@ while ($row = mysqli_fetch_assoc($time_q)) {
         // =====================================
         // FILTER, PENCARIAN, & PAGINATION PER 7
         // =====================================
-        const ITEMS_PER_PAGE = 7;
-        let currentPage = 1;
-        let currentCategory = 'all';
-        const allItems = Array.from(document.querySelectorAll('.tl-item'));
-
         function filterCategory(type, btn) {
             document.querySelectorAll('.filter-btn-custom').forEach(el => el.classList.remove('active'));
             btn.classList.add('active');
             currentCategory = type;
-            currentPage = 1; // Reset halaman
+            currentPage = 1;
             runSearchAndFilter();
         }
 
@@ -1321,12 +1360,16 @@ while ($row = mysqli_fetch_assoc($time_q)) {
                 filteredItems[i].style.display = 'block';
             }
 
-            document.getElementById('empty-state').style.display = filteredItems.length === 0 ? 'block' : 'none';
+            const emptyState = document.getElementById('empty-state');
+            if (emptyState) {
+                emptyState.style.display = filteredItems.length === 0 ? 'block' : 'none';
+            }
             renderPagination(totalPages);
         }
 
         function renderPagination(totalPages) {
             const nav = document.getElementById('pagination-nav');
+            if (!nav) return;
             nav.innerHTML = '';
             if (totalPages <= 1) return;
 
@@ -1403,7 +1446,6 @@ while ($row = mysqli_fetch_assoc($time_q)) {
                     const clone = item.cloneNode(true);
                     clone.style.display = 'block';
                     clone.style.animation = 'none';
-                    // Buang tombol aksi di tampilan kalender agar lebih bersih
                     const actionDiv = clone.querySelector('.d-flex.justify-content-end.gap-2');
                     if (actionDiv) actionDiv.remove();
                     container.appendChild(clone);
@@ -1445,7 +1487,6 @@ while ($row = mysqli_fetch_assoc($time_q)) {
             }
             let html = '';
             dataList.forEach(surah => {
-                // ESCAPE KUTIP agar Surah seperti Ali 'Imran bisa diklik
                 const safeName = surah.namaLatin.replace(/'/g, "\\'");
                 html += `
                 <div class="dropdown-item-custom" onclick="selectSurah('${safeName}', ${surah.jumlahAyat})">
@@ -1465,7 +1506,7 @@ while ($row = mysqli_fetch_assoc($time_q)) {
             inputAyahEnd.max = jumlahAyat;
             inputAyahStart.placeholder = `Maks: ${jumlahAyat}`;
             inputAyahEnd.placeholder = `Maks: ${jumlahAyat}`;
-            // Hanya kosongkan kalau ini form buat baru (bukan edit)
+
             if (document.getElementById('form_action').value !== 'edit_aktivitas') {
                 inputAyahStart.value = '';
                 inputAyahEnd.value = '';

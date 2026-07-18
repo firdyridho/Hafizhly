@@ -1748,6 +1748,7 @@ if (isset($_SESSION['user_id'])) {
                     <li class="nav-item"><a class="nav-link nav-link-custom" href="#jelajah-quran">Jelajah Al-Qur'an</a></li>
                     <li class="nav-item"><a class="nav-link nav-link-custom" href="#cara-kerja">Cara Kerja</a></li>
                     <li class="nav-item"><a class="nav-link nav-link-custom" href="#belajar-seru">Belajar Seru</a></li>
+                    <li class="nav-item"><a class="nav-link nav-link-custom" href="early-access.php">Dapatkan Akses Awal</a></li>
                     <li class="nav-item ms-lg-3">
                         <a href="login.php" class="btn btn-gold">
                             <i class="fa-solid fa-arrow-right-to-bracket me-2"></i>Masuk

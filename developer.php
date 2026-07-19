@@ -843,7 +843,7 @@ session_start();
         <div class="dev-row reverse">
             <div class="dev-photo-wrap" data-aos="fade-left" data-aos-delay="80">
                 <div class="dev-photo-frame">
-                    <img src="assets/images/firdy_bener.webp" alt="Foto Firdy Ridho Fillah"
+                    <img src="assets/images/firdy.webp" alt="Foto Firdy Ridho Fillah"
                         onerror="this.parentElement.innerHTML='<div class=&quot;avatar-fallback&quot;><i class=&quot;fas fa-laptop-code&quot;></i></div>';">
                 </div>
             </div>

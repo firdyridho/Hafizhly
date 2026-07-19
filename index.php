@@ -1703,6 +1703,187 @@ if (isset($_SESSION['user_id'])) {
             inset: 0;
             margin: auto;
         }
+
+        /* ===== Celebration popup — Spain 2026 World Cup ===== */
+        .celebration-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 1200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(6, 20, 15, 0.6);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.45s ease, visibility 0.45s ease;
+        }
+
+        .celebration-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .celebration-confetti {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .celebration-confetti span {
+            position: absolute;
+            top: -20px;
+            width: 7px;
+            height: 12px;
+            border-radius: 2px;
+            opacity: 0.9;
+            animation: confettiFall linear infinite;
+        }
+
+        @keyframes confettiFall {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 0.9;
+            }
+
+            100% {
+                transform: translateY(105vh) rotate(540deg);
+                opacity: 0;
+            }
+        }
+
+        .celebration-card {
+            position: relative;
+            z-index: 2;
+            width: min(400px, 100%);
+            background: linear-gradient(165deg, rgba(255, 255, 255, 0.97), rgba(255, 249, 235, 0.97));
+            border: 1px solid rgba(255, 196, 0, 0.35);
+            border-radius: 26px;
+            padding: clamp(28px, 5vw, 38px) clamp(22px, 5vw, 32px) 30px;
+            text-align: center;
+            box-shadow: 0 40px 90px rgba(6, 35, 27, 0.35);
+            transform: scale(0.85) translateY(20px);
+            opacity: 0;
+            transition: transform 0.5s cubic-bezier(.2, 1.5, .4, 1), opacity 0.4s ease;
+        }
+
+        .celebration-overlay.show .celebration-card {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+        }
+
+        .celebration-close {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(6, 35, 27, 0.06);
+            color: var(--muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: background 0.25s ease, color 0.25s ease;
+        }
+
+        .celebration-close:hover {
+            background: rgba(6, 35, 27, 0.12);
+            color: var(--dark);
+        }
+
+        .celebration-flag {
+            width: clamp(96px, 24vw, 128px);
+            height: clamp(64px, 16vw, 85px);
+            margin: 0 auto 18px;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 14px 30px rgba(200, 16, 46, 0.28), 0 0 0 1px rgba(6, 35, 27, 0.08);
+        }
+
+        .celebration-flag svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .celebration-trophy {
+            width: 44px;
+            height: 44px;
+            margin: 0 auto 14px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ffd873, #d4af37);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.05rem;
+            box-shadow: 0 10px 22px rgba(212, 175, 55, 0.45);
+            animation: trophyBounce 2.4s ease-in-out infinite;
+        }
+
+        @keyframes trophyBounce {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-5px);
+            }
+        }
+
+        .celebration-card h3 {
+            font-weight: 800;
+            font-size: clamp(1.2rem, 4vw, 1.45rem);
+            color: var(--dark);
+            margin-bottom: 8px;
+        }
+
+        .celebration-card p {
+            color: var(--muted);
+            font-size: 0.88rem;
+            line-height: 1.65;
+            max-width: 320px;
+            margin: 0 auto 18px;
+        }
+
+        .celebration-score {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 0.82rem;
+            color: var(--dark);
+            background: rgba(212, 175, 55, 0.1);
+            border: 1px solid rgba(212, 175, 55, 0.25);
+            border-radius: 30px;
+            padding: 9px 16px;
+        }
+
+        .celebration-score b {
+            font-size: 1rem;
+            color: #b8860b;
+        }
+
+        .celebration-score .sep {
+            color: var(--muted);
+            font-weight: 400;
+        }
+
+        @media (max-width: 380px) {
+            .celebration-card {
+                padding: 24px 18px 26px;
+            }
+        }
     </style>
 </head>
 
@@ -1725,6 +1906,40 @@ if (isset($_SESSION['user_id'])) {
         <div class="preloader-text" id="preloaderTagline">Menyiapkan Hafizhly</div>
         <div class="preloader-bar">
             <div class="preloader-bar-fill"></div>
+        </div>
+    </div>
+
+    <!-- Celebration popup: Spain — 2026 World Cup Champions -->
+    <div class="celebration-overlay" id="celebrationOverlay">
+        <div class="celebration-confetti" id="celebrationConfetti"></div>
+        <div class="celebration-card">
+            <button class="celebration-close" id="celebrationClose" aria-label="Tutup"><i class="fa-solid fa-xmark"></i></button>
+
+            <div class="celebration-flag">
+                <svg viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
+                    <filter id="flagWave">
+                        <feTurbulence type="fractalNoise" baseFrequency="0.015 0.04" numOctaves="2" seed="4" result="noise">
+                            <animate attributeName="baseFrequency" dur="5s" values="0.015 0.04;0.025 0.06;0.015 0.04" repeatCount="indefinite" />
+                        </feTurbulence>
+                        <feDisplacementMap in="SourceGraphic" in2="noise" scale="7" xChannelSelector="R" yChannelSelector="G" />
+                    </filter>
+                    <g filter="url(#flagWave)">
+                        <rect width="120" height="80" fill="#C60B1E"></rect>
+                        <rect y="20" width="120" height="40" fill="#FFC400"></rect>
+                    </g>
+                </svg>
+            </div>
+
+            <div class="celebration-trophy"><i class="fa-solid fa-trophy"></i></div>
+
+            <h3>¡Campeones del Mundo!</h3>
+            <p>Spanyol juara Piala Dunia 2026 usai menang atas Argentina di final. Gol tunggal Ferran Torres di menit ke-106 memastikan trofi kedua La Roja.</p>
+
+            <div class="celebration-score">
+                <span>🇪🇸 SPAIN <b>1</b></span>
+                <span class="sep">—</span>
+                <span><b>0</b> ARGENTINA 🇦🇷</span>
+            </div>
         </div>
     </div>
 
@@ -2312,8 +2527,44 @@ if (isset($_SESSION['user_id'])) {
                 setTimeout(function() {
                     preloaderEl.classList.add('hide');
                 }, 260);
+
+                // Show the Spain 2026 celebration popup shortly after the preloader clears
+                setTimeout(showCelebrationPopup, 900);
             });
         })();
+
+        /* ===== Celebration popup: Spain 2026 World Cup ===== */
+        function showCelebrationPopup() {
+            const overlay = document.getElementById('celebrationOverlay');
+            if (!overlay) return;
+
+            // Only show once per browser session so it doesn't nag on every page reload
+            if (sessionStorage.getItem('hafizhly_wc2026_seen')) return;
+
+            const confettiHost = document.getElementById('celebrationConfetti');
+            const colors = ['#C60B1E', '#FFC400', '#ffffff', '#d4af37'];
+            const pieceCount = window.innerWidth < 480 ? 22 : 36;
+            for (let i = 0; i < pieceCount; i++) {
+                const piece = document.createElement('span');
+                piece.style.left = Math.random() * 100 + '%';
+                piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+                piece.style.animationDuration = (2.4 + Math.random() * 2.2) + 's';
+                piece.style.animationDelay = (Math.random() * 1.6) + 's';
+                piece.style.transform = 'rotate(' + Math.floor(Math.random() * 360) + 'deg)';
+                confettiHost.appendChild(piece);
+            }
+
+            overlay.classList.add('show');
+            sessionStorage.setItem('hafizhly_wc2026_seen', '1');
+
+            function closePopup() {
+                overlay.classList.remove('show');
+            }
+            document.getElementById('celebrationClose').addEventListener('click', closePopup);
+            overlay.addEventListener('click', function(e) {
+                if (e.target === overlay) closePopup();
+            });
+        }
 
         AOS.init({
             duration: 700,

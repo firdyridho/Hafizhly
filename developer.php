@@ -25,11 +25,11 @@ session_start();
 
     <style>
         :root {
-            /* Deep, mature emerald palette — no more neon/young mint */
-            --emerald-deep: #0a4335;
-            --emerald: #0b5940;
-            --emerald-bright: #1d9d75;
-            --mint-50: #eff8f4;
+            /* Balanced emerald palette — not neon-young, not near-black */
+            --emerald-deep: #14684f;
+            --emerald: #187a5e;
+            --emerald-bright: #2bab82;
+            --mint-50: #eaf7f1;
             --ivory: #fdfcf9;
             --ivory-dim: #f4f2ea;
             --ink: #0f231c;
@@ -53,15 +53,10 @@ session_start();
 
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: var(--ivory);
+            background: linear-gradient(165deg, #eaf7f1 0%, #fdfcf9 28%, #fdfcf9 68%, #eef6f0 100%);
             color: var(--ink);
             line-height: 1.65;
             overflow-x: hidden;
-        }
-
-        body.locked {
-            overflow: hidden;
-            height: 100vh;
         }
 
         h1,
@@ -90,105 +85,6 @@ session_start();
         ::selection {
             background: var(--gold-soft);
             color: var(--emerald-deep);
-        }
-
-        /* ============ INTRO PRELOADER (grand page-load animation) ============ */
-        .preloader {
-            position: fixed;
-            inset: 0;
-            z-index: 100000;
-            pointer-events: none;
-        }
-
-        .preloader-panel {
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            width: 50%;
-            background: linear-gradient(165deg, var(--emerald-deep) 0%, var(--emerald) 60%, #072a20 100%);
-            transition: transform 1s var(--ease);
-        }
-
-        .preloader-panel::after {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%23ffffff' stroke-width='1'%3E%3Cpath d='M60 6 L96 30 L96 90 L60 114 L24 90 L24 30 Z'/%3E%3Ccircle cx='60' cy='60' r='30'/%3E%3C/g%3E%3C/svg%3E");
-            opacity: 0.06;
-        }
-
-        .preloader-panel.left {
-            left: 0;
-            border-right: 1px solid rgba(238, 224, 189, 0.15);
-        }
-
-        .preloader-panel.right {
-            right: 0;
-            border-left: 1px solid rgba(238, 224, 189, 0.15);
-        }
-
-        .preloader.hide .preloader-panel.left {
-            transform: translateX(-100%);
-        }
-
-        .preloader.hide .preloader-panel.right {
-            transform: translateX(100%);
-        }
-
-        .preloader-center {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 2;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 18px;
-        }
-
-        .preloader-logo {
-            width: 78px;
-            height: 78px;
-            border-radius: 22px;
-            background: var(--ivory);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 14px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
-            animation: logoPulse 1.15s var(--ease) infinite alternate;
-        }
-
-        .preloader-logo img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-
-        .preloader-word {
-            color: var(--ivory);
-            font-family: 'Amiri', serif;
-            font-size: 1.15rem;
-            letter-spacing: 5px;
-            text-transform: uppercase;
-            opacity: 0.85;
-        }
-
-        @keyframes logoPulse {
-            to {
-                transform: scale(1.08);
-            }
-        }
-
-        .preloader.hide .preloader-center {
-            opacity: 0;
-            transform: translate(-50%, -50%) scale(0.5);
-            transition: all 0.5s var(--ease);
-        }
-
-        .preloader.done {
-            display: none;
         }
 
         /* ============ PAGE TRANSITION VEIL (SPA-like nav) ============ */
@@ -505,7 +401,7 @@ session_start();
             flex-direction: row-reverse;
         }
 
-        /* --- organic (un-boxed) photo --- */
+        /* --- clean, unadorned photo --- */
         .dev-photo-wrap {
             position: relative;
             width: clamp(230px, 27vw, 320px);
@@ -513,46 +409,11 @@ session_start();
             flex-shrink: 0;
         }
 
-        .dev-photo-wrap::before {
-            content: "";
-            position: absolute;
-            inset: -16px;
-            background: linear-gradient(155deg, var(--gold) 0%, var(--emerald-bright) 55%, var(--emerald-deep) 100%);
-            border-radius: 40% 60% 62% 38% / 44% 42% 58% 56%;
-            opacity: 0.9;
-            z-index: 0;
-            animation: blobMorph 13s ease-in-out infinite alternate;
-        }
-
-        .dev-row.reverse .dev-photo-wrap::before {
-            animation-direction: alternate-reverse;
-        }
-
         .dev-photo-frame {
-            position: relative;
-            z-index: 1;
             width: 100%;
             height: 100%;
             overflow: hidden;
-            border-radius: 42% 58% 60% 40% / 45% 40% 60% 55%;
-            border: 5px solid var(--ivory);
-            box-shadow: 0 30px 60px rgba(6, 40, 30, 0.25);
-            animation: blobMorph 13s ease-in-out infinite alternate-reverse;
-            transition: border-radius 0.6s var(--ease);
-        }
-
-        @keyframes blobMorph {
-            0% {
-                border-radius: 42% 58% 60% 40% / 45% 40% 60% 55%;
-            }
-
-            50% {
-                border-radius: 58% 42% 38% 62% / 55% 60% 40% 45%;
-            }
-
-            100% {
-                border-radius: 42% 58% 60% 40% / 45% 40% 60% 55%;
-            }
+            border-radius: 24px;
         }
 
         .dev-photo-frame img {
@@ -564,7 +425,7 @@ session_start();
         }
 
         .dev-row:hover .dev-photo-frame img {
-            transform: scale(1.07);
+            transform: scale(1.05);
         }
 
         .avatar-fallback {
@@ -576,26 +437,6 @@ session_start();
             font-size: 3rem;
             color: var(--emerald);
             background: var(--mint-50);
-        }
-
-        .dev-photo-dots {
-            position: absolute;
-            width: 84px;
-            height: 84px;
-            background-image: radial-gradient(var(--gold) 1.6px, transparent 1.6px);
-            background-size: 12px 12px;
-            opacity: 0.5;
-            z-index: 0;
-        }
-
-        .dev-row:not(.reverse) .dev-photo-dots {
-            bottom: -22px;
-            right: -22px;
-        }
-
-        .dev-row.reverse .dev-photo-dots {
-            bottom: -22px;
-            left: -22px;
         }
 
         /* --- info side --- */
@@ -929,17 +770,7 @@ session_start();
     </style>
 </head>
 
-<body class="locked">
-
-    <!-- INTRO PRELOADER -->
-    <div class="preloader" id="preloader">
-        <div class="preloader-panel left"></div>
-        <div class="preloader-panel right"></div>
-        <div class="preloader-center">
-            <div class="preloader-logo"><img src="assets/icon/logo.png" alt="Logo Hifzhly"></div>
-            <span class="preloader-word">Hifzhly</span>
-        </div>
-    </div>
+<body>
 
     <div class="route-veil" id="routeVeil"></div>
 
@@ -982,7 +813,6 @@ session_start();
         <!-- PROFIL 1: FAEYZA — photo left, info right -->
         <div class="dev-row">
             <div class="dev-photo-wrap" data-aos="fade-right" data-aos-delay="80">
-                <div class="dev-photo-dots"></div>
                 <div class="dev-photo-frame">
                     <img src="assets/images/pija.webp" alt="Foto Faeyza Ardellein Yaradhitya"
                         onerror="this.parentElement.innerHTML='<div class=&quot;avatar-fallback&quot;><i class=&quot;fas fa-user-graduate&quot;></i></div>';">
@@ -1012,7 +842,6 @@ session_start();
         <!-- PROFIL 2: FIRDY — mirrored, info left, photo right -->
         <div class="dev-row reverse">
             <div class="dev-photo-wrap" data-aos="fade-left" data-aos-delay="80">
-                <div class="dev-photo-dots"></div>
                 <div class="dev-photo-frame">
                     <img src="assets/images/firdy.webp" alt="Foto Firdy Ridho Fillah"
                         onerror="this.parentElement.innerHTML='<div class=&quot;avatar-fallback&quot;><i class=&quot;fas fa-laptop-code&quot;></i></div>';">
@@ -1089,22 +918,11 @@ session_start();
 
     <script src="https://cdn.jsdelivr.net/npm/aos@2.3.1/dist/aos.js"></script>
     <script>
-        // ---- Grand intro reveal ----
-        const preloader = document.getElementById('preloader');
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                preloader.classList.add('hide');
-                document.body.classList.remove('locked');
-                setTimeout(() => {
-                    preloader.classList.add('done');
-                }, 950);
-                AOS.init({
-                    duration: 700,
-                    easing: 'ease-out-cubic',
-                    once: true,
-                    offset: 60
-                });
-            }, 650);
+        AOS.init({
+            duration: 700,
+            easing: 'ease-out-cubic',
+            once: true,
+            offset: 60
         });
 
         // Navbar shrink on scroll

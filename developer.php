@@ -819,7 +819,7 @@ session_start();
                 </div>
             </div>
             <div class="dev-info" data-aos="fade-left" data-aos-delay="160">
-                <div class="dev-index">Pengembang 01</div>
+                <div class="dev-index">Pijaaa <i class="fas fa-heart"></i></div>
                 <h3 class="dev-name">Faeyza Ardellein Yaradhitya</h3>
                 <div class="dev-role">Full-Stack Developer</div>
                 <p class="dev-bio">Bertanggung jawab merancang pengalaman pengguna yang nyaman dan intuitif, serta memastikan alur sistem Hifzhly berjalan sesuai kebutuhan para penghafal Al-Qur'an.</p>
@@ -848,7 +848,7 @@ session_start();
                 </div>
             </div>
             <div class="dev-info" data-aos="fade-right" data-aos-delay="160">
-                <div class="dev-index">Pengembang 02</div>
+                <div class="dev-index">Firdy</div>
                 <h3 class="dev-name">Firdy Ridho Fillah</h3>
                 <div class="dev-role">Full-Stack Developer</div>
                 <p class="dev-bio">Mengeksekusi logika pemrograman dari sisi server hingga tampilan antarmuka, serta merancang arsitektur database Hifzhly agar aplikasi berjalan cepat dan aman.</p>

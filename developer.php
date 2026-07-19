@@ -25,10 +25,11 @@ session_start();
 
     <style>
         :root {
-            --emerald-deep: #0ed79eff;
-            --emerald: #0e7a5c;
-            --emerald-bright: #14a37d;
-            --mint-50: #f2faf6;
+            /* Deep, mature emerald palette — no more neon/young mint */
+            --emerald-deep: #0a4335;
+            --emerald: #0b5940;
+            --emerald-bright: #1d9d75;
+            --mint-50: #eff8f4;
             --ivory: #fdfcf9;
             --ivory-dim: #f4f2ea;
             --ink: #0f231c;
@@ -58,6 +59,11 @@ session_start();
             overflow-x: hidden;
         }
 
+        body.locked {
+            overflow: hidden;
+            height: 100vh;
+        }
+
         h1,
         h2,
         h3,
@@ -84,6 +90,105 @@ session_start();
         ::selection {
             background: var(--gold-soft);
             color: var(--emerald-deep);
+        }
+
+        /* ============ INTRO PRELOADER (grand page-load animation) ============ */
+        .preloader {
+            position: fixed;
+            inset: 0;
+            z-index: 100000;
+            pointer-events: none;
+        }
+
+        .preloader-panel {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 50%;
+            background: linear-gradient(165deg, var(--emerald-deep) 0%, var(--emerald) 60%, #072a20 100%);
+            transition: transform 1s var(--ease);
+        }
+
+        .preloader-panel::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%23ffffff' stroke-width='1'%3E%3Cpath d='M60 6 L96 30 L96 90 L60 114 L24 90 L24 30 Z'/%3E%3Ccircle cx='60' cy='60' r='30'/%3E%3C/g%3E%3C/svg%3E");
+            opacity: 0.06;
+        }
+
+        .preloader-panel.left {
+            left: 0;
+            border-right: 1px solid rgba(238, 224, 189, 0.15);
+        }
+
+        .preloader-panel.right {
+            right: 0;
+            border-left: 1px solid rgba(238, 224, 189, 0.15);
+        }
+
+        .preloader.hide .preloader-panel.left {
+            transform: translateX(-100%);
+        }
+
+        .preloader.hide .preloader-panel.right {
+            transform: translateX(100%);
+        }
+
+        .preloader-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .preloader-logo {
+            width: 78px;
+            height: 78px;
+            border-radius: 22px;
+            background: var(--ivory);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 14px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+            animation: logoPulse 1.15s var(--ease) infinite alternate;
+        }
+
+        .preloader-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .preloader-word {
+            color: var(--ivory);
+            font-family: 'Amiri', serif;
+            font-size: 1.15rem;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            opacity: 0.85;
+        }
+
+        @keyframes logoPulse {
+            to {
+                transform: scale(1.08);
+            }
+        }
+
+        .preloader.hide .preloader-center {
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.5);
+            transition: all 0.5s var(--ease);
+        }
+
+        .preloader.done {
+            display: none;
         }
 
         /* ============ PAGE TRANSITION VEIL (SPA-like nav) ============ */
@@ -129,7 +234,7 @@ session_start();
             filter: blur(90px);
             z-index: 0;
             pointer-events: none;
-            opacity: 0.35;
+            opacity: 0.28;
         }
 
         .glow-blob.b1 {
@@ -195,7 +300,6 @@ session_start();
             letter-spacing: 0.3px;
         }
 
-        /* Logo mark: solid green box, logo forced to pure white, no motion */
         .logo-mark {
             background: var(--emerald-deep);
             border-radius: 11px;
@@ -361,11 +465,11 @@ session_start();
             }
         }
 
-        /* ============ TEAM SECTION ============ */
+        /* ============ TEAM SECTION — zig-zag rows ============ */
         .team-section {
             position: relative;
             z-index: 1;
-            padding: 0 6% clamp(70px, 10vw, 110px);
+            padding: 0 6% clamp(80px, 11vw, 130px);
         }
 
         .section-label {
@@ -382,225 +486,218 @@ session_start();
             text-align: center;
             font-size: clamp(1.5rem, 3vw, 2rem);
             color: var(--emerald-deep);
-            margin-bottom: 44px;
+            margin-bottom: clamp(56px, 8vw, 90px);
         }
 
-        .team-container {
-            max-width: 980px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: clamp(28px, 4vw, 44px);
-        }
-
-        /* --- Holographic "rare card" --- */
-        .card-stage {
-            perspective: 1200px;
-        }
-
-        .team-card {
-            --mx: 50%;
-            --my: 50%;
-            background: #ffffff;
-            border-radius: 26px;
-            padding: 44px 34px 36px;
-            text-align: center;
-            box-shadow: var(--shadow-soft);
-            border: 1px solid var(--line);
-            position: relative;
-            transform-style: preserve-3d;
-            transition: transform 0.25s var(--ease), box-shadow 0.4s var(--ease), border-color 0.4s var(--ease);
-            will-change: transform;
-            overflow: hidden;
-        }
-
-        .team-card:hover {
-            box-shadow: 0 30px 70px rgba(7, 59, 44, 0.2);
-            border-color: var(--gold-soft);
-        }
-
-        /* rainbow foil edge */
-        .card-foil-edge {
-            position: absolute;
-            inset: 0;
-            border-radius: 26px;
-            padding: 1.5px;
-            background: conic-gradient(from calc(var(--my) * 3.6deg) at var(--mx) var(--my),
-                    rgba(255, 90, 205, 0.7), rgba(255, 214, 90, 0.7), rgba(90, 255, 210, 0.7),
-                    rgba(120, 140, 255, 0.7), rgba(255, 90, 205, 0.7));
-            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            -webkit-mask-composite: xor;
-            mask-composite: exclude;
-            opacity: 0;
-            transition: opacity 0.4s var(--ease);
-            pointer-events: none;
-            z-index: 3;
-        }
-
-        .team-card:hover .card-foil-edge {
-            opacity: 1;
-        }
-
-        /* rainbow holographic sheen sweeping with cursor */
-        .card-holo {
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(115deg,
-                    transparent 8%,
-                    rgba(255, 70, 180, .38) 22%,
-                    rgba(255, 221, 70, .38) 36%,
-                    rgba(70, 255, 219, .38) 50%,
-                    rgba(120, 110, 255, .38) 64%,
-                    transparent 82%);
-            background-size: 250% 250%;
-            mix-blend-mode: color-dodge;
-            opacity: 0;
-            transition: opacity 0.4s var(--ease);
-            pointer-events: none;
-            z-index: 1;
-        }
-
-        .team-card:hover .card-holo {
-            opacity: 0.55;
-        }
-
-        /* glitter speckle layer */
-        .card-sparkle {
-            position: absolute;
-            inset: 0;
-            background-image:
-                radial-gradient(circle, rgba(255, 255, 255, .95) 0 1px, transparent 1.6px);
-            background-size: 14px 14px;
-            opacity: 0;
-            transition: opacity 0.4s var(--ease);
-            pointer-events: none;
-            mix-blend-mode: overlay;
-            z-index: 2;
-        }
-
-        .team-card:hover .card-sparkle {
-            opacity: 0.35;
-        }
-
-        .card-content {
-            position: relative;
-            z-index: 4;
-            transform: translateZ(28px);
-        }
-
-        /* --- Ornate 8-point star photo frame (Rub el Hizb motif) --- */
-        .avatar-frame {
-            position: relative;
-            width: 172px;
-            height: 172px;
-            margin: 0 auto 28px;
+        .dev-row {
             display: flex;
             align-items: center;
-            justify-content: center;
+            gap: clamp(36px, 6vw, 90px);
+            max-width: 1080px;
+            margin: 0 auto clamp(70px, 10vw, 120px);
         }
 
-        .avatar-star {
+        .dev-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .dev-row.reverse {
+            flex-direction: row-reverse;
+        }
+
+        /* --- organic (un-boxed) photo --- */
+        .dev-photo-wrap {
+            position: relative;
+            width: clamp(230px, 27vw, 320px);
+            aspect-ratio: 1 / 1;
+            flex-shrink: 0;
+        }
+
+        .dev-photo-wrap::before {
+            content: "";
             position: absolute;
-            inset: 6px;
-            clip-path: polygon(50% 0%, 61.48% 22.28%, 85.36% 14.64%, 77.72% 38.52%, 100% 50%,
-                    77.72% 61.48%, 85.36% 85.36%, 61.48% 77.72%, 50% 100%, 38.52% 77.72%,
-                    14.64% 85.36%, 22.28% 61.48%, 0% 50%, 22.28% 38.52%, 14.64% 14.64%, 38.52% 22.28%);
-            background: linear-gradient(155deg, var(--gold) 0%, var(--emerald-bright) 45%, var(--emerald-deep) 75%, var(--gold) 100%);
-            filter: drop-shadow(0 10px 22px rgba(7, 59, 44, 0.3));
-            animation: starSpin 90s linear infinite;
-            transition: filter 0.4s var(--ease);
+            inset: -16px;
+            background: linear-gradient(155deg, var(--gold) 0%, var(--emerald-bright) 55%, var(--emerald-deep) 100%);
+            border-radius: 40% 60% 62% 38% / 44% 42% 58% 56%;
+            opacity: 0.9;
+            z-index: 0;
+            animation: blobMorph 13s ease-in-out infinite alternate;
         }
 
-        .team-card:hover .avatar-star {
-            filter: drop-shadow(0 14px 30px rgba(189, 154, 75, 0.4));
+        .dev-row.reverse .dev-photo-wrap::before {
+            animation-direction: alternate-reverse;
         }
 
-        @keyframes starSpin {
-            to {
-                transform: rotate(360deg);
+        .dev-photo-frame {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            border-radius: 42% 58% 60% 40% / 45% 40% 60% 55%;
+            border: 5px solid var(--ivory);
+            box-shadow: 0 30px 60px rgba(6, 40, 30, 0.25);
+            animation: blobMorph 13s ease-in-out infinite alternate-reverse;
+            transition: border-radius 0.6s var(--ease);
+        }
+
+        @keyframes blobMorph {
+            0% {
+                border-radius: 42% 58% 60% 40% / 45% 40% 60% 55%;
+            }
+
+            50% {
+                border-radius: 58% 42% 38% 62% / 55% 60% 40% 45%;
+            }
+
+            100% {
+                border-radius: 42% 58% 60% 40% / 45% 40% 60% 55%;
             }
         }
 
-        .avatar-star-inner {
-            position: absolute;
-            inset: 20px;
-            clip-path: polygon(50% 0%, 61.48% 22.28%, 85.36% 14.64%, 77.72% 38.52%, 100% 50%,
-                    77.72% 61.48%, 85.36% 85.36%, 61.48% 77.72%, 50% 100%, 38.52% 77.72%,
-                    14.64% 85.36%, 22.28% 61.48%, 0% 50%, 22.28% 38.52%, 14.64% 14.64%, 38.52% 22.28%);
-            background: var(--ivory);
-            animation: starSpin 90s linear infinite;
-        }
-
-        .avatar-photo-ring {
-            position: relative;
-            width: 108px;
-            height: 108px;
-            border-radius: 50%;
-            padding: 5px;
-            background: linear-gradient(160deg, var(--gold), var(--emerald) 70%);
-            box-shadow: 0 8px 20px rgba(7, 59, 44, 0.22);
-            z-index: 1;
-        }
-
-        .avatar-inner {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            overflow: hidden;
-            background: var(--mint-50);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 2px solid var(--ivory);
-        }
-
-        .avatar-inner img {
+        .dev-photo-frame img {
             width: 100%;
             height: 100%;
             object-fit: cover;
             display: block;
+            transition: transform 0.7s var(--ease);
+        }
+
+        .dev-row:hover .dev-photo-frame img {
+            transform: scale(1.07);
         }
 
         .avatar-fallback {
-            font-size: 2.6rem;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
             color: var(--emerald);
+            background: var(--mint-50);
         }
 
-        .name {
-            font-family: 'Amiri', serif;
-            font-size: 1.45rem;
+        .dev-photo-dots {
+            position: absolute;
+            width: 84px;
+            height: 84px;
+            background-image: radial-gradient(var(--gold) 1.6px, transparent 1.6px);
+            background-size: 12px 12px;
+            opacity: 0.5;
+            z-index: 0;
+        }
+
+        .dev-row:not(.reverse) .dev-photo-dots {
+            bottom: -22px;
+            right: -22px;
+        }
+
+        .dev-row.reverse .dev-photo-dots {
+            bottom: -22px;
+            left: -22px;
+        }
+
+        /* --- info side --- */
+        .dev-info {
+            flex: 1;
+            min-width: 280px;
+        }
+
+        .dev-index {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--gold);
             font-weight: 700;
+            font-size: 0.78rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 14px;
+        }
+
+        .dev-index::before {
+            content: "";
+            width: 22px;
+            height: 1px;
+            background: var(--gold);
+        }
+
+        .dev-name {
+            font-size: clamp(1.5rem, 2.6vw, 1.9rem);
             color: var(--ink);
             margin-bottom: 6px;
         }
 
-        .role {
-            font-size: 0.8rem;
-            color: var(--gold);
+        .dev-role {
+            font-size: 0.82rem;
+            color: var(--emerald);
             font-weight: 700;
-            margin-bottom: 20px;
             text-transform: uppercase;
-            letter-spacing: 2px;
+            letter-spacing: 1.5px;
+            margin-bottom: 18px;
         }
 
-        .bio {
+        .dev-bio {
             color: var(--ink-muted);
-            font-size: 0.95rem;
-            margin-bottom: 26px;
-            line-height: 1.75;
+            font-size: 0.98rem;
+            line-height: 1.8;
+            margin-bottom: 24px;
+            max-width: 480px;
         }
 
-        .divider-dot {
-            width: 30px;
-            height: 1px;
-            background: var(--line);
-            margin: 0 auto 22px;
+        .dev-row.reverse .dev-bio {
+            margin-left: auto;
+        }
+
+        .dev-skills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+
+        .dev-row.reverse .dev-skills {
+            justify-content: flex-end;
+        }
+
+        .skill-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, var(--mint-50), #ffffff);
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            padding: 9px 18px 9px 14px;
+            font-size: 0.83rem;
+            font-weight: 600;
+            color: var(--emerald-deep);
+            transition: 0.3s var(--ease);
+        }
+
+        .skill-chip i {
+            color: var(--gold);
+            font-size: 0.95rem;
+        }
+
+        .skill-chip:hover {
+            background: linear-gradient(135deg, var(--emerald-deep), var(--emerald));
+            color: var(--ivory);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 24px rgba(7, 59, 44, 0.22);
+        }
+
+        .skill-chip:hover i {
+            color: var(--gold-soft);
         }
 
         .social-links {
             display: flex;
-            justify-content: center;
             gap: 12px;
+        }
+
+        .dev-row.reverse .social-links {
+            justify-content: flex-end;
         }
 
         .social-btn {
@@ -645,7 +742,7 @@ session_start();
             content: "";
             position: absolute;
             inset: 0;
-            background: radial-gradient(circle at 50% 0%, rgba(20, 163, 125, 0.28), transparent 55%);
+            background: radial-gradient(circle at 50% 0%, rgba(29, 157, 117, 0.28), transparent 55%);
         }
 
         .tech-section h2 {
@@ -782,6 +879,32 @@ session_start();
             will-change: transform, opacity;
         }
 
+        @media (max-width: 860px) {
+
+            .dev-row,
+            .dev-row.reverse {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .dev-bio,
+            .dev-row.reverse .dev-bio {
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .dev-skills,
+            .dev-row.reverse .dev-skills,
+            .social-links,
+            .dev-row.reverse .social-links {
+                justify-content: center;
+            }
+
+            .dev-index::before {
+                display: none;
+            }
+        }
+
         @media (max-width: 768px) {
             .navbar-hz {
                 padding: 15px 5%;
@@ -795,8 +918,8 @@ session_start();
                 padding: 128px 6% 60px;
             }
 
-            .team-card {
-                padding: 36px 24px 30px;
+            .dev-photo-wrap {
+                width: clamp(190px, 55vw, 250px);
             }
 
             .tech-belt {
@@ -806,7 +929,17 @@ session_start();
     </style>
 </head>
 
-<body>
+<body class="locked">
+
+    <!-- INTRO PRELOADER -->
+    <div class="preloader" id="preloader">
+        <div class="preloader-panel left"></div>
+        <div class="preloader-panel right"></div>
+        <div class="preloader-center">
+            <div class="preloader-logo"><img src="assets/icon/logo.png" alt="Logo Hifzhly"></div>
+            <span class="preloader-word">Hifzhly</span>
+        </div>
+    </div>
 
     <div class="route-veil" id="routeVeil"></div>
 
@@ -845,72 +978,65 @@ session_start();
     <section class="team-section">
         <div class="section-label" data-aos="fade-up">Sang Perancang</div>
         <h2 class="section-heading" data-aos="fade-up" data-aos-delay="80">Dua Tangan di Balik Layar</h2>
-        <div class="team-container">
 
-            <!-- PROFIL 1: FAEYZA -->
-            <div class="card-stage" data-aos="fade-up" data-aos-delay="100">
-                <div class="team-card" data-tilt>
-                    <div class="card-holo" data-holo></div>
-                    <div class="card-sparkle" data-sparkle></div>
-                    <div class="card-foil-edge"></div>
-                    <div class="card-content">
-                        <div class="avatar-frame">
-                            <div class="avatar-star"></div>
-                            <div class="avatar-star-inner"></div>
-                            <div class="avatar-photo-ring">
-                                <div class="avatar-inner">
-                                    <img src="assets/images/pija.webp"
-                                        alt="Foto Faeyza Ardellein Yaradhitya"
-                                        onerror="this.parentElement.innerHTML='<i class=\'fas fa-user-graduate avatar-fallback\'></i>';">
-                                </div>
-                            </div>
-                        </div>
-                        <h3 class="name">Faeyza Ardellein Yaradhitya</h3>
-                        <div class="role">Full-Stack Developer</div>
-                        <div class="divider-dot"></div>
-                        <p class="bio">Bertanggung jawab merancang pengalaman pengguna yang nyaman dan intuitif, serta memastikan alur sistem Hifzhly berjalan sesuai kebutuhan para penghafal Al-Qur'an.</p>
-                        <div class="social-links">
-                            <a href="https://www.instagram.com/fyzardell" target="_blank" rel="noopener" class="social-btn"><i class="fab fa-instagram"></i></a>
-                            <a href="#" class="social-btn"><i class="fab fa-github"></i></a>
-                            <a href="#" class="social-btn"><i class="fab fa-linkedin-in"></i></a>
-                            <a href="#" class="social-btn"><i class="fas fa-envelope"></i></a>
-                        </div>
-                    </div>
+        <!-- PROFIL 1: FAEYZA — photo left, info right -->
+        <div class="dev-row">
+            <div class="dev-photo-wrap" data-aos="fade-right" data-aos-delay="80">
+                <div class="dev-photo-dots"></div>
+                <div class="dev-photo-frame">
+                    <img src="assets/images/pija.webp" alt="Foto Faeyza Ardellein Yaradhitya"
+                        onerror="this.parentElement.innerHTML='<div class=&quot;avatar-fallback&quot;><i class=&quot;fas fa-user-graduate&quot;></i></div>';">
                 </div>
             </div>
-
-            <!-- PROFIL 2: FIRDY -->
-            <div class="card-stage" data-aos="fade-up" data-aos-delay="200">
-                <div class="team-card" data-tilt>
-                    <div class="card-holo" data-holo></div>
-                    <div class="card-sparkle" data-sparkle></div>
-                    <div class="card-foil-edge"></div>
-                    <div class="card-content">
-                        <div class="avatar-frame">
-                            <div class="avatar-star"></div>
-                            <div class="avatar-star-inner"></div>
-                            <div class="avatar-photo-ring">
-                                <div class="avatar-inner">
-                                    <img src="assets/images/firdy.webp"
-                                        alt="Foto Firdy Ridho Fillah"
-                                        onerror="this.parentElement.innerHTML='<i class=\'fas fa-laptop-code avatar-fallback\'></i>';">
-                                </div>
-                            </div>
-                        </div>
-                        <h3 class="name">Firdy Ridho Fillah</h3>
-                        <div class="role">Full-Stack Developer</div>
-                        <div class="divider-dot"></div>
-                        <p class="bio">Mengeksekusi logika pemrograman dari sisi server hingga tampilan antarmuka, serta merancang arsitektur database Hifzhly agar aplikasi berjalan cepat dan aman.</p>
-                        <div class="social-links">
-                            <a href="https://instagram.com/firdyfillaa_" target="_blank" rel="noopener" class="social-btn"><i class="fab fa-instagram"></i></a>
-                            <a href="#" class="social-btn"><i class="fab fa-github"></i></a>
-                            <a href="#" class="social-btn"><i class="fab fa-linkedin-in"></i></a>
-                            <a href="#" class="social-btn"><i class="fas fa-envelope"></i></a>
-                        </div>
-                    </div>
+            <div class="dev-info" data-aos="fade-left" data-aos-delay="160">
+                <div class="dev-index">Pengembang 01</div>
+                <h3 class="dev-name">Faeyza Ardellein Yaradhitya</h3>
+                <div class="dev-role">Full-Stack Developer</div>
+                <p class="dev-bio">Bertanggung jawab merancang pengalaman pengguna yang nyaman dan intuitif, serta memastikan alur sistem Hifzhly berjalan sesuai kebutuhan para penghafal Al-Qur'an.</p>
+                <div class="dev-skills">
+                    <span class="skill-chip"><i class="fas fa-pen-nib"></i> UI/UX Design</span>
+                    <span class="skill-chip"><i class="fab fa-html5"></i> HTML5</span>
+                    <span class="skill-chip"><i class="fab fa-css3-alt"></i> CSS3</span>
+                    <span class="skill-chip"><i class="fab fa-js"></i> JavaScript</span>
+                    <span class="skill-chip"><i class="fab fa-bootstrap"></i> Bootstrap 5</span>
+                </div>
+                <div class="social-links">
+                    <a href="https://www.instagram.com/fyzardell" target="_blank" rel="noopener" class="social-btn"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="social-btn"><i class="fab fa-github"></i></a>
+                    <a href="#" class="social-btn"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="#" class="social-btn"><i class="fas fa-envelope"></i></a>
                 </div>
             </div>
+        </div>
 
+        <!-- PROFIL 2: FIRDY — mirrored, info left, photo right -->
+        <div class="dev-row reverse">
+            <div class="dev-photo-wrap" data-aos="fade-left" data-aos-delay="80">
+                <div class="dev-photo-dots"></div>
+                <div class="dev-photo-frame">
+                    <img src="assets/images/firdy.webp" alt="Foto Firdy Ridho Fillah"
+                        onerror="this.parentElement.innerHTML='<div class=&quot;avatar-fallback&quot;><i class=&quot;fas fa-laptop-code&quot;></i></div>';">
+                </div>
+            </div>
+            <div class="dev-info" data-aos="fade-right" data-aos-delay="160">
+                <div class="dev-index">Pengembang 02</div>
+                <h3 class="dev-name">Firdy Ridho Fillah</h3>
+                <div class="dev-role">Full-Stack Developer</div>
+                <p class="dev-bio">Mengeksekusi logika pemrograman dari sisi server hingga tampilan antarmuka, serta merancang arsitektur database Hifzhly agar aplikasi berjalan cepat dan aman.</p>
+                <div class="dev-skills">
+                    <span class="skill-chip"><i class="fab fa-php"></i> PHP 8</span>
+                    <span class="skill-chip"><i class="fas fa-database"></i> MySQL</span>
+                    <span class="skill-chip"><i class="fas fa-code-branch"></i> REST API</span>
+                    <span class="skill-chip"><i class="fas fa-shield-halved"></i> Session Auth</span>
+                    <span class="skill-chip"><i class="fas fa-server"></i> Server Architecture</span>
+                </div>
+                <div class="social-links">
+                    <a href="https://instagram.com/firdyfillaa_" target="_blank" rel="noopener" class="social-btn"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="social-btn"><i class="fab fa-github"></i></a>
+                    <a href="#" class="social-btn"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="#" class="social-btn"><i class="fas fa-envelope"></i></a>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -963,11 +1089,22 @@ session_start();
 
     <script src="https://cdn.jsdelivr.net/npm/aos@2.3.1/dist/aos.js"></script>
     <script>
-        AOS.init({
-            duration: 700,
-            easing: 'ease-out-cubic',
-            once: true,
-            offset: 60
+        // ---- Grand intro reveal ----
+        const preloader = document.getElementById('preloader');
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                preloader.classList.add('hide');
+                document.body.classList.remove('locked');
+                setTimeout(() => {
+                    preloader.classList.add('done');
+                }, 950);
+                AOS.init({
+                    duration: 700,
+                    easing: 'ease-out-cubic',
+                    once: true,
+                    offset: 60
+                });
+            }, 650);
         });
 
         // Navbar shrink on scroll
@@ -979,40 +1116,6 @@ session_start();
         // Duplicate tech belt content for seamless infinite loop
         const belt = document.getElementById('techBelt');
         belt.innerHTML += belt.innerHTML;
-
-        // 3D tilt + holographic rainbow sheen for team cards (rare-card effect)
-        const tiltCards = document.querySelectorAll('[data-tilt]');
-        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-        if (!reduceMotion) {
-            tiltCards.forEach(card => {
-                const holo = card.querySelector('[data-holo]');
-                const sparkle = card.querySelector('[data-sparkle]');
-
-                card.addEventListener('mousemove', (e) => {
-                    const rect = card.getBoundingClientRect();
-                    const x = e.clientX - rect.left;
-                    const y = e.clientY - rect.top;
-                    const px = (x / rect.width) * 100;
-                    const py = (y / rect.height) * 100;
-                    const rotateY = ((x / rect.width) - 0.5) * 14;
-                    const rotateX = ((y / rect.height) - 0.5) * -14;
-
-                    card.style.setProperty('--mx', px + '%');
-                    card.style.setProperty('--my', py + '%');
-                    card.style.transform = `perspective(1200px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-4px)`;
-
-                    if (holo) holo.style.backgroundPosition = `${px}% ${py}%`;
-                    if (sparkle) sparkle.style.backgroundPosition = `${px * 0.6}px ${py * 0.6}px`;
-                });
-
-                card.addEventListener('mouseleave', () => {
-                    card.style.transform = 'perspective(1200px) rotateX(0deg) rotateY(0deg) translateY(0)';
-                    card.style.setProperty('--mx', '50%');
-                    card.style.setProperty('--my', '50%');
-                });
-            });
-        }
 
         // SPA-like route transition veil for internal links
         const veil = document.getElementById('routeVeil');

@@ -2527,19 +2527,24 @@ if (isset($_SESSION['user_id'])) {
                 setTimeout(function() {
                     preloaderEl.classList.add('hide');
                 }, 260);
-
-                // Show the Spain 2026 celebration popup shortly after the preloader clears
-                setTimeout(showCelebrationPopup, 900);
             });
         })();
+
+        // Show the Spain 2026 celebration popup shortly after the page is ready.
+        // Runs on DOMContentLoaded (not window.load) so it doesn't wait on slow CDN assets.
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(showCelebrationPopup, 1200);
+        });
 
         /* ===== Celebration popup: Spain 2026 World Cup ===== */
         function showCelebrationPopup() {
             const overlay = document.getElementById('celebrationOverlay');
             if (!overlay) return;
 
-            // Only show once per browser session so it doesn't nag on every page reload
-            if (sessionStorage.getItem('hafizhly_wc2026_seen')) return;
+            // TESTING: shows on every reload for now.
+            // To limit it to once per browser session, uncomment the two lines below.
+            // if (sessionStorage.getItem('hafizhly_wc2026_seen')) return;
+            // sessionStorage.setItem('hafizhly_wc2026_seen', '1');
 
             const confettiHost = document.getElementById('celebrationConfetti');
             const colors = ['#C60B1E', '#FFC400', '#ffffff', '#d4af37'];
@@ -2555,7 +2560,6 @@ if (isset($_SESSION['user_id'])) {
             }
 
             overlay.classList.add('show');
-            sessionStorage.setItem('hafizhly_wc2026_seen', '1');
 
             function closePopup() {
                 overlay.classList.remove('show');

@@ -28,11 +28,11 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
 
         :root {
             --primary: #059669;
+            --primary-dark: #047857;
             --dark: #0f172a;
             --bg: #f8fafc;
             --border: #e2e8f0;
             --mushaf-line: #cbd5e1;
-            /* Warna garis-garis tipis */
         }
 
         * {
@@ -47,6 +47,8 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             background-color: var(--bg);
             color: var(--dark);
             overflow-x: hidden;
+            /* Hapus padding bottom besar karena floating bar bawah dihapus */
+            padding-bottom: 30px;
         }
 
         .container {
@@ -54,6 +56,55 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             margin: 0 auto;
             padding: 15px;
             width: 100%;
+        }
+
+        /* ANIMASI SMOOTH (FADE & SLIDE) */
+        .fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .page-flip-left {
+            animation: slideLeft 0.3s ease-out forwards;
+        }
+
+        .page-flip-right {
+            animation: slideRight 0.3s ease-out forwards;
+        }
+
+        @keyframes slideLeft {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideRight {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
 
         /* HEADER GLOBAL */
@@ -94,7 +145,51 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
            TAMPILAN 1: DAFTAR SURAH (INDEX)
            ========================================= */
         #view-index {
-            padding-bottom: 90px;
+            display: block;
+        }
+
+        /* CARD LANJUTKAN HAFALAN (Warna Hijau) */
+        .last-read-card {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-radius: 18px;
+            padding: 20px;
+            color: white;
+            margin-bottom: 25px;
+            display: none;
+            /* Hidden by default */
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(5, 150, 105, 0.25);
+            transition: transform 0.2s ease;
+        }
+
+        .last-read-card:active {
+            transform: scale(0.98);
+        }
+
+        .last-read-info h3 {
+            font-size: 1.2rem;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+
+        .last-read-info p {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 500;
+            margin-bottom: 0;
+        }
+
+        .last-read-icon {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
         }
 
         .search-box {
@@ -135,14 +230,13 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             align-items: center;
             justify-content: space-between;
             cursor: pointer;
-            transition: all 0.2s ease;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+            transition: 0.2s ease;
         }
 
-        .surah-card:hover {
-            border-color: var(--primary);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(5, 150, 105, 0.1);
+        .surah-card:active {
+            transform: scale(0.98);
+            background: #f8fafc;
         }
 
         .surah-num {
@@ -176,68 +270,134 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
         }
 
         /* =========================================
-           TAMPILAN 2: MUSHAF HAFALAN
+           TAMPILAN 2: MUSHAF HAFALAN & CONTROL ATAS
            ========================================= */
         #view-mushaf {
             display: none;
-            padding-bottom: 120px;
-            /* Jarak untuk floating bar di bawah */
         }
 
-        .mushaf-header {
-            display: flex;
-            justify-content: space-between;
-            font-weight: 800;
-            font-size: 0.95rem;
-            color: var(--dark);
-            border-bottom: 2px solid var(--dark);
-            padding-bottom: 12px;
-            margin-bottom: 15px;
-        }
-
-        /* PAGINASI DI ATAS (Sesuai Permintaan) */
-        .pagination {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            /* Pindah ke atas text Al-Qur'an */
-            gap: 10px;
-        }
-
-        .btn-page {
+        /* KONTROL ATAS YANG RAPIH (Pengganti Floating Bawah) */
+        .top-controls {
             background: white;
-            color: var(--dark);
             border: 1px solid var(--border);
-            padding: 10px 15px;
-            border-radius: 12px;
-            font-weight: 700;
-            font-size: 0.9rem;
-            flex: 1;
-            cursor: pointer;
-            transition: 0.2s;
+            border-radius: 18px;
+            padding: 12px 15px;
+            margin-bottom: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+        }
+
+        /* Navigasi Kanan-Kiri Simple */
+        .page-navigator {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .btn-nav-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: #f1f5f9;
+            color: var(--dark);
+            border: none;
             display: flex;
             align-items: center;
             justify-content: center;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: 0.2s;
+        }
+
+        .btn-nav-icon:active:not(:disabled) {
+            background: var(--primary);
+            color: white;
+            transform: scale(0.9);
+        }
+
+        .btn-nav-icon:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .page-indicator {
+            font-weight: 800;
+            font-size: 0.95rem;
+            color: var(--dark);
+            min-width: 60px;
+            text-align: center;
+        }
+
+        /* Sensor Tinta */
+        .sensor-group {
+            display: flex;
+            align-items: center;
             gap: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
         }
 
-        .btn-page:hover:not(:disabled) {
-            background: #f1f5f9;
-            border-color: #cbd5e1;
+        .btn-sensor {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            font-size: 0.9rem;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
         }
 
-        .btn-page:disabled {
-            opacity: 0.4;
-            pointer-events: none;
+        .btn-sensor:active:not(:disabled) {
+            background: #e2e8f0;
         }
 
-        /* GAYA GARIS-GARIS (Tanpa Kotak Besar) */
+        .btn-sensor:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .sensor-val {
+            font-weight: 800;
+            font-size: 0.85rem;
+            color: var(--primary);
+            min-width: 60px;
+            text-align: center;
+        }
+
+        /* Audio Play */
+        .btn-audio-top {
+            background: var(--dark);
+            color: white;
+            border: none;
+            height: 36px;
+            padding: 0 15px;
+            border-radius: 10px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: 0.2s;
+        }
+
+        .btn-audio-top.playing {
+            background: #ef4444;
+        }
+
+        /* TAMPILAN TEKS MUSHAF */
         .quran-page {
             display: flex;
             flex-direction: column;
             width: 100%;
+            /* AREA GESER (SWIPE) */
+            touch-action: pan-y;
         }
 
         .mushaf-line {
@@ -247,7 +407,6 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             align-items: center;
             width: 100%;
             flex-wrap: nowrap;
-            /* Inilah efek Garis-garis per barisnya */
             border-bottom: 1px dashed var(--mushaf-line);
             padding-bottom: 8px;
             margin-bottom: 12px;
@@ -255,7 +414,6 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
 
         .mushaf-line:last-child {
             border-bottom: none;
-            /* Baris terakhir tanpa garis bawah */
         }
 
         .mushaf-line.centered {
@@ -269,13 +427,12 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             font-size: clamp(1.2rem, 4.8vw, 2.3rem);
             line-height: 1.8;
             color: #000000;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             position: relative;
             padding: 0 2px;
             white-space: nowrap;
         }
 
-        /* SENSOR HAFALAN (Tinta Transparan & Garis Bawah) */
         .ayah-word.hidden-word {
             color: transparent;
             border-bottom: 2px solid #000000;
@@ -286,14 +443,12 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             color: #dddddd;
         }
 
-        /* Audio Bermain */
         .ayah-word.active-audio {
             color: var(--primary);
             background: #d1fae5;
             border-radius: 5px;
         }
 
-        /* Simbol Akhir Ayat */
         .ayah-end {
             display: inline-flex;
             align-items: center;
@@ -309,7 +464,6 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             flex-shrink: 0;
         }
 
-        /* Banner Surah & Bismillah */
         .surah-title-banner {
             width: 100%;
             background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="30" viewBox="0 0 100 30" preserveAspectRatio="none"><rect x="0" y="0" width="100" height="30" fill="%23ffffff" stroke="%23000000" stroke-width="3"/></svg>') no-repeat center;
@@ -321,8 +475,6 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             padding: 8px 0;
             margin: 20px 0;
             font-weight: bold;
-            border-bottom: none;
-            /* hapus garis jika ada */
         }
 
         .bismillah {
@@ -333,7 +485,7 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             width: 100%;
         }
 
-        /* SKELETON LOADING (Bayangan Teks) */
+        /* SKELETON LOADING */
         .skeleton-wrapper {
             display: none;
             width: 100%;
@@ -358,105 +510,7 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             }
         }
 
-        /* =========================================
-           FLOATING ACTION BAR (Untuk Hafalan)
-           ========================================= */
-        .floating-bar {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 92%;
-            max-width: 600px;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border: 1px solid var(--border);
-            border-radius: 100px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-            display: none;
-            /* Disembunyikan di Index, Muncul di Mushaf */
-            align-items: center;
-            justify-content: space-between;
-            padding: 8px 15px;
-            z-index: 1000;
-        }
-
-        .sensor-group {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .btn-sensor {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: #f8fafc;
-            border: 1px solid var(--border);
-            font-size: 1.1rem;
-            color: var(--dark);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .btn-sensor:active {
-            background: #e2e8f0;
-            transform: scale(0.9);
-        }
-
-        .btn-sensor:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-        }
-
-        .sensor-val {
-            font-weight: 800;
-            font-size: 0.9rem;
-            color: var(--primary);
-            min-width: 70px;
-            text-align: center;
-        }
-
-        .btn-audio-float {
-            background: var(--dark);
-            color: white;
-            border: none;
-            height: 45px;
-            padding: 0 20px;
-            border-radius: 100px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        .btn-audio-float.playing {
-            background: #ef4444;
-            animation: pulse-audio 1.5s infinite;
-        }
-
-        @keyframes pulse-audio {
-            0% {
-                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
-            }
-
-            70% {
-                box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
-            }
-
-            100% {
-                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
-            }
-        }
-
-        /* =========================================
-           CUSTOM TOAST ALERT
-           ========================================= */
+        /* CUSTOM TOAST ALERT */
         #customToast {
             position: fixed;
             top: -100px;
@@ -481,15 +535,15 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
         }
 
         @media (max-width: 600px) {
-            .floating-bar {
-                padding: 8px;
+            .top-controls {
+                justify-content: center;
             }
 
-            .btn-audio-float span {
-                display: none;
+            .sensor-group,
+            .btn-audio-top {
+                flex-grow: 1;
+                justify-content: center;
             }
-
-            /* Sembunyikan teks audio di layar sangat kecil */
         }
     </style>
 </head>
@@ -502,14 +556,22 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
     </div>
 
     <div class="container">
-
         <!-- ==============================================
              VIEW 1: DAFTAR SURAH (INDEX)
              ============================================== -->
-        <div id="view-index">
+        <div id="view-index" class="fade-in">
             <div class="header">
                 <a href="javascript:history.back()" class="back-btn"><i class="fas fa-arrow-left"></i></a>
                 <h1 class="page-title">Pilih Surah</h1>
+            </div>
+
+            <!-- CARD LANJUTKAN HAFALAN -->
+            <div class="last-read-card" id="lastReadCard" onclick="continueReading()">
+                <div class="last-read-info">
+                    <h3>Lanjutkan Hafalan</h3>
+                    <p id="lastReadText">Memuat...</p>
+                </div>
+                <div class="last-read-icon"><i class="fas fa-book-open"></i></div>
             </div>
 
             <input type="text" id="searchInput" class="search-box" placeholder="Cari nama surah... (Cth: Al-Kahf)" onkeyup="filterSurah()">
@@ -525,44 +587,45 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
         <div id="view-mushaf">
             <div class="header">
                 <button class="back-btn" onclick="closeMushaf()"><i class="fas fa-arrow-left"></i></button>
-                <h1 class="page-title" id="mushafTitle">Hafalan Mushaf</h1>
+                <div>
+                    <h1 class="page-title" id="pageSurahName">Surah...</h1>
+                </div>
             </div>
 
-            <div class="mushaf-header">
-                <span id="pageSurahName">Memuat...</span>
-                <span id="pageNumberLabel">Halaman -</span>
+            <!-- KONTROL ATAS RAPIH (Pengganti Footer) -->
+            <div class="top-controls fade-in">
+                <!-- Navigasi Simple (Arah Kanan-Kiri Arab) -->
+                <div class="page-navigator">
+                    <!-- Kiri untuk NEXT, Kanan untuk PREV (Standar Baca Qur'an) -->
+                    <button class="btn-nav-icon" id="btnNext" onclick="changePage(1)" title="Halaman Berikutnya"><i class="fas fa-chevron-left"></i></button>
+                    <div class="page-indicator" id="pageNumberLabel">Hal 1</div>
+                    <button class="btn-nav-icon" id="btnPrev" onclick="changePage(-1)" title="Halaman Sebelumnya"><i class="fas fa-chevron-right"></i></button>
+                </div>
+
+                <div class="sensor-group">
+                    <button class="btn-sensor" onclick="changeSensor(-20)" id="btnMinSensor"><i class="fas fa-minus"></i></button>
+                    <div class="sensor-val" id="lblSensor">0%</div>
+                    <button class="btn-sensor" onclick="changeSensor(20)" id="btnMaxSensor"><i class="fas fa-plus"></i></button>
+                </div>
+
+                <button class="btn-audio-top" id="btnAudio" onclick="toggleAudio()">
+                    <i class="fas fa-play"></i> <span>Audio</span>
+                </button>
             </div>
 
-            <!-- Tombol Navigasi Pindah ke Atas -->
-            <div class="pagination">
-                <button class="btn-page" id="btnPrev" onclick="changePage(-1)"><i class="fas fa-chevron-right"></i> Hal Sebelumnya</button>
-                <button class="btn-page" id="btnNext" onclick="changePage(1)">Hal Berikutnya <i class="fas fa-chevron-left"></i></button>
-            </div>
-
-            <!-- Skeleton Loading 15 Baris -->
+            <!-- Skeleton Loading -->
             <div class="skeleton-wrapper" id="loader">
                 <?php for ($i = 0; $i < 15; $i++): ?>
                     <div class="skeleton-line" style="width: <?= rand(85, 100) ?>%;"></div>
                 <?php endfor; ?>
             </div>
 
+            <!-- Area Geser (Swipe) Teks Qur'an -->
             <div class="quran-page" id="quranPage">
-                <!-- Teks Al-Qur'an (15 Baris Presisi dengan Garis Bawah) dirender di sini -->
+                <!-- Render Garis-garis disini -->
             </div>
         </div>
 
-    </div>
-
-    <!-- FLOATING BAR BAWAH (Muncul Saat Mode Hafalan Saja) -->
-    <div class="floating-bar" id="floatingBar">
-        <div class="sensor-group">
-            <button class="btn-sensor" onclick="changeSensor(-20)" id="btnMinSensor"><i class="fas fa-minus"></i></button>
-            <div class="sensor-val" id="lblSensor">0% Hilang</div>
-            <button class="btn-sensor" onclick="changeSensor(20)" id="btnMaxSensor"><i class="fas fa-plus"></i></button>
-        </div>
-        <button class="btn-audio-float" id="btnAudio" onclick="toggleAudio()">
-            <i class="fas fa-play"></i> <span>Murottal</span>
-        </button>
     </div>
 
     <!-- Audio Element Tertutup -->
@@ -590,7 +653,7 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             setTimeout(() => toast.classList.remove('show'), 2500);
         }
 
-        // Data Awal Surah (Nama Arab & Halaman Awal)
+        // Data Awal Surah 
         const surahs = [{
                 id: 1,
                 name: "Al-Fatihah",
@@ -1185,18 +1248,34 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
         let currentAyahIndex = -1;
         let isPlaying = false;
         const audioElement = document.getElementById('quranAudio');
+        let savedPageToResume = null;
 
         // AWAL LOAD HALAMAN (Tampilkan Daftar Surah)
         document.addEventListener('DOMContentLoaded', () => {
             renderSurahList(surahs);
+            checkSavedProgress();
+        });
 
-            // Cek jika ada save terakhir
+        // ==========================================
+        // Cek History Terakhir (Card Lanjutkan)
+        // ==========================================
+        function checkSavedProgress() {
             const savedPage = localStorage.getItem('hifzly_last_page');
             if (savedPage && !isNaN(savedPage)) {
-                // Opsional: Jika ingin otomatis buka halaman terakhir
-                // openMushaf(parseInt(savedPage));
+                savedPageToResume = parseInt(savedPage);
+                let closestSurah = surahs.slice().reverse().find(s => s.page <= savedPageToResume);
+                if (closestSurah) {
+                    document.getElementById('lastReadText').innerText = `Surah ${closestSurah.name} • Hal ${savedPageToResume}`;
+                    document.getElementById('lastReadCard').style.display = 'flex';
+                }
             }
-        });
+        }
+
+        function continueReading() {
+            if (savedPageToResume) {
+                openMushaf(savedPageToResume);
+            }
+        }
 
         // ==========================================
         // LOGIKA TAMPILAN (SPA ROUTING)
@@ -1233,41 +1312,78 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
         function openMushaf(page) {
             document.getElementById('view-index').style.display = 'none';
             document.getElementById('view-mushaf').style.display = 'block';
-            document.getElementById('floatingBar').style.display = 'flex';
+            document.getElementById('view-mushaf').classList.add('fade-in');
 
             currentPage = page;
             loadQuranPage(currentPage);
-            window.scrollTo(0, 0); // Scroll ke atas
+            window.scrollTo(0, 0);
         }
 
         function closeMushaf() {
             stopAudio();
             document.getElementById('view-mushaf').style.display = 'none';
-            document.getElementById('floatingBar').style.display = 'none';
             document.getElementById('view-index').style.display = 'block';
+            checkSavedProgress(); // Update info last read card
         }
 
         // ==========================================
-        // LOGIKA MUSHAF (API, SENSOR, AUDIO)
+        // LOGIKA MUSHAF & SWIPE
         // ==========================================
         function changePage(direction) {
             let newPage = currentPage + direction;
             if (newPage >= 1 && newPage <= totalPages) {
                 currentPage = newPage;
                 stopAudio();
+
+                // Tambah Animasi Kanan/Kiri
+                const qPage = document.getElementById('quranPage');
+                qPage.className = 'quran-page'; // reset
+                void qPage.offsetWidth; // trigger reflow
+                if (direction > 0) qPage.classList.add('page-flip-left');
+                else qPage.classList.add('page-flip-right');
+
                 loadQuranPage(currentPage);
                 localStorage.setItem('hifzly_last_page', currentPage);
-                showToast(`Halaman ${currentPage} tersimpan`);
             }
         }
 
-        // KONTROL SENSOR (TOMBOL FLOAT)
+        // DETEKSI SWIPE KANAN-KIRI
+        let touchstartX = 0;
+        let touchendX = 0;
+        const mushafArea = document.getElementById('quranPage');
+
+        mushafArea.addEventListener('touchstart', e => {
+            touchstartX = e.changedTouches[0].screenX;
+        }, {
+            passive: true
+        });
+
+        mushafArea.addEventListener('touchend', e => {
+            touchendX = e.changedTouches[0].screenX;
+            handleSwipe();
+        }, {
+            passive: true
+        });
+
+        function handleSwipe() {
+            const threshold = 50; // Jarak minimal swipe
+            if (touchstartX - touchendX > threshold) {
+                // Swipe Kiri (Usap dari kanan ke kiri) = Halaman Berikutnya (Buka halamannya seperti buku Arab)
+                changePage(1);
+            }
+            if (touchendX - touchstartX > threshold) {
+                // Swipe Kanan (Usap dari kiri ke kanan) = Halaman Sebelumnya
+                changePage(-1);
+            }
+        }
+
+        // KONTROL SENSOR (TOMBOL ATAS)
         function changeSensor(amount) {
             sensorLevel += amount;
             if (sensorLevel < 0) sensorLevel = 0;
             if (sensorLevel > 100) sensorLevel = 100;
 
-            document.getElementById('lblSensor').innerText = sensorLevel === 0 ? "Tampil" : (sensorLevel === 100 ? "Kosong" : `${sensorLevel}% Hilang`);
+            document.getElementById('lblSensor').innerText = sensorLevel === 0 ? "Tampil" : (sensorLevel === 100 ? "Kosong" : `${sensorLevel}%`);
             document.getElementById('btnMinSensor').disabled = (sensorLevel === 0);
             document.getElementById('btnMaxSensor').disabled = (sensorLevel === 100);
 
@@ -1303,8 +1419,9 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             const firstSurahId = parseInt(firstVerseKey.split(':')[0]);
             const surahName = surahs.find(s => s.id === firstSurahId)?.name || "";
 
+            // Update Label Indikator
             document.getElementById('pageSurahName').innerText = `Surah ${surahName}`;
-            document.getElementById('pageNumberLabel').innerText = `Halaman ${pageNum}`;
+            document.getElementById('pageNumberLabel').innerText = `Hal ${pageNum}`;
 
             let linesMap = {};
             let globalWordIdx = 0;
@@ -1430,7 +1547,7 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
                 if (audioPlaylists.length > 0) {
                     isPlaying = true;
                     btn.classList.add('playing');
-                    btn.innerHTML = `<i class="fas fa-pause"></i> <span>Hentikan</span>`;
+                    btn.innerHTML = `<i class="fas fa-pause"></i> <span>Berhenti</span>`;
                     currentAyahIndex = -1;
                     playNextAyah();
                 } else {
@@ -1469,7 +1586,7 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             audioElement.currentTime = 0;
             const btn = document.getElementById('btnAudio');
             btn.classList.remove('playing');
-            btn.innerHTML = `<i class="fas fa-play"></i> <span>Murottal</span>`;
+            btn.innerHTML = `<i class="fas fa-play"></i> <span>Audio</span>`;
             document.querySelectorAll('.active-audio').forEach(el => el.classList.remove('active-audio'));
             currentAyahIndex = -1;
         }

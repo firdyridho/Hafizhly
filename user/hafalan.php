@@ -11,8 +11,8 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Hafalan Presisi — Hifzly</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Hafalan Presisi — Hifzhly</title>
     <link rel="icon" type="image/png" href="../assets/icon/logo.png">
 
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -23,19 +23,19 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
         @font-face {
             font-family: 'Uthmani';
             src: url('https://cdn.jsdelivr.net/gh/fawazahmed0/quran-api@1/fonts/KFGQPC_Uthmanic_Script_HAFS_Regular.ttf') format('truetype');
+            font-display: swap;
         }
 
         :root {
-            --primary: #059669;
-            --primary-dark: #047857;
-            --primary-light: #d1fae5;
+            var(--primary): #059669;
+            /* Branding Hijau Hifzhly */
             --dark: #0f172a;
-            --text-muted: #64748b;
-            --bg: #f8fafc;
+            --bg: #f4f7f6;
             --border: #e2e8f0;
-            --paper: #fffcf2;
-            /* Warna kuning gading kertas Al-Qur'an */
-            --paper-border: #e8e2c8;
+            /* Tema Mushaf Hitam Putih */
+            --mushaf-bg: #ffffff;
+            --mushaf-line: #000000;
+            --mushaf-ornament: #333333;
         }
 
         * {
@@ -43,22 +43,25 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             padding: 0;
             box-sizing: border-box;
             font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
             background-color: var(--bg);
             color: var(--dark);
-            padding-bottom: 120px;
+            padding-bottom: 140px;
+            /* Ruang untuk floating bar */
             overflow-x: hidden;
         }
 
         .container {
-            max-width: 850px;
+            max-width: 900px;
             margin: 0 auto;
-            padding: clamp(14px, 4vw, 20px);
+            padding: 15px;
             width: 100%;
         }
 
+        /* HEADER APP */
         .header {
             display: flex;
             align-items: center;
@@ -87,163 +90,38 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             transition: 0.2s;
         }
 
-        .back-btn:hover {
-            background: var(--primary);
-            color: white;
-        }
-
         .page-title {
-            font-size: clamp(1.2rem, 4vw, 1.5rem);
+            font-size: 1.3rem;
             font-weight: 800;
         }
 
-        .save-badge {
-            background: var(--primary-light);
-            color: var(--primary-dark);
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        /* ---------- PANEL KONTROL ---------- */
-        .controls-card {
-            background: white;
-            padding: clamp(16px, 4vw, 24px);
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
-            border: 1px solid var(--border);
-            margin-bottom: 25px;
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
-        }
-
+        /* DROPDOWN NAVIGASI */
         .nav-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 15px;
+            margin-bottom: 20px;
         }
 
-        .control-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .control-group label {
-            font-weight: 700;
-            font-size: 0.85rem;
-            color: var(--dark);
-        }
-
-        select {
+        .nav-grid select {
             padding: 12px 14px;
             border-radius: 12px;
             border: 1px solid var(--border);
-            background: var(--bg);
-            font-weight: 600;
+            background: white;
+            font-weight: 700;
             color: var(--dark);
             outline: none;
-            cursor: pointer;
             width: 100%;
             font-size: 0.9rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
         }
 
-        /* Kontrol Sensor (Tombol) */
-        .sensor-controls {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 6px;
-        }
-
-        .btn-sensor {
-            background: white;
-            border: 1px solid var(--border);
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: var(--dark);
-            cursor: pointer;
-            transition: 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .btn-sensor:hover:not(:disabled) {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-
-        .btn-sensor:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-        }
-
-        .sensor-val {
-            font-weight: 800;
-            font-size: 1rem;
-            color: var(--primary-dark);
-            min-width: 90px;
-            text-align: center;
-        }
-
-        /* Audio & Action Bar */
-        .action-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-top: 15px;
-            border-top: 1px solid var(--border);
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .btn-audio {
-            background: var(--dark);
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 12px;
-            font-weight: 700;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: 0.2s;
-            font-size: 0.9rem;
-            flex-grow: 1;
-            justify-content: center;
-        }
-
-        .btn-audio:hover {
-            background: var(--primary);
-        }
-
-        .btn-audio.playing {
-            background: #ef4444;
-        }
-
-        /* ---------- TAMPILAN MUSHAF (PRESISI) ---------- */
+        /* TAMPILAN MUSHAF (PRESISI & HITAM PUTIH) */
         .mushaf-wrapper {
-            background: var(--paper);
-            padding: clamp(20px, 4vw, 40px) clamp(15px, 3vw, 30px);
-            border-radius: 20px;
-            box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.02), 0 20px 40px rgba(0, 0, 0, 0.06);
-            border: 1px solid var(--paper-border);
+            background: var(--mushaf-bg);
+            padding: 20px;
+            border-radius: 16px;
+            border: 2px solid var(--mushaf-line);
             min-height: 60vh;
             position: relative;
         }
@@ -252,11 +130,11 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             display: flex;
             justify-content: space-between;
             font-weight: 800;
-            font-size: clamp(0.85rem, 3vw, 1rem);
-            color: #857a55;
-            border-bottom: 2px solid var(--paper-border);
+            font-size: 0.9rem;
+            color: var(--mushaf-ornament);
+            border-bottom: 2px solid var(--mushaf-line);
             padding-bottom: 12px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .quran-page {
@@ -265,151 +143,260 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             width: 100%;
         }
 
-        /* Baris demi baris (Flexbox Justify) */
+        /* Baris demi baris Mushaf */
         .mushaf-line {
             display: flex;
             flex-direction: row-reverse;
             justify-content: space-between;
             align-items: center;
             width: 100%;
-            margin-bottom: 10px;
             flex-wrap: nowrap;
+            margin-bottom: 5px;
         }
 
         .mushaf-line.centered {
             justify-content: center;
-            gap: 15px;
+            gap: 10px;
         }
 
-        /* Untuk baris terakhir yang tidak penuh */
-
-        /* Styling Kata */
+        /* Styling Kata Arab */
         .ayah-word {
             font-family: 'Uthmani', serif;
-            font-size: clamp(1.4rem, 5vw, 2.4rem);
-            line-height: 1.6;
-            color: #1e1e1e;
-            transition: color 0.3s, border-color 0.3s, background 0.3s;
+            /* Perhitungan responsif agar tidak tumpah di HP */
+            font-size: clamp(1.1rem, 4.5vw, 2.2rem);
+            line-height: 1.8;
+            color: #000000;
+            transition: all 0.3s ease;
             position: relative;
-            padding: 0 2px;
+            padding: 0 1px;
+            white-space: nowrap;
         }
 
-        /* State Hafalan (Disensor) */
+        /* SENSOR HAFALAN (Garis Bawah Saja) */
         .ayah-word.hidden-word {
             color: transparent;
-            border-bottom: 2px dashed #b4a269;
+            border-bottom: 2px solid #000000;
             user-select: none;
         }
 
-        .ayah-word.hidden-word:hover {
-            color: rgba(0, 0, 0, 0.15);
-            border-bottom-color: var(--primary);
+        .ayah-word.hidden-word:active {
+            color: #dddddd;
+            /* Sedikit mengintip saat ditekan */
         }
 
-        /* State Audio Bermain */
+        /* Audio Bermain */
         .ayah-word.active-audio {
-            color: var(--primary);
-            background: var(--primary-light);
-            border-radius: 8px;
+            color: #059669;
+            background: #d1fae5;
+            border-radius: 5px;
         }
 
-        /* Simbol Akhir Ayat */
+        /* Simbol Akhir Ayat (Hitam Putih) */
         .ayah-end {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: clamp(35px, 8vw, 45px);
-            height: clamp(35px, 8vw, 45px);
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="none" stroke="%23b4a269" stroke-width="4"/><circle cx="50" cy="50" r="38" fill="none" stroke="%23b4a269" stroke-width="1" stroke-dasharray="2,2"/></svg>') no-repeat center;
+            width: clamp(28px, 6vw, 40px);
+            height: clamp(28px, 6vw, 40px);
+            /* Ornamen bundar SVG hitam */
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="none" stroke="%23000000" stroke-width="5"/><circle cx="50" cy="50" r="36" fill="none" stroke="%23000000" stroke-width="1.5" stroke-dasharray="3,3"/></svg>') no-repeat center;
             background-size: contain;
-            font-size: clamp(0.8rem, 2.5vw, 1rem);
-            color: #b4a269;
-            margin: 0 5px;
-            transform: translateY(-3px);
+            font-size: clamp(0.7rem, 2vw, 0.9rem);
+            color: #000000;
+            margin: 0 4px;
             font-family: 'Plus Jakarta Sans', sans-serif;
-            font-weight: 700;
+            font-weight: 800;
             flex-shrink: 0;
         }
 
-        /* Judul Surah di Tengah Teks */
+        /* Judul Surah (Banner Hitam Putih) */
         .surah-title-banner {
             width: 100%;
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="30" viewBox="0 0 100 30" preserveAspectRatio="none"><rect x="0" y="0" width="100" height="30" fill="%23fefaf0" stroke="%23b4a269" stroke-width="2"/></svg>') no-repeat center;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="30" viewBox="0 0 100 30" preserveAspectRatio="none"><rect x="0" y="0" width="100" height="30" fill="%23ffffff" stroke="%23000000" stroke-width="3"/></svg>') no-repeat center;
             background-size: 100% 100%;
             text-align: center;
             font-family: 'Uthmani', serif;
-            font-size: clamp(1.2rem, 4vw, 1.8rem);
-            color: #857a55;
-            padding: 10px 0;
+            font-size: clamp(1.2rem, 4vw, 1.6rem);
+            color: #000000;
+            padding: 8px 0;
             margin: 15px 0;
+            font-weight: bold;
         }
 
-        /* Bismillah */
         .bismillah {
             text-align: center;
             font-family: 'Uthmani', serif;
-            font-size: clamp(1.4rem, 4.5vw, 2.2rem);
+            font-size: clamp(1.3rem, 4.5vw, 2rem);
             margin: 5px 0 15px 0;
             width: 100%;
         }
 
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid var(--primary);
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 60px auto;
+        /* SKELETON LOADING (Pengganti Spinner Biasa) */
+        .skeleton-wrapper {
             display: none;
+            width: 100%;
         }
 
-        @keyframes spin {
+        .skeleton-line {
+            height: clamp(1.5rem, 5vw, 2.5rem);
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+
+        @keyframes shimmer {
             0% {
-                transform: rotate(0deg);
+                background-position: 200% 0;
             }
 
             100% {
-                transform: rotate(360deg);
+                background-position: -200% 0;
             }
         }
 
-        /* ---------- PAGINASI BAWAH ---------- */
+        /* PAGINASI */
         .pagination {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-top: 20px;
             gap: 10px;
-            width: 100%;
         }
 
         .btn-page {
-            background: white;
-            border: 1px solid var(--border);
-            padding: 12px 18px;
-            border-radius: 14px;
+            background: var(--dark);
+            color: white;
+            border: none;
+            padding: 12px 15px;
+            border-radius: 12px;
             font-weight: 700;
-            color: var(--dark);
+            font-size: 0.9rem;
+            flex: 1;
             cursor: pointer;
             transition: 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex: 1;
-            justify-content: center;
-            font-size: clamp(0.85rem, 3vw, 0.95rem);
         }
 
-        .btn-page:hover:not(:disabled) {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
+        .btn-page:hover {
+            background: #000000;
         }
 
         .btn-page:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+        /* FLOATING ACTION BAR (Untuk Sensor & Audio) */
+        .floating-bar {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 92%;
+            max-width: 600px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 15px;
+            z-index: 1000;
+        }
+
+        .sensor-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-sensor {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            font-size: 1.1rem;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-sensor:active {
+            background: #e2e8f0;
+            transform: scale(0.9);
+        }
+
+        .sensor-val {
+            font-weight: 800;
+            font-size: 0.9rem;
+            color: #059669;
+            min-width: 70px;
+            text-align: center;
+        }
+
+        .btn-audio-float {
+            background: var(--dark);
+            color: white;
+            border: none;
+            height: 45px;
+            padding: 0 20px;
+            border-radius: 100px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-audio-float.playing {
+            background: #ef4444;
+            animation: pulse-audio 1.5s infinite;
+        }
+
+        @keyframes pulse-audio {
+            0% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+            }
+        }
+
+        /* CUSTOM TOAST ALERT */
+        #customToast {
+            position: fixed;
+            top: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--dark);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: top 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        #customToast.show {
+            top: 30px;
         }
 
         @media (max-width: 600px) {
@@ -418,55 +405,45 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
                 gap: 10px;
             }
 
-            .mushaf-line {
-                gap: 2px;
+            .mushaf-wrapper {
+                padding: 15px 10px;
             }
 
-            /* Kurangi jarak antar kata di layar kecil agar pas 15 baris */
+            .floating-bar {
+                padding: 8px;
+            }
+
+            .btn-audio-float span {
+                display: none;
+            }
+
+            /* Hanya icon di layar sangat kecil */
         }
     </style>
 </head>
 
 <body>
+    <!-- Kustom Alert -->
+    <div id="customToast">
+        <i class="fas fa-check-circle" style="color: #10b981;"></i>
+        <span id="toastMessage">Tersimpan</span>
+    </div>
+
     <div class="container">
         <div class="header">
             <div class="header-left">
                 <a href="javascript:history.back()" class="back-btn"><i class="fas fa-arrow-left"></i></a>
                 <h1 class="page-title">Hafalan Mushaf</h1>
             </div>
-            <div class="save-badge" id="saveBadge"><i class="fas fa-check-circle"></i> Tersimpan</div>
         </div>
 
-        <div class="controls-card">
-            <div class="nav-grid">
-                <div class="control-group">
-                    <label>Pilih Surah</label>
-                    <select id="surahSelect" onchange="jumpToSurah()">
-                        <option>Memuat...</option>
-                    </select>
-                </div>
-                <div class="control-group">
-                    <label>Halaman Mushaf (1-604)</label>
-                    <select id="pageSelect" onchange="jumpToPage()">
-                        <option>Memuat...</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="action-bar">
-                <div class="control-group" style="flex: 1; min-width: 200px;">
-                    <label>Tingkat Hafalan (Sensor Kata)</label>
-                    <div class="sensor-controls">
-                        <button class="btn-sensor" onclick="changeSensor(-20)" id="btnMinSensor"><i class="fas fa-minus"></i></button>
-                        <div class="sensor-val" id="lblSensor">0% Hilang</div>
-                        <button class="btn-sensor" onclick="changeSensor(20)" id="btnMaxSensor"><i class="fas fa-plus"></i></button>
-                    </div>
-                </div>
-
-                <button class="btn-audio" id="btnAudio" onclick="toggleAudio()">
-                    <i class="fas fa-play-circle"></i> Putar Murottal Halaman
-                </button>
-            </div>
+        <div class="nav-grid">
+            <select id="surahSelect" onchange="jumpToSurah()">
+                <option>Memuat Surah...</option>
+            </select>
+            <select id="pageSelect" onchange="jumpToPage()">
+                <option>Memuat Halaman...</option>
+            </select>
         </div>
 
         <div class="mushaf-wrapper">
@@ -475,16 +452,34 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
                 <span id="pageNumberLabel">Halaman -</span>
             </div>
 
-            <div class="loader" id="loader"></div>
+            <!-- Skeleton Loading 15 Baris -->
+            <div class="skeleton-wrapper" id="loader">
+                <?php for ($i = 0; $i < 15; $i++): ?>
+                    <div class="skeleton-line" style="width: <?= rand(80, 100) ?>%;"></div>
+                <?php endfor; ?>
+            </div>
+
             <div class="quran-page" id="quranPage">
-                <!-- Teks Al-Qur'an (15 Baris) akan dirender secara presisi di sini -->
+                <!-- Teks Al-Qur'an (15 Baris Presisi) dirender di sini -->
             </div>
 
             <div class="pagination">
-                <button class="btn-page" id="btnPrev" onclick="changePage(-1)"><i class="fas fa-chevron-right"></i> Hal Sebelumnya</button>
-                <button class="btn-page" id="btnNext" onclick="changePage(1)">Hal Berikutnya <i class="fas fa-chevron-left"></i></button>
+                <button class="btn-page" id="btnPrev" onclick="changePage(-1)"><i class="fas fa-chevron-right"></i> Sebelumnya</button>
+                <button class="btn-page" id="btnNext" onclick="changePage(1)">Berikutnya <i class="fas fa-chevron-left"></i></button>
             </div>
         </div>
+    </div>
+
+    <!-- FLOATING BAR BAWAH -->
+    <div class="floating-bar">
+        <div class="sensor-group">
+            <button class="btn-sensor" onclick="changeSensor(-20)" id="btnMinSensor"><i class="fas fa-minus"></i></button>
+            <div class="sensor-val" id="lblSensor">0% Hilang</div>
+            <button class="btn-sensor" onclick="changeSensor(20)" id="btnMaxSensor"><i class="fas fa-plus"></i></button>
+        </div>
+        <button class="btn-audio-float" id="btnAudio" onclick="toggleAudio()">
+            <i class="fas fa-play"></i> <span>Murottal</span>
+        </button>
     </div>
 
     <!-- Audio Element Tertutup -->
@@ -493,6 +488,27 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
     <?php if ($is_logged_in) include '../components/nav.php'; ?>
 
     <script>
+        // FUNGSI CUSTOM TOAST (Ganti SweetAlert)
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('customToast');
+            const msgEl = document.getElementById('toastMessage');
+            const icon = toast.querySelector('i');
+
+            msgEl.innerText = message;
+            if (isError) {
+                icon.className = 'fas fa-exclamation-circle';
+                icon.style.color = '#ef4444';
+            } else {
+                icon.className = 'fas fa-check-circle';
+                icon.style.color = '#10b981';
+            }
+
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2500);
+        }
+
         // Data Awal Surah (Nama & Halaman Awal)
         const surahs = [{
             id: 1,
@@ -955,47 +971,36 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
         let currentPage = 1;
         const totalPages = 604;
         let sensorLevel = 0; // 0 sampai 100
-
         let wordElements = [];
         let shuffledIndices = [];
 
         // Audio Variabel
-        let audioPlaylists = []; // URL audio per ayat di halaman ini
+        let audioPlaylists = [];
         let currentAyahIndex = -1;
         let isPlaying = false;
         const audioElement = document.getElementById('quranAudio');
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Ambil Data Save dari LocalStorage (Fitur Save)
             const savedPage = localStorage.getItem('hifzly_last_page');
             if (savedPage && !isNaN(savedPage)) currentPage = parseInt(savedPage);
 
-            // Populate Dropdown Surah
             const sSelect = document.getElementById('surahSelect');
             surahs.forEach(s => {
                 sSelect.innerHTML += `<option value="${s.page}">${s.id}. ${s.name} (Hal. ${s.page})</option>`;
             });
 
-            // Populate Dropdown Halaman
             const pSelect = document.getElementById('pageSelect');
             for (let i = 1; i <= totalPages; i++) {
                 pSelect.innerHTML += `<option value="${i}">Halaman ${i}</option>`;
             }
-
             loadQuranPage(currentPage);
         });
 
-        // Simpan Halaman ke LocalStorage
         function saveProgress(page) {
             localStorage.setItem('hifzly_last_page', page);
-            const badge = document.getElementById('saveBadge');
-            badge.style.opacity = '1';
-            setTimeout(() => {
-                badge.style.opacity = '0';
-            }, 2000);
+            showToast(`Halaman ${page} tersimpan!`);
         }
 
-        // Navigasi Dropdown
         function jumpToSurah() {
             const val = document.getElementById('surahSelect').value;
             if (val) changePage(parseInt(val) - currentPage);
@@ -1010,13 +1015,13 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             let newPage = currentPage + direction;
             if (newPage >= 1 && newPage <= totalPages) {
                 currentPage = newPage;
-                stopAudio(); // Matikan audio jika pindah halaman
+                stopAudio();
                 loadQuranPage(currentPage);
                 saveProgress(currentPage);
             }
         }
 
-        // KONTROL SENSOR (TOMBOL - / +)
+        // KONTROL SENSOR (TOMBOL FLOAT)
         function changeSensor(amount) {
             sensorLevel += amount;
             if (sensorLevel < 0) sensorLevel = 0;
@@ -1032,30 +1037,25 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
         async function loadQuranPage(page) {
             document.getElementById('quranPage').innerHTML = '';
             document.getElementById('loader').style.display = 'block';
-
             document.getElementById('pageSelect').value = page;
 
-            // Cari surah dominan di halaman ini untuk dropdown surah
             let closestSurah = surahs.slice().reverse().find(s => s.page <= page);
             if (closestSurah) document.getElementById('surahSelect').value = closestSurah.page;
 
             document.getElementById('btnPrev').disabled = (page === 1);
             document.getElementById('btnNext').disabled = (page === totalPages);
 
-            // Reset state
             wordElements = [];
             audioPlaylists = [];
             currentAyahIndex = -1;
 
             try {
-                // Menggunakan API Quran.com V4 untuk Presisi Garis (line_number) dan Audio
                 const response = await fetch(`https://api.quran.com/api/v4/verses/by_page/${page}?language=id&words=true&word_fields=text_uthmani,line_number&audio=7`);
                 const data = await response.json();
-
                 renderExactMushafLayout(data.verses, page);
-                applySensor(); // Terapkan level sensor saat ini ke halaman baru
+                applySensor();
             } catch (error) {
-                document.getElementById('quranPage').innerHTML = '<div style="text-align:center; color:red;">Gagal memuat. Periksa internet Anda.</div>';
+                showToast("Koneksi gagal. Periksa internet Anda.", true);
             } finally {
                 document.getElementById('loader').style.display = 'none';
             }
@@ -1063,21 +1063,17 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
 
         function renderExactMushafLayout(verses, pageNum) {
             const container = document.getElementById('quranPage');
-
-            // Ambil Info Juz/Surah dari ayat pertama di halaman
-            const firstVerseKey = verses[0].verse_key; // Format "1:1" (Surah:Ayat)
+            const firstVerseKey = verses[0].verse_key;
             const firstSurahId = parseInt(firstVerseKey.split(':')[0]);
             const surahName = surahs.find(s => s.id === firstSurahId)?.name || "";
 
             document.getElementById('pageSurahName').innerText = `Surah ${surahName}`;
             document.getElementById('pageNumberLabel').innerText = `Halaman ${pageNum}`;
 
-            // Mengelompokkan kata berdasarkan line_number (BARIS DEMI BARIS)
             let linesMap = {};
             let globalWordIdx = 0;
 
             verses.forEach((verse, vIndex) => {
-                // Siapkan Audio untuk Ayat Ini
                 if (verse.audio && verse.audio.url) {
                     let audioUrl = verse.audio.url.startsWith('http') ? verse.audio.url : `https://verses.quran.com/${verse.audio.url}`;
                     audioPlaylists.push({
@@ -1091,13 +1087,11 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
                     });
                 }
 
-                // Cek apakah ayat ini ayat pertama surah (selain Al-Fatihah/At-Taubah) untuk render Header Surah / Bismillah
                 const ayahNum = parseInt(verse.verse_key.split(':')[1]);
                 const surahId = parseInt(verse.verse_key.split(':')[0]);
 
                 if (ayahNum === 1) {
                     const sName = surahs.find(s => s.id === surahId)?.name || `Surah ${surahId}`;
-                    // Paksa masuk ke baris khusus agar rapi
                     if (!linesMap['header_' + surahId]) linesMap['header_' + surahId] = [];
                     linesMap['header_' + surahId].push({
                         type: 'surah_header',
@@ -1108,15 +1102,13 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
                         if (!linesMap['bismillah_' + surahId]) linesMap['bismillah_' + surahId] = [];
                         linesMap['bismillah_' + surahId].push({
                             type: 'bismillah',
-                            text: 'بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ'
+                            text: 'بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ'
                         });
                     }
                 }
 
-                // Render Kata Per Kata
                 verse.words.forEach(word => {
                     if (word.char_type_name === 'end') {
-                        // Simbol Akhir Ayat
                         if (!linesMap[word.line_number]) linesMap[word.line_number] = [];
                         linesMap[word.line_number].push({
                             type: 'end',
@@ -1124,7 +1116,6 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
                             verseKey: verse.verse_key
                         });
                     } else if (word.text_uthmani) {
-                        // Teks Arab Biasa
                         if (!linesMap[word.line_number]) linesMap[word.line_number] = [];
                         linesMap[word.line_number].push({
                             type: 'word',
@@ -1137,20 +1128,15 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
                 });
             });
 
-            // RENDER HTML BERDASARKAN BARIS (1 sampai 15)
             let htmlContent = '';
-
-            // Urutkan key baris (termasuk header jika ada)
             const sortedLines = Object.keys(linesMap).sort((a, b) => {
-                if (a.includes('header') || a.includes('bismillah')) return -1; // Taruh atas
+                if (a.includes('header') || a.includes('bismillah')) return -1;
                 if (b.includes('header') || b.includes('bismillah')) return 1;
                 return parseInt(a) - parseInt(b);
             });
 
             sortedLines.forEach(lineNum => {
                 const lineItems = linesMap[lineNum];
-
-                // Cek Tipe Khusus
                 if (lineItems[0].type === 'surah_header') {
                     htmlContent += `<div class="surah-title-banner">${lineItems[0].text}</div>`;
                     return;
@@ -1160,10 +1146,7 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
                     return;
                 }
 
-                // Baris Normal (Flexbox)
-                // Jika kata di baris ini sedikit (kurang dari 5 item), kita pusatkan (centered) agar tidak melar jelek
                 const isCentered = lineItems.length < 6 ? 'centered' : '';
-
                 htmlContent += `<div class="mushaf-line ${isCentered}">`;
                 lineItems.forEach(item => {
                     if (item.type === 'end') {
@@ -1177,25 +1160,20 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
 
             container.innerHTML = htmlContent;
 
-            // Koleksi elemen span kata untuk logika sensor
             wordElements = [];
             for (let i = 0; i < globalWordIdx; i++) {
                 const el = document.getElementById(`w-${i}`);
                 if (el) wordElements.push(el);
             }
 
-            // Acak index untuk fitur sensor
             shuffledIndices = Array.from({
                 length: wordElements.length
             }, (_, i) => i);
             shuffleArray(shuffledIndices);
         }
 
-        // FITUR SENSOR KATA
         function applySensor() {
-            // Tampilkan semua dulu
             wordElements.forEach(el => el.classList.remove('hidden-word'));
-
             if (sensorLevel > 0 && wordElements.length > 0) {
                 const wordsToHideCount = Math.floor((sensorLevel / 100) * wordElements.length);
                 for (let i = 0; i < wordsToHideCount; i++) {
@@ -1207,7 +1185,6 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             }
         }
 
-        // FITUR AUDIO MUROTTAL
         function toggleAudio() {
             const btn = document.getElementById('btnAudio');
             if (isPlaying) {
@@ -1216,15 +1193,16 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
                 if (audioPlaylists.length > 0) {
                     isPlaying = true;
                     btn.classList.add('playing');
-                    btn.innerHTML = `<i class="fas fa-stop-circle"></i> Hentikan Audio`;
+                    btn.innerHTML = `<i class="fas fa-pause"></i> <span>Hentikan</span>`;
                     currentAyahIndex = -1;
                     playNextAyah();
+                } else {
+                    showToast("Audio tidak tersedia untuk halaman ini", true);
                 }
             }
         }
 
         function playNextAyah() {
-            // Hapus highlight dari ayat sebelumnya
             if (currentAyahIndex >= 0 && audioPlaylists[currentAyahIndex]) {
                 const prevKey = audioPlaylists[currentAyahIndex].verseKey.replace(':', '-');
                 document.querySelectorAll(`.verse-${prevKey}`).forEach(el => el.classList.remove('active-audio'));
@@ -1234,22 +1212,17 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
 
             if (currentAyahIndex < audioPlaylists.length) {
                 const currentData = audioPlaylists[currentAyahIndex];
-
-                // Highlight ayat saat ini
                 const currentKey = currentData.verseKey.replace(':', '-');
                 document.querySelectorAll(`.verse-${currentKey}`).forEach(el => el.classList.add('active-audio'));
 
                 if (currentData.url) {
                     audioElement.src = currentData.url;
-                    audioElement.play().catch(e => {
-                        console.error("Audio play failed", e);
-                        playNextAyah(); // Jika gagal, langsung skip ke ayat berikutnya
-                    });
+                    audioElement.play().catch(e => playNextAyah());
                 } else {
-                    playNextAyah(); // Skip jika URL audio null
+                    playNextAyah();
                 }
             } else {
-                stopAudio(); // Selesai 1 halaman
+                stopAudio();
             }
         }
 
@@ -1259,14 +1232,11 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             audioElement.currentTime = 0;
             const btn = document.getElementById('btnAudio');
             btn.classList.remove('playing');
-            btn.innerHTML = `<i class="fas fa-play-circle"></i> Putar Murottal Halaman`;
-
-            // Hapus semua highlight
+            btn.innerHTML = `<i class="fas fa-play"></i> <span>Murottal</span>`;
             document.querySelectorAll('.active-audio').forEach(el => el.classList.remove('active-audio'));
             currentAyahIndex = -1;
         }
 
-        // UTILS
         function convertToArabicNumber(num) {
             const arabicNumbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
             return num.toString().split('').map(digit => arabicNumbers[parseInt(digit)]).join('');

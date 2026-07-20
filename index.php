@@ -1687,28 +1687,247 @@ if (isset($_SESSION['user_id'])) {
             will-change: transform, opacity;
         }
 
-        .no-mojs .preloader-brand .pb-letter {
-            opacity: 1;
-            transform: none !important;
-        }
-
-        .no-mojs .preloader-stage .preloader-mark {
-            clip-path: none !important;
-        }
-
-        .no-mojs .preloader-stage .preloader-mark::after {
-            display: none;
-        }
-
-        .no-mojs .preloader-stage .preloader-ring-wrap {
-            display: flex;
-        }
-
         .preloader-stage .preloader-ring-wrap {
             display: none;
             position: absolute;
             inset: 0;
             margin: auto;
+        }
+
+        /* ===== Bumper-style intro (MotoGP-esque splash) ===== */
+        .bumper-streaks {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .bumper-streaks span {
+            position: absolute;
+            left: -60%;
+            width: 220%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, rgba(52, 211, 153, 0.85), rgba(5, 150, 105, 0.95), transparent);
+            transform: translateX(-100%) rotate(-13deg);
+            opacity: 0;
+            border-radius: 3px;
+        }
+
+        .bumper-streaks span.s1 {
+            top: 16%;
+        }
+
+        .bumper-streaks span.s2 {
+            top: 30%;
+        }
+
+        .bumper-streaks span.s3 {
+            top: 45%;
+        }
+
+        .bumper-streaks span.s4 {
+            top: 60%;
+        }
+
+        .bumper-streaks span.s5 {
+            top: 75%;
+        }
+
+        .bumper-streaks span.s6 {
+            top: 89%;
+        }
+
+        #preloader.play-intro .bumper-streaks span {
+            animation: streakFly 0.6s cubic-bezier(.3, .9, .25, 1) forwards;
+        }
+
+        #preloader.play-intro .bumper-streaks span.s1 {
+            animation-delay: 0s;
+        }
+
+        #preloader.play-intro .bumper-streaks span.s2 {
+            animation-delay: .05s;
+        }
+
+        #preloader.play-intro .bumper-streaks span.s3 {
+            animation-delay: .1s;
+        }
+
+        #preloader.play-intro .bumper-streaks span.s4 {
+            animation-delay: .03s;
+        }
+
+        #preloader.play-intro .bumper-streaks span.s5 {
+            animation-delay: .08s;
+        }
+
+        #preloader.play-intro .bumper-streaks span.s6 {
+            animation-delay: .02s;
+        }
+
+        @keyframes streakFly {
+            0% {
+                transform: translateX(-100%) rotate(-13deg);
+                opacity: 0;
+            }
+
+            14% {
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateX(120%) rotate(-13deg);
+                opacity: 0;
+            }
+        }
+
+        .bumper-flash {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 50% 50%, rgba(236, 253, 245, 0.95), rgba(52, 211, 153, 0.32) 45%, transparent 75%);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #preloader.play-intro .bumper-flash {
+            animation: flashPulse 0.45s ease-out forwards;
+            animation-delay: 0.3s;
+        }
+
+        @keyframes flashPulse {
+            0% {
+                opacity: 0;
+            }
+
+            38% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
+
+        #preloader.play-intro .preloader-stage {
+            animation: stageShake 0.32s cubic-bezier(.36, .07, .19, .97) both;
+            animation-delay: 0.32s;
+        }
+
+        @keyframes stageShake {
+            0% {
+                transform: translate3d(0, 0, 0);
+            }
+
+            20% {
+                transform: translate3d(-4px, 2px, 0);
+            }
+
+            40% {
+                transform: translate3d(4px, -2px, 0);
+            }
+
+            60% {
+                transform: translate3d(-3px, 1px, 0);
+            }
+
+            80% {
+                transform: translate3d(2px, -1px, 0);
+            }
+
+            100% {
+                transform: translate3d(0, 0, 0);
+            }
+        }
+
+        #preloader.play-intro .preloader-mark {
+            opacity: 0;
+            animation: logoSlam 0.6s cubic-bezier(.16, 1, .3, 1) forwards;
+            animation-delay: 0.3s;
+        }
+
+        @keyframes logoSlam {
+            0% {
+                opacity: 0;
+                transform: scale(2.6) rotate(-6deg);
+                filter: blur(10px);
+            }
+
+            65% {
+                opacity: 1;
+                transform: scale(0.94) rotate(1deg);
+                filter: blur(0);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1) rotate(0deg);
+                filter: blur(0);
+            }
+        }
+
+        #preloader.play-intro .pb-letter.from-left {
+            animation: letterSlamLeft 0.46s cubic-bezier(.2, .85, .25, 1) forwards;
+        }
+
+        #preloader.play-intro .pb-letter.from-right {
+            animation: letterSlamRight 0.46s cubic-bezier(.2, .85, .25, 1) forwards;
+        }
+
+        @keyframes letterSlamLeft {
+            0% {
+                opacity: 0;
+                transform: translateX(-70px) skewX(-18deg);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateX(0) skewX(0deg);
+            }
+        }
+
+        @keyframes letterSlamRight {
+            0% {
+                opacity: 0;
+                transform: translateX(70px) skewX(18deg);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateX(0) skewX(0deg);
+            }
+        }
+
+        #preloader.play-intro .preloader-text {
+            opacity: 0;
+            animation: taglineIn 0.4s ease-out forwards;
+            animation-delay: 1.55s;
+        }
+
+        @keyframes taglineIn {
+            0% {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Fallback: if the intro sequence ever fails to init, snap everything visible */
+        #preloader.intro-failed .preloader-brand .pb-letter,
+        #preloader.intro-failed .preloader-mark,
+        #preloader.intro-failed .preloader-text,
+        #preloader.intro-failed .preloader-stage {
+            opacity: 1 !important;
+            transform: none !important;
+            filter: none !important;
+            animation: none !important;
+        }
+
+        #preloader.no-mojs-flourish .preloader-stage .preloader-ring-wrap {
+            display: flex;
         }
     </style>
 </head>
@@ -1718,6 +1937,15 @@ if (isset($_SESSION['user_id'])) {
     <div id="preloader">
         <div class="preloader-orb o1"></div>
         <div class="preloader-orb o2"></div>
+        <div class="bumper-streaks">
+            <span class="s1"></span>
+            <span class="s2"></span>
+            <span class="s3"></span>
+            <span class="s4"></span>
+            <span class="s5"></span>
+            <span class="s6"></span>
+        </div>
+        <div class="bumper-flash"></div>
         <div class="preloader-brandrow">
             <div class="preloader-stage">
                 <div class="mojs-ring" id="mojsRing"></div>
@@ -2112,7 +2340,7 @@ if (isset($_SESSION['user_id'])) {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.1/aos.js"></script>
     <script>
-        /* ===== Preloader entrance, powered by mo.js ===== */
+        /* ===== Preloader entrance: MotoGP-style bumper, powered by CSS + mo.js ===== */
         /* Splash hanya tampil sekali per perangkat/browser. Setelah pertama kali
            ditampilkan, kunjungan berikutnya (termasuk setelah menutup web/app
            dan membukanya lagi) akan langsung melewati splash. */
@@ -2142,25 +2370,33 @@ if (isset($_SESSION['user_id'])) {
                 } catch (e) {}
             }
 
-            if (!hasMojs || reduceMotion) {
-                preloaderEl.classList.add('no-mojs');
-            } else {
-                try {
+            try {
+                // Split the brand text into letters that slam in from alternating
+                // sides (odd/even) — the core "bumper title card" move. This runs
+                // as plain CSS animation (see .play-intro rules), so it's reliable
+                // even if mo.js never loads.
+                const brandEl = document.getElementById('preloaderBrand');
+                const text = brandEl.getAttribute('data-text') || brandEl.textContent;
+                brandEl.innerHTML = '';
+                Array.from(text).forEach(function(ch, i) {
+                    const span = document.createElement('span');
+                    span.className = 'pb-letter ' + (i % 2 === 0 ? 'from-left' : 'from-right');
+                    span.style.animationDelay = (0.75 + i * 0.05) + 's';
+                    span.textContent = ch === ' ' ? '\u00A0' : ch;
+                    brandEl.appendChild(span);
+                });
+
+                // Kick off the whole sequence: speed streaks whoosh across, an
+                // impact flash + screen shake lands, the logo slams in with a
+                // blur-to-focus zoom, then the letters snap into place, then the
+                // tagline. All timing lives in the .play-intro CSS rules.
+                preloaderEl.classList.add('play-intro');
+
+                // mo.js flourish: a drawn ring + particle burst around the logo,
+                // timed to land right on the impact beat (~0.3s in).
+                if (hasMojs && !reduceMotion) {
                     const markEl = document.getElementById('preloaderMark');
 
-                    // Split brand text into individually animatable letters
-                    const brandEl = document.getElementById('preloaderBrand');
-                    const text = brandEl.getAttribute('data-text') || brandEl.textContent;
-                    brandEl.innerHTML = '';
-                    Array.from(text).forEach(function(ch) {
-                        const span = document.createElement('span');
-                        span.className = 'pb-letter';
-                        span.textContent = ch === ' ' ? '\u00A0' : ch;
-                        brandEl.appendChild(span);
-                    });
-                    const letterEls = brandEl.querySelectorAll('.pb-letter');
-
-                    // Drawn ring that spins open around the mark
                     const ringDraw = new mojs.Shape({
                         parent: '#mojsRing',
                         shape: 'circle',
@@ -2177,7 +2413,8 @@ if (isset($_SESSION['user_id'])) {
                         opacity: {
                             1: 0.85
                         },
-                        duration: 950,
+                        duration: 700,
+                        delay: 320,
                         easing: 'cubic.out',
                         isShowStart: true
                     });
@@ -2194,157 +2431,102 @@ if (isset($_SESSION['user_id'])) {
                         },
                         fill: 'none',
                         rotate: {
-                            0: 180
+                            0: 160
                         },
-                        duration: 1150,
-                        delay: 100,
-                        easing: 'elastic.out',
+                        duration: 850,
+                        delay: 360,
+                        easing: 'cubic.out',
                         isShowStart: true
                     });
 
-                    // Radiating particle burst — the "flash" behind the logo reveal
+                    // Radiating particle burst on impact
                     const burst = new mojs.Burst({
                         parent: '#mojsBurst',
                         radius: {
-                            0: 56
+                            0: 62
                         },
-                        count: 8,
-                        angle: 20,
+                        count: 10,
+                        angle: 15,
                         children: {
                             shape: 'circle',
                             radius: {
-                                5: 0
+                                6: 0
                             },
                             fill: ['#059669', '#34d399', '#6ee7b7'],
-                            duration: 700,
-                            easing: 'cubic.out'
-                        },
-                        delay: 180
-                    });
-
-                    // Logo mark: elastic pop-in, paired with the iris mask + shine below
-                    const markPop = new mojs.Html({
-                        target: '#preloaderMark',
-                        scale: {
-                            0.25: 1
-                        },
-                        rotate: {
-                            '-40': 0
-                        },
-                        duration: 700,
-                        delay: 160,
-                        easing: 'elastic.out'
-                    });
-
-                    // --- Logo reveal: iris mask opens + a light sweep crosses the mark ---
-                    markEl.classList.add('reveal-init');
-                    setTimeout(function() {
-                        markEl.classList.add('revealed');
-                        markEl.classList.add('shine');
-                    }, 160);
-
-                    // Brand letters: each letter flies in from a different but FIXED,
-                    // straight-line direction (evenly spread around a circle, no
-                    // randomness, no rotation) so the motion reads as neat and orderly
-                    // rather than chaotic, while still arriving "from every direction".
-                    const letterAnims = [];
-                    const letterCount = letterEls.length;
-                    letterEls.forEach(function(el, i) {
-                        // Evenly distribute each letter's entry angle around a circle.
-                        const angle = (i / letterCount) * Math.PI * 2;
-                        const dist = 92;
-                        const dx = Math.round(Math.cos(angle) * dist);
-                        const dy = Math.round(Math.sin(angle) * dist);
-                        const anim = new mojs.Html({
-                            target: el,
-                            x: {
-                                [dx]: 0
-                            },
-                            y: {
-                                [dy]: 0
-                            },
-                            opacity: {
-                                0: 1
-                            },
                             duration: 620,
-                            delay: 480 + i * 55,
                             easing: 'cubic.out'
-                        });
-                        letterAnims.push(anim);
+                        },
+                        delay: 340
                     });
 
-                    // Tagline fades up last
-                    const taglineIn = new mojs.Html({
-                        target: '#preloaderTagline',
-                        y: {
-                            12: 0
-                        },
-                        opacity: {
-                            0: 1
-                        },
-                        duration: 550,
-                        delay: 480 + letterCount * 55 + 380,
-                        easing: 'cubic.out'
-                    });
+                    ringDraw.play();
+                    ringDraw2.play();
+                    burst.play();
 
-                    const timeline = new mojs.Timeline();
-                    timeline.add.apply(timeline, [ringDraw, ringDraw2, burst, markPop].concat(letterAnims).concat([taglineIn]));
-                    timeline.play();
+                    // Iris mask opens + a light sweep crosses the mark, synced to impact
+                    setTimeout(function() {
+                        markEl.classList.add('revealed', 'shine');
+                    }, 300);
 
-                    // Idle breathing pulse on the mark while assets keep loading
+                    // Idle breathing pulse on the mark while the intro settles
                     const idlePulse = new mojs.Html({
                         target: '#preloaderMark',
                         scale: {
-                            1: 1.06
+                            1: 1.05
                         },
                         duration: 1000,
-                        delay: 480 + letterCount * 55 + 900,
+                        delay: 2000,
                         easing: 'sin.inOut',
                         repeat: 999,
                         yoyo: true
                     });
                     idlePulse.play();
                     window.__hifzhlyIdlePulse = idlePulse;
-                } catch (e) {
-                    preloaderEl.classList.add('no-mojs');
+                } else {
+                    preloaderEl.classList.add('no-mojs-flourish');
                 }
+            } catch (e) {
+                // Something broke — snap straight to the fully visible end-state
+                // instead of leaving the splash stuck half-animated.
+                preloaderEl.classList.add('intro-failed');
             }
 
-            // Safety net: if something goes wrong and the mark never gets revealed
-            // (e.g. mo.js failed mid-way), force everything visible so the page
-            // isn't stuck behind a broken splash.
+            // Safety net: guarantee the intro isn't left invisible if something
+            // above silently failed to kick in.
             setTimeout(function() {
-                const markEl = document.getElementById('preloaderMark');
-                if (markEl && !markEl.classList.contains('revealed')) {
-                    preloaderEl.classList.add('no-mojs');
+                if (!preloaderEl.classList.contains('play-intro')) {
+                    preloaderEl.classList.add('intro-failed');
                 }
-            }, 3200);
+            }, 1200);
 
-            window.addEventListener('load', function() {
+            // The bumper needs its full ~1.9s to play out before it's allowed to
+            // hide, even on a fast/cached load — otherwise a quick load could cut
+            // the sequence off mid-slam. It also won't hide before the page has
+            // actually finished loading.
+            let introDone = false;
+            let pageLoaded = false;
+
+            function tryHide() {
+                if (!introDone || !pageLoaded) return;
                 if (window.__hifzhlyIdlePulse) {
                     try {
                         window.__hifzhlyIdlePulse.stop();
                     } catch (e) {}
                 }
-                if (hasMojs && !reduceMotion) {
-                    try {
-                        new mojs.Html({
-                            target: '.preloader-brandrow, #preloaderTagline, .preloader-bar',
-                            scale: {
-                                1: 0.92
-                            },
-                            opacity: {
-                                1: 0
-                            },
-                            duration: 380,
-                            easing: 'cubic.in'
-                        }).play();
-                    } catch (e) {}
-                }
                 setTimeout(function() {
                     preloaderEl.classList.add('hide');
                     markSplashAsSeen();
-                }, 260);
+                }, 180);
+            }
+
+            setTimeout(function() {
+                introDone = true;
+                tryHide();
+            }, reduceMotion ? 0 : 1900);
+
+            window.addEventListener('load', function() {
+                pageLoaded = true;
+                tryHide();
             });
         })();
 

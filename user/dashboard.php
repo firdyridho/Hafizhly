@@ -70,40 +70,22 @@ $has_notif = count($notifications) > 0;
     <title>Hifzhly - Dashboard</title>
     <link rel="icon" type="image/png" href="../assets/icon/logo.png">
 
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
         :root {
-            /* Tema Emerald */
+            /* Tema Emerald Konsisten */
             --primary: #10b981;
             --primary-dark: #047857;
             --primary-light: #34d399;
-            --primary-lighter: #6ee7b7;
-            --mint: #ecfdf5;
             --mint-soft: #d1fae5;
 
-            /* Warna Pendukung */
-            --sky: #0ea5e9;
-            --sky-light: #e0f2fe;
-            --amber: #f59e0b;
-            --amber-light: #fef3c7;
-            --violet: #8b5cf6;
-            --violet-light: #ede9fe;
-
-            /* Netral */
             --bg-color: #f8fafc;
             --card-bg: #ffffff;
             --text-dark: #0f172a;
             --text-muted: #64748b;
-            --border: rgba(15, 23, 42, 0.08);
-
-            /* Shadows */
-            --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.04);
-            --shadow-md: 0 10px 30px rgba(15, 23, 42, 0.06);
+            --border: #e2e8f0;
         }
 
         * {
@@ -117,58 +99,25 @@ $has_notif = count($notifications) > 0;
         body {
             background-color: var(--bg-color);
             color: var(--text-dark);
-            padding-bottom: 100px;
+            padding-bottom: 90px;
             overflow-x: hidden;
         }
 
         /* --- HERO SECTION --- */
         .hero-section {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            background: linear-gradient(180deg, var(--primary-dark) 0%, var(--primary) 100%);
             color: white;
-            padding: max(25px, env(safe-area-inset-top)) 25px 45px 25px;
-            border-bottom-left-radius: 36px;
-            border-bottom-right-radius: 36px;
+            padding: max(20px, env(safe-area-inset-top)) 20px 40px 20px;
+            border-bottom-left-radius: 30px;
+            border-bottom-right-radius: 30px;
             position: relative;
-            overflow: hidden;
-            box-shadow: 0 15px 40px rgba(16, 185, 129, 0.2);
-        }
-
-        /* Dekorasi Lingkaran di Hero */
-        .hero-section::before,
-        .hero-section::after {
-            content: '';
-            position: absolute;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.1);
-            pointer-events: none;
-        }
-
-        .hero-section::before {
-            width: 200px;
-            height: 200px;
-            top: -50px;
-            right: -50px;
-            filter: blur(20px);
-        }
-
-        .hero-section::after {
-            width: 150px;
-            height: 150px;
-            bottom: -30px;
-            left: -20px;
-            filter: blur(15px);
-        }
-
-        .hero-content {
-            position: relative;
-            z-index: 2;
         }
 
         .top-bar {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
         }
 
         .user-info {
@@ -178,104 +127,80 @@ $has_notif = count($notifications) > 0;
         }
 
         .greeting {
-            font-size: 1.15rem;
-            font-weight: 800;
-            letter-spacing: -0.01em;
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
         }
 
         .hijri-date {
             font-size: 0.85rem;
             opacity: 0.9;
-            font-weight: 600;
+            font-weight: 500;
             min-height: 18px;
         }
 
         .location {
-            font-size: 0.75rem;
-            display: inline-flex;
+            font-size: 0.8rem;
+            display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 5px;
             opacity: 0.9;
             cursor: pointer;
-            margin-top: 4px;
-            transition: all 0.2s ease;
-            background: rgba(255, 255, 255, 0.15);
-            padding: 4px 10px;
-            border-radius: 20px;
-            width: fit-content;
+            margin-top: 2px;
+            transition: 0.2s;
         }
 
         .location:hover {
             opacity: 1;
-            background: rgba(255, 255, 255, 0.25);
             transform: translateX(2px);
         }
 
         .action-icons {
             display: flex;
-            gap: 12px;
+            gap: 15px;
             align-items: center;
         }
 
         .icon-btn {
-            color: var(--primary-dark);
-            background: white;
-            font-size: 1.1rem;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            color: white;
+            font-size: 1.3rem;
             text-decoration: none;
             position: relative;
             cursor: pointer;
+            background: none;
             border: none;
-            border-radius: 50%;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            transition: all 0.2s ease;
-        }
-
-        .icon-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
         }
 
         .notif-dot {
             position: absolute;
-            top: 2px;
-            right: 2px;
-            width: 10px;
-            height: 10px;
+            top: 0;
+            right: 0;
+            width: 8px;
+            height: 8px;
             background: #ef4444;
             border-radius: 50%;
-            border: 2px solid white;
+            border: 2px solid var(--primary-dark);
         }
 
         /* WAKTU SHOLAT */
         .clock-container {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
         }
 
         .clock-time {
             font-size: 3.5rem;
             font-weight: 800;
             line-height: 1;
-            margin-bottom: 8px;
+            margin-bottom: 5px;
             font-variant-numeric: tabular-nums;
-            letter-spacing: -0.02em;
         }
 
         .countdown {
             font-size: 0.9rem;
             opacity: 0.9;
-            font-weight: 600;
+            font-weight: 500;
             min-height: 20px;
-            background: rgba(0, 0, 0, 0.15);
-            padding: 6px 14px;
-            border-radius: 20px;
-            display: inline-block;
-            backdrop-filter: blur(5px);
         }
 
         .prayer-row {
@@ -291,118 +216,108 @@ $has_notif = count($notifications) > 0;
             align-items: center;
             gap: 8px;
             opacity: 0.6;
-            transition: all 0.3s ease;
+            transition: 0.3s;
         }
 
         .prayer-item.active {
             opacity: 1;
-            transform: scale(1.05);
         }
 
         .prayer-item.active .p-icon {
-            background: rgba(255, 255, 255, 0.25);
-            backdrop-filter: blur(5px);
-            border-radius: 14px;
-            width: 44px;
-            height: 44px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        .p-name {
-            font-size: 0.75rem;
-            font-weight: 700;
-        }
-
-        .p-icon {
-            font-size: 1.2rem;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
             width: 40px;
             height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 14px;
-            transition: all 0.3s ease;
+        }
+
+        .p-name {
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .p-icon {
+            font-size: 1.2rem;
+            height: 40px;
+            display: flex;
+            align-items: center;
         }
 
         .p-time {
             font-size: 0.75rem;
-            font-weight: 800;
+            font-weight: 700;
             min-height: 16px;
         }
 
         /* --- MAIN CONTENT --- */
         .main-content {
-            padding: 0 20px;
+            padding: 25px 20px;
             max-width: 1000px;
-            margin: -20px auto 0;
-            position: relative;
-            z-index: 10;
+            margin: 0 auto;
         }
 
         .section-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 16px;
-            padding-top: 10px;
+            margin-bottom: 15px;
         }
 
         .section-title {
             font-size: 1.1rem;
             font-weight: 800;
             color: var(--text-dark);
-            letter-spacing: -0.01em;
         }
 
         .see-all {
             font-size: 0.85rem;
-            color: var(--primary);
+            color: var(--primary-dark);
             font-weight: 700;
             text-decoration: none;
-            transition: color 0.2s;
-        }
-
-        .see-all:hover {
-            color: var(--primary-dark);
         }
 
         /* MENU GRID */
         .menu-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
+            gap: 15px;
             background: var(--card-bg);
-            padding: 24px 20px;
-            border-radius: 28px;
-            box-shadow: var(--shadow-md);
-            margin-bottom: 30px;
+            padding: 20px;
+            border-radius: 24px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+            margin-bottom: 25px;
         }
 
         .menu-item {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             text-decoration: none;
             cursor: pointer;
-            transition: transform 0.2s ease;
-        }
-
-        .menu-item:hover {
-            transform: translateY(-4px);
         }
 
         .menu-icon {
-            width: 54px;
-            height: 54px;
+            width: 55px;
+            height: 55px;
             border-radius: 18px;
             background: var(--mint-soft);
+            /* Semua menu pakai background hijau muda */
             color: var(--primary-dark);
+            /* Warna icon hijau gelap */
             display: flex;
             justify-content: center;
             align-items: center;
             font-size: 1.4rem;
-            transition: all 0.3s ease;
+            transition: 0.3s;
+        }
+
+        .menu-item:hover .menu-icon {
+            transform: translateY(-3px);
+            background: var(--primary);
+            color: white;
         }
 
         .menu-text {
@@ -412,45 +327,25 @@ $has_notif = count($notifications) > 0;
             text-align: center;
         }
 
-        /* Custom Colors for specific menu items (optional for variety, matching Emerald aesthetic) */
-        .menu-item:nth-child(1) .menu-icon {
-            background: rgba(16, 185, 129, 0.15);
+        .menu-item.menu-all .menu-icon {
+            background: #f1f5f9;
             color: var(--primary-dark);
         }
 
-        .menu-item:nth-child(2) .menu-icon {
-            background: var(--amber-light);
-            color: var(--amber);
-        }
-
-        .menu-item:nth-child(3) .menu-icon {
-            background: var(--sky-light);
-            color: var(--sky);
-        }
-
-        .menu-item:nth-child(4) .menu-icon {
-            background: var(--violet-light);
-            color: var(--violet);
-        }
-
-        .menu-item.menu-all .menu-icon {
-            background: #f1f5f9;
-            color: var(--text-muted);
+        .menu-item.menu-all:hover .menu-icon {
+            background: #e2e8f0;
+            color: var(--primary-dark);
         }
 
         /* HORIZONTAL SCROLL CARDS */
         .cards-scroll {
             display: flex;
-            gap: 16px;
+            gap: 15px;
             overflow-x: auto;
-            padding-bottom: 15px;
+            padding-bottom: 10px;
             scrollbar-width: none;
             scroll-snap-type: x mandatory;
             margin-bottom: 25px;
-            /* Extra padding to prevent shadow clipping */
-            padding-left: 2px;
-            padding-right: 20px;
-            margin-left: -2px;
         }
 
         .cards-scroll::-webkit-scrollbar {
@@ -461,32 +356,27 @@ $has_notif = count($notifications) > 0;
             min-width: 85%;
             scroll-snap-align: center;
             background: var(--card-bg);
-            border-radius: 24px;
-            padding: 20px;
-            box-shadow: var(--shadow-md);
+            border-radius: 20px;
+            padding: 18px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
             border: 1px solid var(--border);
             display: flex;
             align-items: center;
             justify-content: space-between;
             text-decoration: none;
             color: var(--text-dark);
-            transition: transform 0.3s ease;
-        }
-
-        .activity-card:hover {
-            transform: translateY(-3px);
         }
 
         .ac-left {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 15px;
         }
 
         .ac-icon {
-            width: 52px;
-            height: 52px;
-            border-radius: 16px;
+            width: 50px;
+            height: 50px;
+            border-radius: 14px;
             background: var(--mint-soft);
             color: var(--primary-dark);
             display: flex;
@@ -496,19 +386,17 @@ $has_notif = count($notifications) > 0;
         }
 
         .ac-label {
-            font-size: 0.72rem;
-            font-weight: 800;
-            color: var(--primary);
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--primary-dark);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 4px;
+            margin-bottom: 3px;
         }
 
         .ac-title {
             font-size: 1.05rem;
             font-weight: 800;
             margin-bottom: 4px;
-            color: var(--text-dark);
         }
 
         .ac-desc {
@@ -518,63 +406,57 @@ $has_notif = count($notifications) > 0;
         }
 
         .ac-play {
-            width: 40px;
-            height: 40px;
+            width: 35px;
+            height: 35px;
             border-radius: 50%;
-            background: var(--bg-color);
-            border: 1px solid var(--border);
+            background: #f1f5f9;
             display: flex;
             justify-content: center;
             align-items: center;
-            color: var(--primary);
-            font-size: 0.9rem;
-            transition: all 0.3s ease;
+            color: var(--text-dark);
+            transition: 0.3s;
         }
 
         .activity-card:hover .ac-play {
             background: var(--primary);
             color: white;
-            border-color: var(--primary);
         }
 
         /* TAJWID LIST */
         .tajwid-list {
             display: flex;
             flex-direction: column;
-            gap: 14px;
+            gap: 12px;
         }
 
         .tajwid-card {
             display: flex;
             align-items: center;
-            gap: 16px;
-            padding: 14px;
+            gap: 15px;
+            padding: 12px;
             background: var(--card-bg);
-            border-radius: 20px;
+            border-radius: 16px;
             border: 1px solid var(--border);
             text-decoration: none;
-            box-shadow: var(--shadow-sm);
-            transition: all 0.3s ease;
+            transition: 0.3s;
         }
 
         .tajwid-card:hover {
-            border-color: var(--primary-light);
-            box-shadow: var(--shadow-md);
-            transform: translateY(-2px);
+            border-color: var(--primary);
         }
 
         .tw-cover {
-            width: 72px;
-            height: 72px;
-            border-radius: 14px;
+            width: 70px;
+            height: 70px;
+            border-radius: 12px;
             object-fit: cover;
             flex-shrink: 0;
         }
 
         .tw-cover-icon {
-            width: 72px;
-            height: 72px;
-            border-radius: 14px;
+            width: 70px;
+            height: 70px;
+            border-radius: 12px;
             background: var(--mint-soft);
             color: var(--primary-dark);
             display: flex;
@@ -592,12 +474,11 @@ $has_notif = count($notifications) > 0;
             font-size: 0.95rem;
             font-weight: 800;
             color: var(--text-dark);
-            margin-bottom: 6px;
+            margin-bottom: 4px;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
-            line-height: 1.4;
         }
 
         .tw-date {
@@ -612,8 +493,8 @@ $has_notif = count($notifications) > 0;
             position: fixed;
             inset: 0;
             z-index: 9999;
-            background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(6px);
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
             justify-content: center;
             align-items: flex-end;
         }
@@ -622,24 +503,12 @@ $has_notif = count($notifications) > 0;
             background: white;
             width: 100%;
             max-width: 600px;
-            border-top-left-radius: 32px;
-            border-top-right-radius: 32px;
-            padding: 30px 24px;
-            animation: slideUp 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            border-top-left-radius: 30px;
+            border-top-right-radius: 30px;
+            padding: 30px 20px;
+            animation: slideUp 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
             max-height: 85vh;
             overflow-y: auto;
-            box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Dekorasi handle modal (opsional, biar mirip iOS) */
-        .modal-content::before {
-            content: '';
-            display: block;
-            width: 40px;
-            height: 5px;
-            background: #cbd5e1;
-            border-radius: 10px;
-            margin: -10px auto 25px;
         }
 
         .modal-header {
@@ -652,50 +521,37 @@ $has_notif = count($notifications) > 0;
         .modal-header h3 {
             font-size: 1.3rem;
             font-weight: 800;
-            color: var(--text-dark);
         }
 
         .btn-close {
-            background: var(--bg-color);
-            width: 36px;
-            height: 36px;
+            background: #f1f5f9;
+            width: 35px;
+            height: 35px;
             border-radius: 50%;
             border: none;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             color: var(--text-muted);
             cursor: pointer;
-            transition: all 0.2s ease;
         }
 
-        .btn-close:hover {
-            background: #e2e8f0;
-            color: var(--text-dark);
-        }
-
-        /* Notifikasi Items di dalam Modal */
         .notif-item {
             display: flex;
-            gap: 16px;
-            padding: 16px;
-            border-radius: 16px;
-            margin-bottom: 10px;
+            gap: 15px;
+            padding: 15px;
+            border-bottom: 1px solid var(--border);
             align-items: flex-start;
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            transition: transform 0.2s ease;
         }
 
-        .notif-item:hover {
-            transform: translateX(4px);
-            border-color: var(--primary-light);
+        .notif-item:last-child {
+            border-bottom: none;
         }
 
         .notif-icon {
-            width: 42px;
-            height: 42px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
-            background: var(--sky-light);
-            color: var(--sky);
+            background: var(--mint-soft);
+            color: var(--primary-dark);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -715,14 +571,13 @@ $has_notif = count($notifications) > 0;
         }
 
         .notif-time {
-            font-size: 0.78rem;
+            font-size: 0.75rem;
             color: var(--text-muted);
-            line-height: 1.4;
         }
 
         .notif-success {
-            background: var(--mint-soft);
-            color: var(--primary-dark);
+            background: var(--primary);
+            color: white;
         }
 
         @keyframes slideUp {
@@ -737,10 +592,10 @@ $has_notif = count($notifications) > 0;
 
         @media (min-width: 768px) {
             .hero-section {
-                border-radius: 32px;
+                border-radius: 24px;
                 margin: 20px auto;
                 max-width: 1000px;
-                padding: 40px 50px;
+                padding: 40px;
                 display: grid;
                 grid-template-columns: 1fr 1fr;
                 align-items: center;
@@ -762,13 +617,9 @@ $has_notif = count($notifications) > 0;
                 gap: 20px;
             }
 
-            .main-content {
-                margin-top: 30px;
-            }
-
             .menu-grid {
                 grid-template-columns: repeat(8, 1fr);
-                padding: 30px;
+                padding: 25px;
             }
 
             .cards-scroll {
@@ -790,12 +641,8 @@ $has_notif = count($notifications) > 0;
             }
 
             .modal-content {
-                border-radius: 28px;
-                padding: 35px;
-            }
-
-            .modal-content::before {
-                display: none;
+                border-radius: 24px;
+                padding: 30px;
             }
         }
     </style>
@@ -804,61 +651,57 @@ $has_notif = count($notifications) > 0;
 <body>
 
     <div class="hero-section">
-        <div class="hero-content">
-            <div class="top-bar">
-                <div class="user-info">
-                    <div class="greeting">Assalamu'alaikum, <?= htmlspecialchars($nama_depan) ?></div>
-                    <div class="hijri-date" id="hijri-date"></div>
+        <div class="top-bar">
+            <div class="user-info">
+                <div class="greeting">Assalamu'alaikum, <?= htmlspecialchars($nama_depan) ?></div>
+                <div class="hijri-date" id="hijri-date"></div>
 
-                    <!-- Diarahkan ke setting.php jika diklik -->
-                    <div class="location" onclick="window.location.href='setting.php'">
-                        <i class="fas fa-location-dot"></i> <span id="location-text">Mencari...</span>
-                    </div>
-                </div>
-                <div class="action-icons">
-                    <!-- Tautan ke setting.php -->
-                    <a href="setting.php" class="icon-btn"><i class="fas fa-cog"></i></a>
-                    <button class="icon-btn" onclick="toggleModal('notifModal')">
-                        <i class="fas fa-bell"></i>
-                        <?php if ($has_notif): ?><div class="notif-dot"></div><?php endif; ?>
-                    </button>
+                <!-- Diarahkan ke setting.php jika diklik -->
+                <div class="location" onclick="window.location.href='setting.php'">
+                    <i class="fas fa-location-dot"></i> <span id="location-text">Mencari...</span>
                 </div>
             </div>
-
-            <div class="clock-container">
-                <div class="clock-time" id="clock">--:--</div>
-                <div class="countdown" id="countdown-text"></div>
+            <div class="action-icons">
+                <!-- Tautan ke setting.php -->
+                <a href="setting.php" class="icon-btn"><i class="fas fa-cog"></i></a>
+                <button class="icon-btn" onclick="toggleModal('notifModal')">
+                    <i class="fas fa-bell"></i>
+                    <?php if ($has_notif): ?><div class="notif-dot"></div><?php endif; ?>
+                </button>
             </div>
         </div>
 
-        <div class="hero-content">
-            <div class="prayer-row" id="prayer-container">
-                <!-- Loader Sementara untuk struktur -->
-                <div class="prayer-item">
-                    <div class="p-name">Fajr</div>
-                    <div class="p-icon"><i class="fas fa-cloud-moon"></i></div>
-                    <div class="p-time">--:--</div>
-                </div>
-                <div class="prayer-item">
-                    <div class="p-name">Dzuhr</div>
-                    <div class="p-icon"><i class="fas fa-sun"></i></div>
-                    <div class="p-time">--:--</div>
-                </div>
-                <div class="prayer-item">
-                    <div class="p-name">Asr</div>
-                    <div class="p-icon"><i class="fas fa-cloud-sun"></i></div>
-                    <div class="p-time">--:--</div>
-                </div>
-                <div class="prayer-item">
-                    <div class="p-name">Maghrib</div>
-                    <div class="p-icon"><i class="fas fa-moon"></i></div>
-                    <div class="p-time">--:--</div>
-                </div>
-                <div class="prayer-item">
-                    <div class="p-name">Isha</div>
-                    <div class="p-icon"><i class="fas fa-star"></i></div>
-                    <div class="p-time">--:--</div>
-                </div>
+        <div class="clock-container">
+            <div class="clock-time" id="clock">--:--</div>
+            <div class="countdown" id="countdown-text"></div>
+        </div>
+
+        <div class="prayer-row" id="prayer-container">
+            <!-- Loader Sementara untuk struktur -->
+            <div class="prayer-item">
+                <div class="p-name">Fajr</div>
+                <div class="p-icon"><i class="fas fa-cloud-moon"></i></div>
+                <div class="p-time">--:--</div>
+            </div>
+            <div class="prayer-item">
+                <div class="p-name">Dzuhr</div>
+                <div class="p-icon"><i class="fas fa-sun"></i></div>
+                <div class="p-time">--:--</div>
+            </div>
+            <div class="prayer-item">
+                <div class="p-name">Asr</div>
+                <div class="p-icon"><i class="fas fa-cloud-sun"></i></div>
+                <div class="p-time">--:--</div>
+            </div>
+            <div class="prayer-item">
+                <div class="p-name">Maghrib</div>
+                <div class="p-icon"><i class="fas fa-moon"></i></div>
+                <div class="p-time">--:--</div>
+            </div>
+            <div class="prayer-item">
+                <div class="p-name">Isha</div>
+                <div class="p-icon"><i class="fas fa-star"></i></div>
+                <div class="p-time">--:--</div>
             </div>
         </div>
     </div>
@@ -886,15 +729,15 @@ $has_notif = count($notifications) > 0;
                 <div class="menu-text">Mutabaah</div>
             </a>
             <a href="tajwid.php" class="menu-item">
-                <div class="menu-icon" style="background:var(--sky-light); color:var(--sky);"><i class="fas fa-chalkboard-teacher"></i></div>
+                <div class="menu-icon"><i class="fas fa-chalkboard-teacher"></i></div>
                 <div class="menu-text">Tajwid</div>
             </a>
             <a href="doa.php" class="menu-item">
-                <div class="menu-icon" style="background:var(--amber-light); color:var(--amber);"><i class="fas fa-hands-praying"></i></div>
+                <div class="menu-icon"><i class="fas fa-hands-praying"></i></div>
                 <div class="menu-text">Doa</div>
             </a>
             <a href="game.php" class="menu-item">
-                <div class="menu-icon" style="background:var(--violet-light); color:var(--violet);"><i class="fas fa-gamepad"></i></div>
+                <div class="menu-icon"><i class="fas fa-gamepad"></i></div>
                 <div class="menu-text">Game</div>
             </a>
             <div class="menu-item menu-all" onclick="toggleModal('menuModal')">
@@ -921,9 +764,9 @@ $has_notif = count($notifications) > 0;
             </a>
             <a href="smart_murojaah.php" class="activity-card">
                 <div class="ac-left">
-                    <div class="ac-icon" style="background:var(--sky-light); color:var(--sky);"><i class="fas fa-sync-alt"></i></div>
+                    <div class="ac-icon"><i class="fas fa-sync-alt"></i></div>
                     <div>
-                        <div class="ac-label" style="color:var(--sky);">Progress Murojaah</div>
+                        <div class="ac-label">Progress Murojaah</div>
                         <div class="ac-title" id="mur-title">Surah <?= $mur_surah ?></div>
                         <div class="ac-desc">Selesai Ayat <?= $mur_ayat ?></div>
                     </div>
@@ -932,9 +775,9 @@ $has_notif = count($notifications) > 0;
             </a>
             <a href="hafalan.php" class="activity-card">
                 <div class="ac-left">
-                    <div class="ac-icon" style="background:var(--amber-light); color:var(--amber);"><i class="fas fa-brain"></i></div>
+                    <div class="ac-icon"><i class="fas fa-brain"></i></div>
                     <div>
-                        <div class="ac-label" style="color:var(--amber);">Hafalan Terbaru</div>
+                        <div class="ac-label">Hafalan Terbaru</div>
                         <div class="ac-title"><?= htmlspecialchars($haf_surah_name) ?></div>
                         <div class="ac-desc">Ayat <?= $haf_ayat ?></div>
                     </div>
@@ -962,7 +805,7 @@ $has_notif = count($notifications) > 0;
                         <div class="tw-title"><?= htmlspecialchars($tw['judul']) ?></div>
                         <div class="tw-date"><i class="far fa-clock"></i> <?= $date_tw ?></div>
                     </div>
-                    <i class="fas fa-chevron-right" style="color:var(--text-muted); font-size: 0.9rem;"></i>
+                    <i class="fas fa-chevron-right" style="color:var(--border);"></i>
                 </a>
             <?php endforeach; ?>
         </div>
@@ -975,8 +818,8 @@ $has_notif = count($notifications) > 0;
                 <h3>Semua Fitur</h3>
                 <button class="btn-close" onclick="toggleModal('menuModal')"><i class="fas fa-times"></i></button>
             </div>
-            <div style="margin-bottom:25px;">
-                <p style="font-size:0.75rem; color:var(--text-muted); font-weight:800; margin-bottom:15px; letter-spacing:1px;">FITUR UTAMA</p>
+            <div style="margin-bottom:20px;">
+                <p style="font-size:0.8rem; color:var(--text-muted); font-weight:700; margin-bottom:15px; letter-spacing:1px;">FITUR UTAMA</p>
                 <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:15px;">
                     <a href="alquran.php" class="menu-item">
                         <div class="menu-icon"><i class="fas fa-book-open"></i></div>
@@ -997,22 +840,22 @@ $has_notif = count($notifications) > 0;
                 </div>
             </div>
             <div>
-                <p style="font-size:0.75rem; color:var(--text-muted); font-weight:800; margin-bottom:15px; letter-spacing:1px;">PENDUKUNG</p>
+                <p style="font-size:0.8rem; color:var(--text-muted); font-weight:700; margin-bottom:15px; letter-spacing:1px;">PENDUKUNG</p>
                 <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:15px;">
                     <a href="tajwid.php" class="menu-item">
-                        <div class="menu-icon" style="background:var(--sky-light); color:var(--sky);"><i class="fas fa-chalkboard-teacher"></i></div>
+                        <div class="menu-icon"><i class="fas fa-chalkboard-teacher"></i></div>
                         <div class="menu-text">Tajwid</div>
                     </a>
                     <a href="doa.php" class="menu-item">
-                        <div class="menu-icon" style="background:var(--amber-light); color:var(--amber);"><i class="fas fa-hands-praying"></i></div>
+                        <div class="menu-icon"><i class="fas fa-hands-praying"></i></div>
                         <div class="menu-text">Doa</div>
                     </a>
                     <a href="game.php" class="menu-item">
-                        <div class="menu-icon" style="background:var(--violet-light); color:var(--violet);"><i class="fas fa-gamepad"></i></div>
+                        <div class="menu-icon"><i class="fas fa-gamepad"></i></div>
                         <div class="menu-text">Game</div>
                     </a>
                     <a href="target.php" class="menu-item">
-                        <div class="menu-icon" style="background:#ffedd5; color:#ea580c;"><i class="fas fa-bullseye"></i></div>
+                        <div class="menu-icon"><i class="fas fa-bullseye"></i></div>
                         <div class="menu-text">Target</div>
                     </a>
                 </div>
@@ -1023,15 +866,15 @@ $has_notif = count($notifications) > 0;
     <!-- MODAL NOTIFIKASI -->
     <div id="notifModal" class="modal-overlay">
         <div class="modal-content" style="padding: 0;">
-            <div class="modal-header" style="padding: 25px 25px 15px 25px; margin-bottom:0;">
+            <div class="modal-header" style="padding: 25px 25px 15px 25px; margin-bottom:0; border-bottom:1px solid var(--border);">
                 <h3>Notifikasi</h3>
                 <button class="btn-close" onclick="toggleModal('notifModal')"><i class="fas fa-times"></i></button>
             </div>
-            <div style="padding: 10px 20px 20px 20px;">
+            <div style="padding: 10px 0;">
                 <?php if (empty($notifications)): ?>
                     <div style="padding: 40px 20px; text-align:center; color:var(--text-muted);">
-                        <i class="fas fa-bell-slash" style="font-size:2.5rem; margin-bottom:15px; color:#cbd5e1;"></i>
-                        <p style="font-weight: 600;">Belum ada notifikasi baru.</p>
+                        <i class="fas fa-bell-slash" style="font-size:2rem; margin-bottom:10px; color:#cbd5e1;"></i>
+                        <p>Belum ada notifikasi baru.</p>
                     </div>
                 <?php else: ?>
                     <?php foreach ($notifications as $n):
@@ -1178,7 +1021,7 @@ $has_notif = count($notifications) > 0;
         }
 
         function showErrorJadwal() {
-            document.getElementById('prayer-container').innerHTML = "<div style='font-size:0.8rem; text-align:center; width:100%; opacity:0.8;'>Gagal memuat jadwal.</div>";
+            document.getElementById('prayer-container').innerHTML = "<div style='font-size:0.8rem; text-align:center; width:100%;'>Gagal memuat jadwal.</div>";
         }
 
         const prayerConfig = [{
@@ -1253,10 +1096,10 @@ $has_notif = count($notifications) > 0;
             const diffMins = Math.floor((diffMs % 3600000) / 60000);
 
             let timeText = "";
-            if (diffHrs > 0) timeText += `${diffHrs} jam `;
-            timeText += `${diffMins} mnt`;
+            if (diffHrs > 0) timeText += `${diffHrs} hour `;
+            timeText += `${diffMins} min`;
 
-            document.getElementById('countdown-text').innerText = `${nextPrayerName} dalam ${timeText}`;
+            document.getElementById('countdown-text').innerText = `${nextPrayerName} ${timeText} left`;
         }
 
         window.onload = initLocation;

@@ -16,7 +16,7 @@ if (isset($_SESSION['user_id'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hafizhly - AI Quran Companion</title>
+    <title>Hifzhly - AI Quran Companion</title>
     <link rel="icon" type="image/png" href="assets/icon/logo.png">
     <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -114,6 +114,13 @@ if (isset($_SESSION['user_id'])) {
         #preloader.hide {
             opacity: 0;
             visibility: hidden;
+        }
+
+        #preloader.instant-hide {
+            transition: none;
+            opacity: 0;
+            visibility: hidden;
+            display: none;
         }
 
         .preloader-orb {
@@ -1703,187 +1710,6 @@ if (isset($_SESSION['user_id'])) {
             inset: 0;
             margin: auto;
         }
-
-        /* ===== Celebration popup — Spain 2026 World Cup ===== */
-        .celebration-overlay {
-            position: fixed;
-            inset: 0;
-            z-index: 1200;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            background: rgba(6, 20, 15, 0.6);
-            backdrop-filter: blur(6px);
-            -webkit-backdrop-filter: blur(6px);
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.45s ease, visibility 0.45s ease;
-        }
-
-        .celebration-overlay.show {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .celebration-confetti {
-            position: absolute;
-            inset: 0;
-            overflow: hidden;
-            pointer-events: none;
-        }
-
-        .celebration-confetti span {
-            position: absolute;
-            top: -20px;
-            width: 7px;
-            height: 12px;
-            border-radius: 2px;
-            opacity: 0.9;
-            animation: confettiFall linear infinite;
-        }
-
-        @keyframes confettiFall {
-            0% {
-                transform: translateY(0) rotate(0deg);
-                opacity: 0.9;
-            }
-
-            100% {
-                transform: translateY(105vh) rotate(540deg);
-                opacity: 0;
-            }
-        }
-
-        .celebration-card {
-            position: relative;
-            z-index: 2;
-            width: min(400px, 100%);
-            background: linear-gradient(165deg, rgba(255, 255, 255, 0.97), rgba(255, 249, 235, 0.97));
-            border: 1px solid rgba(255, 196, 0, 0.35);
-            border-radius: 26px;
-            padding: clamp(28px, 5vw, 38px) clamp(22px, 5vw, 32px) 30px;
-            text-align: center;
-            box-shadow: 0 40px 90px rgba(6, 35, 27, 0.35);
-            transform: scale(0.85) translateY(20px);
-            opacity: 0;
-            transition: transform 0.5s cubic-bezier(.2, 1.5, .4, 1), opacity 0.4s ease;
-        }
-
-        .celebration-overlay.show .celebration-card {
-            transform: scale(1) translateY(0);
-            opacity: 1;
-        }
-
-        .celebration-close {
-            position: absolute;
-            top: 14px;
-            right: 14px;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            border: none;
-            background: rgba(6, 35, 27, 0.06);
-            color: var(--muted);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.85rem;
-            cursor: pointer;
-            transition: background 0.25s ease, color 0.25s ease;
-        }
-
-        .celebration-close:hover {
-            background: rgba(6, 35, 27, 0.12);
-            color: var(--dark);
-        }
-
-        .celebration-flag {
-            width: clamp(96px, 24vw, 128px);
-            height: clamp(64px, 16vw, 85px);
-            margin: 0 auto 18px;
-            border-radius: 6px;
-            overflow: hidden;
-            box-shadow: 0 14px 30px rgba(200, 16, 46, 0.28), 0 0 0 1px rgba(6, 35, 27, 0.08);
-        }
-
-        .celebration-flag svg {
-            width: 100%;
-            height: 100%;
-            display: block;
-        }
-
-        .celebration-trophy {
-            width: 44px;
-            height: 44px;
-            margin: 0 auto 14px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #ffd873, #d4af37);
-            color: #fff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.05rem;
-            box-shadow: 0 10px 22px rgba(212, 175, 55, 0.45);
-            animation: trophyBounce 2.4s ease-in-out infinite;
-        }
-
-        @keyframes trophyBounce {
-
-            0%,
-            100% {
-                transform: translateY(0);
-            }
-
-            50% {
-                transform: translateY(-5px);
-            }
-        }
-
-        .celebration-card h3 {
-            font-weight: 800;
-            font-size: clamp(1.2rem, 4vw, 1.45rem);
-            color: var(--dark);
-            margin-bottom: 8px;
-        }
-
-        .celebration-card p {
-            color: var(--muted);
-            font-size: 0.88rem;
-            line-height: 1.65;
-            max-width: 320px;
-            margin: 0 auto 18px;
-        }
-
-        .celebration-score {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            font-weight: 700;
-            font-size: 0.82rem;
-            color: var(--dark);
-            background: rgba(212, 175, 55, 0.1);
-            border: 1px solid rgba(212, 175, 55, 0.25);
-            border-radius: 30px;
-            padding: 9px 16px;
-        }
-
-        .celebration-score b {
-            font-size: 1rem;
-            color: #b8860b;
-        }
-
-        .celebration-score .sep {
-            color: var(--muted);
-            font-weight: 400;
-        }
-
-        @media (max-width: 380px) {
-            .celebration-card {
-                padding: 24px 18px 26px;
-            }
-        }
     </style>
 </head>
 
@@ -1898,48 +1724,14 @@ if (isset($_SESSION['user_id'])) {
                 <div class="preloader-ring-wrap">
                     <div class="preloader-ring"></div>
                 </div>
-                <div class="preloader-mark" id="preloaderMark"><img src="assets/icon/logo.png" alt="Hafizhly"></div>
+                <div class="preloader-mark" id="preloaderMark"><img src="assets/icon/logo.png" alt="Hifzhly"></div>
                 <div class="mojs-burst" id="mojsBurst"></div>
             </div>
-            <div class="preloader-brand" id="preloaderBrand" data-text="Hafizhly">Hafizhly</div>
+            <div class="preloader-brand" id="preloaderBrand" data-text="Hifzhly">Hifzhly</div>
         </div>
-        <div class="preloader-text" id="preloaderTagline">Menyiapkan Hafizhly</div>
+        <div class="preloader-text" id="preloaderTagline">Menyiapkan Hifzhly</div>
         <div class="preloader-bar">
             <div class="preloader-bar-fill"></div>
-        </div>
-    </div>
-
-    <!-- Celebration popup: Spain — 2026 World Cup Champions -->
-    <div class="celebration-overlay" id="celebrationOverlay">
-        <div class="celebration-confetti" id="celebrationConfetti"></div>
-        <div class="celebration-card">
-            <button class="celebration-close" id="celebrationClose" aria-label="Tutup"><i class="fa-solid fa-xmark"></i></button>
-
-            <div class="celebration-flag">
-                <svg viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
-                    <filter id="flagWave">
-                        <feTurbulence type="fractalNoise" baseFrequency="0.015 0.04" numOctaves="2" seed="4" result="noise">
-                            <animate attributeName="baseFrequency" dur="5s" values="0.015 0.04;0.025 0.06;0.015 0.04" repeatCount="indefinite" />
-                        </feTurbulence>
-                        <feDisplacementMap in="SourceGraphic" in2="noise" scale="7" xChannelSelector="R" yChannelSelector="G" />
-                    </filter>
-                    <g filter="url(#flagWave)">
-                        <rect width="120" height="80" fill="#C60B1E"></rect>
-                        <rect y="20" width="120" height="40" fill="#FFC400"></rect>
-                    </g>
-                </svg>
-            </div>
-
-            <div class="celebration-trophy"><i class="fa-solid fa-trophy"></i></div>
-
-            <h3>¡Campeones del Mundo!</h3>
-            <p>Spanyol juara Piala Dunia 2026 usai menang atas Argentina di final. Gol tunggal Ferran Torres di menit ke-106 memastikan trofi kedua La Roja.</p>
-
-            <div class="celebration-score">
-                <span>🇪🇸 SPAIN <b>1</b></span>
-                <span class="sep">—</span>
-                <span><b>0</b> ARGENTINA 🇦🇷</span>
-            </div>
         </div>
     </div>
 
@@ -1950,8 +1742,8 @@ if (isset($_SESSION['user_id'])) {
     <nav class="navbar navbar-custom navbar-expand-lg" id="mainNav">
         <div class="container d-flex align-items-center justify-content-between">
             <a class="d-flex align-items-center gap-2 text-decoration-none" href="#">
-                <span class="brand-mark"><img src="assets/icon/logo.png" alt="Hafizhly"></span>
-                <span class="brand-text">Hafizhly</span>
+                <span class="brand-mark"><img src="assets/icon/logo.png" alt="Hifzhly"></span>
+                <span class="brand-text">Hifzhly</span>
             </a>
             <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
                 <i class="fa-solid fa-bars fs-4"></i>
@@ -1983,7 +1775,7 @@ if (isset($_SESSION['user_id'])) {
                     <span class="hero-badge"><i class="fa-solid fa-sparkles"></i>Teknologi AI Generasi Baru</span>
                     <h1>Revolusi Cara Kamu <span class="text-gradient">Menjaga Hafalan</span></h1>
                     <p class="lead-custom">
-                        Hafizhly menggunakan teknologi Voice Recognition dan Smart AI Coach untuk mendengarkan, mengoreksi, dan membantu murajaahmu menjadi lebih interaktif setiap hari.
+                        Hifzhly menggunakan teknologi Voice Recognition dan Smart AI Coach untuk mendengarkan, mengoreksi, dan membantu murajaahmu menjadi lebih interaktif setiap hari.
                     </p>
                     <div class="d-flex flex-wrap gap-3">
                         <a href="register.php" class="btn btn-primary-custom">
@@ -2035,7 +1827,7 @@ if (isset($_SESSION['user_id'])) {
                     <div class="feature-card">
                         <div class="feature-icon"><i class="fa-solid fa-microphone-lines"></i></div>
                         <h3>Smart Murojaah dengan Suara</h3>
-                        <p>Ayat di layar akan disembunyikan dan hanya muncul saat sistem mendeteksi bacaanmu benar. Teknologi Voice Recognition Hafizhly memastikan hafalanmu akurat dan lancar secara real-time.</p>
+                        <p>Ayat di layar akan disembunyikan dan hanya muncul saat sistem mendeteksi bacaanmu benar. Teknologi Voice Recognition Hifzhly memastikan hafalanmu akurat dan lancar secara real-time.</p>
                     </div>
                 </div>
 
@@ -2092,7 +1884,7 @@ if (isset($_SESSION['user_id'])) {
                                 </div>
                                 <div class="book-cover" id="bookCover">
                                     <div class="cover-inner">
-                                        <span class="cover-mark"><img src="assets/icon/logo.png" alt="Hafizhly"></span>
+                                        <span class="cover-mark"><img src="assets/icon/logo.png" alt="Hifzhly"></span>
                                         <div class="cover-title">Al-Qur'an<br>Digital</div>
                                     </div>
                                 </div>
@@ -2106,7 +1898,7 @@ if (isset($_SESSION['user_id'])) {
                     <div class="col-lg-7 order-lg-1" data-aos="fade-right">
                         <span class="section-eyebrow">114 Surat Dalam Genggaman</span>
                         <h2 class="section-title mb-3">Terus Scroll, Terus Berpindah Surah</h2>
-                        <p class="lead-custom">Ini gambaran koleksi Al-Qur'an digital di Hafizhly. Setiap scroll membuka lembar baru dan berpindah ke surah berikutnya, lengkap dengan penanda juz agar kamu tetap tahu posisi bacaanmu.</p>
+                        <p class="lead-custom">Ini gambaran koleksi Al-Qur'an digital di Hifzhly. Setiap scroll membuka lembar baru dan berpindah ke surah berikutnya, lengkap dengan penanda juz agar kamu tetap tahu posisi bacaanmu.</p>
                         <div class="book-progress-track">
                             <div class="book-progress-fill" id="bookProgressFill"></div>
                         </div>
@@ -2202,7 +1994,7 @@ if (isset($_SESSION['user_id'])) {
                                 <div class="step-num">01</div>
                                 <div>
                                     <h4><i class="fa-solid fa-microphone me-2 text-success"></i>Bacakan Ayat</h4>
-                                    <p>Aktifkan mikrofon dan mulai murojaah seperti biasa, tanpa melihat mushaf. Hafizhly mendengarkan lewat suara HP-mu, tidak perlu alat tambahan.</p>
+                                    <p>Aktifkan mikrofon dan mulai murojaah seperti biasa, tanpa melihat mushaf. Hifzhly mendengarkan lewat suara HP-mu, tidak perlu alat tambahan.</p>
                                 </div>
                             </div>
                         </div>
@@ -2302,8 +2094,8 @@ if (isset($_SESSION['user_id'])) {
     <footer>
         <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
             <div class="d-flex align-items-center gap-2">
-                <span class="brand-mark" style="width:32px;height:32px;"><img src="assets/icon/logo.png" alt="Hafizhly"></span>
-                <span>&copy; <?= date('Y'); ?> Hafizhly. Pendamping Murojaah Al-Qur'an Berbasis AI.</span>
+                <span class="brand-mark" style="width:32px;height:32px;"><img src="assets/icon/logo.png" alt="Hifzhly"></span>
+                <span>&copy; <?= date('Y'); ?> Hifzhly. Pendamping Murojaah Al-Qur'an Berbasis AI.</span>
             </div>
             <div style="display: flex; justify-content: center; gap: 15px;">
                 <a href="privacy.php">Kebijakan Privasi</a>
@@ -2316,15 +2108,39 @@ if (isset($_SESSION['user_id'])) {
     </footer>
 
     <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/@mojs/core/dist/mo.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mojs/core@0.288.2/build/mo.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.1/aos.js"></script>
     <script>
         /* ===== Preloader entrance, powered by mo.js ===== */
+        /* Splash hanya tampil sekali per perangkat/browser. Setelah pertama kali
+           ditampilkan, kunjungan berikutnya (termasuk setelah menutup web/app
+           dan membukanya lagi) akan langsung melewati splash. */
         (function() {
             const preloaderEl = document.getElementById('preloader');
+            const SPLASH_KEY = 'hifzhly_splash_shown';
+            let alreadyShown = false;
+            try {
+                alreadyShown = localStorage.getItem(SPLASH_KEY) === '1';
+            } catch (e) {
+                alreadyShown = false;
+            }
+
+            // Sudah pernah tampil sebelumnya: langsung sembunyikan tanpa animasi,
+            // tanpa menunggu window.load, supaya user tidak melihat splash lagi.
+            if (alreadyShown) {
+                preloaderEl.classList.add('instant-hide');
+                return;
+            }
+
             const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
             const hasMojs = typeof mojs !== 'undefined';
+
+            function markSplashAsSeen() {
+                try {
+                    localStorage.setItem(SPLASH_KEY, '1');
+                } catch (e) {}
+            }
 
             if (!hasMojs || reduceMotion) {
                 preloaderEl.classList.add('no-mojs');
@@ -2427,16 +2243,18 @@ if (isset($_SESSION['user_id'])) {
                         markEl.classList.add('shine');
                     }, 160);
 
-                    // Brand letters fly in from random directions around the page,
-                    // then settle into their normal reading position, staggered.
+                    // Brand letters: each letter flies in from a different but FIXED,
+                    // straight-line direction (evenly spread around a circle, no
+                    // randomness, no rotation) so the motion reads as neat and orderly
+                    // rather than chaotic, while still arriving "from every direction".
                     const letterAnims = [];
+                    const letterCount = letterEls.length;
                     letterEls.forEach(function(el, i) {
-                        const angle = Math.random() * Math.PI * 2;
-                        const dist = 70 + Math.random() * 110;
+                        // Evenly distribute each letter's entry angle around a circle.
+                        const angle = (i / letterCount) * Math.PI * 2;
+                        const dist = 92;
                         const dx = Math.round(Math.cos(angle) * dist);
                         const dy = Math.round(Math.sin(angle) * dist);
-                        const rot = Math.round((Math.random() - 0.5) * 260);
-                        const startScale = (Math.random() > 0.5 ? 0.25 : 1.9).toFixed(2);
                         const anim = new mojs.Html({
                             target: el,
                             x: {
@@ -2445,18 +2263,12 @@ if (isset($_SESSION['user_id'])) {
                             y: {
                                 [dy]: 0
                             },
-                            rotate: {
-                                [rot]: 0
-                            },
-                            scale: {
-                                [startScale]: 1
-                            },
                             opacity: {
                                 0: 1
                             },
-                            duration: 750,
-                            delay: 480 + i * 40 + Math.random() * 60,
-                            easing: 'elastic.out'
+                            duration: 620,
+                            delay: 480 + i * 55,
+                            easing: 'cubic.out'
                         });
                         letterAnims.push(anim);
                     });
@@ -2471,7 +2283,7 @@ if (isset($_SESSION['user_id'])) {
                             0: 1
                         },
                         duration: 550,
-                        delay: 480 + letterEls.length * 40 + 380,
+                        delay: 480 + letterCount * 55 + 380,
                         easing: 'cubic.out'
                     });
 
@@ -2486,27 +2298,32 @@ if (isset($_SESSION['user_id'])) {
                             1: 1.06
                         },
                         duration: 1000,
-                        delay: 480 + letterEls.length * 40 + 900,
+                        delay: 480 + letterCount * 55 + 900,
                         easing: 'sin.inOut',
                         repeat: 999,
                         yoyo: true
                     });
                     idlePulse.play();
-                    window.__hafizhlyIdlePulse = idlePulse;
+                    window.__hifzhlyIdlePulse = idlePulse;
                 } catch (e) {
                     preloaderEl.classList.add('no-mojs');
                 }
             }
 
-            // Safety net: guarantee everything is visible even if animation setup fails
+            // Safety net: if something goes wrong and the mark never gets revealed
+            // (e.g. mo.js failed mid-way), force everything visible so the page
+            // isn't stuck behind a broken splash.
             setTimeout(function() {
-                preloaderEl.classList.add('no-mojs');
-            }, 1600);
+                const markEl = document.getElementById('preloaderMark');
+                if (markEl && !markEl.classList.contains('revealed')) {
+                    preloaderEl.classList.add('no-mojs');
+                }
+            }, 3200);
 
             window.addEventListener('load', function() {
-                if (window.__hafizhlyIdlePulse) {
+                if (window.__hifzhlyIdlePulse) {
                     try {
-                        window.__hafizhlyIdlePulse.stop();
+                        window.__hifzhlyIdlePulse.stop();
                     } catch (e) {}
                 }
                 if (hasMojs && !reduceMotion) {
@@ -2526,49 +2343,10 @@ if (isset($_SESSION['user_id'])) {
                 }
                 setTimeout(function() {
                     preloaderEl.classList.add('hide');
+                    markSplashAsSeen();
                 }, 260);
             });
         })();
-
-        // Show the Spain 2026 celebration popup shortly after the page is ready.
-        // Runs on DOMContentLoaded (not window.load) so it doesn't wait on slow CDN assets.
-        document.addEventListener('DOMContentLoaded', function() {
-            setTimeout(showCelebrationPopup, 1200);
-        });
-
-        /* ===== Celebration popup: Spain 2026 World Cup ===== */
-        function showCelebrationPopup() {
-            const overlay = document.getElementById('celebrationOverlay');
-            if (!overlay) return;
-
-            // TESTING: shows on every reload for now.
-            // To limit it to once per browser session, uncomment the two lines below.
-            // if (sessionStorage.getItem('hafizhly_wc2026_seen')) return;
-            // sessionStorage.setItem('hafizhly_wc2026_seen', '1');
-
-            const confettiHost = document.getElementById('celebrationConfetti');
-            const colors = ['#C60B1E', '#FFC400', '#ffffff', '#d4af37'];
-            const pieceCount = window.innerWidth < 480 ? 22 : 36;
-            for (let i = 0; i < pieceCount; i++) {
-                const piece = document.createElement('span');
-                piece.style.left = Math.random() * 100 + '%';
-                piece.style.background = colors[Math.floor(Math.random() * colors.length)];
-                piece.style.animationDuration = (2.4 + Math.random() * 2.2) + 's';
-                piece.style.animationDelay = (Math.random() * 1.6) + 's';
-                piece.style.transform = 'rotate(' + Math.floor(Math.random() * 360) + 'deg)';
-                confettiHost.appendChild(piece);
-            }
-
-            overlay.classList.add('show');
-
-            function closePopup() {
-                overlay.classList.remove('show');
-            }
-            document.getElementById('celebrationClose').addEventListener('click', closePopup);
-            overlay.addEventListener('click', function(e) {
-                if (e.target === overlay) closePopup();
-            });
-        }
 
         AOS.init({
             duration: 700,

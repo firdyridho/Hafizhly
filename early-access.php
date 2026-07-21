@@ -1337,198 +1337,229 @@
                 window.addEventListener('resize', resize);
                 resize();
 
-                function drawScreenUI(index) {
+                let lastIndex = -1;
+                let screenAnim = 1;
+                let animIndex = 0;
+                drawScreenUI(0, 1);
+
+                function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+
+                function drawScreenUI(index, anim) {
                     const cw = screenCanvas.width, ch = screenCanvas.height;
                     const ctx = screenCtx;
+                    const t = easeOutCubic(Math.min(1, anim));
+                    const slideUp = (1 - t) * 18;
+                    const fadeIn = t;
 
-                    // Clean white background
-                    ctx.fillStyle = '#ffffff';
+                    ctx.clearRect(0, 0, cw, ch);
+
+                    // Subtle gradient bg
+                    const grad = ctx.createLinearGradient(0, 0, 0, ch);
+                    grad.addColorStop(0, '#f8fafc');
+                    grad.addColorStop(1, '#f0fdf4');
+                    ctx.fillStyle = grad;
                     ctx.fillRect(0, 0, cw, ch);
 
-                    // Thin top accent
+                    // Top accent line
                     ctx.fillStyle = '#059669';
                     ctx.fillRect(0, 0, cw, 3);
 
-                    // Time
-                    ctx.fillStyle = '#1e293b';
-                    ctx.font = '12px sans-serif';
+                    // Time (small, subtle)
+                    ctx.fillStyle = '#94a3b8';
+                    ctx.font = '11px sans-serif';
                     ctx.textAlign = 'center';
-                    ctx.fillText('9:41', cw / 2, 24);
+                    ctx.fillText('9:41', cw / 2, 22);
+
+                    ctx.globalAlpha = fadeIn;
 
                     if (index === 0) {
-                        // Mutaba'ah list - clean check items
+                        // Mutaba'ah
                         ctx.fillStyle = '#065f46';
-                        ctx.font = 'bold 15px sans-serif';
+                        ctx.font = 'bold 14px sans-serif';
                         ctx.textAlign = 'left';
-                        ctx.fillText('Catatan Hari Ini', 28, 56);
+                        ctx.fillText('Catatan Hari Ini', 28, 54 + slideUp);
 
                         const items = [
-                            { label: 'Al-Baqarah 1-5 (Murojaah)', done: true },
-                            { label: 'Al-Baqarah 6-10 (Hafalan)', done: true },
-                            { label: 'An-Nas 1-6 (Murojaah)', done: true },
-                            { label: 'Doa Pagi & Petang', done: true },
-                            { label: 'Tadabbur Juz 5', done: false }
+                            'Al-Baqarah 1-5  (Murojaah)',
+                            'Al-Baqarah 6-10  (Hafalan)',
+                            'An-Nas 1-6  (Murojaah)',
+                            'Doa Pagi & Petang',
+                            'Tadabbur Juz 5'
                         ];
                         for (let i = 0; i < items.length; i++) {
-                            const y = 80 + i * 52;
-                            const done = items[i].done;
+                            const y = 78 + i * 50 + slideUp;
+                            const done = i < 4;
                             ctx.fillStyle = done ? '#059669' : '#e2e8f0';
                             ctx.beginPath();
-                            ctx.roundRect(28, y, 20, 20, 5);
+                            ctx.roundRect(28, y, 18, 18, 5);
                             ctx.fill();
                             if (done) {
                                 ctx.fillStyle = '#ffffff';
-                                ctx.font = '12px sans-serif';
+                                ctx.font = '11px sans-serif';
                                 ctx.textAlign = 'center';
-                                ctx.fillText('✓', 38, y + 15);
-                                ctx.textAlign = 'left';
+                                ctx.fillText('\u2713', 37, y + 14);
                             }
+                            ctx.textAlign = 'left';
                             ctx.fillStyle = done ? '#1e293b' : '#94a3b8';
-                            ctx.font = '13px sans-serif';
-                            ctx.fillText(items[i].label, 60, y + 14);
-                            ctx.fillStyle = done ? '#059669' : '#94a3b8';
-                            ctx.font = '10px sans-serif';
-                            ctx.fillText(done ? 'Selesai' : 'Belum', 60, y + 34);
+                            ctx.font = '12px sans-serif';
+                            ctx.fillText(items[i], 58, y + 13);
                         }
 
-                        // Progress bar clean
-                        ctx.fillStyle = '#f1f5f9';
+                        // Progress
+                        ctx.fillStyle = '#e2e8f0';
                         ctx.beginPath();
-                        ctx.roundRect(28, 340, cw - 56, 6, 3);
+                        ctx.roundRect(28, 330 + slideUp, cw - 56, 5, 2.5);
                         ctx.fill();
                         ctx.fillStyle = '#059669';
                         ctx.beginPath();
-                        ctx.roundRect(28, 340, (cw - 56) * 0.8, 6, 3);
+                        ctx.roundRect(28, 330 + slideUp, (cw - 56) * 0.8, 5, 2.5);
                         ctx.fill();
-                        ctx.fillStyle = '#94a3b8';
-                        ctx.font = '11px sans-serif';
+                        ctx.fillStyle = '#64748b';
+                        ctx.font = '10px sans-serif';
                         ctx.textAlign = 'center';
-                        ctx.fillText('4 dari 5 selesai', cw / 2, 370);
+                        ctx.fillText('4 dari 5 selesai', cw / 2, 358 + slideUp);
                     } else if (index === 1) {
-                        // Streak - clean minimal
-                        ctx.fillStyle = '#1e293b';
+                        // Streak
+                        ctx.fillStyle = '#065f46';
                         ctx.font = 'bold 14px sans-serif';
                         ctx.textAlign = 'left';
-                        ctx.fillText('Streak Hafalan', 28, 56);
+                        ctx.fillText('Streak Hafalan', 28, 54 + slideUp);
 
-                        // Big streak number
                         ctx.fillStyle = '#f59e0b';
-                        ctx.font = 'bold 64px sans-serif';
+                        ctx.font = 'bold 60px sans-serif';
                         ctx.textAlign = 'center';
-                        ctx.fillText('7', cw / 2, 170);
+                        ctx.fillText('7', cw / 2, 160 + slideUp);
                         ctx.fillStyle = '#1e293b';
-                        ctx.font = '16px sans-serif';
-                        ctx.fillText('hari beruntun', cw / 2, 202);
+                        ctx.font = '15px sans-serif';
+                        ctx.fillText('hari beruntun', cw / 2, 192 + slideUp);
                         ctx.fillStyle = '#94a3b8';
-                        ctx.font = '12px sans-serif';
-                        ctx.fillText('Terbaik: 21 hari', cw / 2, 222);
+                        ctx.font = '11px sans-serif';
+                        ctx.fillText('Terbaik: 21 hari', cw / 2, 212 + slideUp);
 
-                        // Week days
                         const days = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
                         for (let i = 0; i < 7; i++) {
                             const x = 28 + i * 50;
                             ctx.fillStyle = i < 5 ? '#059669' : '#e2e8f0';
                             ctx.beginPath();
-                            ctx.roundRect(x, 260, 38, 38, 8);
+                            ctx.roundRect(x, 248 + slideUp, 36, 36, 8);
                             ctx.fill();
                             ctx.fillStyle = i < 5 ? '#ffffff' : '#94a3b8';
-                            ctx.font = i < 5 ? 'bold 13px sans-serif' : '13px sans-serif';
+                            ctx.font = i < 5 ? 'bold 12px sans-serif' : '12px sans-serif';
                             ctx.textAlign = 'center';
-                            ctx.fillText(days[i].charAt(0), x + 19, 285);
+                            ctx.fillText(days[i].charAt(0), x + 18, 270 + slideUp);
                         }
 
                         ctx.fillStyle = '#059669';
-                        ctx.font = '12px sans-serif';
+                        ctx.font = '11px sans-serif';
                         ctx.textAlign = 'center';
-                        ctx.fillText('Jangan sampai putus!', cw / 2, 340);
+                        ctx.fillText('Jangan sampai putus!', cw / 2, 330 + slideUp);
                     } else if (index === 2) {
-                        // Laporan - minimal data cards
+                        // Laporan
                         ctx.fillStyle = '#065f46';
                         ctx.font = 'bold 14px sans-serif';
                         ctx.textAlign = 'left';
-                        ctx.fillText('Ringkasan Bulanan', 28, 56);
+                        ctx.fillText('Ringkasan Bulanan', 28, 54 + slideUp);
 
                         const data = [
-                            { label: 'Juz dihafal', value: '24', color: '#059669' },
-                            { label: 'Hari murojaah', value: '18', color: '#10b981' },
-                            { label: 'Surat baru', value: '5', color: '#34d399' },
-                            { label: 'Rata-rata', value: '92', color: '#047857' }
+                            ['Juz dihafal', '24', '#059669'],
+                            ['Hari murojaah', '18', '#10b981'],
+                            ['Surat baru', '5', '#34d399'],
+                            ['Rata-rata', '92', '#047857']
                         ];
-                        for (let i = 0; i < data.length; i++) {
+                        for (let i = 0; i < 4; i++) {
                             const x = 28 + (i % 2) * 175;
-                            const y = 80 + Math.floor(i / 2) * 110;
-                            ctx.fillStyle = '#f8fafc';
+                            const y = 78 + Math.floor(i / 2) * 105 + slideUp;
+                            ctx.fillStyle = '#f1f5f9';
                             ctx.beginPath();
-                            ctx.roundRect(x, y, 160, 95, 12);
+                            ctx.roundRect(x, y, 160, 88, 12);
                             ctx.fill();
-                            ctx.fillStyle = data[i].color;
-                            ctx.font = 'bold 32px sans-serif';
+                            ctx.fillStyle = data[i][2];
+                            ctx.font = 'bold 30px sans-serif';
                             ctx.textAlign = 'center';
-                            ctx.fillText(data[i].value, x + 80, y + 55);
+                            ctx.fillText(data[i][1], x + 80, y + 52);
                             ctx.fillStyle = '#64748b';
-                            ctx.font = '12px sans-serif';
-                            ctx.fillText(data[i].label, x + 80, y + 80);
+                            ctx.font = '11px sans-serif';
+                            ctx.fillText(data[i][0], x + 80, y + 74);
                         }
 
                         ctx.fillStyle = '#059669';
                         ctx.beginPath();
-                        ctx.roundRect(cw / 2 - 60, 370, 120, 36, 10);
+                        ctx.roundRect(cw / 2 - 55, 356 + slideUp, 110, 34, 10);
                         ctx.fill();
                         ctx.fillStyle = '#ffffff';
-                        ctx.font = 'bold 12px sans-serif';
+                        ctx.font = 'bold 11px sans-serif';
                         ctx.textAlign = 'center';
-                        ctx.fillText('Ekspor PDF', cw / 2, 393);
+                        ctx.fillText('Ekspor PDF', cw / 2, 377 + slideUp);
                     } else {
-                        // Multi-platform - simple connected devices
+                        // Multi-platform - draw shapes instead of emoji
                         ctx.fillStyle = '#065f46';
                         ctx.font = 'bold 14px sans-serif';
                         ctx.textAlign = 'left';
-                        ctx.fillText('Perangkat Aktif', 28, 56);
+                        ctx.fillText('Perangkat Aktif', 28, 54 + slideUp);
 
-                        const devices = [
-                            { icon: '🖥', name: 'Desktop', active: true, x: 20 },
-                            { icon: '📱', name: 'Android', active: true, x: 148 },
-                            { icon: '📱', name: 'iOS', active: true, x: 276 }
-                        ];
-                        for (let i = 0; i < devices.length; i++) {
-                            const d = devices[i];
-                            ctx.fillStyle = d.active ? '#ecfdf5' : '#f8fafc';
+                        for (let i = 0; i < 3; i++) {
+                            const x = 20 + i * 130;
+                            const names = ['Desktop', 'Android', 'iOS'];
+                            ctx.fillStyle = '#ecfdf5';
                             ctx.beginPath();
-                            ctx.roundRect(d.x, 80, 112, 100, 12);
+                            ctx.roundRect(x, 76 + slideUp, 110, 106, 12);
                             ctx.fill();
-                            if (d.active) {
-                                ctx.fillStyle = '#059669';
-                                ctx.beginPath();
-                                ctx.arc(d.x + 96, 90, 8, 0, Math.PI * 2);
-                                ctx.fill();
-                                ctx.fillStyle = '#ffffff';
-                                ctx.font = '8px sans-serif';
-                                ctx.textAlign = 'center';
-                                ctx.fillText('✓', d.x + 96, 93);
-                            }
-                            ctx.font = '28px sans-serif';
+                            ctx.fillStyle = '#059669';
+                            ctx.beginPath();
+                            ctx.arc(x + 92, 86 + slideUp, 7, 0, Math.PI * 2);
+                            ctx.fill();
+                            ctx.fillStyle = '#ffffff';
+                            ctx.font = '8px sans-serif';
                             ctx.textAlign = 'center';
-                            ctx.fillText(d.icon, d.x + 56, 140);
+                            ctx.fillText('\u2713', x + 92, 89 + slideUp);
+
+                            if (i === 0) {
+                                // Desktop: monitor shape
+                                ctx.fillStyle = '#065f46';
+                                ctx.beginPath();
+                                ctx.roundRect(x + 30, 106 + slideUp, 50, 36, 4);
+                                ctx.fill();
+                                ctx.fillStyle = '#ecfdf5';
+                                ctx.beginPath();
+                                ctx.roundRect(x + 34, 110 + slideUp, 42, 28, 3);
+                                ctx.fill();
+                                ctx.fillStyle = '#065f46';
+                                ctx.fillRect(x + 48, 142 + slideUp, 14, 4);
+                                ctx.fillRect(x + 40, 146 + slideUp, 30, 3);
+                            } else {
+                                // Phone shape
+                                ctx.fillStyle = '#065f46';
+                                ctx.beginPath();
+                                ctx.roundRect(x + 33, 104 + slideUp, 44, 44, 8);
+                                ctx.fill();
+                                ctx.fillStyle = '#ecfdf5';
+                                ctx.beginPath();
+                                ctx.roundRect(x + 37, 110 + slideUp, 36, 32, 5);
+                                ctx.fill();
+                                ctx.fillStyle = '#065f46';
+                                ctx.beginPath();
+                                ctx.arc(x + 55, 145 + slideUp, 3, 0, Math.PI * 2);
+                                ctx.fill();
+                            }
+
                             ctx.fillStyle = '#1e293b';
-                            ctx.font = '13px sans-serif';
-                            ctx.fillText(d.name, d.x + 56, 168);
+                            ctx.font = '12px sans-serif';
+                            ctx.textAlign = 'center';
+                            ctx.fillText(names[i], x + 55, 172 + slideUp);
                         }
 
-                        // Sync status
                         ctx.fillStyle = '#059669';
-                        ctx.font = '12px sans-serif';
-                        ctx.textAlign = 'center';
-                        ctx.fillText('✓ Tersinkron realtime', cw / 2, 230);
-
-                        // Last sync
-                        ctx.fillStyle = '#94a3b8';
                         ctx.font = '11px sans-serif';
-                        ctx.fillText('Terakhir: 2 menit lalu', cw / 2, 255);
+                        ctx.textAlign = 'center';
+                        ctx.fillText('Tersinkron realtime', cw / 2, 222 + slideUp);
+                        ctx.fillStyle = '#94a3b8';
+                        ctx.font = '10px sans-serif';
+                        ctx.fillText('Terakhir: 2 menit lalu', cw / 2, 242 + slideUp);
                     }
+
+                    ctx.globalAlpha = 1;
                     screenTexture.needsUpdate = true;
                 }
-
-                let lastIndex = -1;
                 let animId = null;
                 let isVisible = false;
                 const X_POS = [-1.6, 1.6, -1.6, 1.6];
@@ -1549,14 +1580,21 @@
                     const targetX = isMobile ? 0 : X_POS[index] + (X_POS[nextIndex] - X_POS[index]) * frac;
                     phoneGroup.position.x += (targetX - phoneGroup.position.x) * 0.1;
 
-                    const scrollRotY = progress * Math.PI - 0.3;
+                    const scrollRotY = progress * 2 * Math.PI - 0.3;
                     const targetY = scrollRotY + userRotY;
                     phoneGroup.rotation.y += (targetY - phoneGroup.rotation.y) * 0.12;
                     phoneGroup.rotation.x += (userRotX - phoneGroup.rotation.x) * 0.08;
 
                     if (index !== lastIndex) {
-                        drawScreenUI(index);
+                        screenAnim = 0;
+                        animIndex = index;
                         lastIndex = index;
+                    }
+                    if (screenAnim < 1) {
+                        screenAnim = Math.min(1, screenAnim + 0.03);
+                        drawScreenUI(animIndex, screenAnim);
+                    } else if (screenAnim === 1 && lastIndex === index) {
+                        // already drawn
                     }
 
                     renderer.render(scene, camera);

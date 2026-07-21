@@ -807,13 +807,7 @@
 
         .slide-card {
             pointer-events: auto;
-            max-width: 380px;
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(24px);
-            border: 1px solid rgba(255, 255, 255, 0.6);
-            border-radius: 24px;
-            padding: 30px 28px;
-            box-shadow: 0 24px 48px rgba(15, 23, 42, 0.08);
+            max-width: 420px;
             opacity: 0;
             transform: translateY(34px);
             transition: opacity 0.8s cubic-bezier(.16, 1, .3, 1), transform 0.8s cubic-bezier(.16, 1, .3, 1);
@@ -827,16 +821,11 @@
         .slide-badge {
             display: inline-flex;
             align-items: center;
-            gap: 7px;
-            background: #fff;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 7px 12px;
-            font-size: 0.72rem;
+            gap: 6px;
+            font-size: 0.8rem;
             font-weight: 700;
-            color: var(--ink);
-            box-shadow: 0 10px 20px rgba(15, 23, 42, 0.05);
-            margin-bottom: 16px;
+            color: var(--primary-dark);
+            margin-bottom: 8px;
         }
 
         .slide-badge i {
@@ -845,39 +834,37 @@
 
         .slide-index {
             display: block;
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             font-weight: 800;
-            letter-spacing: 1.5px;
+            letter-spacing: 2px;
             color: var(--primary-dark);
             text-transform: uppercase;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
         }
 
         .slide-icon {
-            width: 46px;
-            height: 46px;
-            border-radius: 13px;
-            background: rgba(16, 185, 129, 0.12);
+            width: 40px;
+            height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: var(--primary-dark);
-            font-size: 1.1rem;
-            margin-bottom: 14px;
+            font-size: 1.3rem;
+            margin-bottom: 10px;
         }
 
         .slide-card h3 {
-            font-size: 1.4rem;
+            font-size: 1.7rem;
             font-weight: 800;
             color: var(--ink);
-            margin-bottom: 8px;
-            letter-spacing: -0.4px;
+            margin-bottom: 10px;
+            letter-spacing: -0.6px;
         }
 
         .slide-card p {
             color: var(--muted);
-            font-size: 0.94rem;
-            line-height: 1.7;
+            font-size: 1.05rem;
+            line-height: 1.8;
         }
 
         /* ============ CLOSING CTA ============ */
@@ -974,7 +961,6 @@
                 max-width: 100%;
                 opacity: 1;
                 transform: none;
-                padding: 24px 22px;
                 transition: none;
             }
 
@@ -1249,7 +1235,7 @@
 
                 const phoneGroup = new THREE.Group();
                 phoneGroup.rotation.y = -0.25;
-                phoneGroup.position.x = -1.2;
+                phoneGroup.position.x = -1.6;
 
                 const shape = new THREE.Shape();
                 const w = 1.6, h = 3.3, r = 0.25;
@@ -1347,41 +1333,163 @@
 
                 function drawScreenUI(index) {
                     const cw = screenCanvas.width, ch = screenCanvas.height;
-                    screenCtx.fillStyle = '#ffffff';
-                    screenCtx.fillRect(0, 0, cw, ch);
+                    const ctx = screenCtx;
 
-                    screenCtx.fillStyle = '#059669';
-                    screenCtx.font = 'bold 18px sans-serif';
-                    screenCtx.textAlign = 'center';
+                    // Background gradient
+                    const grad = ctx.createLinearGradient(0, 0, 0, ch);
+                    grad.addColorStop(0, '#f0fdf4');
+                    grad.addColorStop(1, '#ecfdf5');
+                    ctx.fillStyle = grad;
+                    ctx.fillRect(0, 0, cw, ch);
+
+                    // Status bar
+                    ctx.fillStyle = '#059669';
+                    ctx.fillRect(0, 0, cw, 28);
+                    ctx.fillStyle = '#fff';
+                    ctx.font = '9px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('9:41', cw / 2, 18);
+
+                    // Header
+                    const titles = ['Mutaba\'ah Harian', 'Streak Hafalan', 'Laporan Bulanan', 'Sinkronisasi'];
+                    const icons = ['☑', '🔥', '📊', '🔄'];
+                    ctx.fillStyle = '#065f46';
+                    ctx.font = 'bold 13px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(titles[index], cw / 2, 52);
+
+                    // Small underline
+                    ctx.fillStyle = '#a7f3d0';
+                    ctx.fillRect(cw / 2 - 25, 57, 50, 2);
+
+                    ctx.textAlign = 'left';
 
                     if (index === 0) {
-                        screenCtx.fillText("Mutaba'ah Harian", cw / 2, ch / 2 - 20);
-                        screenCtx.fillStyle = '#e2edea';
-                        screenCtx.fillRect(30, ch / 2 + 10, cw - 60, 16);
-                        screenCtx.fillRect(30, ch / 2 + 36, cw - 100, 16);
+                        // Mutaba'ah list with checkboxes
+                        const items = ['Subuh: Juz 1-2', 'Murojaah: An-Nas', 'Hafalan: Al-Fatihah', 'Doa harian'];
+                        for (let i = 0; i < items.length; i++) {
+                            const y = 80 + i * 32;
+                            ctx.fillStyle = '#059669';
+                            ctx.beginPath();
+                            ctx.roundRect(20, y - 1, 14, 14, 3);
+                            ctx.fill();
+                            ctx.fillStyle = '#fff';
+                            ctx.font = '9px sans-serif';
+                            ctx.textAlign = 'center';
+                            ctx.fillText('✓', 27, y + 10);
+                            ctx.textAlign = 'left';
+                            ctx.fillStyle = '#1e293b';
+                            ctx.font = '10px sans-serif';
+                            ctx.fillText(items[i], 42, y + 10);
+                        }
+                        // Bottom progress
+                        ctx.fillStyle = '#d1fae5';
+                        ctx.beginPath();
+                        ctx.roundRect(20, 205, cw - 40, 8, 4);
+                        ctx.fill();
+                        ctx.fillStyle = '#059669';
+                        ctx.beginPath();
+                        ctx.roundRect(20, 205, 120, 8, 4);
+                        ctx.fill();
+                        ctx.fillStyle = '#94a3b8';
+                        ctx.font = '8px sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.fillText('Hari ini: 4/4 selesai', cw / 2, 228);
                     } else if (index === 1) {
-                        screenCtx.fillStyle = '#f59e0b';
-                        screenCtx.font = 'bold 48px sans-serif';
-                        screenCtx.fillText("7", cw / 2, ch / 2);
-                        screenCtx.fillStyle = '#64748b';
-                        screenCtx.font = '13px sans-serif';
-                        screenCtx.fillText("Hari Beruntun", cw / 2, ch / 2 + 28);
+                        // Streak view
+                        ctx.textAlign = 'center';
+                        ctx.fillStyle = '#f59e0b';
+                        ctx.font = 'bold 36px sans-serif';
+                        ctx.fillText('🔥 7', cw / 2, 105);
+                        ctx.fillStyle = '#64748b';
+                        ctx.font = '10px sans-serif';
+                        ctx.fillText('hari beruntun', cw / 2, 122);
+
+                        // Mini calendar dots
+                        const days = ['S', 'S', 'R', 'K', 'J', 'S', 'M'];
+                        ctx.font = '7px sans-serif';
+                        for (let i = 0; i < 7; i++) {
+                            const x = 25 + i * 24;
+                            ctx.fillStyle = i < 5 ? '#059669' : '#e2e8f0';
+                            ctx.beginPath();
+                            ctx.arc(x + 7, 148, 7, 0, Math.PI * 2);
+                            ctx.fill();
+                            ctx.fillStyle = i < 5 ? '#fff' : '#94a3b8';
+                            ctx.fillText(days[i], x + 7, 151);
+                        }
+
+                        ctx.fillStyle = '#94a3b8';
+                        ctx.font = '8px sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.fillText('Jangan putus streak-mu!', cw / 2, 175);
                     } else if (index === 2) {
-                        screenCtx.fillText("Export Laporan", cw / 2, ch / 2 - 20);
-                        screenCtx.fillStyle = '#e2edea';
-                        screenCtx.fillRect(50, ch / 2 + 20, cw - 100, 30);
+                        // Export report
+                        ctx.textAlign = 'center';
+                        ctx.fillStyle = '#065f46';
+                        ctx.font = 'bold 11px sans-serif';
+                        ctx.fillText('Bulan Juli 2026', cw / 2, 80);
+
+                        ctx.textAlign = 'left';
+                        const stats = [
+                            ['Halaman', '24 juz'],
+                            ['Murojaah', '18 hari'],
+                            ['Hafalan', '5 surat'],
+                            ['Nilai', '92/100']
+                        ];
+                        for (let i = 0; i < stats.length; i++) {
+                            const y = 100 + i * 26;
+                            ctx.fillStyle = '#f1f5f9';
+                            ctx.fillRect(20, y, cw - 40, 22);
+                            ctx.fillStyle = '#1e293b';
+                            ctx.font = '9px sans-serif';
+                            ctx.fillText(stats[i][0], 28, y + 15);
+                            ctx.textAlign = 'right';
+                            ctx.fillStyle = '#059669';
+                            ctx.font = 'bold 9px sans-serif';
+                            ctx.fillText(stats[i][1], cw - 20, y + 15);
+                            ctx.textAlign = 'left';
+                        }
+
+                        ctx.textAlign = 'center';
+                        ctx.fillStyle = '#059669';
+                        ctx.font = 'bold 9px sans-serif';
+                        ctx.fillRect(cw / 2 - 40, 210, 80, 22);
+                        ctx.fillStyle = '#fff';
+                        ctx.fillText('Download PDF', cw / 2, 225);
                     } else {
-                        screenCtx.fillText("Sinkronisasi Aktif", cw / 2, ch / 2 - 20);
-                        screenCtx.fillStyle = '#10b981';
-                        screenCtx.beginPath();
-                        screenCtx.arc(cw / 2, ch / 2 + 24, 20, 0, Math.PI * 2);
-                        screenCtx.fill();
+                        // Multi-platform
+                        ctx.textAlign = 'center';
+                        ctx.fillStyle = '#065f46';
+                        ctx.font = 'bold 11px sans-serif';
+                        ctx.fillText('Semua Tersinkron', cw / 2, 78);
+
+                        const devices = [
+                            ['💻', 'Desktop'], ['📱', 'Android'], ['📱', 'iOS']
+                        ];
+                        for (let i = 0; i < 3; i++) {
+                            const x = 35 + i * 60;
+                            ctx.fillStyle = '#d1fae5';
+                            ctx.beginPath();
+                            ctx.roundRect(x, 95, 50, 50, 10);
+                            ctx.fill();
+                            ctx.font = '18px sans-serif';
+                            ctx.fillText(devices[i][0], x + 25, 125);
+                            ctx.fillStyle = '#1e293b';
+                            ctx.font = '8px sans-serif';
+                            ctx.fillText(devices[i][1], x + 25, 158);
+                        }
+
+                        // Sync checkmark
+                        ctx.fillStyle = '#059669';
+                        ctx.font = 'bold 10px sans-serif';
+                        ctx.fillText('✓ Semua tersinkron realtime', cw / 2, 200);
                     }
 
-                    screenCtx.fillStyle = '#000';
-                    screenCtx.beginPath();
-                    screenCtx.roundRect(cw / 2 - 40, 8, 80, 20, 10);
-                    screenCtx.fill();
+                    // Notch
+                    ctx.fillStyle = '#064e3b';
+                    ctx.beginPath();
+                    ctx.roundRect(cw / 2 - 30, 4, 60, 16, 8);
+                    ctx.fill();
 
                     screenTexture.needsUpdate = true;
                 }
@@ -1389,7 +1497,7 @@
                 let lastIndex = -1;
                 let animId = null;
                 let isVisible = false;
-                const X_POS = [-1.2, 1.2, -1.2, 1.2];
+                const X_POS = [-1.6, 1.6, -1.6, 1.6];
 
                 function animate() {
                     if (!isVisible) { animId = null; return; }
@@ -1407,9 +1515,9 @@
                     const targetX = isMobile ? 0 : X_POS[index] + (X_POS[nextIndex] - X_POS[index]) * frac;
                     phoneGroup.position.x += (targetX - phoneGroup.position.x) * 0.1;
 
-                    const scrollRotY = progress * Math.PI * 0.5 - 0.25;
+                    const scrollRotY = progress * Math.PI * 0.8 - 0.4;
                     const targetY = scrollRotY + userRotY;
-                    phoneGroup.rotation.y += (targetY - phoneGroup.rotation.y) * 0.08;
+                    phoneGroup.rotation.y += (targetY - phoneGroup.rotation.y) * 0.06;
                     phoneGroup.rotation.x += (userRotX - phoneGroup.rotation.x) * 0.08;
 
                     if (index !== lastIndex) {

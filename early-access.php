@@ -20,7 +20,6 @@
             --hero-top: #0ea371;
             --hero-bottom: #34d399;
             --gold: #c9a227;
-            --gold-light: #e8c85f;
             --ink: #0f172a;
             --muted: #64748b;
             --paper: #f7faf8;
@@ -39,6 +38,8 @@
             background: var(--paper);
             color: var(--ink);
             overflow-x: hidden;
+            /* Instant display variables for removed splash screen */
+            opacity: 1 !important;
         }
 
         h1,
@@ -70,112 +71,36 @@
             padding: 0 32px;
         }
 
-        /* ============ PAGE LOADER ============ */
-        .page-loader {
-            position: fixed;
-            inset: 0;
-            z-index: 9999;
-            background: linear-gradient(160deg, var(--hero-top), var(--hero-bottom));
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 22px;
-            transition: opacity 0.7s ease, visibility 0.7s ease;
-        }
-
-        .page-loader.hide {
-            opacity: 0;
-            visibility: hidden;
-            pointer-events: none;
-        }
-
-        .loader-mark {
-            font-family: 'Amiri', serif;
-            font-size: 3.2rem;
-            color: #fff;
-            opacity: 0.92;
-            animation: loaderPulse 1.6s ease-in-out infinite;
-        }
-
-        @keyframes loaderPulse {
-
-            0%,
-            100% {
-                transform: scale(1);
-                opacity: 0.75;
-            }
-
-            50% {
-                transform: scale(1.08);
-                opacity: 1;
-            }
-        }
-
-        .loader-bar {
-            width: 160px;
-            height: 3px;
-            border-radius: 3px;
-            background: rgba(255, 255, 255, 0.25);
-            overflow: hidden;
-        }
-
-        .loader-fill {
-            height: 100%;
-            width: 0%;
-            background: linear-gradient(90deg, var(--gold-light), var(--gold));
-            border-radius: 3px;
-            transition: width 0.9s cubic-bezier(.65, 0, .35, 1);
-        }
-
-        /* Staggered hero entrance */
+        /* Staggered hero entrance (Adjusted for no splash screen) */
         .hero-copy,
         .phone-stage,
         .hero-sub,
         .store-buttons {
             opacity: 0;
             transform: translateY(28px);
-            transition: opacity 0.9s cubic-bezier(.16, 1, .3, 1), transform 0.9s cubic-bezier(.16, 1, .3, 1);
+            animation: fadeUpIn 0.9s cubic-bezier(.16, 1, .3, 1) forwards;
         }
 
-        body.loaded .hero-copy {
-            opacity: 1;
-            transform: translateY(0);
-            transition-delay: 0.05s;
+        .hero-copy {
+            animation-delay: 0.1s;
         }
 
-        body.loaded .phone-stage {
-            opacity: 1;
-            transform: translateY(0);
-            transition-delay: 0.2s;
+        .phone-stage {
+            animation-delay: 0.25s;
         }
 
-        body.loaded .hero-sub {
-            opacity: 1;
-            transform: translateY(0);
-            transition-delay: 0.35s;
+        .hero-sub {
+            animation-delay: 0.4s;
         }
 
-        body.loaded .store-buttons {
-            opacity: 1;
-            transform: translateY(0);
-            transition-delay: 0.48s;
+        .store-buttons {
+            animation-delay: 0.5s;
         }
 
-        body.reveal-done .hero-copy,
-        body.reveal-done .phone-stage {
-            transition: none;
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-
-            .hero-copy,
-            .phone-stage,
-            .hero-sub,
-            .store-buttons {
+        @keyframes fadeUpIn {
+            to {
                 opacity: 1;
-                transform: none;
-                transition: none;
+                transform: translateY(0);
             }
         }
 
@@ -189,13 +114,6 @@
         .reveal-up.in-view {
             opacity: 1;
             transform: translateY(0);
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-            .reveal-up {
-                opacity: 1;
-                transform: none;
-            }
         }
 
         /* ============ HERO ============ */
@@ -304,10 +222,6 @@
             margin-bottom: 20px;
         }
 
-        .hero-eyebrow i {
-            font-size: 0.65rem;
-        }
-
         .hero h1 {
             color: var(--white);
             font-size: 3.5rem;
@@ -316,6 +230,7 @@
             letter-spacing: -1.8px;
         }
 
+        /* Static Mockup (Behind 3D if needed, but we use mostly HTML here) */
         .phone-stage {
             position: relative;
             display: flex;
@@ -407,35 +322,10 @@
             position: relative;
             width: 250px;
             height: 508px;
-            background: linear-gradient(155deg, #33453d 0%, #16211c 45%, #0a1310 100%);
+            background: linear-gradient(155deg, #1e293b 0%, #0f172a 45%, #020617 100%);
             border-radius: 48px;
             padding: 12px;
-            box-shadow:
-                0 34px 64px rgba(4, 30, 20, 0.4),
-                0 0 0 1px rgba(255, 255, 255, 0.12) inset,
-                0 1px 0 rgba(255, 255, 255, 0.18) inset;
-        }
-
-        .phone-frame::before {
-            content: '';
-            position: absolute;
-            left: -3px;
-            top: 116px;
-            width: 3px;
-            height: 30px;
-            border-radius: 2px 0 0 2px;
-            background: linear-gradient(180deg, #3d5148, #0c1712);
-        }
-
-        .phone-frame::after {
-            content: '';
-            position: absolute;
-            right: -3px;
-            top: 150px;
-            width: 3px;
-            height: 62px;
-            border-radius: 0 2px 2px 0;
-            background: linear-gradient(180deg, #3d5148, #0c1712);
+            box-shadow: 0 34px 64px rgba(4, 30, 20, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.12) inset, 0 1px 0 rgba(255, 255, 255, 0.18) inset;
         }
 
         .phone-notch {
@@ -474,15 +364,6 @@
             padding: 32px 17px 17px;
             display: flex;
             flex-direction: column;
-        }
-
-        .phone-screen::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(120deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0) 26%);
-            pointer-events: none;
-            z-index: 5;
         }
 
         .screen-status {
@@ -607,72 +488,16 @@
         }
 
         .ayat-row.r1 .ayat-check {
-            animation: checkFill 6s ease-in-out infinite;
+            background: var(--primary-dark);
+            border-color: var(--primary-dark);
         }
 
         .ayat-row.r2 .ayat-check {
-            animation: checkFill 6s ease-in-out infinite 2s;
+            background: var(--primary-dark);
+            border-color: var(--primary-dark);
         }
 
-        .ayat-row.r3 .ayat-check {
-            animation: checkFill 6s ease-in-out infinite 4s;
-        }
-
-        @keyframes checkFill {
-
-            0%,
-            28% {
-                background: transparent;
-                border-color: #cfe3d9;
-            }
-
-            35%,
-            90% {
-                background: var(--primary-dark);
-                border-color: var(--primary-dark);
-            }
-
-            96%,
-            100% {
-                background: transparent;
-                border-color: #cfe3d9;
-            }
-        }
-
-        .ayat-row.r1 {
-            animation: rowGlow 6s ease-in-out infinite;
-        }
-
-        .ayat-row.r2 {
-            animation: rowGlow 6s ease-in-out infinite 2s;
-        }
-
-        .ayat-row.r3 {
-            animation: rowGlow 6s ease-in-out infinite 4s;
-        }
-
-        @keyframes rowGlow {
-
-            0%,
-            28% {
-                box-shadow: none;
-                border-color: var(--border);
-            }
-
-            35%,
-            90% {
-                box-shadow: 0 4px 14px rgba(5, 150, 105, 0.14);
-                border-color: rgba(5, 150, 105, 0.35);
-            }
-
-            96%,
-            100% {
-                box-shadow: none;
-                border-color: var(--border);
-            }
-        }
-
-        /* ============ HERO BOTTOM FADE — progressive layered blur ============ */
+        /* ============ HERO BOTTOM FADE ============ */
         .hero-bottom-fade {
             position: absolute;
             left: 0;
@@ -683,53 +508,10 @@
             z-index: 6;
         }
 
-        .hero-bottom-fade .blur-layer {
-            position: absolute;
-            inset: 0;
-        }
-
-        .hero-bottom-fade .l1 {
-            backdrop-filter: blur(2px);
-            -webkit-backdrop-filter: blur(2px);
-            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 35%, #000 100%);
-            mask-image: linear-gradient(to bottom, transparent 0%, #000 35%, #000 100%);
-        }
-
-        .hero-bottom-fade .l2 {
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
-            -webkit-mask-image: linear-gradient(to bottom, transparent 20%, #000 48%, #000 100%);
-            mask-image: linear-gradient(to bottom, transparent 20%, #000 48%, #000 100%);
-        }
-
-        .hero-bottom-fade .l3 {
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            -webkit-mask-image: linear-gradient(to bottom, transparent 38%, #000 60%, #000 100%);
-            mask-image: linear-gradient(to bottom, transparent 38%, #000 60%, #000 100%);
-        }
-
-        .hero-bottom-fade .l4 {
-            backdrop-filter: blur(18px);
-            -webkit-backdrop-filter: blur(18px);
-            -webkit-mask-image: linear-gradient(to bottom, transparent 55%, #000 74%, #000 100%);
-            mask-image: linear-gradient(to bottom, transparent 55%, #000 74%, #000 100%);
-        }
-
-        .hero-bottom-fade .l5 {
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
-            -webkit-mask-image: linear-gradient(to bottom, transparent 72%, #000 88%, #000 100%);
-            mask-image: linear-gradient(to bottom, transparent 72%, #000 88%, #000 100%);
-        }
-
         .hero-bottom-fade .fade-color {
             position: absolute;
             inset: 0;
-            background: linear-gradient(to bottom,
-                    rgba(52, 211, 153, 0) 0%,
-                    rgba(46, 197, 140, 0.45) 45%,
-                    var(--hero-bottom) 92%);
+            background: linear-gradient(to bottom, rgba(52, 211, 153, 0) 0%, rgba(46, 197, 140, 0.45) 45%, var(--paper) 92%);
         }
 
         .hero-sub {
@@ -826,45 +608,31 @@
             border-radius: 20px;
         }
 
-        /* ============ QUICK HIGHLIGHTS STRIP ============ */
+        /* ============ QUICK HIGHLIGHTS (Enhanced White Background) ============ */
         .highlights {
             position: relative;
             z-index: 10;
-            background: var(--paper);
             padding: 26px 0 0;
-        }
-
-        .highlights .row>div:nth-child(1) {
-            transition-delay: 0.05s;
-        }
-
-        .highlights .row>div:nth-child(2) {
-            transition-delay: 0.15s;
-        }
-
-        .highlights .row>div:nth-child(3) {
-            transition-delay: 0.25s;
-        }
-
-        .highlights .row>div:nth-child(4) {
-            transition-delay: 0.35s;
+            background: linear-gradient(180deg, var(--paper) 0%, #ffffff 100%);
         }
 
         .highlight-chip {
             display: flex;
             align-items: center;
             gap: 12px;
-            background: var(--white);
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
             border: 1px solid var(--border);
             border-radius: 16px;
             padding: 14px 16px;
             height: 100%;
-            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
         }
 
         .highlight-chip:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08);
+            transform: translateY(-6px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(16, 185, 129, 0.08);
+            border-color: var(--primary-light);
         }
 
         .highlight-chip .hi-icon {
@@ -892,11 +660,11 @@
             color: var(--muted);
         }
 
-        /* ============ FEATURES — 3D pinned zigzag scroll ============ */
+        /* ============ FEATURES (Enhanced Background + 3D Canvas) ============ */
         .features {
             padding: 70px 0 40px;
-            background: var(--paper);
             position: relative;
+            background: radial-gradient(circle at top right, rgba(110, 231, 183, 0.1), transparent 50%), radial-gradient(circle at bottom left, rgba(52, 211, 153, 0.05), transparent 40%), #ffffff;
         }
 
         .section-head {
@@ -941,13 +709,55 @@
             width: 100%;
             overflow: hidden;
             z-index: 1;
+            cursor: grab;
+        }
+
+        .features-canvas-sticky:active {
+            cursor: grabbing;
+        }
+
+        /* Hint to rotate */
+        .rotate-hint {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(15, 23, 42, 0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: pulseHint 2s infinite;
             pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .features-canvas-sticky:hover .rotate-hint {
+            opacity: 1;
+        }
+
+        @keyframes pulseHint {
+
+            0%,
+            100% {
+                transform: translate(-50%, 0);
+            }
+
+            50% {
+                transform: translate(-50%, -5px);
+            }
         }
 
         #phoneCanvas {
             width: 100%;
             height: 100%;
             display: block;
+            outline: none;
         }
 
         .features-text-track {
@@ -976,13 +786,12 @@
         .slide-card {
             pointer-events: auto;
             max-width: 380px;
-            background: rgba(255, 255, 255, 0.68);
-            backdrop-filter: blur(22px);
-            -webkit-backdrop-filter: blur(22px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
             border-radius: 24px;
             padding: 30px 28px;
-            box-shadow: 0 24px 48px rgba(15, 23, 42, 0.12);
+            box-shadow: 0 24px 48px rgba(15, 23, 42, 0.08);
             opacity: 0;
             transform: translateY(34px);
             transition: opacity 0.8s cubic-bezier(.16, 1, .3, 1), transform 0.8s cubic-bezier(.16, 1, .3, 1);
@@ -1004,7 +813,7 @@
             font-size: 0.72rem;
             font-weight: 700;
             color: var(--ink);
-            box-shadow: 0 10px 20px rgba(15, 23, 42, 0.1);
+            box-shadow: 0 10px 20px rgba(15, 23, 42, 0.05);
             margin-bottom: 16px;
         }
 
@@ -1017,7 +826,7 @@
             font-size: 0.7rem;
             font-weight: 800;
             letter-spacing: 1.5px;
-            color: var(--gold);
+            color: var(--primary-dark);
             text-transform: uppercase;
             margin-bottom: 8px;
         }
@@ -1049,49 +858,6 @@
             line-height: 1.7;
         }
 
-        /* No-3D / fallback path */
-        .features-3d-wrap.no-3d {
-            height: auto;
-        }
-
-        .features-3d-wrap.no-3d .features-canvas-sticky {
-            position: relative;
-            height: auto;
-            min-height: 200px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 30px 0;
-        }
-
-        .features-3d-wrap.no-3d #phoneCanvas {
-            display: none;
-        }
-
-        .features-3d-wrap.no-3d .features-canvas-sticky::after {
-            content: '\f10b';
-            font-family: 'Font Awesome 6 Free';
-            font-weight: 900;
-            font-size: 4rem;
-            color: var(--primary-dark);
-            opacity: 0.5;
-        }
-
-        .features-3d-wrap.no-3d .features-text-track {
-            position: relative;
-        }
-
-        .features-3d-wrap.no-3d .feature-slide {
-            height: auto;
-            padding: 16px 6% 46px;
-            justify-content: center !important;
-        }
-
-        .features-3d-wrap.no-3d .slide-card {
-            opacity: 1;
-            transform: none;
-        }
-
         /* ============ CLOSING CTA ============ */
         .closing-cta {
             position: relative;
@@ -1101,24 +867,11 @@
             overflow: hidden;
         }
 
-        .closing-cta::before {
-            content: '\0627\0642\0631\0623';
-            position: absolute;
-            font-family: 'Amiri', serif;
-            font-size: 9rem;
-            color: rgba(255, 255, 255, 0.06);
-            bottom: -30px;
-            left: -10px;
-            line-height: 1;
-            pointer-events: none;
-        }
-
         .closing-cta h2 {
             position: relative;
             color: #fff;
             font-size: 1.9rem;
             font-weight: 800;
-            letter-spacing: -0.6px;
             margin-bottom: 12px;
         }
 
@@ -1127,40 +880,24 @@
             color: rgba(255, 255, 255, 0.88);
             max-width: 460px;
             margin: 0 auto 26px;
-            font-size: 0.96rem;
             line-height: 1.6;
         }
 
-        .closing-cta .btn-store {
-            position: relative;
-            display: inline-flex;
-        }
-
-        /* ============ FOOTER ============ */
         .site-footer {
-            background: var(--primary-dark);
-            color: rgba(255, 255, 255, 0.75);
+            background: var(--ink);
+            color: rgba(255, 255, 255, 0.6);
             padding: 30px 0;
             text-align: center;
             font-size: 0.82rem;
         }
 
-        /* ============ RESPONSIVE MEDIA QUERIES ============ */
-
-        /* Tablet & Kecil */
         @media (max-width: 980px) {
             .hero h1 {
                 font-size: 2.8rem;
             }
         }
 
-        /* HP (Mobile) */
         @media (max-width: 768px) {
-            .hero-arabic-mark {
-                font-size: 8rem;
-                top: 0;
-            }
-
             .navbar {
                 flex-direction: column;
                 gap: 15px;
@@ -1168,11 +905,6 @@
 
             .hero h1 {
                 font-size: 2.2rem;
-                letter-spacing: -1px;
-            }
-
-            .hero-copy {
-                margin-top: 25px;
             }
 
             .phone-stage {
@@ -1184,23 +916,6 @@
                 width: 220px;
                 height: 460px;
                 padding: 10px;
-            }
-
-            .phone-notch {
-                width: 70px;
-                height: 20px;
-            }
-
-            .screen-status {
-                margin-bottom: 10px;
-            }
-
-            .juz-ring-wrap {
-                padding: 6px;
-            }
-
-            .hero-sub {
-                margin-top: 10px;
             }
 
             .store-buttons {
@@ -1227,23 +942,15 @@
                 padding: 24px 22px;
             }
 
-            .loader-mark {
-                font-size: 2.4rem;
+            .rotate-hint {
+                font-size: 0.75rem;
+                bottom: 20px;
             }
         }
 
-        /* Ekstra Kecil (Misal HP Layar Sempit) */
         @media (max-width: 480px) {
-            .container {
-                padding: 0 20px;
-            }
-
             .hero h1 {
                 font-size: clamp(1.7rem, 8vw, 2rem);
-            }
-
-            .hero-bottom-fade {
-                height: 240px;
             }
         }
     </style>
@@ -1251,22 +958,13 @@
 
 <body>
 
-    <!-- ============ PAGE LOADER ============ -->
-    <div class="page-loader" id="pageLoader">
-        <div class="loader-mark">اقرأ</div>
-        <div class="loader-bar">
-            <div class="loader-fill" id="loaderFill"></div>
-        </div>
-    </div>
-
     <!-- ============ HERO ============ -->
     <section class="hero">
         <div class="hero-arabic-mark">اقرأ</div>
         <div class="container">
             <nav class="navbar">
                 <a class="brand" href="index.php">
-                    <span class="brand-mark"><img src="assets/icon/logo.png" alt="Logo Hifzhly"></span>
-                    Hifzhly
+                    <span class="brand-mark"><img src="assets/icon/logo.png" alt="Logo"></span> Hifzhly
                 </a>
                 <a class="nav-cta" href="login.php">Sudah punya akun? Masuk <i class="fa-solid fa-arrow-right"></i></a>
             </nav>
@@ -1276,14 +974,9 @@
                 <h1>Genggam hafalanmu, ke mana pun melangkah.</h1>
             </div>
 
-            <!-- Phone mockup -->
+            <!-- Static Phone mockup (First view) -->
             <div class="phone-stage" id="phoneStage">
                 <div class="phone-aura"></div>
-                <span class="mote" style="left:38%; width:4px; height:4px; animation-duration:4.2s; animation-delay:0.2s; --drift:14px;"></span>
-                <span class="mote" style="left:58%; width:3px; height:3px; animation-duration:5.1s; animation-delay:1.4s; --drift:-18px;"></span>
-                <span class="mote" style="left:48%; width:5px; height:5px; animation-duration:4.7s; animation-delay:2.1s; --drift:10px;"></span>
-                <span class="mote" style="left:66%; width:3px; height:3px; animation-duration:3.9s; animation-delay:0.8s; --drift:-8px;"></span>
-
                 <div class="phone-float">
                     <div class="phone-tilt" id="phoneTilt">
                         <div class="phone-frame">
@@ -1291,12 +984,10 @@
                             <div class="phone-screen">
                                 <div class="screen-status"><span>9:41</span><span><i class="fa-solid fa-signal"></i> <i class="fa-solid fa-wifi"></i> <i class="fa-solid fa-battery-three-quarters"></i></span></div>
                                 <div class="screen-greet">Assalamu'alaikum,<strong>Aisyah <i class="fa-solid fa-hand"></i></strong></div>
-
                                 <div class="juz-ring-wrap">
                                     <div class="juz-ring"></div>
                                     <div class="juz-text"><small>Progres</small><strong>Juz 5 &middot; sedang berjalan</strong></div>
                                 </div>
-
                                 <ul class="ayat-list">
                                     <li class="ayat-row r1">
                                         <div class="ayat-check"><i class="fa-solid fa-check"></i></div>
@@ -1312,13 +1003,6 @@
                                             <div class="sub">Hafalan baru</div>
                                         </div>
                                     </li>
-                                    <li class="ayat-row r3">
-                                        <div class="ayat-check"><i class="fa-solid fa-check"></i></div>
-                                        <div>
-                                            <div class="name">QS. Al-Baqarah 11-15</div>
-                                            <div class="sub">Target sore ini</div>
-                                        </div>
-                                    </li>
                                 </ul>
                             </div>
                         </div>
@@ -1326,37 +1010,26 @@
                 </div>
             </div>
 
-            <!-- Text under the phone -->
             <div class="hero-sub">
                 <p class="lede">Aplikasi mobile Hifzhly sedang di tahap penyempurnaan akhir. Murojaah, mutaba'ah, dan progres hafalanmu, kini bisa kamu bawa ke mana saja.</p>
             </div>
 
-            <!-- Download row under the text -->
             <div class="store-buttons">
-                <a href="#" class="btn-store primary" title="Gunakan versi Web/Desktop sekarang">
+                <a href="#" class="btn-store primary">
                     <span class="icon"><i class="fa-solid fa-desktop"></i></span>
                     <span class="txt"><small>Tersedia sekarang</small><span>Buka Versi Web</span></span>
                 </a>
                 <a href="#" class="btn-store ghost" onclick="event.preventDefault()">
-                    <span class="soon-chip">Soon</span>
-                    <span class="icon"><i class="fa-brands fa-google-play"></i></span>
+                    <span class="soon-chip">Soon</span><span class="icon"><i class="fa-brands fa-google-play"></i></span>
                     <span class="txt"><small>Get it on</small><span>Google Play</span></span>
                 </a>
                 <a href="#" class="btn-store ghost" onclick="event.preventDefault()">
-                    <span class="soon-chip">Soon</span>
-                    <span class="icon"><i class="fa-brands fa-apple"></i></span>
+                    <span class="soon-chip">Soon</span><span class="icon"><i class="fa-brands fa-apple"></i></span>
                     <span class="txt"><small>Download on the</small><span>App Store</span></span>
                 </a>
             </div>
         </div>
-
-        <!-- Progressive layered blur fade -->
         <div class="hero-bottom-fade">
-            <div class="blur-layer l1"></div>
-            <div class="blur-layer l2"></div>
-            <div class="blur-layer l3"></div>
-            <div class="blur-layer l4"></div>
-            <div class="blur-layer l5"></div>
             <div class="fade-color"></div>
         </div>
     </section>
@@ -1399,12 +1072,13 @@
             <div class="section-head reveal-up">
                 <div class="section-eyebrow">Kenapa Hifzhly</div>
                 <h2>Dibangun untuk konsistensi hafalanmu</h2>
-                <p>Empat kebiasaan kecil yang dijaga aplikasinya — scroll untuk melihat langsung simulasinya lewat ponsel 3D di sebelah penjelasan tiap fitur.</p>
+                <p>Empat kebiasaan kecil yang dijaga aplikasinya — kamu bisa memutar HP 3D di bawah ini untuk melihat detail layarnya.</p>
             </div>
         </div>
 
         <div class="features-3d-wrap" id="features3DWrap">
             <div class="features-canvas-sticky">
+                <div class="rotate-hint"><i class="fa-solid fa-hand-pointer"></i> Geser/Drag untuk putar HP</div>
                 <canvas id="phoneCanvas" aria-hidden="true"></canvas>
             </div>
             <div class="features-text-track">
@@ -1457,7 +1131,7 @@
     <section class="closing-cta">
         <div class="container reveal-up">
             <h2>Siap jaga hafalanmu setiap hari?</h2>
-            <p>Coba versi web-nya sekarang, gratis, sambil menunggu aplikasi mobile-nya rilis di Google Play dan App Store.</p>
+            <p>Coba versi web-nya sekarang, gratis, sambil menunggu aplikasi mobile-nya rilis.</p>
             <a href="#" class="btn-store primary">
                 <span class="icon"><i class="fa-solid fa-desktop"></i></span>
                 <span class="txt"><small>Mulai sekarang</small><span>Buka Versi Web</span></span>
@@ -1465,69 +1139,26 @@
         </div>
     </section>
 
-    <!-- ============ FOOTER ============ -->
     <footer class="site-footer">
         <div class="container">&copy; <?= date('Y') ?> Hifzhly. Pendamping Murojaah Al-Qur'an Berbasis AI.</div>
     </footer>
 
-    <!-- Three.js + Lenis -->
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.14/dist/lenis.min.js"></script>
 
     <script>
         (function() {
-            var prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-            var isMobile = window.matchMedia('(max-width: 768px)').matches;
+            const isMobile = window.matchMedia('(max-width: 768px)').matches;
 
-            /* ---------- THEME COLORS ---------- */
-            var rootStyles = getComputedStyle(document.documentElement);
-            var COLOR = {
-                primary: (rootStyles.getPropertyValue('--primary') || '#10b981').trim(),
-                primaryDark: (rootStyles.getPropertyValue('--primary-dark') || '#059669').trim(),
-                gold: (rootStyles.getPropertyValue('--gold') || '#c9a227').trim(),
-                goldLight: (rootStyles.getPropertyValue('--gold-light') || '#e8c85f').trim(),
-                ink: (rootStyles.getPropertyValue('--ink') || '#0f172a').trim(),
-                muted: (rootStyles.getPropertyValue('--muted') || '#64748b').trim(),
-                border: (rootStyles.getPropertyValue('--border') || '#e6ebe8').trim()
-            };
-
-            /* ---------- PAGE LOADER ---------- */
-            function initLoader() {
-                var loader = document.getElementById('pageLoader');
-                var fill = document.getElementById('loaderFill');
-                if (!loader) return;
-
-                function done() {
-                    loader.classList.add('hide');
-                    document.body.classList.add('loaded');
-                    setTimeout(function() {
-                        document.body.classList.add('reveal-done');
-                    }, 1450);
-                    setTimeout(function() {
-                        if (loader.parentNode) loader.parentNode.removeChild(loader);
-                    }, 800);
-                }
-
-                if (prefersReduced) {
-                    done();
-                    return;
-                }
-                requestAnimationFrame(function() {
-                    if (fill) fill.style.width = '100%';
-                });
-                setTimeout(done, 900);
-            }
-
-            /* ---------- LENIS SMOOTH SCROLL ---------- */
-            function initLenis() {
-                if (prefersReduced || typeof Lenis === 'undefined') return null;
-                var lenis = new Lenis({
-                    duration: 1.15,
-                    easing: function(t) {
-                        return Math.min(1, 1.001 - Math.pow(2, -10 * t));
-                    },
+            // Lenis smooth scroll (Optimized for performance)
+            if (typeof Lenis !== 'undefined') {
+                const lenis = new Lenis({
+                    duration: 1.0, // Faster/lighter
+                    easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
                     smoothWheel: true,
-                    touchMultiplier: 1.1
+                    wheelMultiplier: 0.9,
+                    touchMultiplier: 1.5
                 });
 
                 function raf(time) {
@@ -1535,484 +1166,258 @@
                     requestAnimationFrame(raf);
                 }
                 requestAnimationFrame(raf);
-                return lenis;
             }
 
-            /* ---------- HERO PHONE TILT ---------- */
-            function initHeroTilt() {
-                var stage = document.getElementById('phoneStage');
-                var tilt = document.getElementById('phoneTilt');
-                if (stage && tilt && !prefersReduced && window.matchMedia('(hover: hover)').matches) {
-                    stage.addEventListener('mousemove', function(e) {
-                        var rect = stage.getBoundingClientRect();
-                        var x = (e.clientX - rect.left) / rect.width - 0.5;
-                        var y = (e.clientY - rect.top) / rect.height - 0.5;
-                        tilt.style.transform = 'rotateY(' + (x * 14) + 'deg) rotateX(' + (-y * 14) + 'deg)';
-                    });
-                    stage.addEventListener('mouseleave', function() {
-                        tilt.style.transform = 'rotateY(0deg) rotateX(0deg)';
-                    });
-                }
-            }
-
-            /* ---------- HERO PARALLAX ---------- */
-            function initHeroParallax() {
-                if (prefersReduced) return;
-                var hero = document.querySelector('.hero');
-                var copy = document.querySelector('.hero-copy');
-                var stage = document.getElementById('phoneStage');
-                if (!hero || !copy || !stage) return;
-                var ticking = false;
-
-                function update() {
-                    var h = hero.offsetHeight;
-                    var p = Math.min(Math.max(window.scrollY / h, 0), 1);
-                    copy.style.transform = 'translateY(' + (p * -30) + 'px)';
-                    copy.style.opacity = String(1 - p * 0.9);
-                    stage.style.transform = 'translateY(' + (p * 40) + 'px)';
-                    ticking = false;
-                }
-                window.addEventListener('scroll', function() {
-                    if (!ticking) {
-                        requestAnimationFrame(update);
-                        ticking = true;
+            // Simple Reveal animations
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('in-view');
+                        observer.unobserve(entry.target);
                     }
-                }, {
-                    passive: true
                 });
+            }, {
+                threshold: 0.15
+            });
+            document.querySelectorAll('.reveal-up, .feature-slide').forEach(el => observer.observe(el));
+
+            // Hero Phone 3D Tilt (Mouse Move)
+            const stage = document.getElementById('phoneStage');
+            const tilt = document.getElementById('phoneTilt');
+            if (stage && tilt && !isMobile) {
+                stage.addEventListener('mousemove', (e) => {
+                    const rect = stage.getBoundingClientRect();
+                    const x = (e.clientX - rect.left) / rect.width - 0.5;
+                    const y = (e.clientY - rect.top) / rect.height - 0.5;
+                    tilt.style.transform = `rotateY(${x * 12}deg) rotateX(${-y * 12}deg)`;
+                });
+                stage.addEventListener('mouseleave', () => tilt.style.transform = 'rotateY(0deg) rotateX(0deg)');
             }
 
-            /* ---------- GENERIC SCROLL REVEAL ---------- */
-            function initReveal() {
-                var els = document.querySelectorAll('.reveal-up');
-                if ('IntersectionObserver' in window && !prefersReduced) {
-                    var io = new IntersectionObserver(function(entries) {
-                        entries.forEach(function(en) {
-                            if (en.isIntersecting) {
-                                en.target.classList.add('in-view');
-                                io.unobserve(en.target);
-                            }
-                        });
-                    }, {
-                        threshold: 0.2
-                    });
-                    els.forEach(function(el) {
-                        io.observe(el);
-                    });
-                } else {
-                    els.forEach(function(el) {
-                        el.classList.add('in-view');
-                    });
-                }
-            }
-
-            /* ---------- FEATURE SLIDE TEXT REVEAL ---------- */
-            function initSlideReveal() {
-                var slides = document.querySelectorAll('.feature-slide');
-                if (!slides.length) return;
-                if ('IntersectionObserver' in window) {
-                    var io = new IntersectionObserver(function(entries) {
-                        entries.forEach(function(en) {
-                            en.target.classList.toggle('in-view', en.isIntersecting);
-                        });
-                    }, {
-                        threshold: 0.45
-                    });
-                    slides.forEach(function(s) {
-                        io.observe(s);
-                    });
-                } else {
-                    slides.forEach(function(s) {
-                        s.classList.add('in-view');
-                    });
-                }
-            }
-
-            /* ---------- 3D PHONE (THREE.JS) ---------- */
-            var FEATURE_COUNT = 4;
-            var X_POS = [-1.15, 1.15, -1.15, 1.15];
-
-            function hexToInt(hex) {
-                if (!hex) return 0xffffff;
-                hex = hex.trim().replace('#', '');
-                if (hex.length === 3) hex = hex.split('').map(function(c) {
-                    return c + c;
-                }).join('');
-                return parseInt(hex, 16);
-            }
-
-            function roundedRectShape(w, h, r) {
-                var shape = new THREE.Shape();
-                var x = -w / 2,
-                    y = -h / 2;
-                shape.moveTo(x, y + r);
-                shape.lineTo(x, y + h - r);
-                shape.quadraticCurveTo(x, y + h, x + r, y + h);
-                shape.lineTo(x + w - r, y + h);
-                shape.quadraticCurveTo(x + w, y + h, x + w, y + h - r);
-                shape.lineTo(x + w, y + r);
-                shape.quadraticCurveTo(x + w, y, x + w - r, y);
-                shape.lineTo(x + r, y);
-                shape.quadraticCurveTo(x, y, x, y + r);
-                return shape;
-            }
-
-            function roundRectPath(ctx, x, y, w, h, r) {
-                ctx.beginPath();
-                ctx.moveTo(x + r, y);
-                ctx.arcTo(x + w, y, x + w, y + h, r);
-                ctx.arcTo(x + w, y + h, x, y + h, r);
-                ctx.arcTo(x, y + h, x, y, r);
-                ctx.arcTo(x, y, x + w, y, r);
-                ctx.closePath();
-            }
-
-            function drawFeatureScreen(ctx, w, h, index, t) {
-                var pad = 34;
-                ctx.textAlign = 'left';
-                ctx.font = '700 15px "Plus Jakarta Sans", sans-serif';
-                ctx.fillStyle = COLOR.ink;
-
-                if (index === 0) {
-                    ctx.fillText("Mutaba'ah Hari Ini", pad, 78);
-                    for (var i = 0; i < 3; i++) {
-                        var y = 118 + i * 58;
-                        var cyc = (t * 0.35 + i * 0.33) % 1;
-                        var active = cyc > 0.28 && cyc < 0.85;
-                        ctx.lineWidth = 2;
-                        ctx.strokeStyle = active ? COLOR.primaryDark : COLOR.border;
-                        ctx.fillStyle = active ? COLOR.primaryDark : 'transparent';
-                        roundRectPath(ctx, pad, y, 26, 26, 7);
-                        ctx.fill();
-                        ctx.stroke();
-                        if (active) {
-                            ctx.strokeStyle = '#ffffff';
-                            ctx.lineWidth = 2.4;
-                            ctx.beginPath();
-                            ctx.moveTo(pad + 6, y + 13);
-                            ctx.lineTo(pad + 11, y + 19);
-                            ctx.lineTo(pad + 20, y + 7);
-                            ctx.stroke();
-                        }
-                        ctx.fillStyle = '#e2edea';
-                        roundRectPath(ctx, pad + 40, y + 4, (w - pad * 2 - 40) * (0.5 + 0.12 * Math.sin(i + 1)), 8, 4);
-                        ctx.fill();
-                        ctx.fillStyle = '#cfe3d9';
-                        roundRectPath(ctx, pad + 40, y + 16, (w - pad * 2 - 40) * 0.32, 6, 3);
-                        ctx.fill();
-                    }
-                } else if (index === 1) {
-                    ctx.textAlign = 'center';
-                    var pulse = 1 + Math.sin(t * 3) * 0.06;
-                    ctx.font = Math.round(64 * pulse) + 'px sans-serif';
-                    ctx.fillStyle = '#f59e0b';
-                    ctx.fillText('\uD83D\uDD25', w / 2, h * 0.42);
-                    ctx.font = '800 46px "Plus Jakarta Sans", sans-serif';
-                    ctx.fillStyle = COLOR.ink;
-                    ctx.fillText('7', w / 2, h * 0.42 + 64);
-                    ctx.font = '600 14px Inter, sans-serif';
-                    ctx.fillStyle = COLOR.muted;
-                    ctx.fillText('hari beruntun', w / 2, h * 0.42 + 92);
-                    var dots = 5,
-                        dotY = h * 0.42 + 140,
-                        startX = w / 2 - ((dots - 1) * 22) / 2;
-                    for (var d = 0; d < dots; d++) {
-                        var dc = (t * 0.6 + d * 0.16) % 1;
-                        ctx.fillStyle = (dc > 0.15 && dc < 0.9) ? COLOR.primaryDark : '#e2edea';
-                        ctx.beginPath();
-                        ctx.arc(startX + d * 22, dotY, 7, 0, Math.PI * 2);
-                        ctx.fill();
-                    }
-                    ctx.textAlign = 'left';
-                } else if (index === 2) {
-                    ctx.textAlign = 'center';
-                    ctx.fillStyle = COLOR.primaryDark;
-                    roundRectPath(ctx, w / 2 - 30, h * 0.36, 60, 60, 15);
-                    ctx.fill();
-                    ctx.fillStyle = '#ffffff';
-                    ctx.font = '700 13px Inter, sans-serif';
-                    ctx.fillText('PDF', w / 2, h * 0.36 + 37);
-                    ctx.font = '700 15px "Plus Jakarta Sans", sans-serif';
-                    ctx.fillStyle = COLOR.ink;
-                    ctx.fillText('Laporan_Juli.pdf', w / 2, h * 0.36 + 96);
-                    var trackW = w * 0.62,
-                        trackX = w / 2 - trackW / 2,
-                        trackY = h * 0.36 + 118;
-                    ctx.fillStyle = '#e2edea';
-                    roundRectPath(ctx, trackX, trackY, trackW, 8, 4);
-                    ctx.fill();
-                    var prog = (Math.sin(t * 1.1) * 0.5 + 0.5);
-                    ctx.fillStyle = COLOR.primaryDark;
-                    roundRectPath(ctx, trackX, trackY, trackW * prog, 8, 4);
-                    ctx.fill();
-                    ctx.textAlign = 'left';
-                } else {
-                    ctx.textAlign = 'center';
-                    var cy = h * 0.46;
-                    ctx.fillStyle = '#eef7f2';
-                    roundRectPath(ctx, w * 0.22 - 24, cy - 24, 48, 48, 13);
-                    ctx.fill();
-                    roundRectPath(ctx, w * 0.78 - 24, cy - 24, 48, 48, 13);
-                    ctx.fill();
-                    ctx.fillStyle = COLOR.primaryDark;
-                    ctx.font = '700 20px Inter, sans-serif';
-                    ctx.fillText('\u{1F5A5}', w * 0.22, cy + 7);
-                    ctx.fillText('\u{1F4F1}', w * 0.78, cy + 7);
-                    ctx.strokeStyle = '#cfe3d9';
-                    ctx.lineWidth = 2;
-                    ctx.setLineDash([5, 6]);
-                    ctx.beginPath();
-                    ctx.moveTo(w * 0.22 + 28, cy);
-                    ctx.lineTo(w * 0.78 - 28, cy);
-                    ctx.stroke();
-                    ctx.setLineDash([]);
-                    var travel = (t * 0.5) % 1;
-                    var px = (w * 0.22 + 28) + (w * 0.78 - 28 - (w * 0.22 + 28)) * travel;
-                    ctx.fillStyle = COLOR.primary;
-                    ctx.beginPath();
-                    ctx.arc(px, cy, 5, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.font = '600 14px Inter, sans-serif';
-                    ctx.fillStyle = COLOR.muted;
-                    ctx.fillText('Tersinkron otomatis', w / 2, cy + 70);
-                    ctx.textAlign = 'left';
-                }
-            }
-
-            function drawScreen(ctx, w, h, index, blendIndex, blendAmt, t) {
-                ctx.clearRect(0, 0, w, h);
-                var grad = ctx.createLinearGradient(0, 0, 0, h);
-                grad.addColorStop(0, '#ffffff');
-                grad.addColorStop(1, '#f4faf7');
-                ctx.fillStyle = grad;
-                roundRectPath(ctx, 0, 0, w, h, 46);
-                ctx.fill();
-
-                ctx.save();
-                ctx.globalAlpha = 1 - blendAmt;
-                drawFeatureScreen(ctx, w, h, index, t);
-                ctx.restore();
-
-                if (blendAmt > 0.001 && blendIndex !== index) {
-                    ctx.save();
-                    ctx.globalAlpha = blendAmt;
-                    drawFeatureScreen(ctx, w, h, blendIndex, t);
-                    ctx.restore();
-                }
-
-                ctx.fillStyle = '#060a08';
-                roundRectPath(ctx, w / 2 - 46, 14, 92, 24, 12);
-                ctx.fill();
-            }
-
+            /* ---------- 3D PHONE (OPTIMIZED) ---------- */
             function initPhone3D() {
-                var wrap = document.getElementById('features3DWrap');
-                var stickyEl = document.querySelector('.features-canvas-sticky');
-                var canvas = document.getElementById('phoneCanvas');
-                if (!wrap || !stickyEl || !canvas) return;
-                if (typeof THREE === 'undefined') {
-                    wrap.classList.add('no-3d');
-                    return;
-                }
+                const wrap = document.getElementById('features3DWrap');
+                const stickyEl = document.querySelector('.features-canvas-sticky');
+                const canvas = document.getElementById('phoneCanvas');
 
-                var renderer, scene, camera, phoneGroup;
-                var screenCanvas, screenCtx, screenTexture;
-                var running = false,
-                    rafId = null;
-                var startTime = performance.now();
+                if (!wrap || !stickyEl || !canvas || typeof THREE === 'undefined') return;
 
-                try {
-                    renderer = new THREE.WebGLRenderer({
-                        canvas: canvas,
-                        alpha: true,
-                        antialias: true
-                    });
-                } catch (e) {
-                    wrap.classList.add('no-3d');
-                    return;
-                }
+                const renderer = new THREE.WebGLRenderer({
+                    canvas,
+                    alpha: true,
+                    antialias: false
+                }); // antialias false saves huge GPU
+                renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.25)); // Cap pixel ratio
 
-                scene = new THREE.Scene();
-                camera = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
-                camera.position.set(0, 0, 6.4);
+                const scene = new THREE.Scene();
+                const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 100);
+                camera.position.set(0, 0, 7.5);
 
-                scene.add(new THREE.AmbientLight(0xffffff, 0.65));
-                var key = new THREE.DirectionalLight(0xffffff, 1.15);
-                key.position.set(3, 4, 5);
-                scene.add(key);
-                var rim = new THREE.DirectionalLight(hexToInt(COLOR.primary), 0.9);
-                rim.position.set(-4, -1, -3);
-                scene.add(rim);
-                var goldLight = new THREE.PointLight(hexToInt(COLOR.gold), 0.7, 12);
-                goldLight.position.set(-2.5, 2, 3.5);
-                scene.add(goldLight);
+                // Lighting
+                scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+                const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
+                dirLight.position.set(5, 5, 5);
+                scene.add(dirLight);
 
-                screenCanvas = document.createElement('canvas');
-                screenCanvas.width = 420;
-                screenCanvas.height = 860;
-                screenCtx = screenCanvas.getContext('2d');
-                screenTexture = new THREE.CanvasTexture(screenCanvas);
+                // Phone Screen Texture (Lower Resolution for Performance)
+                const screenCanvas = document.createElement('canvas');
+                screenCanvas.width = 250;
+                screenCanvas.height = 520;
+                const screenCtx = screenCanvas.getContext('2d');
+                const screenTexture = new THREE.CanvasTexture(screenCanvas);
                 screenTexture.minFilter = THREE.LinearFilter;
 
-                phoneGroup = new THREE.Group();
+                const phoneGroup = new THREE.Group();
+                phoneGroup.rotation.y = -0.25; // Default slight tilt
 
-                var frameShape = roundedRectShape(1.72, 3.44, 0.34);
-                var frameGeo = new THREE.ExtrudeGeometry(frameShape, {
-                    depth: 0.2,
+                // Body Mesh (Lighter Geometry & Material)
+                const shape = new THREE.Shape();
+                const w = 1.6,
+                    h = 3.3,
+                    r = 0.25;
+                shape.moveTo(-w / 2, -h / 2 + r);
+                shape.lineTo(-w / 2, h / 2 - r);
+                shape.quadraticCurveTo(-w / 2, h / 2, -w / 2 + r, h / 2);
+                shape.lineTo(w / 2 - r, h / 2);
+                shape.quadraticCurveTo(w / 2, h / 2, w / 2, h / 2 - r);
+                shape.lineTo(w / 2, -h / 2 + r);
+                shape.quadraticCurveTo(w / 2, -h / 2, w / 2 - r, -h / 2);
+                shape.lineTo(-w / 2 + r, -h / 2);
+                shape.quadraticCurveTo(-w / 2, -h / 2, -w / 2, -h / 2 + r);
+
+                // Optimized Geometry (bevelSegments: 1 makes it way lighter)
+                const bodyGeo = new THREE.ExtrudeGeometry(shape, {
+                    depth: 0.18,
                     bevelEnabled: true,
                     bevelThickness: 0.02,
                     bevelSize: 0.02,
-                    bevelSegments: 3
+                    bevelSegments: 1
                 });
-                var frameMat = new THREE.MeshPhysicalMaterial({
-                    color: hexToInt(COLOR.gold),
-                    metalness: 0.75,
-                    roughness: 0.3,
-                    clearcoat: 0.4
-                });
-                var frameMesh = new THREE.Mesh(frameGeo, frameMat);
-                frameMesh.position.z = -0.13;
-                phoneGroup.add(frameMesh);
 
-                var bodyShape = roundedRectShape(1.6, 3.3, 0.3);
-                var bodyGeo = new THREE.ExtrudeGeometry(bodyShape, {
-                    depth: 0.18,
-                    bevelEnabled: true,
-                    bevelThickness: 0.015,
-                    bevelSize: 0.015,
-                    bevelSegments: 3
+                // Changed from Gold to Sleek Dark Gray/Green
+                const bodyMat = new THREE.MeshStandardMaterial({
+                    color: 0x0f172a,
+                    metalness: 0.6,
+                    roughness: 0.3
                 });
-                var bodyMat = new THREE.MeshPhysicalMaterial({
-                    color: 0x14231d,
-                    metalness: 0.55,
-                    roughness: 0.35,
-                    clearcoat: 0.5,
-                    clearcoatRoughness: 0.25
-                });
-                var bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
+                const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
+                bodyMesh.position.z = -0.09;
                 phoneGroup.add(bodyMesh);
 
-                var screenGeo = new THREE.PlaneGeometry(1.42, 3.05);
-                var screenMat = new THREE.MeshBasicMaterial({
+                // Screen Mesh
+                const screenGeo = new THREE.PlaneGeometry(1.48, 3.12);
+                const screenMat = new THREE.MeshBasicMaterial({
                     map: screenTexture
                 });
-                var screenMesh = new THREE.Mesh(screenGeo, screenMat);
-                screenMesh.position.z = 0.2;
+                const screenMesh = new THREE.Mesh(screenGeo, screenMat);
+                screenMesh.position.z = 0.12;
                 phoneGroup.add(screenMesh);
 
                 scene.add(phoneGroup);
 
-                function size() {
-                    var w = stickyEl.clientWidth,
-                        h = stickyEl.clientHeight;
-                    if (!w || !h) return;
-                    renderer.setSize(w, h, false);
-                    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 2));
-                    camera.aspect = w / h;
+                // --- INTERACTIVE DRAG/SPIN ---
+                let targetRotationX = 0;
+                let targetRotationY = -0.25;
+                let isDragging = false;
+                let prevMouse = {
+                    x: 0,
+                    y: 0
+                };
+
+                function onDown(e) {
+                    isDragging = true;
+                    prevMouse = {
+                        x: e.touches ? e.touches[0].clientX : e.clientX,
+                        y: e.touches ? e.touches[0].clientY : e.clientY
+                    };
+                }
+
+                function onMove(e) {
+                    if (!isDragging) return;
+                    const cx = e.touches ? e.touches[0].clientX : e.clientX;
+                    const cy = e.touches ? e.touches[0].clientY : e.clientY;
+                    targetRotationY += (cx - prevMouse.x) * 0.01;
+                    targetRotationX += (cy - prevMouse.y) * 0.01;
+                    targetRotationX = Math.max(-0.5, Math.min(0.5, targetRotationX)); // Limit X rotation
+                    prevMouse = {
+                        x: cx,
+                        y: cy
+                    };
+                }
+
+                function onUp() {
+                    isDragging = false;
+                }
+
+                stickyEl.addEventListener('mousedown', onDown);
+                stickyEl.addEventListener('mousemove', onMove);
+                window.addEventListener('mouseup', onUp);
+                stickyEl.addEventListener('touchstart', onDown, {
+                    passive: true
+                });
+                stickyEl.addEventListener('touchmove', onMove, {
+                    passive: true
+                });
+                window.addEventListener('touchend', onUp);
+
+                // Responsive Canvas
+                function resize() {
+                    const width = stickyEl.clientWidth;
+                    const height = stickyEl.clientHeight;
+                    renderer.setSize(width, height, false);
+                    camera.aspect = width / height;
                     camera.updateProjectionMatrix();
                 }
+                window.addEventListener('resize', resize);
+                resize();
 
-                function getProgress() {
-                    var rect = wrap.getBoundingClientRect();
-                    var total = wrap.offsetHeight - window.innerHeight;
-                    if (total <= 0) return {
-                        index: 0,
-                        frac: 0,
-                        scaled: 0
-                    };
-                    var scrolled = -rect.top;
-                    var progress = Math.min(Math.max(scrolled / total, 0), 1);
-                    var scaled = progress * (FEATURE_COUNT - 1);
-                    var index = Math.min(Math.floor(scaled), FEATURE_COUNT - 1);
-                    var frac = scaled - index;
-                    return {
-                        index: index,
-                        frac: frac,
-                        scaled: scaled
-                    };
-                }
+                // Draw Simple UI on Screen
+                function drawScreenUI(index) {
+                    const cw = screenCanvas.width,
+                        ch = screenCanvas.height;
+                    screenCtx.fillStyle = '#ffffff';
+                    screenCtx.fillRect(0, 0, cw, ch);
 
-                function tick(now) {
-                    rafId = requestAnimationFrame(tick);
-                    var t = (now - startTime) / 1000;
-                    var prog = getProgress();
-                    var index = prog.index,
-                        frac = prog.frac,
-                        scaled = prog.scaled;
-                    var nextIndex = Math.min(index + 1, FEATURE_COUNT - 1);
-                    var targetX = X_POS[index] + (X_POS[nextIndex] - X_POS[index]) * frac;
+                    screenCtx.fillStyle = '#059669'; // Theme color
+                    screenCtx.font = 'bold 24px sans-serif';
+                    screenCtx.textAlign = 'center';
 
-                    var easeAmt = prefersReduced ? 1 : 0.08;
-                    phoneGroup.position.x += (targetX - phoneGroup.position.x) * easeAmt;
-
-                    if (prefersReduced) {
-                        phoneGroup.rotation.y = scaled * Math.PI * 0.5;
-                        phoneGroup.rotation.x = 0;
-                        phoneGroup.position.y = 0;
+                    if (index === 0) {
+                        screenCtx.fillText("Mutaba'ah Harian", cw / 2, ch / 2 - 20);
+                        screenCtx.fillStyle = '#e2edea';
+                        screenCtx.fillRect(40, ch / 2 + 10, cw - 80, 20);
+                        screenCtx.fillRect(40, ch / 2 + 40, cw - 120, 20);
+                    } else if (index === 1) {
+                        screenCtx.fillStyle = '#f59e0b';
+                        screenCtx.font = 'bold 60px sans-serif';
+                        screenCtx.fillText("🔥 7", cw / 2, ch / 2);
+                        screenCtx.fillStyle = '#64748b';
+                        screenCtx.font = '16px sans-serif';
+                        screenCtx.fillText("Hari Beruntun", cw / 2, ch / 2 + 30);
+                    } else if (index === 2) {
+                        screenCtx.fillText("Export Laporan", cw / 2, ch / 2 - 20);
+                        screenCtx.fillStyle = '#e2edea';
+                        screenCtx.fillRect(60, ch / 2 + 20, cw - 120, 40);
                     } else {
-                        phoneGroup.rotation.y = t * 0.22 + scaled * Math.PI * 1.15;
-                        phoneGroup.rotation.x = Math.sin(t * 0.6) * 0.06 + (frac - 0.5) * 0.12;
-                        phoneGroup.position.y = Math.sin(t * 0.75) * 0.09;
+                        screenCtx.fillText("Sinkronisasi Aktif", cw / 2, ch / 2 - 20);
+                        screenCtx.fillStyle = '#10b981';
+                        screenCtx.beginPath();
+                        screenCtx.arc(cw / 2, ch / 2 + 30, 25, 0, Math.PI * 2);
+                        screenCtx.fill();
                     }
 
-                    drawScreen(screenCtx, screenCanvas.width, screenCanvas.height, index, nextIndex, frac, t);
+                    // Notch
+                    screenCtx.fillStyle = '#000000';
+                    screenCtx.beginPath();
+                    screenCtx.roundRect(cw / 2 - 50, 10, 100, 25, 12);
+                    screenCtx.fill();
+
                     screenTexture.needsUpdate = true;
+                }
+
+                let lastIndex = -1;
+                const X_POS = [-1.2, 1.2, -1.2, 1.2]; // Position Left/Right
+
+                function animate() {
+                    requestAnimationFrame(animate);
+
+                    // Calculate Scroll position for shifting left/right only
+                    const rect = wrap.getBoundingClientRect();
+                    const total = wrap.offsetHeight - window.innerHeight;
+                    let progress = total > 0 ? Math.min(Math.max(-rect.top / total, 0), 1) : 0;
+
+                    const scaled = progress * 3;
+                    const index = Math.min(Math.floor(scaled), 3);
+                    const frac = scaled - index;
+                    const nextIndex = Math.min(index + 1, 3);
+
+                    // Move X smoothly based on scroll
+                    const targetX = isMobile ? 0 : X_POS[index] + (X_POS[nextIndex] - X_POS[index]) * frac;
+                    phoneGroup.position.x += (targetX - phoneGroup.position.x) * 0.1;
+
+                    // Interactive Rotation (User Controlled)
+                    phoneGroup.rotation.y += (targetRotationY - phoneGroup.rotation.y) * 0.1;
+                    phoneGroup.rotation.x += (targetRotationX - phoneGroup.rotation.x) * 0.1;
+
+                    // Update UI only when slide changes
+                    if (index !== lastIndex) {
+                        drawScreenUI(index);
+                        lastIndex = index;
+                    }
 
                     renderer.render(scene, camera);
                 }
 
-                function start() {
-                    if (!running) {
-                        running = true;
-                        startTime = performance.now();
-                        rafId = requestAnimationFrame(tick);
-                    }
-                }
-
-                function stop() {
-                    if (running) {
-                        running = false;
-                        cancelAnimationFrame(rafId);
-                    }
-                }
-
-                size();
-                window.addEventListener('resize', function() {
-                    size();
-                }, {
-                    passive: true
+                // Only start animation if visible to save battery
+                const io = new IntersectionObserver((entries) => {
+                    if (entries[0].isIntersecting) animate();
                 });
-
-                if ('IntersectionObserver' in window) {
-                    var io = new IntersectionObserver(function(entries) {
-                        entries.forEach(function(en) {
-                            if (en.isIntersecting) {
-                                start();
-                            } else {
-                                stop();
-                            }
-                        });
-                    }, {
-                        threshold: 0
-                    });
-                    io.observe(wrap);
-                } else {
-                    start();
-                }
+                io.observe(wrap);
             }
 
-            document.addEventListener('DOMContentLoaded', function() {
-                initLoader();
-                initLenis();
-                initHeroTilt();
-                initHeroParallax();
-                initReveal();
-                initSlideReveal();
-                initPhone3D();
-            });
+            initPhone3D();
         })();
     </script>
-
 </body>
 
 </html>

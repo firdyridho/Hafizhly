@@ -266,34 +266,7 @@
             }
         }
 
-        .mote {
-            position: absolute;
-            border-radius: 50%;
-            background: #fff;
-            box-shadow: 0 0 8px 2px rgba(255, 255, 255, 0.7);
-            opacity: 0;
-            animation: moteRise linear infinite;
-        }
 
-        @keyframes moteRise {
-            0% {
-                transform: translateY(0) translateX(0);
-                opacity: 0;
-            }
-
-            12% {
-                opacity: 0.9;
-            }
-
-            85% {
-                opacity: 0.4;
-            }
-
-            100% {
-                transform: translateY(-240px) translateX(var(--drift, 20px));
-                opacity: 0;
-            }
-        }
 
         .phone-float {
             animation: floatY 5.5s ease-in-out infinite;
@@ -540,6 +513,54 @@
             max-width: 640px;
         }
 
+        /* Animated background for white sections */
+        .features::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at 20% 50%, rgba(16, 185, 129, 0.06) 0%, transparent 50%),
+                        radial-gradient(ellipse at 80% 20%, rgba(52, 211, 153, 0.04) 0%, transparent 50%),
+                        radial-gradient(ellipse at 50% 80%, rgba(110, 231, 183, 0.03) 0%, transparent 50%);
+            animation: bgDrift 12s ease-in-out infinite alternate;
+            pointer-events: none;
+        }
+
+        @keyframes bgDrift {
+            0% { transform: scale(1) translate(0, 0); }
+            100% { transform: scale(1.1) translate(2%, -1%); }
+        }
+
+        .features .floating-shape {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(16, 185, 129, 0.04);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .features .floating-shape:nth-child(1) {
+            width: 300px; height: 300px;
+            top: 10%; left: -5%;
+            animation: floatShape 8s ease-in-out infinite alternate;
+        }
+
+        .features .floating-shape:nth-child(2) {
+            width: 200px; height: 200px;
+            bottom: 15%; right: -3%;
+            animation: floatShape 10s ease-in-out infinite alternate-reverse;
+        }
+
+        .features .floating-shape:nth-child(3) {
+            width: 150px; height: 150px;
+            top: 50%; left: 60%;
+            animation: floatShape 7s ease-in-out infinite alternate;
+        }
+
+        @keyframes floatShape {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(30px, -20px) scale(1.15); }
+        }
+
         .btn-store {
             display: flex;
             align-items: center;
@@ -698,7 +719,7 @@
 
         .features-3d-wrap {
             position: relative;
-            height: 420vh;
+            height: 350vh;
         }
 
         .features-canvas-sticky {
@@ -710,6 +731,7 @@
             overflow: hidden;
             z-index: 1;
             cursor: grab;
+            touch-action: pan-y;
         }
 
         .features-canvas-sticky:active {
@@ -929,7 +951,7 @@
             }
 
             .features-3d-wrap {
-                height: 360vh;
+                height: 280vh;
             }
 
             .feature-slide {
@@ -1068,6 +1090,9 @@
 
     <!-- ============ FEATURES — 3D pinned zigzag scroll ============ -->
     <section class="features">
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
         <div class="container">
             <div class="section-head reveal-up">
                 <div class="section-eyebrow">Kenapa Hifzhly</div>
@@ -1145,28 +1170,10 @@
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.14/dist/lenis.min.js"></script>
 
     <script>
         (function() {
             const isMobile = window.matchMedia('(max-width: 768px)').matches;
-
-            // Lenis smooth scroll (Optimized for performance)
-            if (typeof Lenis !== 'undefined') {
-                const lenis = new Lenis({
-                    duration: 1.0, // Faster/lighter
-                    easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-                    smoothWheel: true,
-                    wheelMultiplier: 0.9,
-                    touchMultiplier: 1.5
-                });
-
-                function raf(time) {
-                    lenis.raf(time);
-                    requestAnimationFrame(raf);
-                }
-                requestAnimationFrame(raf);
-            }
 
             // Simple Reveal animations
             const observer = new IntersectionObserver((entries) => {
@@ -1181,7 +1188,7 @@
             });
             document.querySelectorAll('.reveal-up, .feature-slide').forEach(el => observer.observe(el));
 
-            // Hero Phone 3D Tilt (Mouse Move)
+            // Hero Phone 3D Tilt (Mouse Move only, not touch)
             const stage = document.getElementById('phoneStage');
             const tilt = document.getElementById('phoneTilt');
             if (stage && tilt && !isMobile) {
@@ -1190,7 +1197,7 @@
                     const x = (e.clientX - rect.left) / rect.width - 0.5;
                     const y = (e.clientY - rect.top) / rect.height - 0.5;
                     tilt.style.transform = `rotateY(${x * 12}deg) rotateX(${-y * 12}deg)`;
-                });
+                }, { passive: true });
                 stage.addEventListener('mouseleave', () => tilt.style.transform = 'rotateY(0deg) rotateX(0deg)');
             }
 
@@ -1206,35 +1213,30 @@
                     canvas,
                     alpha: true,
                     antialias: false
-                }); // antialias false saves huge GPU
-                renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.25)); // Cap pixel ratio
+                });
+                renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1));
 
                 const scene = new THREE.Scene();
                 const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 100);
                 camera.position.set(0, 0, 7.5);
 
-                // Lighting
                 scene.add(new THREE.AmbientLight(0xffffff, 0.8));
                 const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
                 dirLight.position.set(5, 5, 5);
                 scene.add(dirLight);
 
-                // Phone Screen Texture (Lower Resolution for Performance)
                 const screenCanvas = document.createElement('canvas');
-                screenCanvas.width = 250;
-                screenCanvas.height = 520;
+                screenCanvas.width = 200;
+                screenCanvas.height = 400;
                 const screenCtx = screenCanvas.getContext('2d');
                 const screenTexture = new THREE.CanvasTexture(screenCanvas);
                 screenTexture.minFilter = THREE.LinearFilter;
 
                 const phoneGroup = new THREE.Group();
-                phoneGroup.rotation.y = -0.25; // Default slight tilt
+                phoneGroup.rotation.y = -0.25;
 
-                // Body Mesh (Lighter Geometry & Material)
                 const shape = new THREE.Shape();
-                const w = 1.6,
-                    h = 3.3,
-                    r = 0.25;
+                const w = 1.6, h = 3.3, r = 0.25;
                 shape.moveTo(-w / 2, -h / 2 + r);
                 shape.lineTo(-w / 2, h / 2 - r);
                 shape.quadraticCurveTo(-w / 2, h / 2, -w / 2 + r, h / 2);
@@ -1245,7 +1247,6 @@
                 shape.lineTo(-w / 2 + r, -h / 2);
                 shape.quadraticCurveTo(-w / 2, -h / 2, -w / 2, -h / 2 + r);
 
-                // Optimized Geometry (bevelSegments: 1 makes it way lighter)
                 const bodyGeo = new THREE.ExtrudeGeometry(shape, {
                     depth: 0.18,
                     bevelEnabled: true,
@@ -1254,7 +1255,6 @@
                     bevelSegments: 1
                 });
 
-                // Changed from Gold to Sleek Dark Gray/Green
                 const bodyMat = new THREE.MeshStandardMaterial({
                     color: 0x0f172a,
                     metalness: 0.6,
@@ -1264,25 +1264,19 @@
                 bodyMesh.position.z = -0.09;
                 phoneGroup.add(bodyMesh);
 
-                // Screen Mesh
                 const screenGeo = new THREE.PlaneGeometry(1.48, 3.12);
-                const screenMat = new THREE.MeshBasicMaterial({
-                    map: screenTexture
-                });
+                const screenMat = new THREE.MeshBasicMaterial({ map: screenTexture });
                 const screenMesh = new THREE.Mesh(screenGeo, screenMat);
                 screenMesh.position.z = 0.12;
                 phoneGroup.add(screenMesh);
 
                 scene.add(phoneGroup);
 
-                // --- INTERACTIVE DRAG/SPIN ---
+                // --- INTERACTIVE DRAG ---
                 let targetRotationX = 0;
                 let targetRotationY = -0.25;
                 let isDragging = false;
-                let prevMouse = {
-                    x: 0,
-                    y: 0
-                };
+                let prevMouse = { x: 0, y: 0 };
 
                 function onDown(e) {
                     isDragging = true;
@@ -1298,11 +1292,8 @@
                     const cy = e.touches ? e.touches[0].clientY : e.clientY;
                     targetRotationY += (cx - prevMouse.x) * 0.01;
                     targetRotationX += (cy - prevMouse.y) * 0.01;
-                    targetRotationX = Math.max(-0.5, Math.min(0.5, targetRotationX)); // Limit X rotation
-                    prevMouse = {
-                        x: cx,
-                        y: cy
-                    };
+                    targetRotationX = Math.max(-0.5, Math.min(0.5, targetRotationX));
+                    prevMouse = { x: cx, y: cy };
                 }
 
                 function onUp() {
@@ -1312,15 +1303,22 @@
                 stickyEl.addEventListener('mousedown', onDown);
                 stickyEl.addEventListener('mousemove', onMove);
                 window.addEventListener('mouseup', onUp);
-                stickyEl.addEventListener('touchstart', onDown, {
-                    passive: true
-                });
-                stickyEl.addEventListener('touchmove', onMove, {
-                    passive: true
-                });
+
+                // Touch: only on direct touch (not scroll) via threshold
+                let touchStartY = 0;
+                stickyEl.addEventListener('touchstart', (e) => {
+                    touchStartY = e.touches[0].clientY;
+                    onDown(e);
+                }, { passive: true });
+
+                stickyEl.addEventListener('touchmove', (e) => {
+                    const dy = Math.abs(e.touches[0].clientY - touchStartY);
+                    if (dy > 10) { isDragging = false; return; }
+                    onMove(e);
+                }, { passive: true });
+
                 window.addEventListener('touchend', onUp);
 
-                // Responsive Canvas
                 function resize() {
                     const width = stickyEl.clientWidth;
                     const height = stickyEl.clientHeight;
@@ -1331,57 +1329,56 @@
                 window.addEventListener('resize', resize);
                 resize();
 
-                // Draw Simple UI on Screen
                 function drawScreenUI(index) {
-                    const cw = screenCanvas.width,
-                        ch = screenCanvas.height;
+                    const cw = screenCanvas.width, ch = screenCanvas.height;
                     screenCtx.fillStyle = '#ffffff';
                     screenCtx.fillRect(0, 0, cw, ch);
 
-                    screenCtx.fillStyle = '#059669'; // Theme color
-                    screenCtx.font = 'bold 24px sans-serif';
+                    screenCtx.fillStyle = '#059669';
+                    screenCtx.font = 'bold 18px sans-serif';
                     screenCtx.textAlign = 'center';
 
                     if (index === 0) {
                         screenCtx.fillText("Mutaba'ah Harian", cw / 2, ch / 2 - 20);
                         screenCtx.fillStyle = '#e2edea';
-                        screenCtx.fillRect(40, ch / 2 + 10, cw - 80, 20);
-                        screenCtx.fillRect(40, ch / 2 + 40, cw - 120, 20);
+                        screenCtx.fillRect(30, ch / 2 + 10, cw - 60, 16);
+                        screenCtx.fillRect(30, ch / 2 + 36, cw - 100, 16);
                     } else if (index === 1) {
                         screenCtx.fillStyle = '#f59e0b';
-                        screenCtx.font = 'bold 60px sans-serif';
-                        screenCtx.fillText("🔥 7", cw / 2, ch / 2);
+                        screenCtx.font = 'bold 48px sans-serif';
+                        screenCtx.fillText("7", cw / 2, ch / 2);
                         screenCtx.fillStyle = '#64748b';
-                        screenCtx.font = '16px sans-serif';
-                        screenCtx.fillText("Hari Beruntun", cw / 2, ch / 2 + 30);
+                        screenCtx.font = '13px sans-serif';
+                        screenCtx.fillText("Hari Beruntun", cw / 2, ch / 2 + 28);
                     } else if (index === 2) {
                         screenCtx.fillText("Export Laporan", cw / 2, ch / 2 - 20);
                         screenCtx.fillStyle = '#e2edea';
-                        screenCtx.fillRect(60, ch / 2 + 20, cw - 120, 40);
+                        screenCtx.fillRect(50, ch / 2 + 20, cw - 100, 30);
                     } else {
                         screenCtx.fillText("Sinkronisasi Aktif", cw / 2, ch / 2 - 20);
                         screenCtx.fillStyle = '#10b981';
                         screenCtx.beginPath();
-                        screenCtx.arc(cw / 2, ch / 2 + 30, 25, 0, Math.PI * 2);
+                        screenCtx.arc(cw / 2, ch / 2 + 24, 20, 0, Math.PI * 2);
                         screenCtx.fill();
                     }
 
-                    // Notch
-                    screenCtx.fillStyle = '#000000';
+                    screenCtx.fillStyle = '#000';
                     screenCtx.beginPath();
-                    screenCtx.roundRect(cw / 2 - 50, 10, 100, 25, 12);
+                    screenCtx.roundRect(cw / 2 - 40, 8, 80, 20, 10);
                     screenCtx.fill();
 
                     screenTexture.needsUpdate = true;
                 }
 
                 let lastIndex = -1;
-                const X_POS = [-1.2, 1.2, -1.2, 1.2]; // Position Left/Right
+                let animId = null;
+                let isVisible = false;
+                const X_POS = [-1.2, 1.2, -1.2, 1.2];
 
                 function animate() {
-                    requestAnimationFrame(animate);
+                    if (!isVisible) { animId = null; return; }
+                    animId = requestAnimationFrame(animate);
 
-                    // Calculate Scroll position for shifting left/right only
                     const rect = wrap.getBoundingClientRect();
                     const total = wrap.offsetHeight - window.innerHeight;
                     let progress = total > 0 ? Math.min(Math.max(-rect.top / total, 0), 1) : 0;
@@ -1391,15 +1388,12 @@
                     const frac = scaled - index;
                     const nextIndex = Math.min(index + 1, 3);
 
-                    // Move X smoothly based on scroll
                     const targetX = isMobile ? 0 : X_POS[index] + (X_POS[nextIndex] - X_POS[index]) * frac;
                     phoneGroup.position.x += (targetX - phoneGroup.position.x) * 0.1;
 
-                    // Interactive Rotation (User Controlled)
                     phoneGroup.rotation.y += (targetRotationY - phoneGroup.rotation.y) * 0.1;
                     phoneGroup.rotation.x += (targetRotationX - phoneGroup.rotation.x) * 0.1;
 
-                    // Update UI only when slide changes
                     if (index !== lastIndex) {
                         drawScreenUI(index);
                         lastIndex = index;
@@ -1408,10 +1402,10 @@
                     renderer.render(scene, camera);
                 }
 
-                // Only start animation if visible to save battery
                 const io = new IntersectionObserver((entries) => {
-                    if (entries[0].isIntersecting) animate();
-                });
+                    isVisible = entries[0].isIntersecting;
+                    if (isVisible && !animId) animate();
+                }, { threshold: 0.05 });
                 io.observe(wrap);
             }
 

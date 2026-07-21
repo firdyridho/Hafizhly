@@ -34,10 +34,6 @@
             box-sizing: border-box;
         }
 
-        html {
-            scroll-behavior: smooth;
-        }
-
         body {
             font-family: 'Inter', 'Segoe UI', sans-serif;
             background: var(--paper);
@@ -72,6 +68,134 @@
             max-width: 1080px;
             margin: 0 auto;
             padding: 0 32px;
+        }
+
+        /* ============ PAGE LOADER ============ */
+        .page-loader {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: linear-gradient(160deg, var(--hero-top), var(--hero-bottom));
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 22px;
+            transition: opacity 0.7s ease, visibility 0.7s ease;
+        }
+
+        .page-loader.hide {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .loader-mark {
+            font-family: 'Amiri', serif;
+            font-size: 3.2rem;
+            color: #fff;
+            opacity: 0.92;
+            animation: loaderPulse 1.6s ease-in-out infinite;
+        }
+
+        @keyframes loaderPulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 0.75;
+            }
+
+            50% {
+                transform: scale(1.08);
+                opacity: 1;
+            }
+        }
+
+        .loader-bar {
+            width: 160px;
+            height: 3px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.25);
+            overflow: hidden;
+        }
+
+        .loader-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--gold-light), var(--gold));
+            border-radius: 3px;
+            transition: width 0.9s cubic-bezier(.65, 0, .35, 1);
+        }
+
+        /* Staggered hero entrance */
+        .hero-copy,
+        .phone-stage,
+        .hero-sub,
+        .store-buttons {
+            opacity: 0;
+            transform: translateY(28px);
+            transition: opacity 0.9s cubic-bezier(.16, 1, .3, 1), transform 0.9s cubic-bezier(.16, 1, .3, 1);
+        }
+
+        body.loaded .hero-copy {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 0.05s;
+        }
+
+        body.loaded .phone-stage {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 0.2s;
+        }
+
+        body.loaded .hero-sub {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 0.35s;
+        }
+
+        body.loaded .store-buttons {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 0.48s;
+        }
+
+        body.reveal-done .hero-copy,
+        body.reveal-done .phone-stage {
+            transition: none;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+
+            .hero-copy,
+            .phone-stage,
+            .hero-sub,
+            .store-buttons {
+                opacity: 1;
+                transform: none;
+                transition: none;
+            }
+        }
+
+        /* Generic scroll reveal */
+        .reveal-up {
+            opacity: 0;
+            transform: translateY(26px);
+            transition: opacity 0.7s cubic-bezier(.16, 1, .3, 1), transform 0.7s cubic-bezier(.16, 1, .3, 1);
+        }
+
+        .reveal-up.in-view {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .reveal-up {
+                opacity: 1;
+                transform: none;
+            }
         }
 
         /* ============ HERO ============ */
@@ -548,23 +672,64 @@
             }
         }
 
-        /* FIXED FADE BLUR UNTUK MOBILE */
-        /* Kita buang mask-image yang bikin blur hilang di HP, ganti dengan gradient transparan ke solid */
+        /* ============ HERO BOTTOM FADE — progressive layered blur ============ */
         .hero-bottom-fade {
             position: absolute;
             left: 0;
             right: 0;
             bottom: 0;
-            height: 280px;
-            background: linear-gradient(to bottom,
-                    rgba(52, 211, 153, 0) 0%,
-                    rgba(52, 211, 153, 0.6) 35%,
-                    var(--hero-bottom) 90%);
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
+            height: 300px;
             pointer-events: none;
             z-index: 6;
-            /* Naikin z-index agar cover hp dengan baik */
+        }
+
+        .hero-bottom-fade .blur-layer {
+            position: absolute;
+            inset: 0;
+        }
+
+        .hero-bottom-fade .l1 {
+            backdrop-filter: blur(2px);
+            -webkit-backdrop-filter: blur(2px);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 35%, #000 100%);
+            mask-image: linear-gradient(to bottom, transparent 0%, #000 35%, #000 100%);
+        }
+
+        .hero-bottom-fade .l2 {
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 20%, #000 48%, #000 100%);
+            mask-image: linear-gradient(to bottom, transparent 20%, #000 48%, #000 100%);
+        }
+
+        .hero-bottom-fade .l3 {
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 38%, #000 60%, #000 100%);
+            mask-image: linear-gradient(to bottom, transparent 38%, #000 60%, #000 100%);
+        }
+
+        .hero-bottom-fade .l4 {
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 55%, #000 74%, #000 100%);
+            mask-image: linear-gradient(to bottom, transparent 55%, #000 74%, #000 100%);
+        }
+
+        .hero-bottom-fade .l5 {
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 72%, #000 88%, #000 100%);
+            mask-image: linear-gradient(to bottom, transparent 72%, #000 88%, #000 100%);
+        }
+
+        .hero-bottom-fade .fade-color {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom,
+                    rgba(52, 211, 153, 0) 0%,
+                    rgba(46, 197, 140, 0.45) 45%,
+                    var(--hero-bottom) 92%);
         }
 
         .hero-sub {
@@ -669,6 +834,22 @@
             padding: 26px 0 0;
         }
 
+        .highlights .row>div:nth-child(1) {
+            transition-delay: 0.05s;
+        }
+
+        .highlights .row>div:nth-child(2) {
+            transition-delay: 0.15s;
+        }
+
+        .highlights .row>div:nth-child(3) {
+            transition-delay: 0.25s;
+        }
+
+        .highlights .row>div:nth-child(4) {
+            transition-delay: 0.35s;
+        }
+
         .highlight-chip {
             display: flex;
             align-items: center;
@@ -711,16 +892,17 @@
             color: var(--muted);
         }
 
-        /* ============ FEATURES (zig-zag) ============ */
+        /* ============ FEATURES — 3D pinned zigzag scroll ============ */
         .features {
-            padding: 70px 0 100px;
+            padding: 70px 0 40px;
             background: var(--paper);
+            position: relative;
         }
 
         .section-head {
             text-align: center;
             max-width: 560px;
-            margin: 0 auto 64px;
+            margin: 0 auto 30px;
         }
 
         .section-eyebrow {
@@ -746,132 +928,101 @@
             line-height: 1.6;
         }
 
-        .feature-row {
-            display: flex;
-            align-items: center;
-            gap: 64px;
-            margin-bottom: 96px;
-            opacity: 0;
-            transform: translateY(36px);
-            transition: opacity 0.7s ease, transform 0.7s ease;
+        .features-3d-wrap {
+            position: relative;
+            height: 420vh;
         }
 
-        .feature-row.in-view {
+        .features-canvas-sticky {
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            height: 100dvh;
+            width: 100%;
+            overflow: hidden;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        #phoneCanvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .features-text-track {
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .feature-slide {
+            height: 100vh;
+            height: 100dvh;
+            display: flex;
+            align-items: center;
+            padding: 0 7%;
+        }
+
+        .feature-slide.align-left {
+            justify-content: flex-start;
+        }
+
+        .feature-slide.align-right {
+            justify-content: flex-end;
+        }
+
+        .slide-card {
+            pointer-events: auto;
+            max-width: 380px;
+            background: rgba(255, 255, 255, 0.68);
+            backdrop-filter: blur(22px);
+            -webkit-backdrop-filter: blur(22px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 24px;
+            padding: 30px 28px;
+            box-shadow: 0 24px 48px rgba(15, 23, 42, 0.12);
+            opacity: 0;
+            transform: translateY(34px);
+            transition: opacity 0.8s cubic-bezier(.16, 1, .3, 1), transform 0.8s cubic-bezier(.16, 1, .3, 1);
+        }
+
+        .feature-slide.in-view .slide-card {
             opacity: 1;
             transform: translateY(0);
         }
 
-        .feature-row:last-child {
-            margin-bottom: 0;
-        }
-
-        .feature-row.reverse {
-            flex-direction: row-reverse;
-        }
-
-        .feature-row-media {
-            flex: 0 0 300px;
-            display: flex;
-            justify-content: center;
-            position: relative;
-        }
-
-        .media-glow {
-            position: absolute;
-            width: 220px;
-            height: 220px;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(16, 185, 129, 0.16), rgba(16, 185, 129, 0) 70%);
-            filter: blur(2px);
-            z-index: 0;
-        }
-
-        .feature-row:nth-child(even) .media-glow {
-            background: radial-gradient(circle, rgba(201, 162, 39, 0.16), rgba(201, 162, 39, 0) 70%);
-        }
-
-        .row-mini-phone {
-            position: relative;
-            z-index: 1;
-            width: 190px;
-            height: 320px;
-            background: linear-gradient(160deg, #1c2b26, #0c1712);
-            border-radius: 32px;
-            padding: 9px;
-            box-shadow: 0 24px 44px rgba(4, 30, 20, 0.16);
-            animation: floatY 5.5s ease-in-out infinite;
-        }
-
-        .row-mini-screen {
-            width: 100%;
-            height: 100%;
-            background: #fff;
-            border-radius: 24px;
-            position: relative;
-            overflow: hidden;
-            padding: 20px 16px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .row-mini-screen::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(120deg, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0) 24%);
-            pointer-events: none;
-            z-index: 5;
-        }
-
-        .row-chip {
-            position: absolute;
-            display: flex;
+        .slide-badge {
+            display: inline-flex;
             align-items: center;
             gap: 7px;
             background: #fff;
             border: 1px solid var(--border);
             border-radius: 12px;
-            padding: 9px 13px;
+            padding: 7px 12px;
             font-size: 0.72rem;
             font-weight: 700;
             color: var(--ink);
-            box-shadow: 0 14px 26px rgba(15, 23, 42, 0.14);
-            animation: chipFloat 4s ease-in-out infinite;
-            z-index: 3;
+            box-shadow: 0 10px 20px rgba(15, 23, 42, 0.1);
+            margin-bottom: 16px;
         }
 
-        .row-chip i {
+        .slide-badge i {
             color: var(--primary-dark);
-            font-size: 0.78rem;
         }
 
-        @keyframes chipFloat {
-
-            0%,
-            100% {
-                transform: translateY(0);
-            }
-
-            50% {
-                transform: translateY(-9px);
-            }
-        }
-
-        .feature-row-text {
-            flex: 1;
-        }
-
-        .feature-index {
-            display: inline-block;
+        .slide-index {
+            display: block;
             font-size: 0.7rem;
             font-weight: 800;
             letter-spacing: 1.5px;
             color: var(--gold);
             text-transform: uppercase;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
 
-        .feature-row-icon {
+        .slide-icon {
             width: 46px;
             height: 46px;
             border-radius: 13px;
@@ -881,298 +1032,64 @@
             justify-content: center;
             color: var(--primary-dark);
             font-size: 1.1rem;
-            margin-bottom: 18px;
+            margin-bottom: 14px;
         }
 
-        .feature-row-text h3 {
-            font-size: 1.5rem;
+        .slide-card h3 {
+            font-size: 1.4rem;
             font-weight: 800;
             color: var(--ink);
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             letter-spacing: -0.4px;
         }
 
-        .feature-row-text p {
+        .slide-card p {
             color: var(--muted);
-            font-size: 0.97rem;
-            line-height: 1.75;
-            max-width: 400px;
+            font-size: 0.94rem;
+            line-height: 1.7;
         }
 
-        .feature-row.reverse .feature-row-text p {
-            margin-left: auto;
+        /* No-3D / fallback path */
+        .features-3d-wrap.no-3d {
+            height: auto;
         }
 
-        .feature-row.reverse .feature-index,
-        .feature-row.reverse .feature-row-icon {
-            margin-left: auto;
-        }
-
-        /* --- Simulation 1: checklist --- */
-        .sim-checklist {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 8px;
-        }
-
-        .sim-checklist .row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .sim-checklist .box {
-            width: 15px;
-            height: 15px;
-            border-radius: 5px;
-            border: 1.5px solid #cfe3d9;
+        .features-3d-wrap.no-3d .features-canvas-sticky {
+            position: relative;
+            height: auto;
+            min-height: 200px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.5rem;
-            color: #fff;
-            flex-shrink: 0;
+            padding: 30px 0;
         }
 
-        .sim-checklist .bar {
-            height: 6px;
-            border-radius: 4px;
-            background: #e2edea;
-            flex: 1;
+        .features-3d-wrap.no-3d #phoneCanvas {
+            display: none;
         }
 
-        .sim-checklist .row1 .box {
-            animation: checkFill 4.5s ease-in-out infinite;
+        .features-3d-wrap.no-3d .features-canvas-sticky::after {
+            content: '\f10b';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            font-size: 4rem;
+            color: var(--primary-dark);
+            opacity: 0.5;
         }
 
-        .sim-checklist .row2 .box {
-            animation: checkFill 4.5s ease-in-out infinite 1.5s;
-        }
-
-        .sim-checklist .row3 .box {
-            animation: checkFill 4.5s ease-in-out infinite 3s;
-        }
-
-        .sim-checklist .row1 .bar {
-            width: 68%;
-        }
-
-        .sim-checklist .row2 .bar {
-            width: 50%;
-        }
-
-        .sim-checklist .row3 .bar {
-            width: 60%;
-        }
-
-        /* --- Simulation 2: streak --- */
-        .sim-streak {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .sim-streak .flame-big {
-            font-size: 2rem;
-            color: #f59e0b;
-            animation: flameFlicker 1.4s ease-in-out infinite;
-        }
-
-        .sim-streak .count {
-            font-size: 1.6rem;
-            font-weight: 800;
-            color: var(--ink);
-        }
-
-        .sim-streak .row {
-            display: flex;
-            gap: 5px;
-        }
-
-        .sim-streak .dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: #e2edea;
-        }
-
-        .sim-streak .dot:nth-child(1) {
-            animation: dotLight 5.6s ease-in-out infinite 0s;
-        }
-
-        .sim-streak .dot:nth-child(2) {
-            animation: dotLight 5.6s ease-in-out infinite 0.35s;
-        }
-
-        .sim-streak .dot:nth-child(3) {
-            animation: dotLight 5.6s ease-in-out infinite 0.7s;
-        }
-
-        .sim-streak .dot:nth-child(4) {
-            animation: dotLight 5.6s ease-in-out infinite 1.05s;
-        }
-
-        .sim-streak .dot:nth-child(5) {
-            animation: dotLight 5.6s ease-in-out infinite 1.4s;
-        }
-
-        @keyframes dotLight {
-
-            0%,
-            8% {
-                background: #e2edea;
-            }
-
-            16%,
-            92% {
-                background: var(--primary-dark);
-            }
-
-            100% {
-                background: #e2edea;
-            }
-        }
-
-        @keyframes flameFlicker {
-
-            0%,
-            100% {
-                transform: scale(1) rotate(-2deg);
-            }
-
-            50% {
-                transform: scale(1.12) rotate(2deg);
-            }
-        }
-
-        /* --- Simulation 3: export --- */
-        .sim-export {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 14px;
-        }
-
-        .sim-export .file-icon {
-            width: 42px;
-            height: 42px;
-            border-radius: 10px;
-            background: var(--primary-dark);
-            color: #fff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1rem;
-            animation: pulseScale 3.6s ease-in-out infinite;
-        }
-
-        @keyframes pulseScale {
-
-            0%,
-            100% {
-                transform: scale(1);
-            }
-
-            50% {
-                transform: scale(1.1);
-            }
-        }
-
-        .sim-export .track {
-            width: 80%;
-            height: 6px;
-            border-radius: 4px;
-            background: #e2edea;
-            overflow: hidden;
-        }
-
-        .sim-export .track .fill {
-            height: 100%;
-            width: 0%;
-            background: var(--primary-dark);
-            border-radius: 4px;
-            animation: fillBar 3.6s ease-in-out infinite;
-        }
-
-        @keyframes fillBar {
-            0% {
-                width: 0%;
-            }
-
-            60%,
-            100% {
-                width: 100%;
-            }
-        }
-
-        /* --- Simulation 4: sync --- */
-        .sim-sync {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 26px;
+        .features-3d-wrap.no-3d .features-text-track {
             position: relative;
         }
 
-        .sim-sync .node {
-            width: 34px;
-            height: 34px;
-            border-radius: 9px;
-            background: #eef7f2;
-            color: var(--primary-dark);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.85rem;
+        .features-3d-wrap.no-3d .feature-slide {
+            height: auto;
+            padding: 16px 6% 46px;
+            justify-content: center !important;
         }
 
-        .sim-sync .track2 {
-            position: absolute;
-            left: 44px;
-            right: 44px;
-            top: 50%;
-            height: 2px;
-            background: repeating-linear-gradient(90deg, #cfe3d9 0 6px, transparent 6px 12px);
-        }
-
-        .sim-sync .pulse2 {
-            position: absolute;
-            top: 50%;
-            left: 44px;
-            width: 7px;
-            height: 7px;
-            margin-top: -3.5px;
-            border-radius: 50%;
-            background: var(--primary-light);
-            box-shadow: 0 0 7px 2px rgba(110, 231, 183, 0.7);
-            animation: pulseMove2 2.2s linear infinite;
-        }
-
-        @keyframes pulseMove2 {
-            0% {
-                left: 44px;
-                opacity: 0;
-            }
-
-            10% {
-                opacity: 1;
-            }
-
-            90% {
-                opacity: 1;
-            }
-
-            100% {
-                left: calc(100% - 52px);
-                opacity: 0;
-            }
+        .features-3d-wrap.no-3d .slide-card {
+            opacity: 1;
+            transform: none;
         }
 
         /* ============ CLOSING CTA ============ */
@@ -1235,27 +1152,6 @@
             .hero h1 {
                 font-size: 2.8rem;
             }
-
-            .feature-row,
-            .feature-row.reverse {
-                flex-direction: column;
-                gap: 40px;
-            }
-
-            .feature-row-text p,
-            .feature-row.reverse .feature-row-text p {
-                margin-left: 0;
-            }
-
-            .feature-row-text {
-                text-align: center;
-            }
-
-            .feature-row-icon,
-            .feature-index {
-                margin-left: auto;
-                margin-right: auto;
-            }
         }
 
         /* HP (Mobile) */
@@ -1281,11 +1177,9 @@
 
             .phone-stage {
                 min-height: 380px;
-                /* Kurangi space agar hp tidak terlalu jauh ke bawah */
                 margin-top: 20px;
             }
 
-            /* Sesuaikan ukuran mockup HP biar tidak terlalu besar/meluber */
             .phone-frame {
                 width: 220px;
                 height: 460px;
@@ -1319,10 +1213,22 @@
                 justify-content: center;
             }
 
-            /* Perkecil bayangan HP mini di list fitur */
-            .row-mini-phone {
-                width: 160px;
-                height: 270px;
+            .features-3d-wrap {
+                height: 360vh;
+            }
+
+            .feature-slide {
+                justify-content: center !important;
+                padding: 0 8%;
+            }
+
+            .slide-card {
+                max-width: 88vw;
+                padding: 24px 22px;
+            }
+
+            .loader-mark {
+                font-size: 2.4rem;
             }
         }
 
@@ -1333,18 +1239,25 @@
             }
 
             .hero h1 {
-                font-size: 2rem;
+                font-size: clamp(1.7rem, 8vw, 2rem);
             }
 
             .hero-bottom-fade {
                 height: 240px;
-                /* Disesuaikan dengan tinggi sisa hp */
             }
         }
     </style>
 </head>
 
 <body>
+
+    <!-- ============ PAGE LOADER ============ -->
+    <div class="page-loader" id="pageLoader">
+        <div class="loader-mark">اقرأ</div>
+        <div class="loader-bar">
+            <div class="loader-fill" id="loaderFill"></div>
+        </div>
+    </div>
 
     <!-- ============ HERO ============ -->
     <section class="hero">
@@ -1437,34 +1350,40 @@
             </div>
         </div>
 
-        <!-- Full-bleed fade: now using safe robust gradients for Mobile -->
-        <div class="hero-bottom-fade"></div>
+        <!-- Progressive layered blur fade -->
+        <div class="hero-bottom-fade">
+            <div class="blur-layer l1"></div>
+            <div class="blur-layer l2"></div>
+            <div class="blur-layer l3"></div>
+            <div class="blur-layer l4"></div>
+            <div class="blur-layer l5"></div>
+            <div class="fade-color"></div>
+        </div>
     </section>
 
     <!-- ============ QUICK HIGHLIGHTS ============ -->
     <section class="highlights">
         <div class="container">
-            <!-- Diubah ke sistem grid Bootstrap standar agar tidak menumpuk aneh di HP -->
             <div class="row g-3">
-                <div class="col-12 col-sm-6 col-lg-3">
+                <div class="col-12 col-sm-6 col-lg-3 reveal-up">
                     <div class="highlight-chip">
                         <span class="hi-icon"><i class="fa-solid fa-cloud"></i></span>
                         <span><strong>Auto-sync</strong><span>Realtime ke semua device</span></span>
                     </div>
                 </div>
-                <div class="col-12 col-sm-6 col-lg-3">
+                <div class="col-12 col-sm-6 col-lg-3 reveal-up">
                     <div class="highlight-chip">
                         <span class="hi-icon"><i class="fa-solid fa-fire"></i></span>
                         <span><strong>Streak harian</strong><span>Pengingat tepat waktu</span></span>
                     </div>
                 </div>
-                <div class="col-12 col-sm-6 col-lg-3">
+                <div class="col-12 col-sm-6 col-lg-3 reveal-up">
                     <div class="highlight-chip">
                         <span class="hi-icon"><i class="fa-solid fa-file-export"></i></span>
                         <span><strong>Laporan siap pakai</strong><span>Ekspor PDF & Excel</span></span>
                     </div>
                 </div>
-                <div class="col-12 col-sm-6 col-lg-3">
+                <div class="col-12 col-sm-6 col-lg-3 reveal-up">
                     <div class="highlight-chip">
                         <span class="hi-icon"><i class="fa-solid fa-shield-heart"></i></span>
                         <span><strong>Ramah musyrif</strong><span>Pantau progres santri</span></span>
@@ -1474,129 +1393,69 @@
         </div>
     </section>
 
-    <!-- ============ FEATURES (zig-zag) ============ -->
+    <!-- ============ FEATURES — 3D pinned zigzag scroll ============ -->
     <section class="features">
         <div class="container">
-            <div class="section-head">
+            <div class="section-head reveal-up">
                 <div class="section-eyebrow">Kenapa Hifzhly</div>
                 <h2>Dibangun untuk konsistensi hafalanmu</h2>
-                <p>Empat kebiasaan kecil yang dijaga aplikasinya — lihat langsung simulasi tampilannya di sebelah penjelasan tiap fitur.</p>
+                <p>Empat kebiasaan kecil yang dijaga aplikasinya — scroll untuk melihat langsung simulasinya lewat ponsel 3D di sebelah penjelasan tiap fitur.</p>
             </div>
+        </div>
 
-            <!-- Row 1 -->
-            <div class="feature-row">
-                <div class="feature-row-media">
-                    <div class="media-glow"></div>
-                    <div class="row-chip" style="top:6px; left:-10px;"><i class="fa-solid fa-check"></i> Tersimpan otomatis</div>
-                    <div class="row-mini-phone">
-                        <div class="row-mini-screen">
-                            <div class="sim-checklist">
-                                <div class="row row1">
-                                    <div class="box"><i class="fa-solid fa-check"></i></div>
-                                    <div class="bar"></div>
-                                </div>
-                                <div class="row row2">
-                                    <div class="box"><i class="fa-solid fa-check"></i></div>
-                                    <div class="bar"></div>
-                                </div>
-                                <div class="row row3">
-                                    <div class="box"><i class="fa-solid fa-check"></i></div>
-                                    <div class="bar"></div>
-                                </div>
-                            </div>
-                        </div>
+        <div class="features-3d-wrap" id="features3DWrap">
+            <div class="features-canvas-sticky">
+                <canvas id="phoneCanvas" aria-hidden="true"></canvas>
+            </div>
+            <div class="features-text-track">
+
+                <div class="feature-slide align-right">
+                    <div class="slide-card">
+                        <div class="slide-badge"><i class="fa-solid fa-check"></i> Tersimpan otomatis</div>
+                        <span class="slide-index">Fitur 01</span>
+                        <div class="slide-icon"><i class="fa-solid fa-list-check"></i></div>
+                        <h3>Mutaba'ah Cerdas</h3>
+                        <p>Catat setiap aktivitas tilawah, murojaah, dan hafalan barumu dengan cepat dan rapi, langsung tercentang otomatis begitu selesai.</p>
                     </div>
                 </div>
-                <div class="feature-row-text">
-                    <span class="feature-index">Fitur 01</span>
-                    <div class="feature-row-icon"><i class="fa-solid fa-list-check"></i></div>
-                    <h3>Mutaba'ah Cerdas</h3>
-                    <p>Catat setiap aktivitas tilawah, murojaah, dan hafalan barumu dengan cepat dan rapi, langsung tercentang otomatis begitu selesai.</p>
-                </div>
-            </div>
 
-            <!-- Row 2 (reversed) -->
-            <div class="feature-row reverse">
-                <div class="feature-row-media">
-                    <div class="media-glow"></div>
-                    <div class="row-chip" style="top:2px; right:-10px;"><i class="fa-solid fa-fire"></i> 7 hari beruntun</div>
-                    <div class="row-mini-phone">
-                        <div class="row-mini-screen">
-                            <div class="sim-streak">
-                                <div class="flame-big"><i class="fa-solid fa-fire"></i></div>
-                                <div class="count">7</div>
-                                <div class="row">
-                                    <div class="dot"></div>
-                                    <div class="dot"></div>
-                                    <div class="dot"></div>
-                                    <div class="dot"></div>
-                                    <div class="dot"></div>
-                                </div>
-                            </div>
-                        </div>
+                <div class="feature-slide align-left">
+                    <div class="slide-card">
+                        <div class="slide-badge"><i class="fa-solid fa-fire"></i> 7 hari beruntun</div>
+                        <span class="slide-index">Fitur 02</span>
+                        <div class="slide-icon"><i class="fa-solid fa-fire"></i></div>
+                        <h3>Konsistensi &amp; Streak</h3>
+                        <p>Pertahankan api semangatmu setiap hari. Jangan biarkan streak-mu terputus, aplikasi akan mengingatkanmu tepat waktu.</p>
                     </div>
                 </div>
-                <div class="feature-row-text">
-                    <span class="feature-index">Fitur 02</span>
-                    <div class="feature-row-icon"><i class="fa-solid fa-fire"></i></div>
-                    <h3>Konsistensi &amp; Streak</h3>
-                    <p>Pertahankan api semangatmu setiap hari. Jangan biarkan streak-mu terputus, aplikasi akan mengingatkanmu tepat waktu.</p>
-                </div>
-            </div>
 
-            <!-- Row 3 -->
-            <div class="feature-row">
-                <div class="feature-row-media">
-                    <div class="media-glow"></div>
-                    <div class="row-chip" style="top:8px; left:-14px;"><i class="fa-solid fa-file-arrow-down"></i> Laporan_Juli.pdf</div>
-                    <div class="row-mini-phone">
-                        <div class="row-mini-screen">
-                            <div class="sim-export">
-                                <div class="file-icon"><i class="fa-solid fa-file-lines"></i></div>
-                                <div class="track">
-                                    <div class="fill"></div>
-                                </div>
-                            </div>
-                        </div>
+                <div class="feature-slide align-right">
+                    <div class="slide-card">
+                        <div class="slide-badge"><i class="fa-solid fa-file-arrow-down"></i> Laporan_Juli.pdf</div>
+                        <span class="slide-index">Fitur 03</span>
+                        <div class="slide-icon"><i class="fa-solid fa-file-export"></i></div>
+                        <h3>Ekspor Laporan</h3>
+                        <p>Unduh rekap aktivitas bulananmu ke dalam format PDF atau Excel, siap dibagikan ke musyrif atau orang tua.</p>
                     </div>
                 </div>
-                <div class="feature-row-text">
-                    <span class="feature-index">Fitur 03</span>
-                    <div class="feature-row-icon"><i class="fa-solid fa-file-export"></i></div>
-                    <h3>Ekspor Laporan</h3>
-                    <p>Unduh rekap aktivitas bulananmu ke dalam format PDF atau Excel, siap dibagikan ke musyrif atau orang tua.</p>
-                </div>
-            </div>
 
-            <!-- Row 4 (reversed) -->
-            <div class="feature-row reverse">
-                <div class="feature-row-media">
-                    <div class="media-glow"></div>
-                    <div class="row-chip" style="top:4px; right:-10px;"><i class="fa-solid fa-check"></i> Tersinkron</div>
-                    <div class="row-mini-phone">
-                        <div class="row-mini-screen">
-                            <div class="sim-sync">
-                                <div class="node"><i class="fa-solid fa-desktop"></i></div>
-                                <div class="track2"></div>
-                                <div class="pulse2"></div>
-                                <div class="node"><i class="fa-solid fa-mobile-screen"></i></div>
-                            </div>
-                        </div>
+                <div class="feature-slide align-left">
+                    <div class="slide-card">
+                        <div class="slide-badge"><i class="fa-solid fa-check"></i> Tersinkron</div>
+                        <span class="slide-index">Fitur 04</span>
+                        <div class="slide-icon"><i class="fa-solid fa-arrows-rotate"></i></div>
+                        <h3>Multi-Platform</h3>
+                        <p>Sinkronisasi sempurna. Akses data hafalanmu dari Desktop, Android, maupun iOS, selalu terbarui otomatis.</p>
                     </div>
                 </div>
-                <div class="feature-row-text">
-                    <span class="feature-index">Fitur 04</span>
-                    <div class="feature-row-icon"><i class="fa-solid fa-arrows-rotate"></i></div>
-                    <h3>Multi-Platform</h3>
-                    <p>Sinkronisasi sempurna. Akses data hafalanmu dari Desktop, Android, maupun iOS, selalu terbarui otomatis.</p>
-                </div>
+
             </div>
         </div>
     </section>
 
     <!-- ============ CLOSING CTA ============ -->
     <section class="closing-cta">
-        <div class="container">
+        <div class="container reveal-up">
             <h2>Siap jaga hafalanmu setiap hari?</h2>
             <p>Coba versi web-nya sekarang, gratis, sambil menunggu aplikasi mobile-nya rilis di Google Play dan App Store.</p>
             <a href="#" class="btn-store primary">
@@ -1611,41 +1470,547 @@
         <div class="container">&copy; <?= date('Y') ?> Hifzhly. Pendamping Murojaah Al-Qur'an Berbasis AI.</div>
     </footer>
 
+    <!-- Three.js + Lenis -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.14/dist/lenis.min.js"></script>
+
     <script>
-        // Gentle cursor-follow tilt on the hero phone mockup
-        const stage = document.getElementById('phoneStage');
-        const tilt = document.getElementById('phoneTilt');
-        const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        (function() {
+            var prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            var isMobile = window.matchMedia('(max-width: 768px)').matches;
 
-        if (stage && tilt && !prefersReduced && window.matchMedia('(hover: hover)').matches) {
-            stage.addEventListener('mousemove', (e) => {
-                const rect = stage.getBoundingClientRect();
-                const x = (e.clientX - rect.left) / rect.width - 0.5;
-                const y = (e.clientY - rect.top) / rect.height - 0.5;
-                tilt.style.transform = `rotateY(${x * 14}deg) rotateX(${-y * 14}deg)`;
-            });
-            stage.addEventListener('mouseleave', () => {
-                tilt.style.transform = 'rotateY(0deg) rotateX(0deg)';
-            });
-        }
+            /* ---------- THEME COLORS ---------- */
+            var rootStyles = getComputedStyle(document.documentElement);
+            var COLOR = {
+                primary: (rootStyles.getPropertyValue('--primary') || '#10b981').trim(),
+                primaryDark: (rootStyles.getPropertyValue('--primary-dark') || '#059669').trim(),
+                gold: (rootStyles.getPropertyValue('--gold') || '#c9a227').trim(),
+                goldLight: (rootStyles.getPropertyValue('--gold-light') || '#e8c85f').trim(),
+                ink: (rootStyles.getPropertyValue('--ink') || '#0f172a').trim(),
+                muted: (rootStyles.getPropertyValue('--muted') || '#64748b').trim(),
+                border: (rootStyles.getPropertyValue('--border') || '#e6ebe8').trim()
+            };
 
-        // Reveal each zig-zag feature row as it scrolls into view
-        const rows = document.querySelectorAll('.feature-row');
-        if ('IntersectionObserver' in window && !prefersReduced) {
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach((entry) => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('in-view');
-                        observer.unobserve(entry.target);
-                    }
+            /* ---------- PAGE LOADER ---------- */
+            function initLoader() {
+                var loader = document.getElementById('pageLoader');
+                var fill = document.getElementById('loaderFill');
+                if (!loader) return;
+
+                function done() {
+                    loader.classList.add('hide');
+                    document.body.classList.add('loaded');
+                    setTimeout(function() {
+                        document.body.classList.add('reveal-done');
+                    }, 1450);
+                    setTimeout(function() {
+                        if (loader.parentNode) loader.parentNode.removeChild(loader);
+                    }, 800);
+                }
+
+                if (prefersReduced) {
+                    done();
+                    return;
+                }
+                requestAnimationFrame(function() {
+                    if (fill) fill.style.width = '100%';
                 });
-            }, {
-                threshold: 0.25
+                setTimeout(done, 900);
+            }
+
+            /* ---------- LENIS SMOOTH SCROLL ---------- */
+            function initLenis() {
+                if (prefersReduced || typeof Lenis === 'undefined') return null;
+                var lenis = new Lenis({
+                    duration: 1.15,
+                    easing: function(t) {
+                        return Math.min(1, 1.001 - Math.pow(2, -10 * t));
+                    },
+                    smoothWheel: true,
+                    touchMultiplier: 1.1
+                });
+
+                function raf(time) {
+                    lenis.raf(time);
+                    requestAnimationFrame(raf);
+                }
+                requestAnimationFrame(raf);
+                return lenis;
+            }
+
+            /* ---------- HERO PHONE TILT ---------- */
+            function initHeroTilt() {
+                var stage = document.getElementById('phoneStage');
+                var tilt = document.getElementById('phoneTilt');
+                if (stage && tilt && !prefersReduced && window.matchMedia('(hover: hover)').matches) {
+                    stage.addEventListener('mousemove', function(e) {
+                        var rect = stage.getBoundingClientRect();
+                        var x = (e.clientX - rect.left) / rect.width - 0.5;
+                        var y = (e.clientY - rect.top) / rect.height - 0.5;
+                        tilt.style.transform = 'rotateY(' + (x * 14) + 'deg) rotateX(' + (-y * 14) + 'deg)';
+                    });
+                    stage.addEventListener('mouseleave', function() {
+                        tilt.style.transform = 'rotateY(0deg) rotateX(0deg)';
+                    });
+                }
+            }
+
+            /* ---------- HERO PARALLAX ---------- */
+            function initHeroParallax() {
+                if (prefersReduced) return;
+                var hero = document.querySelector('.hero');
+                var copy = document.querySelector('.hero-copy');
+                var stage = document.getElementById('phoneStage');
+                if (!hero || !copy || !stage) return;
+                var ticking = false;
+
+                function update() {
+                    var h = hero.offsetHeight;
+                    var p = Math.min(Math.max(window.scrollY / h, 0), 1);
+                    copy.style.transform = 'translateY(' + (p * -30) + 'px)';
+                    copy.style.opacity = String(1 - p * 0.9);
+                    stage.style.transform = 'translateY(' + (p * 40) + 'px)';
+                    ticking = false;
+                }
+                window.addEventListener('scroll', function() {
+                    if (!ticking) {
+                        requestAnimationFrame(update);
+                        ticking = true;
+                    }
+                }, {
+                    passive: true
+                });
+            }
+
+            /* ---------- GENERIC SCROLL REVEAL ---------- */
+            function initReveal() {
+                var els = document.querySelectorAll('.reveal-up');
+                if ('IntersectionObserver' in window && !prefersReduced) {
+                    var io = new IntersectionObserver(function(entries) {
+                        entries.forEach(function(en) {
+                            if (en.isIntersecting) {
+                                en.target.classList.add('in-view');
+                                io.unobserve(en.target);
+                            }
+                        });
+                    }, {
+                        threshold: 0.2
+                    });
+                    els.forEach(function(el) {
+                        io.observe(el);
+                    });
+                } else {
+                    els.forEach(function(el) {
+                        el.classList.add('in-view');
+                    });
+                }
+            }
+
+            /* ---------- FEATURE SLIDE TEXT REVEAL ---------- */
+            function initSlideReveal() {
+                var slides = document.querySelectorAll('.feature-slide');
+                if (!slides.length) return;
+                if ('IntersectionObserver' in window) {
+                    var io = new IntersectionObserver(function(entries) {
+                        entries.forEach(function(en) {
+                            en.target.classList.toggle('in-view', en.isIntersecting);
+                        });
+                    }, {
+                        threshold: 0.45
+                    });
+                    slides.forEach(function(s) {
+                        io.observe(s);
+                    });
+                } else {
+                    slides.forEach(function(s) {
+                        s.classList.add('in-view');
+                    });
+                }
+            }
+
+            /* ---------- 3D PHONE (THREE.JS) ---------- */
+            var FEATURE_COUNT = 4;
+            var X_POS = [-1.15, 1.15, -1.15, 1.15];
+
+            function hexToInt(hex) {
+                if (!hex) return 0xffffff;
+                hex = hex.trim().replace('#', '');
+                if (hex.length === 3) hex = hex.split('').map(function(c) {
+                    return c + c;
+                }).join('');
+                return parseInt(hex, 16);
+            }
+
+            function roundedRectShape(w, h, r) {
+                var shape = new THREE.Shape();
+                var x = -w / 2,
+                    y = -h / 2;
+                shape.moveTo(x, y + r);
+                shape.lineTo(x, y + h - r);
+                shape.quadraticCurveTo(x, y + h, x + r, y + h);
+                shape.lineTo(x + w - r, y + h);
+                shape.quadraticCurveTo(x + w, y + h, x + w, y + h - r);
+                shape.lineTo(x + w, y + r);
+                shape.quadraticCurveTo(x + w, y, x + w - r, y);
+                shape.lineTo(x + r, y);
+                shape.quadraticCurveTo(x, y, x, y + r);
+                return shape;
+            }
+
+            function roundRectPath(ctx, x, y, w, h, r) {
+                ctx.beginPath();
+                ctx.moveTo(x + r, y);
+                ctx.arcTo(x + w, y, x + w, y + h, r);
+                ctx.arcTo(x + w, y + h, x, y + h, r);
+                ctx.arcTo(x, y + h, x, y, r);
+                ctx.arcTo(x, y, x + w, y, r);
+                ctx.closePath();
+            }
+
+            function drawFeatureScreen(ctx, w, h, index, t) {
+                var pad = 34;
+                ctx.textAlign = 'left';
+                ctx.font = '700 15px "Plus Jakarta Sans", sans-serif';
+                ctx.fillStyle = COLOR.ink;
+
+                if (index === 0) {
+                    ctx.fillText("Mutaba'ah Hari Ini", pad, 78);
+                    for (var i = 0; i < 3; i++) {
+                        var y = 118 + i * 58;
+                        var cyc = (t * 0.35 + i * 0.33) % 1;
+                        var active = cyc > 0.28 && cyc < 0.85;
+                        ctx.lineWidth = 2;
+                        ctx.strokeStyle = active ? COLOR.primaryDark : COLOR.border;
+                        ctx.fillStyle = active ? COLOR.primaryDark : 'transparent';
+                        roundRectPath(ctx, pad, y, 26, 26, 7);
+                        ctx.fill();
+                        ctx.stroke();
+                        if (active) {
+                            ctx.strokeStyle = '#ffffff';
+                            ctx.lineWidth = 2.4;
+                            ctx.beginPath();
+                            ctx.moveTo(pad + 6, y + 13);
+                            ctx.lineTo(pad + 11, y + 19);
+                            ctx.lineTo(pad + 20, y + 7);
+                            ctx.stroke();
+                        }
+                        ctx.fillStyle = '#e2edea';
+                        roundRectPath(ctx, pad + 40, y + 4, (w - pad * 2 - 40) * (0.5 + 0.12 * Math.sin(i + 1)), 8, 4);
+                        ctx.fill();
+                        ctx.fillStyle = '#cfe3d9';
+                        roundRectPath(ctx, pad + 40, y + 16, (w - pad * 2 - 40) * 0.32, 6, 3);
+                        ctx.fill();
+                    }
+                } else if (index === 1) {
+                    ctx.textAlign = 'center';
+                    var pulse = 1 + Math.sin(t * 3) * 0.06;
+                    ctx.font = Math.round(64 * pulse) + 'px sans-serif';
+                    ctx.fillStyle = '#f59e0b';
+                    ctx.fillText('\uD83D\uDD25', w / 2, h * 0.42);
+                    ctx.font = '800 46px "Plus Jakarta Sans", sans-serif';
+                    ctx.fillStyle = COLOR.ink;
+                    ctx.fillText('7', w / 2, h * 0.42 + 64);
+                    ctx.font = '600 14px Inter, sans-serif';
+                    ctx.fillStyle = COLOR.muted;
+                    ctx.fillText('hari beruntun', w / 2, h * 0.42 + 92);
+                    var dots = 5,
+                        dotY = h * 0.42 + 140,
+                        startX = w / 2 - ((dots - 1) * 22) / 2;
+                    for (var d = 0; d < dots; d++) {
+                        var dc = (t * 0.6 + d * 0.16) % 1;
+                        ctx.fillStyle = (dc > 0.15 && dc < 0.9) ? COLOR.primaryDark : '#e2edea';
+                        ctx.beginPath();
+                        ctx.arc(startX + d * 22, dotY, 7, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    ctx.textAlign = 'left';
+                } else if (index === 2) {
+                    ctx.textAlign = 'center';
+                    ctx.fillStyle = COLOR.primaryDark;
+                    roundRectPath(ctx, w / 2 - 30, h * 0.36, 60, 60, 15);
+                    ctx.fill();
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = '700 13px Inter, sans-serif';
+                    ctx.fillText('PDF', w / 2, h * 0.36 + 37);
+                    ctx.font = '700 15px "Plus Jakarta Sans", sans-serif';
+                    ctx.fillStyle = COLOR.ink;
+                    ctx.fillText('Laporan_Juli.pdf', w / 2, h * 0.36 + 96);
+                    var trackW = w * 0.62,
+                        trackX = w / 2 - trackW / 2,
+                        trackY = h * 0.36 + 118;
+                    ctx.fillStyle = '#e2edea';
+                    roundRectPath(ctx, trackX, trackY, trackW, 8, 4);
+                    ctx.fill();
+                    var prog = (Math.sin(t * 1.1) * 0.5 + 0.5);
+                    ctx.fillStyle = COLOR.primaryDark;
+                    roundRectPath(ctx, trackX, trackY, trackW * prog, 8, 4);
+                    ctx.fill();
+                    ctx.textAlign = 'left';
+                } else {
+                    ctx.textAlign = 'center';
+                    var cy = h * 0.46;
+                    ctx.fillStyle = '#eef7f2';
+                    roundRectPath(ctx, w * 0.22 - 24, cy - 24, 48, 48, 13);
+                    ctx.fill();
+                    roundRectPath(ctx, w * 0.78 - 24, cy - 24, 48, 48, 13);
+                    ctx.fill();
+                    ctx.fillStyle = COLOR.primaryDark;
+                    ctx.font = '700 20px Inter, sans-serif';
+                    ctx.fillText('\u{1F5A5}', w * 0.22, cy + 7);
+                    ctx.fillText('\u{1F4F1}', w * 0.78, cy + 7);
+                    ctx.strokeStyle = '#cfe3d9';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([5, 6]);
+                    ctx.beginPath();
+                    ctx.moveTo(w * 0.22 + 28, cy);
+                    ctx.lineTo(w * 0.78 - 28, cy);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    var travel = (t * 0.5) % 1;
+                    var px = (w * 0.22 + 28) + (w * 0.78 - 28 - (w * 0.22 + 28)) * travel;
+                    ctx.fillStyle = COLOR.primary;
+                    ctx.beginPath();
+                    ctx.arc(px, cy, 5, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.font = '600 14px Inter, sans-serif';
+                    ctx.fillStyle = COLOR.muted;
+                    ctx.fillText('Tersinkron otomatis', w / 2, cy + 70);
+                    ctx.textAlign = 'left';
+                }
+            }
+
+            function drawScreen(ctx, w, h, index, blendIndex, blendAmt, t) {
+                ctx.clearRect(0, 0, w, h);
+                var grad = ctx.createLinearGradient(0, 0, 0, h);
+                grad.addColorStop(0, '#ffffff');
+                grad.addColorStop(1, '#f4faf7');
+                ctx.fillStyle = grad;
+                roundRectPath(ctx, 0, 0, w, h, 46);
+                ctx.fill();
+
+                ctx.save();
+                ctx.globalAlpha = 1 - blendAmt;
+                drawFeatureScreen(ctx, w, h, index, t);
+                ctx.restore();
+
+                if (blendAmt > 0.001 && blendIndex !== index) {
+                    ctx.save();
+                    ctx.globalAlpha = blendAmt;
+                    drawFeatureScreen(ctx, w, h, blendIndex, t);
+                    ctx.restore();
+                }
+
+                ctx.fillStyle = '#060a08';
+                roundRectPath(ctx, w / 2 - 46, 14, 92, 24, 12);
+                ctx.fill();
+            }
+
+            function initPhone3D() {
+                var wrap = document.getElementById('features3DWrap');
+                var stickyEl = document.querySelector('.features-canvas-sticky');
+                var canvas = document.getElementById('phoneCanvas');
+                if (!wrap || !stickyEl || !canvas) return;
+                if (typeof THREE === 'undefined') {
+                    wrap.classList.add('no-3d');
+                    return;
+                }
+
+                var renderer, scene, camera, phoneGroup;
+                var screenCanvas, screenCtx, screenTexture;
+                var running = false,
+                    rafId = null;
+                var startTime = performance.now();
+
+                try {
+                    renderer = new THREE.WebGLRenderer({
+                        canvas: canvas,
+                        alpha: true,
+                        antialias: true
+                    });
+                } catch (e) {
+                    wrap.classList.add('no-3d');
+                    return;
+                }
+
+                scene = new THREE.Scene();
+                camera = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
+                camera.position.set(0, 0, 6.4);
+
+                scene.add(new THREE.AmbientLight(0xffffff, 0.65));
+                var key = new THREE.DirectionalLight(0xffffff, 1.15);
+                key.position.set(3, 4, 5);
+                scene.add(key);
+                var rim = new THREE.DirectionalLight(hexToInt(COLOR.primary), 0.9);
+                rim.position.set(-4, -1, -3);
+                scene.add(rim);
+                var goldLight = new THREE.PointLight(hexToInt(COLOR.gold), 0.7, 12);
+                goldLight.position.set(-2.5, 2, 3.5);
+                scene.add(goldLight);
+
+                screenCanvas = document.createElement('canvas');
+                screenCanvas.width = 420;
+                screenCanvas.height = 860;
+                screenCtx = screenCanvas.getContext('2d');
+                screenTexture = new THREE.CanvasTexture(screenCanvas);
+                screenTexture.minFilter = THREE.LinearFilter;
+
+                phoneGroup = new THREE.Group();
+
+                var frameShape = roundedRectShape(1.72, 3.44, 0.34);
+                var frameGeo = new THREE.ExtrudeGeometry(frameShape, {
+                    depth: 0.2,
+                    bevelEnabled: true,
+                    bevelThickness: 0.02,
+                    bevelSize: 0.02,
+                    bevelSegments: 3
+                });
+                var frameMat = new THREE.MeshPhysicalMaterial({
+                    color: hexToInt(COLOR.gold),
+                    metalness: 0.75,
+                    roughness: 0.3,
+                    clearcoat: 0.4
+                });
+                var frameMesh = new THREE.Mesh(frameGeo, frameMat);
+                frameMesh.position.z = -0.13;
+                phoneGroup.add(frameMesh);
+
+                var bodyShape = roundedRectShape(1.6, 3.3, 0.3);
+                var bodyGeo = new THREE.ExtrudeGeometry(bodyShape, {
+                    depth: 0.18,
+                    bevelEnabled: true,
+                    bevelThickness: 0.015,
+                    bevelSize: 0.015,
+                    bevelSegments: 3
+                });
+                var bodyMat = new THREE.MeshPhysicalMaterial({
+                    color: 0x14231d,
+                    metalness: 0.55,
+                    roughness: 0.35,
+                    clearcoat: 0.5,
+                    clearcoatRoughness: 0.25
+                });
+                var bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
+                phoneGroup.add(bodyMesh);
+
+                var screenGeo = new THREE.PlaneGeometry(1.42, 3.05);
+                var screenMat = new THREE.MeshBasicMaterial({
+                    map: screenTexture
+                });
+                var screenMesh = new THREE.Mesh(screenGeo, screenMat);
+                screenMesh.position.z = 0.2;
+                phoneGroup.add(screenMesh);
+
+                scene.add(phoneGroup);
+
+                function size() {
+                    var w = stickyEl.clientWidth,
+                        h = stickyEl.clientHeight;
+                    if (!w || !h) return;
+                    renderer.setSize(w, h, false);
+                    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 2));
+                    camera.aspect = w / h;
+                    camera.updateProjectionMatrix();
+                }
+
+                function getProgress() {
+                    var rect = wrap.getBoundingClientRect();
+                    var total = wrap.offsetHeight - window.innerHeight;
+                    if (total <= 0) return {
+                        index: 0,
+                        frac: 0,
+                        scaled: 0
+                    };
+                    var scrolled = -rect.top;
+                    var progress = Math.min(Math.max(scrolled / total, 0), 1);
+                    var scaled = progress * (FEATURE_COUNT - 1);
+                    var index = Math.min(Math.floor(scaled), FEATURE_COUNT - 1);
+                    var frac = scaled - index;
+                    return {
+                        index: index,
+                        frac: frac,
+                        scaled: scaled
+                    };
+                }
+
+                function tick(now) {
+                    rafId = requestAnimationFrame(tick);
+                    var t = (now - startTime) / 1000;
+                    var prog = getProgress();
+                    var index = prog.index,
+                        frac = prog.frac,
+                        scaled = prog.scaled;
+                    var nextIndex = Math.min(index + 1, FEATURE_COUNT - 1);
+                    var targetX = X_POS[index] + (X_POS[nextIndex] - X_POS[index]) * frac;
+
+                    var easeAmt = prefersReduced ? 1 : 0.08;
+                    phoneGroup.position.x += (targetX - phoneGroup.position.x) * easeAmt;
+
+                    if (prefersReduced) {
+                        phoneGroup.rotation.y = scaled * Math.PI * 0.5;
+                        phoneGroup.rotation.x = 0;
+                        phoneGroup.position.y = 0;
+                    } else {
+                        phoneGroup.rotation.y = t * 0.22 + scaled * Math.PI * 1.15;
+                        phoneGroup.rotation.x = Math.sin(t * 0.6) * 0.06 + (frac - 0.5) * 0.12;
+                        phoneGroup.position.y = Math.sin(t * 0.75) * 0.09;
+                    }
+
+                    drawScreen(screenCtx, screenCanvas.width, screenCanvas.height, index, nextIndex, frac, t);
+                    screenTexture.needsUpdate = true;
+
+                    renderer.render(scene, camera);
+                }
+
+                function start() {
+                    if (!running) {
+                        running = true;
+                        startTime = performance.now();
+                        rafId = requestAnimationFrame(tick);
+                    }
+                }
+
+                function stop() {
+                    if (running) {
+                        running = false;
+                        cancelAnimationFrame(rafId);
+                    }
+                }
+
+                size();
+                window.addEventListener('resize', function() {
+                    size();
+                }, {
+                    passive: true
+                });
+
+                if ('IntersectionObserver' in window) {
+                    var io = new IntersectionObserver(function(entries) {
+                        entries.forEach(function(en) {
+                            if (en.isIntersecting) {
+                                start();
+                            } else {
+                                stop();
+                            }
+                        });
+                    }, {
+                        threshold: 0
+                    });
+                    io.observe(wrap);
+                } else {
+                    start();
+                }
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                initLoader();
+                initLenis();
+                initHeroTilt();
+                initHeroParallax();
+                initReveal();
+                initSlideReveal();
+                initPhone3D();
             });
-            rows.forEach((row) => observer.observe(row));
-        } else {
-            rows.forEach((row) => row.classList.add('in-view'));
-        }
+        })();
     </script>
 
 </body>

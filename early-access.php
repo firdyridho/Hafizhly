@@ -807,7 +807,7 @@
 
         .slide-card {
             pointer-events: auto;
-            max-width: 420px;
+            max-width: 500px;
             opacity: 0;
             transform: translateY(34px);
             transition: opacity 0.8s cubic-bezier(.16, 1, .3, 1), transform 0.8s cubic-bezier(.16, 1, .3, 1);
@@ -821,11 +821,11 @@
         .slide-badge {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            font-size: 0.8rem;
+            gap: 8px;
+            font-size: 0.9rem;
             font-weight: 700;
             color: var(--primary-dark);
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
 
         .slide-badge i {
@@ -834,37 +834,35 @@
 
         .slide-index {
             display: block;
-            font-size: 0.75rem;
+            font-size: 0.85rem;
             font-weight: 800;
-            letter-spacing: 2px;
+            letter-spacing: 2.5px;
             color: var(--primary-dark);
             text-transform: uppercase;
-            margin-bottom: 4px;
+            margin-bottom: 6px;
         }
 
         .slide-icon {
-            width: 40px;
-            height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: var(--primary-dark);
-            font-size: 1.3rem;
-            margin-bottom: 10px;
+            font-size: 1.6rem;
+            margin-bottom: 12px;
         }
 
         .slide-card h3 {
-            font-size: 1.7rem;
+            font-size: 2rem;
             font-weight: 800;
             color: var(--ink);
-            margin-bottom: 10px;
-            letter-spacing: -0.6px;
+            margin-bottom: 14px;
+            letter-spacing: -0.8px;
         }
 
         .slide-card p {
             color: var(--muted);
-            font-size: 1.05rem;
-            line-height: 1.8;
+            font-size: 1.1rem;
+            line-height: 1.85;
         }
 
         /* ============ CLOSING CTA ============ */
@@ -962,6 +960,14 @@
                 opacity: 1;
                 transform: none;
                 transition: none;
+            }
+
+            .slide-card h3 {
+                font-size: 1.5rem;
+            }
+
+            .slide-card p {
+                font-size: 1rem;
             }
 
             .feature-slide.in-view .slide-card {
@@ -1114,7 +1120,7 @@
                         <span class="slide-index">Fitur 01</span>
                         <div class="slide-icon"><i class="fa-solid fa-list-check"></i></div>
                         <h3>Mutaba'ah Cerdas</h3>
-                        <p>Catat setiap aktivitas tilawah, murojaah, dan hafalan barumu dengan cepat dan rapi, langsung tercentang otomatis begitu selesai.</p>
+                        <p>Catat setiap aktivitas tilawah, murojaah, dan hafalan barumu dengan cepat dan rapi, langsung tercentang otomatis begitu selesai. Setiap setoran langsung tercatat, guru bisa pantau real-time tanpa ribet.</p>
                     </div>
                 </div>
 
@@ -1124,7 +1130,7 @@
                         <span class="slide-index">Fitur 02</span>
                         <div class="slide-icon"><i class="fa-solid fa-fire"></i></div>
                         <h3>Konsistensi &amp; Streak</h3>
-                        <p>Pertahankan api semangatmu setiap hari. Jangan biarkan streak-mu terputus, aplikasi akan mengingatkanmu tepat waktu.</p>
+                        <p>Pertahankan api semangatmu setiap hari dengan fitur streak dan pengingat otomatis. Jangan biarkan catatanmu terputus — target minimal harian yang fleksibel bikin kamu tetap on track tanpa terbebani.</p>
                     </div>
                 </div>
 
@@ -1134,7 +1140,7 @@
                         <span class="slide-index">Fitur 03</span>
                         <div class="slide-icon"><i class="fa-solid fa-file-export"></i></div>
                         <h3>Ekspor Laporan</h3>
-                        <p>Unduh rekap aktivitas bulananmu ke dalam format PDF atau Excel, siap dibagikan ke musyrif atau orang tua.</p>
+                        <p>Unduh rekap aktivitas bulananmu ke dalam format PDF atau Excel, siap dibagikan ke musyrif atau orang tua. Data lengkap: jumlah setoran, progress juz, nilai murojaah — semua rapi dalam satu halaman.</p>
                     </div>
                 </div>
 
@@ -1144,7 +1150,7 @@
                         <span class="slide-index">Fitur 04</span>
                         <div class="slide-icon"><i class="fa-solid fa-arrows-rotate"></i></div>
                         <h3>Multi-Platform</h3>
-                        <p>Sinkronisasi sempurna. Akses data hafalanmu dari Desktop, Android, maupun iOS, selalu terbarui otomatis.</p>
+                        <p>Sinkronisasi sempurna lintas perangkat. Buka dari Desktop, Android, maupun iOS — data selalu terbarui otomatis tanpa perlu sync manual. Hafalanmu tetap aman di cloud.</p>
                     </div>
                 </div>
 
@@ -1543,7 +1549,7 @@
                     const targetX = isMobile ? 0 : X_POS[index] + (X_POS[nextIndex] - X_POS[index]) * frac;
                     phoneGroup.position.x += (targetX - phoneGroup.position.x) * 0.1;
 
-                    const scrollRotY = progress * Math.PI * 1.2 - 0.6;
+                    const scrollRotY = progress * Math.PI - 0.3;
                     const targetY = scrollRotY + userRotY;
                     phoneGroup.rotation.y += (targetY - phoneGroup.rotation.y) * 0.12;
                     phoneGroup.rotation.x += (userRotX - phoneGroup.rotation.x) * 0.08;

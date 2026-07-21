@@ -1580,7 +1580,7 @@
                     const targetX = isMobile ? 0 : X_POS[index] + (X_POS[nextIndex] - X_POS[index]) * frac;
                     phoneGroup.position.x += (targetX - phoneGroup.position.x) * 0.1;
 
-                    const scrollRotY = progress * 2 * Math.PI - 0.3;
+                    const scrollRotY = scaled * 2 * Math.PI - 0.3;
                     const targetY = scrollRotY + userRotY;
                     phoneGroup.rotation.y += (targetY - phoneGroup.rotation.y) * 0.12;
                     phoneGroup.rotation.x += (userRotX - phoneGroup.rotation.x) * 0.08;

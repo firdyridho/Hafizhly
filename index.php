@@ -18,6 +18,7 @@ if (isset($_SESSION['user_id'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hifzhly - AI Quran Companion</title>
     <link rel="icon" type="image/png" href="assets/icon/logo.png">
+
     <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
@@ -30,23 +31,24 @@ if (isset($_SESSION['user_id'])) {
 
     <style>
         :root {
-            --primary: #059669;
-            --primary-dark: #046354;
-            --primary-darker: #033b30;
+            /* Disesuaikan dengan setting.php (Emerald Theme) */
+            --primary: #10b981;
+            --primary-dark: #047857;
+            --primary-darker: #064e3b;
             --primary-light: #34d399;
             --primary-lighter: #6ee7b7;
             --mint: #ecfdf5;
-            --mint-soft: #d7f6e9;
-            --secondary: #0d9488;
-            --danger-soft: #e05252;
-            --primary-glow: rgba(5, 150, 105, 0.35);
-            --dark: #06231b;
-            --ink: #0b241c;
-            --muted: #5c7268;
-            --bg: #f6faf8;
+            --mint-soft: #d1fae5;
+            --secondary: #0ea5e9;
+            --danger-soft: #ef4444;
+            --primary-glow: rgba(16, 185, 129, 0.35);
+            --dark: #0f172a;
+            --ink: #1e293b;
+            --muted: #64748b;
+            --bg: #f8fafc;
             --white: #ffffff;
-            --card-bg: rgba(255, 255, 255, 0.78);
-            --border-soft: rgba(6, 35, 27, 0.08);
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --border-soft: rgba(15, 23, 42, 0.08);
         }
 
         * {
@@ -60,7 +62,7 @@ if (isset($_SESSION['user_id'])) {
         }
 
         body {
-            font-family: 'Inter', 'Segoe UI', sans-serif;
+            font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
             background-color: var(--bg);
             color: var(--ink);
             overflow-x: hidden;
@@ -71,7 +73,7 @@ if (isset($_SESSION['user_id'])) {
         h3,
         h4,
         .display-font {
-            font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             letter-spacing: -0.02em;
         }
 
@@ -106,7 +108,6 @@ if (isset($_SESSION['user_id'])) {
             align-items: center;
             justify-content: center;
             padding: 0 24px;
-            box-sizing: border-box;
             transition: opacity 0.6s ease, visibility 0.6s ease;
             overflow: hidden;
         }
@@ -141,7 +142,7 @@ if (isset($_SESSION['user_id'])) {
         .preloader-orb.o2 {
             width: clamp(150px, 42vw, 260px);
             height: clamp(150px, 42vw, 260px);
-            background: radial-gradient(circle, rgba(5, 150, 105, 0.3), transparent 70%);
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.3), transparent 70%);
             bottom: -18%;
             right: -12%;
             animation-delay: -3.5s;
@@ -161,7 +162,7 @@ if (isset($_SESSION['user_id'])) {
             position: absolute;
             inset: 0;
             border-radius: 50%;
-            border: 3px solid rgba(5, 150, 105, 0.14);
+            border: 3px solid rgba(16, 185, 129, 0.14);
             border-top-color: var(--primary);
             border-right-color: var(--primary-light);
             animation: spin 1s linear infinite;
@@ -177,7 +178,7 @@ if (isset($_SESSION['user_id'])) {
             justify-content: center;
             padding: 9px;
             animation: markPulse 1.3s ease-in-out infinite;
-            box-shadow: 0 12px 30px rgba(5, 150, 105, 0.3);
+            box-shadow: 0 12px 30px rgba(16, 185, 129, 0.3);
         }
 
         .preloader-mark img {
@@ -201,7 +202,7 @@ if (isset($_SESSION['user_id'])) {
             width: clamp(120px, 40vw, 160px);
             height: 4px;
             border-radius: 4px;
-            background: rgba(5, 150, 105, 0.12);
+            background: rgba(16, 185, 129, 0.12);
             overflow: hidden;
         }
 
@@ -254,7 +255,7 @@ if (isset($_SESSION['user_id'])) {
             position: absolute;
             border-radius: 50%;
             filter: blur(90px);
-            opacity: 0.35;
+            opacity: 0.25;
             animation: drift 18s ease-in-out infinite;
             will-change: transform;
         }
@@ -273,7 +274,7 @@ if (isset($_SESSION['user_id'])) {
             background: radial-gradient(circle, var(--primary-lighter), transparent 70%);
             top: 30%;
             right: -160px;
-            opacity: 0.22;
+            opacity: 0.15;
             animation-delay: -6s;
         }
 
@@ -283,7 +284,7 @@ if (isset($_SESSION['user_id'])) {
             background: radial-gradient(circle, var(--primary), transparent 70%);
             bottom: -140px;
             left: 20%;
-            opacity: 0.18;
+            opacity: 0.12;
             animation-delay: -12s;
         }
 
@@ -315,23 +316,6 @@ if (isset($_SESSION['user_id'])) {
             transition: width 0.1s linear;
         }
 
-        /* ===== Ripple ===== */
-        .ripple {
-            position: absolute;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.55);
-            transform: scale(0);
-            animation: rippleAnim 0.6s ease-out;
-            pointer-events: none;
-        }
-
-        @keyframes rippleAnim {
-            to {
-                transform: scale(3);
-                opacity: 0;
-            }
-        }
-
         /* ===== Navbar ===== */
         .navbar-custom {
             position: fixed;
@@ -339,7 +323,7 @@ if (isset($_SESSION['user_id'])) {
             width: 100%;
             z-index: 100;
             padding: 18px 0;
-            background: rgba(247, 250, 248, 0.6);
+            background: rgba(255, 255, 255, 0.6);
             backdrop-filter: blur(14px);
             -webkit-backdrop-filter: blur(14px);
             border-bottom: 1px solid transparent;
@@ -348,9 +332,9 @@ if (isset($_SESSION['user_id'])) {
 
         .navbar-custom.scrolled {
             padding: 12px 0;
-            background: rgba(247, 250, 248, 0.92);
+            background: rgba(255, 255, 255, 0.95);
             border-bottom: 1px solid var(--border-soft);
-            box-shadow: 0 8px 24px rgba(6, 35, 27, 0.05);
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
         }
 
         .brand-mark {
@@ -362,7 +346,7 @@ if (isset($_SESSION['user_id'])) {
             align-items: center;
             justify-content: center;
             padding: 6px;
-            box-shadow: 0 6px 16px rgba(5, 150, 105, 0.35);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
         }
 
         .brand-mark img {
@@ -426,6 +410,7 @@ if (isset($_SESSION['user_id'])) {
             background: var(--primary-dark);
             color: #fff;
             transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(4, 120, 87, 0.2);
         }
 
         /* ===== Hero ===== */
@@ -441,7 +426,7 @@ if (isset($_SESSION['user_id'])) {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            background: rgba(5, 150, 105, 0.09);
+            background: rgba(16, 185, 129, 0.1);
             color: var(--primary-dark);
             padding: 8px 18px;
             border-radius: 30px;
@@ -510,13 +495,13 @@ if (isset($_SESSION['user_id'])) {
             padding: 14px 28px;
             border-radius: 30px;
             border: none;
-            box-shadow: 0 14px 28px var(--primary-glow);
+            box-shadow: 0 10px 25px var(--primary-glow);
             transition: all 0.3s ease;
         }
 
         .btn-primary-custom:hover {
             transform: translateY(-3px);
-            box-shadow: 0 18px 32px var(--primary-glow);
+            box-shadow: 0 15px 30px var(--primary-glow);
             color: #fff;
         }
 
@@ -543,7 +528,7 @@ if (isset($_SESSION['user_id'])) {
             font-family: 'Amiri', serif;
             font-size: 7rem;
             color: var(--primary);
-            opacity: 0.06;
+            opacity: 0.04;
             top: 90px;
             left: -10px;
             white-space: nowrap;
@@ -555,10 +540,10 @@ if (isset($_SESSION['user_id'])) {
         .listening-card {
             background: var(--card-bg);
             backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.8);
             border-radius: 28px;
             padding: 32px 28px;
-            box-shadow: 0 24px 60px rgba(6, 35, 27, 0.12);
+            box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08);
             position: relative;
             transition: transform 0.25s ease;
             will-change: transform;
@@ -651,13 +636,13 @@ if (isset($_SESSION['user_id'])) {
         }
 
         .ayat-box {
-            background: rgba(5, 150, 105, 0.05);
-            border: 1px solid rgba(5, 150, 105, 0.12);
+            background: rgba(16, 185, 129, 0.05);
+            border: 1px solid rgba(16, 185, 129, 0.12);
             border-radius: 16px;
             padding: 20px;
             text-align: right;
             font-family: 'Amiri', serif;
-            font-size: 1.55rem;
+            font-size: 1.6rem;
             line-height: 2.4;
             color: var(--ink);
             direction: rtl;
@@ -674,7 +659,7 @@ if (isset($_SESSION['user_id'])) {
         }
 
         .ayat-box .word.done {
-            color: var(--secondary);
+            color: var(--primary);
             opacity: 0.9;
         }
 
@@ -710,10 +695,15 @@ if (isset($_SESSION['user_id'])) {
 
         .section-eyebrow {
             color: var(--primary-dark);
-            font-weight: 700;
+            font-weight: 800;
             font-size: 0.8rem;
-            letter-spacing: 2px;
+            letter-spacing: 1.5px;
             text-transform: uppercase;
+            background: var(--mint-soft);
+            padding: 6px 14px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 15px;
         }
 
         .section-title {
@@ -727,24 +717,24 @@ if (isset($_SESSION['user_id'])) {
             background: var(--card-bg);
             backdrop-filter: blur(10px);
             border: 1px solid var(--border-soft);
-            border-radius: 22px;
+            border-radius: 24px;
             padding: 34px 28px;
             height: 100%;
-            box-shadow: 0 10px 30px rgba(6, 35, 27, 0.04);
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.03);
             transition: transform 0.3s ease, box-shadow 0.35s ease;
             will-change: transform;
         }
 
         .feature-card:hover {
             transform: translateY(-6px);
-            box-shadow: 0 20px 45px rgba(6, 35, 27, 0.1);
+            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08);
         }
 
         .feature-icon {
             width: 58px;
             height: 58px;
             border-radius: 16px;
-            background: rgba(5, 150, 105, 0.1);
+            background: rgba(16, 185, 129, 0.1);
             color: var(--primary-dark);
             display: flex;
             align-items: center;
@@ -754,7 +744,7 @@ if (isset($_SESSION['user_id'])) {
         }
 
         .feature-card.accent .feature-icon {
-            background: rgba(13, 148, 136, 0.14);
+            background: rgba(14, 165, 233, 0.1);
             color: var(--secondary);
         }
 
@@ -771,7 +761,7 @@ if (isset($_SESSION['user_id'])) {
             margin: 0;
         }
 
-        /* ===== 3D Mushaf page-flip carousel (signature) ===== */
+        /* ===== 3D Mushaf page-flip carousel ===== */
         .book-scroll-section {
             position: relative;
             height: 260vh;
@@ -791,7 +781,7 @@ if (isset($_SESSION['user_id'])) {
             width: 620px;
             height: 620px;
             border-radius: 50%;
-            background: radial-gradient(circle, rgba(52, 211, 153, 0.22), transparent 70%);
+            background: radial-gradient(circle, rgba(52, 211, 153, 0.15), transparent 70%);
             top: 50%;
             left: 62%;
             transform: translate(-50%, -50%);
@@ -821,7 +811,7 @@ if (isset($_SESSION['user_id'])) {
             inset: 0;
             background: linear-gradient(155deg, #ffffff, var(--mint));
             border-radius: 6px 16px 16px 6px;
-            box-shadow: 0 30px 70px rgba(6, 35, 27, 0.22), inset 0 0 0 1px rgba(5, 150, 105, 0.15);
+            box-shadow: 0 30px 70px rgba(15, 23, 42, 0.15), inset 0 0 0 1px rgba(16, 185, 129, 0.15);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -861,6 +851,7 @@ if (isset($_SESSION['user_id'])) {
             background: transparent;
             border: none;
             padding: 0;
+            box-shadow: none;
         }
 
         .book-page-card .mushaf-juz {
@@ -876,7 +867,7 @@ if (isset($_SESSION['user_id'])) {
             transform-origin: left center;
             background: linear-gradient(135deg, var(--primary-light), var(--primary) 55%, var(--primary-darker));
             border-radius: 6px 16px 16px 6px;
-            box-shadow: 0 26px 60px rgba(6, 35, 27, 0.3);
+            box-shadow: 0 26px 60px rgba(15, 23, 42, 0.25);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -928,7 +919,7 @@ if (isset($_SESSION['user_id'])) {
             width: 7px;
             height: 7px;
             border-radius: 50%;
-            background: rgba(5, 150, 105, 0.25);
+            background: rgba(16, 185, 129, 0.25);
             transition: all 0.35s ease;
         }
 
@@ -941,7 +932,7 @@ if (isset($_SESSION['user_id'])) {
         .book-progress-track {
             height: 6px;
             border-radius: 4px;
-            background: rgba(5, 150, 105, 0.14);
+            background: rgba(16, 185, 129, 0.14);
             overflow: hidden;
             margin-top: 26px;
             max-width: 320px;
@@ -963,7 +954,7 @@ if (isset($_SESSION['user_id'])) {
 
         /* ===== Cara Kerja - scrollytelling ===== */
         .how-section {
-            background: linear-gradient(180deg, rgba(5, 150, 105, 0.04), transparent);
+            background: linear-gradient(180deg, rgba(16, 185, 129, 0.04), transparent);
         }
 
         .step-track {
@@ -992,7 +983,6 @@ if (isset($_SESSION['user_id'])) {
         }
 
         .step-num {
-            font-family: 'Plus Jakarta Sans', sans-serif;
             font-weight: 800;
             font-size: 1.7rem;
             color: var(--primary);
@@ -1019,24 +1009,6 @@ if (isset($_SESSION['user_id'])) {
             max-width: 420px;
         }
 
-        .step-note {
-            margin-top: 10px;
-            padding: 40px 0 10px;
-            text-align: left;
-        }
-
-        .step-note-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-soft);
-            border-radius: 18px;
-            padding: 22px 24px;
-            max-width: 480px;
-        }
-
-        .step-note-card i {
-            color: var(--primary);
-        }
-
         .phone-sticky-col {
             position: sticky;
             top: 14vh;
@@ -1048,11 +1020,11 @@ if (isset($_SESSION['user_id'])) {
             padding: 14px;
             max-width: 300px;
             margin: 0 auto;
-            box-shadow: 0 30px 70px rgba(6, 35, 27, 0.3);
+            box-shadow: 0 30px 70px rgba(15, 23, 42, 0.2);
         }
 
         .phone-mock-screen {
-            background: linear-gradient(160deg, #ffffff, #eefbf4);
+            background: linear-gradient(160deg, #ffffff, var(--mint));
             border-radius: 24px;
             position: relative;
             overflow: hidden;
@@ -1140,7 +1112,7 @@ if (isset($_SESSION['user_id'])) {
 
         .scene-hint-tag {
             margin-top: 12px;
-            background: rgba(224, 82, 82, 0.1);
+            background: rgba(239, 68, 68, 0.1);
             color: var(--danger-soft);
             font-size: 0.75rem;
             font-weight: 600;
@@ -1151,27 +1123,40 @@ if (isset($_SESSION['user_id'])) {
             gap: 6px;
         }
 
+        /* Modified Contrib Grid for Activity Scene */
+        .activity-card {
+            background: var(--white);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            padding: 14px;
+            border-radius: 16px;
+            margin-bottom: 15px;
+            text-align: left;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
+        }
+
         .contrib-grid {
             display: grid;
             grid-template-columns: repeat(9, 1fr);
             gap: 4px;
-            margin: 18px 0;
+            margin: 10px 0;
         }
 
         .contrib-grid span {
             aspect-ratio: 1;
             border-radius: 3px;
-            background: rgba(5, 150, 105, 0.12);
+            background: rgba(16, 185, 129, 0.12);
         }
 
         .streak-badge {
             display: flex;
             align-items: center;
             gap: 10px;
-            background: var(--mint);
+            background: var(--white);
+            border: 1px solid var(--border-soft);
             border-radius: 14px;
             padding: 12px 16px;
             margin-top: auto;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
         }
 
         .streak-badge .num {
@@ -1205,7 +1190,7 @@ if (isset($_SESSION['user_id'])) {
             align-items: center;
             justify-content: center;
             font-size: 1.9rem;
-            box-shadow: 0 14px 30px rgba(5, 150, 105, 0.35);
+            box-shadow: 0 14px 30px rgba(16, 185, 129, 0.35);
         }
 
         .scene-badge-wrap h5 {
@@ -1231,24 +1216,27 @@ if (isset($_SESSION['user_id'])) {
             align-items: center;
             gap: 8px;
             font-size: 0.78rem;
+            font-weight: 600;
             color: var(--ink);
-            padding: 7px 10px;
-            background: var(--mint);
-            border-radius: 10px;
-            margin-bottom: 6px;
+            padding: 9px 12px;
+            background: var(--white);
+            border: 1px solid var(--border-soft);
+            border-radius: 12px;
+            margin-bottom: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
         }
 
         .scene-reco-list i {
             color: var(--primary);
-            font-size: 0.7rem;
+            font-size: 0.8rem;
         }
 
-        /* ===== Game / interactive features ===== */
+        /* ===== Game features ===== */
         .game-card {
             background: var(--card-bg);
             backdrop-filter: blur(10px);
             border: 1px solid var(--border-soft);
-            border-radius: 22px;
+            border-radius: 24px;
             padding: 32px 26px;
             height: 100%;
             position: relative;
@@ -1258,7 +1246,7 @@ if (isset($_SESSION['user_id'])) {
 
         .game-card:hover {
             transform: translateY(-6px);
-            box-shadow: 0 20px 45px rgba(6, 35, 27, 0.1);
+            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08);
         }
 
         .game-card::after {
@@ -1267,7 +1255,7 @@ if (isset($_SESSION['user_id'])) {
             width: 130px;
             height: 130px;
             border-radius: 50%;
-            background: radial-gradient(circle, rgba(5, 150, 105, 0.1), transparent 70%);
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.08), transparent 70%);
             top: -50px;
             right: -50px;
         }
@@ -1290,7 +1278,7 @@ if (isset($_SESSION['user_id'])) {
             width: 56px;
             height: 56px;
             border-radius: 16px;
-            background: rgba(5, 150, 105, 0.1);
+            background: rgba(16, 185, 129, 0.1);
             color: var(--primary-dark);
             display: flex;
             align-items: center;
@@ -1329,7 +1317,6 @@ if (isset($_SESSION['user_id'])) {
             z-index: 1;
         }
 
-        /* ===== How-it-works old classes reused for step icon lines ===== */
         .phone-mock .ayat-box {
             font-size: 1.1rem;
         }
@@ -1349,7 +1336,7 @@ if (isset($_SESSION['user_id'])) {
             content: '';
             position: absolute;
             inset: 0;
-            background: radial-gradient(circle at 30% 20%, rgba(5, 150, 105, 0.35), transparent 55%), radial-gradient(circle at 80% 80%, rgba(52, 211, 153, 0.28), transparent 50%);
+            background: radial-gradient(circle at 30% 20%, rgba(16, 185, 129, 0.35), transparent 55%), radial-gradient(circle at 80% 80%, rgba(52, 211, 153, 0.28), transparent 50%);
         }
 
         .cta-section>* {
@@ -1395,7 +1382,7 @@ if (isset($_SESSION['user_id'])) {
                 border-radius: 18px;
                 padding: 14px;
                 margin-top: 10px;
-                box-shadow: 0 16px 40px rgba(6, 35, 27, 0.1);
+                box-shadow: 0 16px 40px rgba(15, 23, 42, 0.1);
                 border: 1px solid var(--border-soft);
             }
 
@@ -1510,10 +1497,6 @@ if (isset($_SESSION['user_id'])) {
             .step-item-scroll:first-child {
                 min-height: 26vh;
             }
-
-            .step-note-card {
-                max-width: 100%;
-            }
         }
 
         @media (max-width: 575px) {
@@ -1537,74 +1520,7 @@ if (isset($_SESSION['user_id'])) {
             }
         }
 
-        @media (max-width: 380px) {
-            .container {
-                padding-left: 14px;
-                padding-right: 14px;
-            }
-
-            .hero h1 {
-                font-size: 1.8rem;
-            }
-
-            .hero-badge {
-                font-size: 0.7rem;
-                padding: 7px 14px;
-            }
-
-            .listening-card {
-                padding: 18px 14px;
-                border-radius: 20px;
-            }
-
-            .ayat-box {
-                font-size: 0.92rem;
-                padding: 12px;
-            }
-
-            .section-title {
-                font-size: 1.55rem;
-            }
-
-            .feature-card,
-            .game-card {
-                padding: 20px 16px;
-            }
-
-            .cta-section h2 {
-                font-size: 1.5rem;
-            }
-        }
-
-        @media (max-height: 560px) and (orientation: landscape) {
-            .hero {
-                min-height: auto;
-                padding: 110px 0 40px;
-            }
-
-            .book-scroll-section {
-                height: 240vh;
-            }
-
-            .phone-sticky-col {
-                position: static;
-            }
-
-            #preloader {
-                gap: 10px;
-            }
-        }
-
-        @media (hover: none) {
-
-            .feature-card:hover,
-            .listening-card:hover,
-            .game-card:hover {
-                transform: none;
-            }
-        }
-
-        /* ===== Preloader — mo.js powered logo reveal ===== */
+        /* [Menyembunyikan sisa CSS Animasi Preloader yang tidak perlu diubah] */
         .preloader-brandrow {
             display: flex;
             align-items: center;
@@ -1694,7 +1610,6 @@ if (isset($_SESSION['user_id'])) {
             margin: auto;
         }
 
-        /* ===== Bumper-style intro (MotoGP-esque splash) ===== */
         .bumper-streaks {
             position: absolute;
             inset: 0;
@@ -1707,7 +1622,7 @@ if (isset($_SESSION['user_id'])) {
             left: -60%;
             width: 220%;
             height: 3px;
-            background: linear-gradient(90deg, transparent, rgba(52, 211, 153, 0.85), rgba(5, 150, 105, 0.95), transparent);
+            background: linear-gradient(90deg, transparent, rgba(52, 211, 153, 0.85), rgba(16, 185, 129, 0.95), transparent);
             transform: translateX(-100%) rotate(-13deg);
             opacity: 0;
             border-radius: 3px;
@@ -1915,7 +1830,6 @@ if (isset($_SESSION['user_id'])) {
             }
         }
 
-        /* Fallback: if the intro sequence ever fails to init, snap everything visible */
         #preloader.intro-failed .preloader-brand .pb-letter,
         #preloader.intro-failed .preloader-mark,
         #preloader.intro-failed .preloader-text,
@@ -1938,12 +1852,7 @@ if (isset($_SESSION['user_id'])) {
         <div class="preloader-orb o1"></div>
         <div class="preloader-orb o2"></div>
         <div class="bumper-streaks">
-            <span class="s1"></span>
-            <span class="s2"></span>
-            <span class="s3"></span>
-            <span class="s4"></span>
-            <span class="s5"></span>
-            <span class="s6"></span>
+            <span class="s1"></span><span class="s2"></span><span class="s3"></span><span class="s4"></span><span class="s5"></span><span class="s6"></span>
         </div>
         <div class="bumper-flash"></div>
         <div class="preloader-brandrow">
@@ -1978,12 +1887,12 @@ if (isset($_SESSION['user_id'])) {
             </button>
             <div class="collapse navbar-collapse flex-grow-0" id="navMenu">
                 <ul class="navbar-nav align-items-lg-center gap-lg-1 mt-3 mt-lg-0">
-                    <li class="nav-item"><a class="nav-link nav-link-custom" href="#beranda">Beranda</a></li>
+                    <li class="nav-item"><a class="nav-link nav-link-custom active" href="#beranda">Beranda</a></li>
                     <li class="nav-item"><a class="nav-link nav-link-custom" href="#fitur">Fitur</a></li>
                     <li class="nav-item"><a class="nav-link nav-link-custom" href="#jelajah-quran">Jelajah Al-Qur'an</a></li>
                     <li class="nav-item"><a class="nav-link nav-link-custom" href="#cara-kerja">Cara Kerja</a></li>
                     <li class="nav-item"><a class="nav-link nav-link-custom" href="#belajar-seru">Belajar Seru</a></li>
-                    <li class="nav-item"><a class="nav-link nav-link-custom" href="early-access.php">Dapatkan Akses Awal</a></li>
+                    <li class="nav-item"><a class="nav-link nav-link-custom" href="early-access.php" style="color:var(--primary)!important;">Akses Awal</a></li>
                     <li class="nav-item ms-lg-3">
                         <a href="login.php" class="btn btn-gold">
                             <i class="fa-solid fa-arrow-right-to-bracket me-2"></i>Masuk
@@ -2016,6 +1925,7 @@ if (isset($_SESSION['user_id'])) {
                 </div>
 
                 <div class="col-lg-6" data-aos="fade-left" data-aos-delay="150">
+                    <!-- KONSISTENSI: QS. An-Naba -->
                     <div class="listening-card">
                         <div class="listening-header">
                             <span class="mic-badge"><i class="fa-solid fa-microphone"></i></span>
@@ -2026,6 +1936,7 @@ if (isset($_SESSION['user_id'])) {
                         </div>
                         <div class="waveform" id="waveform"></div>
                         <div class="ayat-box" id="ayatBox">
+                            <!-- Arab An-Naba Ayat 1-2 -->
                             <span class="word" data-w="1">عَمَّ</span>
                             <span class="word" data-w="2">يَتَسَاءَلُونَ</span>
                             <span class="word" data-w="3">عَنِ</span>
@@ -2151,11 +2062,12 @@ if (isset($_SESSION['user_id'])) {
                     <div class="phone-sticky-col">
                         <div class="phone-mock">
                             <div class="phone-mock-screen">
+                                <!-- SCENE 1 -->
                                 <div class="phone-scene active" data-scene="1">
                                     <div class="phone-mock-header">
                                         <i class="fa-solid fa-microphone fa-lg"></i>
                                         <div>
-                                            <div class="fw-bold small">Murojaah - QS. An-Naba</div>
+                                            <div class="fw-bold small">Murojaah - QS. An-Naba : 1-10</div>
                                             <div class="text-muted" style="font-size:0.72rem;">Menunggu suaramu</div>
                                         </div>
                                     </div>
@@ -2166,6 +2078,7 @@ if (isset($_SESSION['user_id'])) {
                                     </div>
                                 </div>
 
+                                <!-- SCENE 2 -->
                                 <div class="phone-scene" data-scene="2">
                                     <div class="phone-mock-header">
                                         <i class="fa-solid fa-wand-magic-sparkles fa-lg"></i>
@@ -2175,11 +2088,13 @@ if (isset($_SESSION['user_id'])) {
                                         </div>
                                     </div>
                                     <div class="ayat-box">
+                                        <!-- Konsistensi QS. An-Naba -->
                                         <span class="word done">عَمَّ</span> <span class="word wrong">يَتَسَاءَلُونَ</span> <span class="word done">عَنِ</span> <span class="word">النَّبَإِ</span> <span class="word">الْعَظِيمِ</span>
                                     </div>
                                     <div class="scene-hint-tag"><i class="fa-solid fa-triangle-exclamation"></i>Kata ke-2 kurang tepat, coba ulangi</div>
                                 </div>
 
+                                <!-- SCENE 3 (KONSISTENSI AKTIVITAS) -->
                                 <div class="phone-scene" data-scene="3">
                                     <div class="phone-mock-header">
                                         <i class="fa-solid fa-chart-simple fa-lg"></i>
@@ -2188,25 +2103,34 @@ if (isset($_SESSION['user_id'])) {
                                             <div class="text-muted" style="font-size:0.72rem;">Progres harianmu</div>
                                         </div>
                                     </div>
+
+                                    <!-- Menampilkan An-Naba sebagai hafalan terakhir agar nyambung -->
+                                    <div class="activity-card">
+                                        <div style="font-size: 0.75rem; color: var(--muted); font-weight:600;">Terakhir Dihafal</div>
+                                        <div style="font-weight: 800; font-size: 1rem; color: var(--primary-dark); margin: 3px 0;">QS. An-Naba : 1-10</div>
+                                        <div style="font-size: 0.75rem; color: var(--primary); font-weight:600;"><i class="fa-solid fa-circle-check"></i> Selesai diulang hari ini</div>
+                                    </div>
+
                                     <div class="contrib-grid" id="contribGrid"></div>
                                     <div class="streak-badge"><span class="num">12</span><span class="lbl">Hari beruntun<br>tanpa putus</span></div>
                                 </div>
 
+                                <!-- SCENE 4 -->
                                 <div class="phone-scene" data-scene="4">
                                     <div class="phone-mock-header">
                                         <i class="fa-solid fa-award fa-lg"></i>
                                         <div>
-                                            <div class="fw-bold small">Rekomendasi & Lencana</div>
+                                            <div class="fw-bold small">Rekomendasi AI</div>
                                             <div class="text-muted" style="font-size:0.72rem;">Hasil akhir sesi</div>
                                         </div>
                                     </div>
                                     <div class="scene-badge-wrap">
-                                        <div class="scene-trophy"><i class="fa-solid fa-award"></i></div>
-                                        <h5>Lencana Juz 30 Diraih!</h5>
-                                        <p>AI merekomendasikan surah berikut untuk diulang:</p>
+                                        <div class="scene-trophy"><i class="fa-solid fa-check-double"></i></div>
+                                        <h5>Target Tercapai!</h5>
+                                        <p>QS. An-Naba (1-10) berhasil dikuasai dengan lancar.</p>
                                         <div class="scene-reco-list">
-                                            <div><i class="fa-solid fa-circle"></i>QS. An-Naba (perlu diulang)</div>
-                                            <div><i class="fa-solid fa-circle"></i>QS. Al-Ikhlas (lancar)</div>
+                                            <div><i class="fa-solid fa-arrow-right"></i>Lanjut: QS. An-Naba Ayat 11-20</div>
+                                            <div><i class="fa-solid fa-rotate-left"></i>Ulangi: QS. Al-Mursalat</div>
                                         </div>
                                     </div>
                                 </div>
@@ -2221,7 +2145,7 @@ if (isset($_SESSION['user_id'])) {
                             <div class="step-inner">
                                 <div class="step-num">01</div>
                                 <div>
-                                    <h4><i class="fa-solid fa-microphone me-2 text-success"></i>Bacakan Ayat</h4>
+                                    <h4><i class="fa-solid fa-microphone me-2" style="color:var(--primary);"></i>Bacakan Ayat</h4>
                                     <p>Aktifkan mikrofon dan mulai murojaah seperti biasa, tanpa melihat mushaf. Hifzhly mendengarkan lewat suara HP-mu, tidak perlu alat tambahan.</p>
                                 </div>
                             </div>
@@ -2230,7 +2154,7 @@ if (isset($_SESSION['user_id'])) {
                             <div class="step-inner">
                                 <div class="step-num">02</div>
                                 <div>
-                                    <h4><i class="fa-solid fa-wand-magic-sparkles me-2 text-success"></i>AI Mengoreksi Real-time</h4>
+                                    <h4><i class="fa-solid fa-wand-magic-sparkles me-2" style="color:var(--primary);"></i>AI Mengoreksi Real-time</h4>
                                     <p>Sistem mendeteksi setiap kata yang kamu ucapkan, membandingkannya dengan mushaf asli, dan menandai kata yang kurang tepat saat itu juga.</p>
                                 </div>
                             </div>
@@ -2239,8 +2163,8 @@ if (isset($_SESSION['user_id'])) {
                             <div class="step-inner">
                                 <div class="step-num">03</div>
                                 <div>
-                                    <h4><i class="fa-solid fa-chart-simple me-2 text-success"></i>Lihat Progres di Mutabaah</h4>
-                                    <p>Skor dan konsistensi harianmu otomatis tercatat, lengkap dengan grafik streak seperti kontribusi Github, biar kamu tetap semangat konsisten.</p>
+                                    <h4><i class="fa-solid fa-chart-simple me-2" style="color:var(--primary);"></i>Lihat Progres di Mutabaah</h4>
+                                    <p>Skor dan ayat yang terakhir kamu baca (seperti An-Naba di atas) otomatis tercatat di Mutabaah Yaumi, lengkap dengan grafik streak ala Github.</p>
                                 </div>
                             </div>
                         </div>
@@ -2248,14 +2172,9 @@ if (isset($_SESSION['user_id'])) {
                             <div class="step-inner">
                                 <div class="step-num">04</div>
                                 <div>
-                                    <h4><i class="fa-solid fa-award me-2 text-success"></i>Dapatkan Rekomendasi & Lencana</h4>
-                                    <p>Selesai murojaah, AI Coach memberi rekomendasi surah yang perlu diulang dan lencana pencapaian untuk memotivasi hafalanmu terus bertambah.</p>
+                                    <h4><i class="fa-solid fa-award me-2" style="color:var(--primary);"></i>Dapatkan Rekomendasi Lanjut</h4>
+                                    <p>Selesai murojaah, AI Coach memberi arahan spesifik: apakah kamu siap lanjut ke ayat berikutnya, atau harus mengulang surah yang mulai terlupa.</p>
                                 </div>
-                            </div>
-                        </div>
-                        <div class="step-note">
-                            <div class="step-note-card">
-                                <p><i class="fa-solid fa-circle-info me-2"></i>Semua proses ini berjalan langsung di HP kamu, hasilnya tersimpan otomatis, dan bisa diakses kapan saja lewat dashboard Mutabaah.</p>
                             </div>
                         </div>
                     </div>
@@ -2312,7 +2231,7 @@ if (isset($_SESSION['user_id'])) {
             <div class="cta-section" data-aos="zoom-in">
                 <h2>Mulai Jaga Hafalanmu Hari Ini</h2>
                 <p>Gratis untuk memulai. Tidak perlu kartu kredit, cukup niat dan konsistensi.</p>
-                <a href="register.php" class="btn btn-primary-custom">
+                <a href="register.php" class="btn btn-primary-custom" style="background:#fff; color:var(--dark); box-shadow:none;">
                     <i class="fa-solid fa-book-quran me-2"></i>Daftar Sekarang
                 </a>
             </div>
@@ -2341,21 +2260,14 @@ if (isset($_SESSION['user_id'])) {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.1/aos.js"></script>
     <script>
         /* ===== Preloader entrance: MotoGP-style bumper, powered by CSS + mo.js ===== */
-        /* Splash hanya tampil sekali per perangkat/browser. Setelah pertama kali
-           ditampilkan, kunjungan berikutnya (termasuk setelah menutup web/app
-           dan membukanya lagi) akan langsung melewati splash. */
         (function() {
             const preloaderEl = document.getElementById('preloader');
             const SPLASH_KEY = 'hifzhly_splash_shown';
             let alreadyShown = false;
             try {
                 alreadyShown = localStorage.getItem(SPLASH_KEY) === '1';
-            } catch (e) {
-                alreadyShown = false;
-            }
+            } catch (e) {}
 
-            // Sudah pernah tampil sebelumnya: langsung sembunyikan tanpa animasi,
-            // tanpa menunggu window.load, supaya user tidak melihat splash lagi.
             if (alreadyShown) {
                 preloaderEl.classList.add('instant-hide');
                 return;
@@ -2371,10 +2283,6 @@ if (isset($_SESSION['user_id'])) {
             }
 
             try {
-                // Split the brand text into letters that slam in from alternating
-                // sides (odd/even) — the core "bumper title card" move. This runs
-                // as plain CSS animation (see .play-intro rules), so it's reliable
-                // even if mo.js never loads.
                 const brandEl = document.getElementById('preloaderBrand');
                 const text = brandEl.getAttribute('data-text') || brandEl.textContent;
                 brandEl.innerHTML = '';
@@ -2386,14 +2294,8 @@ if (isset($_SESSION['user_id'])) {
                     brandEl.appendChild(span);
                 });
 
-                // Kick off the whole sequence: speed streaks whoosh across, an
-                // impact flash + screen shake lands, the logo slams in with a
-                // blur-to-focus zoom, then the letters snap into place, then the
-                // tagline. All timing lives in the .play-intro CSS rules.
                 preloaderEl.classList.add('play-intro');
 
-                // mo.js flourish: a drawn ring + particle burst around the logo,
-                // timed to land right on the impact beat (~0.3s in).
                 if (hasMojs && !reduceMotion) {
                     const markEl = document.getElementById('preloaderMark');
 
@@ -2401,7 +2303,7 @@ if (isset($_SESSION['user_id'])) {
                         parent: '#mojsRing',
                         shape: 'circle',
                         radius: 34,
-                        stroke: '#059669',
+                        stroke: '#10b981',
                         strokeWidth: {
                             4: 0
                         },
@@ -2418,7 +2320,6 @@ if (isset($_SESSION['user_id'])) {
                         easing: 'cubic.out',
                         isShowStart: true
                     });
-
                     const ringDraw2 = new mojs.Shape({
                         parent: '#mojsRing',
                         shape: 'circle',
@@ -2438,8 +2339,6 @@ if (isset($_SESSION['user_id'])) {
                         easing: 'cubic.out',
                         isShowStart: true
                     });
-
-                    // Radiating particle burst on impact
                     const burst = new mojs.Burst({
                         parent: '#mojsBurst',
                         radius: {
@@ -2452,7 +2351,7 @@ if (isset($_SESSION['user_id'])) {
                             radius: {
                                 6: 0
                             },
-                            fill: ['#059669', '#34d399', '#6ee7b7'],
+                            fill: ['#10b981', '#34d399', '#6ee7b7'],
                             duration: 620,
                             easing: 'cubic.out'
                         },
@@ -2463,12 +2362,10 @@ if (isset($_SESSION['user_id'])) {
                     ringDraw2.play();
                     burst.play();
 
-                    // Iris mask opens + a light sweep crosses the mark, synced to impact
                     setTimeout(function() {
                         markEl.classList.add('revealed', 'shine');
                     }, 300);
 
-                    // Idle breathing pulse on the mark while the intro settles
                     const idlePulse = new mojs.Html({
                         target: '#preloaderMark',
                         scale: {
@@ -2486,23 +2383,13 @@ if (isset($_SESSION['user_id'])) {
                     preloaderEl.classList.add('no-mojs-flourish');
                 }
             } catch (e) {
-                // Something broke — snap straight to the fully visible end-state
-                // instead of leaving the splash stuck half-animated.
                 preloaderEl.classList.add('intro-failed');
             }
 
-            // Safety net: guarantee the intro isn't left invisible if something
-            // above silently failed to kick in.
             setTimeout(function() {
-                if (!preloaderEl.classList.contains('play-intro')) {
-                    preloaderEl.classList.add('intro-failed');
-                }
+                if (!preloaderEl.classList.contains('play-intro')) preloaderEl.classList.add('intro-failed');
             }, 1200);
 
-            // The bumper needs its full ~1.9s to play out before it's allowed to
-            // hide, even on a fast/cached load — otherwise a quick load could cut
-            // the sequence off mid-slam. It also won't hide before the page has
-            // actually finished loading.
             let introDone = false;
             let pageLoaded = false;
 
@@ -2523,7 +2410,6 @@ if (isset($_SESSION['user_id'])) {
                 introDone = true;
                 tryHide();
             }, reduceMotion ? 0 : 1900);
-
             window.addEventListener('load', function() {
                 pageLoaded = true;
                 tryHide();
@@ -2627,7 +2513,7 @@ if (isset($_SESSION['user_id'])) {
                 const shade = Math.random();
                 if (shade > 0.8) cell.style.background = 'var(--primary)';
                 else if (shade > 0.55) cell.style.background = 'var(--primary-light)';
-                else if (shade > 0.3) cell.style.background = 'rgba(5,150,105,0.3)';
+                else if (shade > 0.3) cell.style.background = 'rgba(16,185,129,0.3)';
                 el.appendChild(cell);
             }
         }
@@ -2651,7 +2537,6 @@ if (isset($_SESSION['user_id'])) {
         }
         runCaptionLoop(document.getElementById('ayatBox'), 850);
 
-        /* Parallax on hero ambient elements */
         const arabicDeco = document.getElementById('arabicDeco');
         const auroraSpans = document.querySelectorAll('.aurora span');
 
@@ -2664,7 +2549,6 @@ if (isset($_SESSION['user_id'])) {
             });
         }
 
-        /* ===== 3D Mushaf page-flip carousel, scroll-driven ===== */
         const bookSection = document.getElementById('jelajah-quran');
         const bookEl = document.getElementById('book3d');
         const bookCover = document.getElementById('bookCover');
@@ -2720,7 +2604,6 @@ if (isset($_SESSION['user_id'])) {
             bookProgressFill.style.width = (progress * 100) + '%';
         }
 
-        /* ===== Cara Kerja scrollytelling ===== */
         const stepItems = document.querySelectorAll('.step-item-scroll');
         const phoneScenes = document.querySelectorAll('.phone-scene');
         const stepObserver = new IntersectionObserver((entries) => {

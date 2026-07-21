@@ -980,6 +980,112 @@
             .hero h1 {
                 font-size: clamp(1.7rem, 8vw, 2rem);
             }
+            .container {
+                padding: 0 18px;
+            }
+            .features .floating-shape {
+                display: none;
+            }
+        }
+
+        /* ============ CUSTOM MODAL ============ */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(6px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.35s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-box {
+            background: #ffffff;
+            border-radius: 28px;
+            padding: 44px 40px 36px;
+            max-width: 380px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 40px 80px rgba(4, 30, 20, 0.3);
+            transform: scale(0.9) translateY(20px);
+            transition: transform 0.35s cubic-bezier(.16, 1, .3, 1);
+            position: relative;
+        }
+
+        .modal-overlay.active .modal-box {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: #ecfdf5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 18px;
+            font-size: 1.6rem;
+            color: var(--primary-dark);
+        }
+
+        .modal-box h3 {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: var(--ink);
+            margin-bottom: 8px;
+            letter-spacing: -0.4px;
+        }
+
+        .modal-box p {
+            font-size: 0.92rem;
+            color: var(--muted);
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        .modal-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 11px 28px;
+            border: none;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            background: var(--primary-dark);
+            color: #fff;
+        }
+
+        .modal-btn:hover {
+            background: #047857;
+            transform: translateY(-2px);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 14px;
+            right: 18px;
+            background: none;
+            border: none;
+            font-size: 1.3rem;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .modal-close:hover {
+            color: var(--ink);
         }
     </style>
 </head>
@@ -1047,11 +1153,11 @@
                     <span class="icon"><i class="fa-solid fa-desktop"></i></span>
                     <span class="txt"><small>Tersedia sekarang</small><span>Buka Versi Web</span></span>
                 </a>
-                <a href="#" class="btn-store ghost" onclick="event.preventDefault()">
+                <a href="#" class="btn-store ghost" onclick="event.preventDefault(); showModal('google')">
                     <span class="soon-chip">Soon</span><span class="icon"><i class="fa-brands fa-google-play"></i></span>
                     <span class="txt"><small>Get it on</small><span>Google Play</span></span>
                 </a>
-                <a href="#" class="btn-store ghost" onclick="event.preventDefault()">
+                <a href="#" class="btn-store ghost" onclick="event.preventDefault(); showModal('apple')">
                     <span class="soon-chip">Soon</span><span class="icon"><i class="fa-brands fa-apple"></i></span>
                     <span class="txt"><small>Download on the</small><span>App Store</span></span>
                 </a>
@@ -1103,7 +1209,7 @@
             <div class="section-head reveal-up">
                 <div class="section-eyebrow">Kenapa Hifzhly</div>
                 <h2>Dibangun untuk konsistensi hafalanmu</h2>
-                <p>Empat kebiasaan kecil yang dijaga aplikasinya — lihat detail fitur di bawah ini.</p>
+                <p>Lebih dari sekadar pencatat — Hifzhly bantu kamu bangun kebiasaan menghafal yang konsisten, terukur, dan menyenangkan. Yuk, lihat fiturnya!</p>
             </div>
         </div>
 
@@ -1120,7 +1226,7 @@
                         <span class="slide-index">Fitur 01</span>
                         <div class="slide-icon"><i class="fa-solid fa-list-check"></i></div>
                         <h3>Mutaba'ah Cerdas</h3>
-                        <p>Catat setiap aktivitas tilawah, murojaah, dan hafalan barumu dengan cepat dan rapi, langsung tercentang otomatis begitu selesai. Setiap setoran langsung tercatat, guru bisa pantau real-time tanpa ribet.</p>
+                        <p>Catat setiap aktivitas tilawah, murojaah, dan hafalan barumu secara otomatis — cukup satu sentuhan, semuanya tercentang rapi. Guru bisa pantau perkembanganmu langsung tanpa ribet, dan kamu bisa fokus penuh menghafal.</p>
                     </div>
                 </div>
 
@@ -1130,7 +1236,7 @@
                         <span class="slide-index">Fitur 02</span>
                         <div class="slide-icon"><i class="fa-solid fa-fire"></i></div>
                         <h3>Konsistensi &amp; Streak</h3>
-                        <p>Pertahankan api semangatmu setiap hari dengan fitur streak dan pengingat otomatis. Jangan biarkan catatanmu terputus — target minimal harian yang fleksibel bikin kamu tetap on track tanpa terbebani.</p>
+                        <p>Jaga semangatmu dengan streak harian dan pengingat cerdas yang nggak pernah telat. Target fleksibel, notifikasi pas waktu — cukup 5 menit sehari, hafalanmu tetap terjaga tanpa rasa terbebani.</p>
                     </div>
                 </div>
 
@@ -1140,7 +1246,7 @@
                         <span class="slide-index">Fitur 03</span>
                         <div class="slide-icon"><i class="fa-solid fa-file-export"></i></div>
                         <h3>Ekspor Laporan</h3>
-                        <p>Unduh rekap aktivitas bulananmu ke dalam format PDF atau Excel, siap dibagikan ke musyrif atau orang tua. Data lengkap: jumlah setoran, progress juz, nilai murojaah — semua rapi dalam satu halaman.</p>
+                        <p>Buat laporan bulanan otomatis — PDF atau Excel, tinggal unduh dan bagikan ke musyrif atau orang tua. Semua data hafalan, setoran, dan progres tersusun rapi, nggak perlu repot rekap manual lagi.</p>
                     </div>
                 </div>
 
@@ -1150,7 +1256,7 @@
                         <span class="slide-index">Fitur 04</span>
                         <div class="slide-icon"><i class="fa-solid fa-arrows-rotate"></i></div>
                         <h3>Multi-Platform</h3>
-                        <p>Sinkronisasi sempurna lintas perangkat. Buka dari Desktop, Android, maupun iOS — data selalu terbarui otomatis tanpa perlu sync manual. Hafalanmu tetap aman di cloud.</p>
+                        <p>Akses dari mana saja — Desktop, Android, iOS, semua tersinkron otomatis tanpa sync manual. Mulai setoran di HP, lanjutin di laptop, semua data tetap aman di cloud dan selalu terbarui.</p>
                     </div>
                 </div>
 
@@ -1162,7 +1268,7 @@
     <section class="closing-cta">
         <div class="container reveal-up">
             <h2>Siap jaga hafalanmu setiap hari?</h2>
-            <p>Coba versi web-nya sekarang, gratis, sambil menunggu aplikasi mobile-nya rilis.</p>
+            <p>Gratis selamanya — tunggu apa lagi? Mulai perjalanan hafalanmu sekarang juga, bawa Al-Qur'an lebih dekat setiap hari.</p>
             <a href="#" class="btn-store primary">
                 <span class="icon"><i class="fa-solid fa-desktop"></i></span>
                 <span class="txt"><small>Mulai sekarang</small><span>Buka Versi Web</span></span>
@@ -1174,10 +1280,44 @@
         <div class="container">&copy; <?= date('Y') ?> Hifzhly. Pendamping Murojaah Al-Qur'an Berbasis AI.</div>
     </footer>
 
+    <!-- ============ CUSTOM MODAL ============ -->
+    <div class="modal-overlay" id="comingSoonModal" onclick="if(event.target===this)hideModal()">
+        <div class="modal-box">
+            <button class="modal-close" onclick="hideModal()">&times;</button>
+            <div class="modal-icon"><i class="fa-solid fa-rocket"></i></div>
+            <h3 id="modalTitle">Coming Soon</h3>
+            <p id="modalDesc">Aplikasi Hifzhly untuk platform ini masih dalam tahap pengembangan. Kami akan memberitahu kamu begitu tersedia!</p>
+            <button class="modal-btn" onclick="hideModal()"><i class="fa-solid fa-bell"></i> Beri Tahu Saya</button>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
 
     <script>
+        function showModal(platform) {
+            const modal = document.getElementById('comingSoonModal');
+            const title = document.getElementById('modalTitle');
+            const desc = document.getElementById('modalDesc');
+            if (platform === 'google') {
+                title.textContent = 'Google Play Coming Soon';
+                desc.textContent = 'Aplikasi Android Hifzhly masih dalam tahap pengembangan. Kami akan memberitahu kamu begitu tersedia di Google Play!';
+            } else {
+                title.textContent = 'App Store Coming Soon';
+                desc.textContent = 'Aplikasi iOS Hifzhly masih dalam tahap pengembangan. Kami akan memberitahu kamu begitu tersedia di App Store!';
+            }
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function hideModal() {
+            const modal = document.getElementById('comingSoonModal');
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') hideModal(); });
+
         (function() {
             const isMobile = window.matchMedia('(max-width: 768px)').matches;
 
@@ -1340,31 +1480,33 @@
                 let lastIndex = -1;
                 let screenAnim = 1;
                 let animIndex = 0;
-                drawScreenUI(0, 1);
+                drawScreenUI(0, 1, 0);
 
                 function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
 
-                function drawScreenUI(index, anim) {
+                function drawScreenUI(index, anim, time) {
                     const cw = screenCanvas.width, ch = screenCanvas.height;
                     const ctx = screenCtx;
                     const t = easeOutCubic(Math.min(1, anim));
                     const slideUp = (1 - t) * 18;
                     const fadeIn = t;
+                    const pulse = 0.5 + 0.5 * Math.sin(time * 2);
 
                     ctx.clearRect(0, 0, cw, ch);
 
-                    // Subtle gradient bg
                     const grad = ctx.createLinearGradient(0, 0, 0, ch);
                     grad.addColorStop(0, '#f8fafc');
                     grad.addColorStop(1, '#f0fdf4');
                     ctx.fillStyle = grad;
                     ctx.fillRect(0, 0, cw, ch);
 
-                    // Top accent line
-                    ctx.fillStyle = '#059669';
-                    ctx.fillRect(0, 0, cw, 3);
+                    ctx.strokeStyle = '#059669';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(0, 1.5);
+                    ctx.lineTo(cw * (0.3 + 0.4 * pulse), 1.5);
+                    ctx.stroke();
 
-                    // Time (small, subtle)
                     ctx.fillStyle = '#94a3b8';
                     ctx.font = '11px sans-serif';
                     ctx.textAlign = 'center';
@@ -1373,7 +1515,6 @@
                     ctx.globalAlpha = fadeIn;
 
                     if (index === 0) {
-                        // Mutaba'ah
                         ctx.fillStyle = '#065f46';
                         ctx.font = 'bold 14px sans-serif';
                         ctx.textAlign = 'left';
@@ -1403,9 +1544,14 @@
                             ctx.fillStyle = done ? '#1e293b' : '#94a3b8';
                             ctx.font = '12px sans-serif';
                             ctx.fillText(items[i], 58, y + 13);
+                            if (!done) {
+                                ctx.fillStyle = '#10b981';
+                                ctx.beginPath();
+                                ctx.arc(37, y + 9, 3 + pulse * 2, 0, Math.PI * 2);
+                                ctx.fill();
+                            }
                         }
 
-                        // Progress
                         ctx.fillStyle = '#e2e8f0';
                         ctx.beginPath();
                         ctx.roundRect(28, 330 + slideUp, cw - 56, 5, 2.5);
@@ -1419,7 +1565,6 @@
                         ctx.textAlign = 'center';
                         ctx.fillText('4 dari 5 selesai', cw / 2, 358 + slideUp);
                     } else if (index === 1) {
-                        // Streak
                         ctx.fillStyle = '#065f46';
                         ctx.font = 'bold 14px sans-serif';
                         ctx.textAlign = 'left';
@@ -1450,11 +1595,15 @@
                         }
 
                         ctx.fillStyle = '#059669';
+                        ctx.beginPath();
+                        ctx.arc(cw - 40, 56 + slideUp, 4 + pulse * 2, 0, Math.PI * 2);
+                        ctx.fill();
+
+                        ctx.fillStyle = '#059669';
                         ctx.font = '11px sans-serif';
                         ctx.textAlign = 'center';
-                        ctx.fillText('Jangan sampai putus!', cw / 2, 330 + slideUp);
+                        ctx.fillText('Jaga semangatmu!', cw / 2, 338 + slideUp);
                     } else if (index === 2) {
-                        // Laporan
                         ctx.fillStyle = '#065f46';
                         ctx.font = 'bold 14px sans-serif';
                         ctx.textAlign = 'left';
@@ -1490,8 +1639,14 @@
                         ctx.font = 'bold 11px sans-serif';
                         ctx.textAlign = 'center';
                         ctx.fillText('Ekspor PDF', cw / 2, 377 + slideUp);
+
+                        ctx.fillStyle = '#10b981';
+                        ctx.beginPath();
+                        ctx.roundRect(cw / 2 - 55, 356 + slideUp, 110 * (0.5 + 0.5 * pulse), 34, 10);
+                        ctx.globalAlpha = 0.15;
+                        ctx.fill();
+                        ctx.globalAlpha = fadeIn;
                     } else {
-                        // Multi-platform - draw shapes instead of emoji
                         ctx.fillStyle = '#065f46';
                         ctx.font = 'bold 14px sans-serif';
                         ctx.textAlign = 'left';
@@ -1514,7 +1669,6 @@
                             ctx.fillText('\u2713', x + 92, 89 + slideUp);
 
                             if (i === 0) {
-                                // Desktop: monitor shape
                                 ctx.fillStyle = '#065f46';
                                 ctx.beginPath();
                                 ctx.roundRect(x + 30, 106 + slideUp, 50, 36, 4);
@@ -1527,7 +1681,6 @@
                                 ctx.fillRect(x + 48, 142 + slideUp, 14, 4);
                                 ctx.fillRect(x + 40, 146 + slideUp, 30, 3);
                             } else {
-                                // Phone shape
                                 ctx.fillStyle = '#065f46';
                                 ctx.beginPath();
                                 ctx.roundRect(x + 33, 104 + slideUp, 44, 44, 8);
@@ -1564,8 +1717,11 @@
                 let isVisible = false;
                 const X_POS = [-1.6, 1.6, -1.6, 1.6];
 
+                let animTime = 0;
+
                 function animate() {
                     if (!isVisible) { animId = null; return; }
+                    animTime += 0.016;
                     animId = requestAnimationFrame(animate);
 
                     const rect = wrap.getBoundingClientRect();
@@ -1592,9 +1748,9 @@
                     }
                     if (screenAnim < 1) {
                         screenAnim = Math.min(1, screenAnim + 0.03);
-                        drawScreenUI(animIndex, screenAnim);
-                    } else if (screenAnim === 1 && lastIndex === index) {
-                        // already drawn
+                        drawScreenUI(animIndex, screenAnim, animTime);
+                    } else {
+                        drawScreenUI(index, 1, animTime);
                     }
 
                     renderer.render(scene, camera);

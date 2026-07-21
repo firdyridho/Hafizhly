@@ -14,16 +14,24 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 }
 
 /* =========================================================
-   1. AUTO-MIGRATE TABEL (Menambahkan kolom PDF & Gambar Kuis jika belum ada)
+   1. AUTO-MIGRATE TABEL (Menambahkan kolom yang belum ada)
    ========================================================= */
 $cek_pdf = mysqli_query($conn, "SHOW COLUMNS FROM tajwid_materi LIKE 'pdf_file'");
 if ($cek_pdf && mysqli_num_rows($cek_pdf) == 0) {
     @mysqli_query($conn, "ALTER TABLE tajwid_materi ADD pdf_file VARCHAR(255) NULL AFTER cover_image");
 }
+
 $cek_gbr = mysqli_query($conn, "SHOW COLUMNS FROM tajwid_kuis LIKE 'gambar'");
 if ($cek_gbr && mysqli_num_rows($cek_gbr) == 0) {
     @mysqli_query($conn, "ALTER TABLE tajwid_kuis ADD gambar VARCHAR(255) NULL AFTER pertanyaan");
 }
+
+// Tambahkan kolom Urutan jika belum ada (Untuk fitur taro paling bawah)
+$cek_urutan = mysqli_query($conn, "SHOW COLUMNS FROM tajwid_materi LIKE 'urutan'");
+if ($cek_urutan && mysqli_num_rows($cek_urutan) == 0) {
+    @mysqli_query($conn, "ALTER TABLE tajwid_materi ADD urutan INT NOT NULL DEFAULT 0 AFTER id");
+}
+
 if (!file_exists('../uploads')) {
     @mkdir('../uploads', 0777, true);
 }
@@ -65,8 +73,6 @@ function simpan_upload($fileArrKey, $allowedExt, $maxSizeMB, $suffix, $index = n
     return ['ok' => true, 'name' => $newName];
 }
 
-$alert = null;
-
 /* =========================================================
    2. HANDLE SIMPAN (TAMBAH / EDIT) — prepared statements
    ========================================================= */
@@ -78,11 +84,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
         exit();
     }
 
-    $id_materi = isset($_POST['id_materi']) ? (int)$_POST['id_materi'] : 0;
-    $judul     = trim($_POST['judul'] ?? '');
-    $konten    = $_POST['konten'] ?? '';
-    $youtube   = trim($_POST['youtube_url'] ?? '');
+    $id_materi  = isset($_POST['id_materi']) ? (int)$_POST['id_materi'] : 0;
+    $judul      = trim($_POST['judul'] ?? '');
+    $konten     = $_POST['konten'] ?? '';
+    $youtube    = trim($_POST['youtube_url'] ?? '');
     $waktu_kuis = isset($_POST['waktu_kuis']) ? (int)$_POST['waktu_kuis'] : 0;
+    $urutan     = isset($_POST['urutan']) ? (int)$_POST['urutan'] : 0; // Ambil nilai urutan
 
     if ($judul === '') {
         $_SESSION['alert'] = ['type' => 'error', 'msg' => 'Judul materi wajib diisi!'];
@@ -103,17 +110,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
 
     if ($id_materi > 0) {
         if ($cover !== '' && $pdf !== '') {
-            $stmt = mysqli_prepare($conn, "UPDATE tajwid_materi SET judul=?, konten=?, youtube_url=?, waktu_kuis=?, cover_image=?, pdf_file=? WHERE id=?");
-            mysqli_stmt_bind_param($stmt, "sssissi", $judul, $konten, $youtube, $waktu_kuis, $cover, $pdf, $id_materi);
+            $stmt = mysqli_prepare($conn, "UPDATE tajwid_materi SET judul=?, konten=?, youtube_url=?, waktu_kuis=?, urutan=?, cover_image=?, pdf_file=? WHERE id=?");
+            mysqli_stmt_bind_param($stmt, "sssiissi", $judul, $konten, $youtube, $waktu_kuis, $urutan, $cover, $pdf, $id_materi);
         } elseif ($cover !== '') {
-            $stmt = mysqli_prepare($conn, "UPDATE tajwid_materi SET judul=?, konten=?, youtube_url=?, waktu_kuis=?, cover_image=? WHERE id=?");
-            mysqli_stmt_bind_param($stmt, "sssisi", $judul, $konten, $youtube, $waktu_kuis, $cover, $id_materi);
+            $stmt = mysqli_prepare($conn, "UPDATE tajwid_materi SET judul=?, konten=?, youtube_url=?, waktu_kuis=?, urutan=?, cover_image=? WHERE id=?");
+            mysqli_stmt_bind_param($stmt, "sssiisi", $judul, $konten, $youtube, $waktu_kuis, $urutan, $cover, $id_materi);
         } elseif ($pdf !== '') {
-            $stmt = mysqli_prepare($conn, "UPDATE tajwid_materi SET judul=?, konten=?, youtube_url=?, waktu_kuis=?, pdf_file=? WHERE id=?");
-            mysqli_stmt_bind_param($stmt, "sssisi", $judul, $konten, $youtube, $waktu_kuis, $pdf, $id_materi);
+            $stmt = mysqli_prepare($conn, "UPDATE tajwid_materi SET judul=?, konten=?, youtube_url=?, waktu_kuis=?, urutan=?, pdf_file=? WHERE id=?");
+            mysqli_stmt_bind_param($stmt, "sssiisi", $judul, $konten, $youtube, $waktu_kuis, $urutan, $pdf, $id_materi);
         } else {
-            $stmt = mysqli_prepare($conn, "UPDATE tajwid_materi SET judul=?, konten=?, youtube_url=?, waktu_kuis=? WHERE id=?");
-            mysqli_stmt_bind_param($stmt, "sssii", $judul, $konten, $youtube, $waktu_kuis, $id_materi);
+            $stmt = mysqli_prepare($conn, "UPDATE tajwid_materi SET judul=?, konten=?, youtube_url=?, waktu_kuis=?, urutan=? WHERE id=?");
+            mysqli_stmt_bind_param($stmt, "sssiii", $judul, $konten, $youtube, $waktu_kuis, $urutan, $id_materi);
         }
         mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
@@ -123,8 +130,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
         mysqli_stmt_execute($stmtDel);
         mysqli_stmt_close($stmtDel);
     } else {
-        $stmt = mysqli_prepare($conn, "INSERT INTO tajwid_materi (judul, cover_image, pdf_file, konten, youtube_url, waktu_kuis) VALUES (?, ?, ?, ?, ?, ?)");
-        mysqli_stmt_bind_param($stmt, "sssssi", $judul, $cover, $pdf, $konten, $youtube, $waktu_kuis);
+        $stmt = mysqli_prepare($conn, "INSERT INTO tajwid_materi (judul, cover_image, pdf_file, konten, youtube_url, waktu_kuis, urutan) VALUES (?, ?, ?, ?, ?, ?, ?)");
+        mysqli_stmt_bind_param($stmt, "sssssii", $judul, $cover, $pdf, $konten, $youtube, $waktu_kuis, $urutan);
         mysqli_stmt_execute($stmt);
         $id_materi = mysqli_insert_id($conn);
         mysqli_stmt_close($stmt);
@@ -209,7 +216,8 @@ if (isset($_GET['delete'])) {
    3. AMBIL DATA UNTUK DITAMPILKAN
    ========================================================= */
 $materi_list = [];
-$q_m = mysqli_query($conn, "SELECT * FROM tajwid_materi ORDER BY created_at DESC");
+// ORDER BY urutan lalu created_at
+$q_m = mysqli_query($conn, "SELECT * FROM tajwid_materi ORDER BY urutan ASC, created_at ASC");
 while ($row = mysqli_fetch_assoc($q_m)) {
     $stmtC = mysqli_prepare($conn, "SELECT COUNT(id) as total FROM tajwid_kuis WHERE materi_id = ?");
     mysqli_stmt_bind_param($stmtC, "i", $row['id']);
@@ -985,7 +993,10 @@ if (isset($_SESSION['alert'])) {
                             <?php if (!empty($m['pdf_file'])): ?><span><i class="fas fa-file-pdf" style="color:#ef4444;"></i> PDF</span><?php endif; ?>
                         </div>
                         <div class="mc-actions">
-                            <button class="btn btn-secondary" onclick='editMateri(<?= json_encode($m, JSON_HEX_APOS | JSON_HEX_QUOT) ?>)'><i class="fas fa-edit"></i> Edit</button>
+                            <!-- PERBAIKAN TOMBOL EDIT (Anti-macet, format json aman) -->
+                            <button class="btn btn-secondary" onclick="editMateri(this)" data-json="<?= htmlspecialchars(json_encode($m), ENT_QUOTES, 'UTF-8') ?>">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
                             <button class="btn btn-danger-soft btn-icon" onclick="confirmDelete(<?= (int)$m['id'] ?>)"><i class="fas fa-trash"></i></button>
                         </div>
                     </div>
@@ -1035,10 +1046,19 @@ if (isset($_SESSION['alert'])) {
                             <label>Judul Materi <span style="color:var(--danger)">*</span></label>
                             <input type="text" name="judul" id="f_judul" class="form-control" placeholder="Contoh: Hukum Bacaan Nun Mati...">
                         </div>
-                        <div class="form-group">
-                            <label>Link Video YouTube (Opsional)</label>
-                            <input type="url" name="youtube_url" id="f_youtube" class="form-control" placeholder="https://youtube.com/watch?v=...">
+
+                        <div class="grid-2">
+                            <div class="form-group">
+                                <label>Link Video YouTube (Opsional)</label>
+                                <input type="url" name="youtube_url" id="f_youtube" class="form-control" placeholder="https://youtube.com/watch?v=...">
+                            </div>
+                            <div class="form-group">
+                                <label>Urutan Tampil (Opsional)</label>
+                                <input type="number" name="urutan" id="f_urutan" class="form-control" value="0" placeholder="0">
+                                <span style="font-size:0.8rem; color:var(--muted); margin-top: 5px; display: block;"><i class="fas fa-info-circle"></i> Makin besar angkanya, posisinya makin bawah.</span>
+                            </div>
                         </div>
+
                         <div class="grid-2">
                             <div class="form-group">
                                 <label>Foto Sampul / Cover (Opsional)</label>
@@ -1121,18 +1141,14 @@ if (isset($_SESSION['alert'])) {
         CKEDITOR.ClassicEditor.create(document.querySelector('#editor'), {
             toolbar: {
                 items: [
-                    'heading', '|',
-                    'fontFamily', 'fontSize', 'fontColor', 'fontBackgroundColor', '|',
-                    'bold', 'italic', 'underline', 'strikethrough', '|',
-                    'alignment', '|',
+                    'heading', '|', 'fontFamily', 'fontSize', 'fontColor', 'fontBackgroundColor', '|',
+                    'bold', 'italic', 'underline', 'strikethrough', '|', 'alignment', '|',
                     'bulletedList', 'numberedList', 'outdent', 'indent', '|',
-                    'link', 'insertTable', 'blockQuote', '|',
-                    'undo', 'redo'
+                    'link', 'insertTable', 'blockQuote', '|', 'undo', 'redo'
                 ],
                 shouldNotGroupWhenFull: true
             },
             fontFamily: {
-                options: ['default', 'Arial, Helvetica, sans-serif', 'Courier New, Courier, monospace', 'Georgia, serif', 'Tahoma, Geneva, sans-serif', 'Times New Roman, Times, serif', 'Trebuchet MS, Helvetica, sans-serif', 'Verdana, Geneva, sans-serif', 'Plus Jakarta Sans, sans-serif', 'Amiri, serif'],
                 supportAllValues: true
             },
             fontSize: {
@@ -1194,13 +1210,12 @@ if (isset($_SESSION['alert'])) {
         }
 
         // ==============================================================
-        // FITUR AUTO-SAVE DRAFT SUPER LENGKAP KE LOCAL STORAGE
+        // FITUR AUTO-SAVE DRAFT LANGSUNG DITERAPKAN (TANPA PROMPT)
         // ==============================================================
         let autoSaveInterval;
         const autoSaveToggle = document.getElementById('autoSaveToggle');
         const saveIndicator = document.getElementById('saveIndicator');
 
-        // Memulai Interval Simpan
         function startAutoSave() {
             if (autoSaveInterval) clearInterval(autoSaveInterval);
 
@@ -1211,7 +1226,6 @@ if (isset($_SESSION['alert'])) {
                     const id_materi = document.getElementById('id_materi').value;
                     const draftKey = 'hifzly_draft_tajwid_' + id_materi;
 
-                    // Mengambil seluruh data Kuis di layar
                     const quizzes = [];
                     document.querySelectorAll('.quiz-box').forEach(box => {
                         const oldImgInput = box.querySelector('input[name="old_gambar_kuis[]"]');
@@ -1226,37 +1240,34 @@ if (isset($_SESSION['alert'])) {
                         });
                     });
 
-                    // Siapkan Object penyimpanan
                     const draftData = {
                         judul: document.getElementById('f_judul').value,
                         youtube: document.getElementById('f_youtube').value,
                         waktu_kuis: document.getElementById('f_waktu').value,
+                        urutan: document.getElementById('f_urutan').value, // Simpan kolom urutan
                         konten: myEditor ? myEditor.getData() : '',
-                        soal: quizzes // Format disamakan dengan array soal dari database
+                        soal: quizzes
                     };
 
-                    // Simpan ke memory hp/laptop
                     localStorage.setItem(draftKey, JSON.stringify(draftData));
-
                     saveIndicator.classList.add('show');
                     setTimeout(() => saveIndicator.classList.remove('show'), 2000);
                 }
             }, 10000); // 10 Detik
         }
 
-        // Kontrol Tombol Switch
         autoSaveToggle.addEventListener('change', function(e) {
             if (e.target.checked) startAutoSave();
             else clearInterval(autoSaveInterval);
         });
 
-        // Fungsi Memasukkan Data (Draft / Server) ke Form
+        // Terapkan data ke dalam DOM (Form)
         function applyDataToForm(data, isServerData = false) {
             document.getElementById('f_judul').value = data.judul || '';
             document.getElementById('f_youtube').value = data.youtube || data.youtube_url || '';
             document.getElementById('f_waktu').value = data.waktu_kuis || 0;
+            document.getElementById('f_urutan').value = data.urutan || 0; // Tempel urutan form
 
-            // Nama/Preview File Hanya Bisa Diakses jika itu Data Asli dari Server
             if (isServerData) {
                 if (data.cover_image) {
                     document.getElementById('lbl_cover').innerText = 'Cover tersimpan: ' + data.cover_image;
@@ -1279,7 +1290,6 @@ if (isset($_SESSION['alert'])) {
                 if (myEditor) myEditor.setData(data.konten || '');
             }, 100);
 
-            // Re-build Struktur Kuis
             document.getElementById('quizContainer').innerHTML = '';
             quizCounter = 0;
             const soalList = data.soal || [];
@@ -1289,38 +1299,25 @@ if (isset($_SESSION['alert'])) {
             toggleQuizEmpty();
         }
 
-        // Pengecekan Draft Utama
+        // PERBAIKAN: Fungsi Cek Draft yang tidak mengganggu UI / Minta Konfirmasi
         function checkDraft(id_materi, serverData = null) {
             const draftKey = 'hifzly_draft_tajwid_' + id_materi;
             const savedDraft = localStorage.getItem(draftKey);
 
             if (savedDraft) {
-                Swal.fire({
-                    title: 'Draft Ditemukan!',
-                    text: id_materi == 0 ?
-                        "Ada ketikan materi baru yang belum tersimpan. Ingin melanjutkannya?" :
-                        "Ada ketikan editan pada materi ini yang belum tersimpan. Ingin melanjutkannya?",
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonText: 'Ya, Lanjutkan Draft',
-                    cancelButtonText: id_materi == 0 ? 'Tidak, Mulai Baru' : 'Tidak, Gunakan Data Asli'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        applyDataToForm(JSON.parse(savedDraft), false);
-                        // Khusus untuk Edit Draft, Teks File harus dikembalikan ke Server punya
-                        if (id_materi != 0 && serverData) {
-                            if (serverData.cover_image) {
-                                document.getElementById('lbl_cover').innerText = 'Cover tersimpan: ' + serverData.cover_image;
-                                document.getElementById('preview_cover').src = '../uploads/' + serverData.cover_image;
-                                document.getElementById('preview_cover').style.display = 'block';
-                            }
-                            if (serverData.pdf_file) document.getElementById('lbl_pdf').innerText = 'PDF tersimpan: ' + serverData.pdf_file;
-                        }
-                    } else {
-                        localStorage.removeItem(draftKey);
-                        if (serverData) applyDataToForm(serverData, true);
+                // Terapkan Langsung (Mode Senyap)
+                applyDataToForm(JSON.parse(savedDraft), false);
+
+                // Jika dari server, pastikan foto cover dan file PDF tetap tertulis (karena autosave tidak simpan file)
+                if (id_materi != 0 && serverData) {
+                    if (serverData.cover_image) {
+                        document.getElementById('lbl_cover').innerText = 'Cover tersimpan: ' + serverData.cover_image;
+                        document.getElementById('preview_cover').src = '../uploads/' + serverData.cover_image;
+                        document.getElementById('preview_cover').style.display = 'block';
                     }
-                });
+                    if (serverData.pdf_file) document.getElementById('lbl_pdf').innerText = 'PDF tersimpan: ' + serverData.pdf_file;
+                }
+                console.log("Draft lokal termuat otomatis."); // Penanda saja
             } else {
                 if (serverData) applyDataToForm(serverData, true);
             }
@@ -1338,15 +1335,16 @@ if (isset($_SESSION['alert'])) {
             document.getElementById('mainForm').reset();
             document.getElementById('id_materi').value = 0;
 
-            // Atur Form Kosong
             applyDataToForm({}, true);
             goToStep(1);
-
-            // Periksa Draft Materi Baru
             checkDraft(0, null);
         }
 
-        function editMateri(data) {
+        // PERBAIKAN: Tombol Edit dipanggil lewat (this) element yang membawa data di HTML Atribut data-json
+        function editMateri(btnElement) {
+            // Ambil data JSON dengan aman dari atribut tombol
+            const data = JSON.parse(btnElement.getAttribute('data-json'));
+
             document.getElementById('listView').style.display = 'none';
             const formArea = document.getElementById('formArea');
             formArea.style.display = 'block';
@@ -1356,7 +1354,6 @@ if (isset($_SESSION['alert'])) {
             document.getElementById('id_materi').value = data.id;
             goToStep(1);
 
-            // Periksa Draft untuk Edit Materi Spesifik Ini
             checkDraft(data.id, data);
         }
 
@@ -1374,7 +1371,6 @@ if (isset($_SESSION['alert'])) {
         // ==============================================================
         // FITUR PENDUKUNG FORM
         // ==============================================================
-
         document.getElementById('f_cover').addEventListener('change', function() {
             if (this.files[0]) {
                 document.getElementById('lbl_cover').innerText = this.files[0].name;
@@ -1421,7 +1417,7 @@ if (isset($_SESSION['alert'])) {
             div.className = 'quiz-box';
             div.id = 'qbox_' + quizCounter;
 
-            const esc = (s) => (s || '').replace(/"/g, '&quot;');
+            const esc = (s) => (s || '').toString().replace(/"/g, '&quot;');
             const p = esc(data ? data.pertanyaan : '');
             const oa = esc(data ? data.opsi_a : '');
             const ob = esc(data ? data.opsi_b : '');
@@ -1504,7 +1500,7 @@ if (isset($_SESSION['alert'])) {
             }
             if (myEditor) document.getElementById('editor').value = myEditor.getData();
 
-            // Hapus Draft saat berhasil Submit (save final)
+            // Hapus Draft saat berhasil disubmit ke server
             localStorage.removeItem('hifzly_draft_tajwid_' + id_materi);
 
             document.getElementById('submitBtn').classList.add('loading');

@@ -719,7 +719,7 @@
 
         .features-3d-wrap {
             position: relative;
-            height: 350vh;
+            height: 420vh;
         }
 
         .features-canvas-sticky {
@@ -906,7 +906,7 @@
         }
 
         .site-footer {
-            background: var(--ink);
+            background: #064e3b;
             color: rgba(255, 255, 255, 0.6);
             padding: 30px 0;
             text-align: center;
@@ -951,22 +951,36 @@
             }
 
             .features-3d-wrap {
-                height: 280vh;
+                height: auto;
+            }
+
+            .features-canvas-sticky,
+            .rotate-hint {
+                display: none;
+            }
+
+            .features-text-track {
+                position: static;
+                pointer-events: auto;
             }
 
             .feature-slide {
+                height: auto;
                 justify-content: center !important;
-                padding: 0 8%;
+                padding: 32px 8%;
             }
 
             .slide-card {
-                max-width: 88vw;
+                max-width: 100%;
+                opacity: 1;
+                transform: none;
                 padding: 24px 22px;
+                transition: none;
             }
 
-            .rotate-hint {
-                font-size: 0.75rem;
-                bottom: 20px;
+            .feature-slide.in-view .slide-card {
+                opacity: 1;
+                transform: none;
             }
         }
 
@@ -1097,7 +1111,7 @@
             <div class="section-head reveal-up">
                 <div class="section-eyebrow">Kenapa Hifzhly</div>
                 <h2>Dibangun untuk konsistensi hafalanmu</h2>
-                <p>Empat kebiasaan kecil yang dijaga aplikasinya — kamu bisa memutar HP 3D di bawah ini untuk melihat detail layarnya.</p>
+                <p>Empat kebiasaan kecil yang dijaga aplikasinya — lihat detail fitur di bawah ini.</p>
             </div>
         </div>
 
@@ -1201,8 +1215,9 @@
                 stage.addEventListener('mouseleave', () => tilt.style.transform = 'rotateY(0deg) rotateX(0deg)');
             }
 
-            /* ---------- 3D PHONE (OPTIMIZED) ---------- */
+            /* ---------- 3D PHONE (DESKTOP ONLY) ---------- */
             function initPhone3D() {
+                if (isMobile) return;
                 const wrap = document.getElementById('features3DWrap');
                 const stickyEl = document.querySelector('.features-canvas-sticky');
                 const canvas = document.getElementById('phoneCanvas');
@@ -1234,6 +1249,7 @@
 
                 const phoneGroup = new THREE.Group();
                 phoneGroup.rotation.y = -0.25;
+                phoneGroup.position.x = -1.2;
 
                 const shape = new THREE.Shape();
                 const w = 1.6, h = 3.3, r = 0.25;
@@ -1256,9 +1272,9 @@
                 });
 
                 const bodyMat = new THREE.MeshStandardMaterial({
-                    color: 0x0f172a,
-                    metalness: 0.6,
-                    roughness: 0.3
+                    color: 0x065f46,
+                    metalness: 0.4,
+                    roughness: 0.4
                 });
                 const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
                 bodyMesh.position.z = -0.09;
@@ -1270,11 +1286,12 @@
                 screenMesh.position.z = 0.12;
                 phoneGroup.add(screenMesh);
 
+                phoneGroup.scale.set(0.75, 0.75, 0.75);
                 scene.add(phoneGroup);
 
-                // --- INTERACTIVE DRAG ---
-                let targetRotationX = 0;
-                let targetRotationY = -0.25;
+                // --- INTERACTIVE DRAG (separate from scroll rotation) ---
+                let userRotX = 0;
+                let userRotY = 0;
                 let isDragging = false;
                 let prevMouse = { x: 0, y: 0 };
 
@@ -1290,9 +1307,9 @@
                     if (!isDragging) return;
                     const cx = e.touches ? e.touches[0].clientX : e.clientX;
                     const cy = e.touches ? e.touches[0].clientY : e.clientY;
-                    targetRotationY += (cx - prevMouse.x) * 0.01;
-                    targetRotationX += (cy - prevMouse.y) * 0.01;
-                    targetRotationX = Math.max(-0.5, Math.min(0.5, targetRotationX));
+                    userRotY += (cx - prevMouse.x) * 0.01;
+                    userRotX += (cy - prevMouse.y) * 0.01;
+                    userRotX = Math.max(-0.5, Math.min(0.5, userRotX));
                     prevMouse = { x: cx, y: cy };
                 }
 
@@ -1304,7 +1321,6 @@
                 stickyEl.addEventListener('mousemove', onMove);
                 window.addEventListener('mouseup', onUp);
 
-                // Touch: only on direct touch (not scroll) via threshold
                 let touchStartY = 0;
                 stickyEl.addEventListener('touchstart', (e) => {
                     touchStartY = e.touches[0].clientY;
@@ -1391,8 +1407,10 @@
                     const targetX = isMobile ? 0 : X_POS[index] + (X_POS[nextIndex] - X_POS[index]) * frac;
                     phoneGroup.position.x += (targetX - phoneGroup.position.x) * 0.1;
 
-                    phoneGroup.rotation.y += (targetRotationY - phoneGroup.rotation.y) * 0.1;
-                    phoneGroup.rotation.x += (targetRotationX - phoneGroup.rotation.x) * 0.1;
+                    const scrollRotY = progress * Math.PI * 0.5 - 0.25;
+                    const targetY = scrollRotY + userRotY;
+                    phoneGroup.rotation.y += (targetY - phoneGroup.rotation.y) * 0.08;
+                    phoneGroup.rotation.x += (userRotX - phoneGroup.rotation.x) * 0.08;
 
                     if (index !== lastIndex) {
                         drawScreenUI(index);

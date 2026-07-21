@@ -1227,8 +1227,8 @@
                 scene.add(dirLight);
 
                 const screenCanvas = document.createElement('canvas');
-                screenCanvas.width = 200;
-                screenCanvas.height = 400;
+                screenCanvas.width = 400;
+                screenCanvas.height = 800;
                 const screenCtx = screenCanvas.getContext('2d');
                 const screenTexture = new THREE.CanvasTexture(screenCanvas);
                 screenTexture.minFilter = THREE.LinearFilter;
@@ -1335,162 +1335,190 @@
                     const cw = screenCanvas.width, ch = screenCanvas.height;
                     const ctx = screenCtx;
 
-                    // Background gradient
-                    const grad = ctx.createLinearGradient(0, 0, 0, ch);
-                    grad.addColorStop(0, '#f0fdf4');
-                    grad.addColorStop(1, '#ecfdf5');
-                    ctx.fillStyle = grad;
+                    // Clean white background
+                    ctx.fillStyle = '#ffffff';
                     ctx.fillRect(0, 0, cw, ch);
 
-                    // Status bar
+                    // Thin top accent
                     ctx.fillStyle = '#059669';
-                    ctx.fillRect(0, 0, cw, 28);
-                    ctx.fillStyle = '#fff';
-                    ctx.font = '9px sans-serif';
+                    ctx.fillRect(0, 0, cw, 3);
+
+                    // Time
+                    ctx.fillStyle = '#1e293b';
+                    ctx.font = '12px sans-serif';
                     ctx.textAlign = 'center';
-                    ctx.fillText('9:41', cw / 2, 18);
-
-                    // Header
-                    const titles = ['Mutaba\'ah Harian', 'Streak Hafalan', 'Laporan Bulanan', 'Sinkronisasi'];
-                    const icons = ['☑', '🔥', '📊', '🔄'];
-                    ctx.fillStyle = '#065f46';
-                    ctx.font = 'bold 13px sans-serif';
-                    ctx.textAlign = 'center';
-                    ctx.fillText(titles[index], cw / 2, 52);
-
-                    // Small underline
-                    ctx.fillStyle = '#a7f3d0';
-                    ctx.fillRect(cw / 2 - 25, 57, 50, 2);
-
-                    ctx.textAlign = 'left';
+                    ctx.fillText('9:41', cw / 2, 24);
 
                     if (index === 0) {
-                        // Mutaba'ah list with checkboxes
-                        const items = ['Subuh: Juz 1-2', 'Murojaah: An-Nas', 'Hafalan: Al-Fatihah', 'Doa harian'];
+                        // Mutaba'ah list - clean check items
+                        ctx.fillStyle = '#065f46';
+                        ctx.font = 'bold 15px sans-serif';
+                        ctx.textAlign = 'left';
+                        ctx.fillText('Catatan Hari Ini', 28, 56);
+
+                        const items = [
+                            { label: 'Al-Baqarah 1-5 (Murojaah)', done: true },
+                            { label: 'Al-Baqarah 6-10 (Hafalan)', done: true },
+                            { label: 'An-Nas 1-6 (Murojaah)', done: true },
+                            { label: 'Doa Pagi & Petang', done: true },
+                            { label: 'Tadabbur Juz 5', done: false }
+                        ];
                         for (let i = 0; i < items.length; i++) {
-                            const y = 80 + i * 32;
-                            ctx.fillStyle = '#059669';
+                            const y = 80 + i * 52;
+                            const done = items[i].done;
+                            ctx.fillStyle = done ? '#059669' : '#e2e8f0';
                             ctx.beginPath();
-                            ctx.roundRect(20, y - 1, 14, 14, 3);
+                            ctx.roundRect(28, y, 20, 20, 5);
                             ctx.fill();
-                            ctx.fillStyle = '#fff';
-                            ctx.font = '9px sans-serif';
-                            ctx.textAlign = 'center';
-                            ctx.fillText('✓', 27, y + 10);
-                            ctx.textAlign = 'left';
-                            ctx.fillStyle = '#1e293b';
+                            if (done) {
+                                ctx.fillStyle = '#ffffff';
+                                ctx.font = '12px sans-serif';
+                                ctx.textAlign = 'center';
+                                ctx.fillText('✓', 38, y + 15);
+                                ctx.textAlign = 'left';
+                            }
+                            ctx.fillStyle = done ? '#1e293b' : '#94a3b8';
+                            ctx.font = '13px sans-serif';
+                            ctx.fillText(items[i].label, 60, y + 14);
+                            ctx.fillStyle = done ? '#059669' : '#94a3b8';
                             ctx.font = '10px sans-serif';
-                            ctx.fillText(items[i], 42, y + 10);
+                            ctx.fillText(done ? 'Selesai' : 'Belum', 60, y + 34);
                         }
-                        // Bottom progress
-                        ctx.fillStyle = '#d1fae5';
+
+                        // Progress bar clean
+                        ctx.fillStyle = '#f1f5f9';
                         ctx.beginPath();
-                        ctx.roundRect(20, 205, cw - 40, 8, 4);
+                        ctx.roundRect(28, 340, cw - 56, 6, 3);
                         ctx.fill();
                         ctx.fillStyle = '#059669';
                         ctx.beginPath();
-                        ctx.roundRect(20, 205, 120, 8, 4);
+                        ctx.roundRect(28, 340, (cw - 56) * 0.8, 6, 3);
                         ctx.fill();
                         ctx.fillStyle = '#94a3b8';
-                        ctx.font = '8px sans-serif';
+                        ctx.font = '11px sans-serif';
                         ctx.textAlign = 'center';
-                        ctx.fillText('Hari ini: 4/4 selesai', cw / 2, 228);
+                        ctx.fillText('4 dari 5 selesai', cw / 2, 370);
                     } else if (index === 1) {
-                        // Streak view
-                        ctx.textAlign = 'center';
-                        ctx.fillStyle = '#f59e0b';
-                        ctx.font = 'bold 36px sans-serif';
-                        ctx.fillText('🔥 7', cw / 2, 105);
-                        ctx.fillStyle = '#64748b';
-                        ctx.font = '10px sans-serif';
-                        ctx.fillText('hari beruntun', cw / 2, 122);
+                        // Streak - clean minimal
+                        ctx.fillStyle = '#1e293b';
+                        ctx.font = 'bold 14px sans-serif';
+                        ctx.textAlign = 'left';
+                        ctx.fillText('Streak Hafalan', 28, 56);
 
-                        // Mini calendar dots
-                        const days = ['S', 'S', 'R', 'K', 'J', 'S', 'M'];
-                        ctx.font = '7px sans-serif';
+                        // Big streak number
+                        ctx.fillStyle = '#f59e0b';
+                        ctx.font = 'bold 64px sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.fillText('7', cw / 2, 170);
+                        ctx.fillStyle = '#1e293b';
+                        ctx.font = '16px sans-serif';
+                        ctx.fillText('hari beruntun', cw / 2, 202);
+                        ctx.fillStyle = '#94a3b8';
+                        ctx.font = '12px sans-serif';
+                        ctx.fillText('Terbaik: 21 hari', cw / 2, 222);
+
+                        // Week days
+                        const days = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
                         for (let i = 0; i < 7; i++) {
-                            const x = 25 + i * 24;
+                            const x = 28 + i * 50;
                             ctx.fillStyle = i < 5 ? '#059669' : '#e2e8f0';
                             ctx.beginPath();
-                            ctx.arc(x + 7, 148, 7, 0, Math.PI * 2);
+                            ctx.roundRect(x, 260, 38, 38, 8);
                             ctx.fill();
-                            ctx.fillStyle = i < 5 ? '#fff' : '#94a3b8';
-                            ctx.fillText(days[i], x + 7, 151);
+                            ctx.fillStyle = i < 5 ? '#ffffff' : '#94a3b8';
+                            ctx.font = i < 5 ? 'bold 13px sans-serif' : '13px sans-serif';
+                            ctx.textAlign = 'center';
+                            ctx.fillText(days[i].charAt(0), x + 19, 285);
                         }
 
-                        ctx.fillStyle = '#94a3b8';
-                        ctx.font = '8px sans-serif';
-                        ctx.textAlign = 'center';
-                        ctx.fillText('Jangan putus streak-mu!', cw / 2, 175);
-                    } else if (index === 2) {
-                        // Export report
-                        ctx.textAlign = 'center';
-                        ctx.fillStyle = '#065f46';
-                        ctx.font = 'bold 11px sans-serif';
-                        ctx.fillText('Bulan Juli 2026', cw / 2, 80);
-
-                        ctx.textAlign = 'left';
-                        const stats = [
-                            ['Halaman', '24 juz'],
-                            ['Murojaah', '18 hari'],
-                            ['Hafalan', '5 surat'],
-                            ['Nilai', '92/100']
-                        ];
-                        for (let i = 0; i < stats.length; i++) {
-                            const y = 100 + i * 26;
-                            ctx.fillStyle = '#f1f5f9';
-                            ctx.fillRect(20, y, cw - 40, 22);
-                            ctx.fillStyle = '#1e293b';
-                            ctx.font = '9px sans-serif';
-                            ctx.fillText(stats[i][0], 28, y + 15);
-                            ctx.textAlign = 'right';
-                            ctx.fillStyle = '#059669';
-                            ctx.font = 'bold 9px sans-serif';
-                            ctx.fillText(stats[i][1], cw - 20, y + 15);
-                            ctx.textAlign = 'left';
-                        }
-
-                        ctx.textAlign = 'center';
                         ctx.fillStyle = '#059669';
-                        ctx.font = 'bold 9px sans-serif';
-                        ctx.fillRect(cw / 2 - 40, 210, 80, 22);
-                        ctx.fillStyle = '#fff';
-                        ctx.fillText('Download PDF', cw / 2, 225);
-                    } else {
-                        // Multi-platform
+                        ctx.font = '12px sans-serif';
                         ctx.textAlign = 'center';
+                        ctx.fillText('Jangan sampai putus!', cw / 2, 340);
+                    } else if (index === 2) {
+                        // Laporan - minimal data cards
                         ctx.fillStyle = '#065f46';
-                        ctx.font = 'bold 11px sans-serif';
-                        ctx.fillText('Semua Tersinkron', cw / 2, 78);
+                        ctx.font = 'bold 14px sans-serif';
+                        ctx.textAlign = 'left';
+                        ctx.fillText('Ringkasan Bulanan', 28, 56);
+
+                        const data = [
+                            { label: 'Juz dihafal', value: '24', color: '#059669' },
+                            { label: 'Hari murojaah', value: '18', color: '#10b981' },
+                            { label: 'Surat baru', value: '5', color: '#34d399' },
+                            { label: 'Rata-rata', value: '92', color: '#047857' }
+                        ];
+                        for (let i = 0; i < data.length; i++) {
+                            const x = 28 + (i % 2) * 175;
+                            const y = 80 + Math.floor(i / 2) * 110;
+                            ctx.fillStyle = '#f8fafc';
+                            ctx.beginPath();
+                            ctx.roundRect(x, y, 160, 95, 12);
+                            ctx.fill();
+                            ctx.fillStyle = data[i].color;
+                            ctx.font = 'bold 32px sans-serif';
+                            ctx.textAlign = 'center';
+                            ctx.fillText(data[i].value, x + 80, y + 55);
+                            ctx.fillStyle = '#64748b';
+                            ctx.font = '12px sans-serif';
+                            ctx.fillText(data[i].label, x + 80, y + 80);
+                        }
+
+                        ctx.fillStyle = '#059669';
+                        ctx.beginPath();
+                        ctx.roundRect(cw / 2 - 60, 370, 120, 36, 10);
+                        ctx.fill();
+                        ctx.fillStyle = '#ffffff';
+                        ctx.font = 'bold 12px sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.fillText('Ekspor PDF', cw / 2, 393);
+                    } else {
+                        // Multi-platform - simple connected devices
+                        ctx.fillStyle = '#065f46';
+                        ctx.font = 'bold 14px sans-serif';
+                        ctx.textAlign = 'left';
+                        ctx.fillText('Perangkat Aktif', 28, 56);
 
                         const devices = [
-                            ['💻', 'Desktop'], ['📱', 'Android'], ['📱', 'iOS']
+                            { icon: '🖥', name: 'Desktop', active: true, x: 20 },
+                            { icon: '📱', name: 'Android', active: true, x: 148 },
+                            { icon: '📱', name: 'iOS', active: true, x: 276 }
                         ];
-                        for (let i = 0; i < 3; i++) {
-                            const x = 35 + i * 60;
-                            ctx.fillStyle = '#d1fae5';
+                        for (let i = 0; i < devices.length; i++) {
+                            const d = devices[i];
+                            ctx.fillStyle = d.active ? '#ecfdf5' : '#f8fafc';
                             ctx.beginPath();
-                            ctx.roundRect(x, 95, 50, 50, 10);
+                            ctx.roundRect(d.x, 80, 112, 100, 12);
                             ctx.fill();
-                            ctx.font = '18px sans-serif';
-                            ctx.fillText(devices[i][0], x + 25, 125);
+                            if (d.active) {
+                                ctx.fillStyle = '#059669';
+                                ctx.beginPath();
+                                ctx.arc(d.x + 96, 90, 8, 0, Math.PI * 2);
+                                ctx.fill();
+                                ctx.fillStyle = '#ffffff';
+                                ctx.font = '8px sans-serif';
+                                ctx.textAlign = 'center';
+                                ctx.fillText('✓', d.x + 96, 93);
+                            }
+                            ctx.font = '28px sans-serif';
+                            ctx.textAlign = 'center';
+                            ctx.fillText(d.icon, d.x + 56, 140);
                             ctx.fillStyle = '#1e293b';
-                            ctx.font = '8px sans-serif';
-                            ctx.fillText(devices[i][1], x + 25, 158);
+                            ctx.font = '13px sans-serif';
+                            ctx.fillText(d.name, d.x + 56, 168);
                         }
 
-                        // Sync checkmark
+                        // Sync status
                         ctx.fillStyle = '#059669';
-                        ctx.font = 'bold 10px sans-serif';
-                        ctx.fillText('✓ Semua tersinkron realtime', cw / 2, 200);
+                        ctx.font = '12px sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.fillText('✓ Tersinkron realtime', cw / 2, 230);
+
+                        // Last sync
+                        ctx.fillStyle = '#94a3b8';
+                        ctx.font = '11px sans-serif';
+                        ctx.fillText('Terakhir: 2 menit lalu', cw / 2, 255);
                     }
-
-                    // Notch
-                    ctx.fillStyle = '#064e3b';
-                    ctx.beginPath();
-                    ctx.roundRect(cw / 2 - 30, 4, 60, 16, 8);
-                    ctx.fill();
-
                     screenTexture.needsUpdate = true;
                 }
 
@@ -1515,9 +1543,9 @@
                     const targetX = isMobile ? 0 : X_POS[index] + (X_POS[nextIndex] - X_POS[index]) * frac;
                     phoneGroup.position.x += (targetX - phoneGroup.position.x) * 0.1;
 
-                    const scrollRotY = progress * Math.PI * 0.8 - 0.4;
+                    const scrollRotY = progress * Math.PI * 1.2 - 0.6;
                     const targetY = scrollRotY + userRotY;
-                    phoneGroup.rotation.y += (targetY - phoneGroup.rotation.y) * 0.06;
+                    phoneGroup.rotation.y += (targetY - phoneGroup.rotation.y) * 0.12;
                     phoneGroup.rotation.x += (userRotX - phoneGroup.rotation.x) * 0.08;
 
                     if (index !== lastIndex) {

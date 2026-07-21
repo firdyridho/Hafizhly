@@ -402,6 +402,19 @@ if ($cek_mutabaah && mysqli_num_rows($cek_mutabaah) > 0) {
             margin-bottom: clamp(20px, 3vw, 32px);
             opacity: 0;
             animation: fadeUp 0.7s var(--ease) forwards;
+            position: relative;
+            padding-left: 18px;
+        }
+
+        .welcome-box::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 4px;
+            bottom: 4px;
+            width: 4px;
+            background: linear-gradient(180deg, var(--primary), var(--accent));
+            border-radius: 3px;
         }
 
         .welcome-title {
@@ -415,10 +428,10 @@ if ($cek_mutabaah && mysqli_num_rows($cek_mutabaah) > 0) {
             gap: 10px;
         }
 
-        .wave {
-            display: inline-block;
+        .welcome-title i.fa-hand-wave {
             transform-origin: 70% 70%;
             animation: wave 2.2s ease-in-out infinite;
+            display: inline-block;
         }
 
         @keyframes wave {
@@ -520,9 +533,12 @@ if ($cek_mutabaah && mysqli_num_rows($cek_mutabaah) > 0) {
         .stat-info h3 {
             font-family: 'Lexend', sans-serif;
             font-size: clamp(1.4rem, 2.4vw, 1.8rem);
-            font-weight: 700;
+            font-weight: 800;
             margin-bottom: 2px;
-            color: var(--text-main);
+            background: linear-gradient(135deg, var(--text-main), #1a4738);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             font-variant-numeric: tabular-nums;
         }
 
@@ -637,160 +653,128 @@ if ($cek_mutabaah && mysqli_num_rows($cek_mutabaah) > 0) {
             animation-delay: 0.45s;
         }
 
-        /* --- TOAST / ALERT SYSTEM --- */
+        /* --- TOAST MINIMALIS --- */
         #toast-stack {
             position: fixed;
-            top: clamp(14px, 2vw, 24px);
-            right: clamp(14px, 2vw, 24px);
-            left: clamp(14px, 2vw, 24px);
+            top: 18px;
+            right: 18px;
             z-index: 99999;
             display: flex;
             flex-direction: column;
             align-items: flex-end;
-            gap: 12px;
+            gap: 10px;
             pointer-events: none;
+            max-width: 340px;
         }
 
         .toast {
             pointer-events: auto;
-            width: min(360px, 100%);
-            background: rgba(255, 255, 255, 0.92);
-            backdrop-filter: blur(16px) saturate(180%);
-            -webkit-backdrop-filter: blur(16px) saturate(180%);
+            width: 100%;
+            background: #fff;
             border: 1px solid var(--border);
-            border-left: 3px solid var(--primary);
-            border-radius: 16px;
-            padding: 14px 16px;
+            border-radius: 14px;
+            padding: 12px 14px;
             display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            box-shadow: 0 18px 40px rgba(16, 185, 129, 0.16);
-            transform: translateX(120%) scale(0.9);
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.12);
+            transform: translateX(120%);
             opacity: 0;
-            animation: toastIn 0.55s var(--ease) forwards;
+            animation: toastIn 0.45s cubic-bezier(.16,1,.3,1) forwards;
             position: relative;
             overflow: hidden;
         }
 
         .toast.leaving {
-            animation: toastOut 0.4s var(--ease-soft) forwards;
+            animation: toastOut 0.3s ease-in forwards;
         }
 
         @keyframes toastIn {
-            0% {
-                transform: translateX(120%) scale(0.9);
-                opacity: 0;
-            }
-
-            60% {
-                transform: translateX(-6px) scale(1.01);
-                opacity: 1;
-            }
-
-            100% {
-                transform: translateX(0) scale(1);
-                opacity: 1;
-            }
+            0% { transform: translateX(120%); opacity: 0; }
+            100% { transform: translateX(0); opacity: 1; }
         }
 
         @keyframes toastOut {
-            to {
-                transform: translateX(110%) scale(0.92);
-                opacity: 0;
-            }
+            to { transform: translateX(110%); opacity: 0; }
         }
 
         .toast-icon {
-            width: 34px;
-            height: 34px;
-            border-radius: 10px;
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
-            font-size: 0.95rem;
-            animation: iconPop 0.5s var(--ease) 0.15s backwards;
-        }
-
-        @keyframes iconPop {
-            0% {
-                transform: scale(0);
-            }
-
-            70% {
-                transform: scale(1.15);
-            }
-
-            100% {
-                transform: scale(1);
-            }
+            font-size: 0.75rem;
         }
 
         .toast.info .toast-icon {
             background: var(--accent-light);
             color: #b7791f;
         }
-
         .toast.success .toast-icon {
             background: var(--primary-light);
             color: var(--primary-dark);
         }
-
         .toast.error .toast-icon {
             background: #fee2e2;
             color: var(--danger);
         }
 
         .toast-body {
-            flex-grow: 1;
+            flex: 1;
             min-width: 0;
         }
 
         .toast-title {
             font-weight: 700;
-            font-size: 0.88rem;
+            font-size: 0.82rem;
             color: var(--text-main);
-            margin-bottom: 2px;
         }
 
         .toast-msg {
-            font-size: 0.8rem;
+            font-size: 0.74rem;
             color: var(--text-muted);
-            line-height: 1.4;
+            line-height: 1.35;
+            margin-top: 1px;
         }
 
         .toast-close {
             background: none;
             border: none;
-            color: var(--text-muted);
+            color: #cbd5e1;
             cursor: pointer;
-            font-size: 0.85rem;
+            font-size: 0.75rem;
             padding: 4px;
-            transition: color 0.2s, transform 0.2s;
+            transition: color 0.2s;
             flex-shrink: 0;
         }
 
         .toast-close:hover {
             color: var(--text-main);
-            transform: rotate(90deg);
         }
 
         .toast-progress {
             position: absolute;
             bottom: 0;
             left: 0;
-            height: 3px;
-            background: linear-gradient(90deg, var(--primary), var(--accent));
+            height: 2px;
+            background: var(--primary);
             animation: progressShrink linear forwards;
         }
 
         @keyframes progressShrink {
-            from {
-                width: 100%;
-            }
+            from { width: 100%; }
+            to { width: 0%; }
+        }
 
-            to {
-                width: 0%;
+        @media (max-width: 1024px) and (min-width: 769px) {
+            .sidebar {
+                width: 200px;
+            }
+            .main-content {
+                width: calc(100% - 200px);
             }
         }
 
@@ -815,13 +799,8 @@ if ($cek_mutabaah && mysqli_num_rows($cek_mutabaah) > 0) {
             }
 
             #toast-stack {
-                left: 12px;
                 right: 12px;
-                align-items: stretch;
-            }
-
-            .toast {
-                width: 100%;
+                max-width: calc(100% - 24px);
             }
 
             .sidebar-overlay {
@@ -917,7 +896,7 @@ if ($cek_mutabaah && mysqli_num_rows($cek_mutabaah) > 0) {
         <div class="content-area">
 
             <div class="welcome-box">
-                <h1 class="welcome-title">Assalamu'alaikum, <?= htmlspecialchars($admin_name) ?> <span class="wave">👋</span></h1>
+                <h1 class="welcome-title">Assalamu'alaikum, <?= htmlspecialchars($admin_name) ?> <i class="fa-solid fa-hand-wave"></i></h1>
                 <p class="welcome-subtitle">Berikut adalah ringkasan data aplikasi Hafizhly hari ini.</p>
             </div>
 
@@ -947,18 +926,18 @@ if ($cek_mutabaah && mysqli_num_rows($cek_mutabaah) > 0) {
             </div>
 
             <!-- QUICK ACTIONS -->
-            <h2 class="section-header"><i class="fas fa-bolt" style="color: #b7791f;"></i> Akses Cepat</h2>
+            <h2 class="section-header"><i class="fas fa-gauge-high" style="color: var(--primary);"></i> Akses Cepat</h2>
             <div class="quick-access-grid">
                 <a href="materi_tajwid.php" class="action-card">
-                    <div class="action-icon"><i class="fas fa-clapperboard"></i></div>
-                    <div class="action-title">Kelola Tajwid & Video</div>
-                    <div class="action-desc">Tambah materi tajwid baru, tautkan video YouTube, atau buat soal kuis evaluasi.</div>
+                    <div class="action-icon"><i class="fas fa-book-quran"></i></div>
+                    <div class="action-title">Kelola Materi Tajwid</div>
+                    <div class="action-desc">Tambah materi tajwid baru, tautkan video pembelajaran, dan buat soal kuis untuk evaluasi santri.</div>
                 </a>
 
                 <a href="#" class="action-card" onclick="showToast('info','Segera Hadir','Fitur Manajemen User sedang dalam pengembangan.'); return false;">
-                    <div class="action-icon"><i class="fas fa-user-shield"></i></div>
-                    <div class="action-title">Manajemen User</div>
-                    <div class="action-desc">Pantau progres pengguna, reset password, atau berikan pengumuman ke semua santri.</div>
+                    <div class="action-icon"><i class="fas fa-users-gear"></i></div>
+                    <div class="action-title">Manajemen Pengguna</div>
+                    <div class="action-desc">Pantau progres santri, reset akun, kelola izin akses, dan kirim pengumuman ke semua pengguna.</div>
                 </a>
             </div>
 

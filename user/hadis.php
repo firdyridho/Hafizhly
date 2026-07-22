@@ -275,25 +275,95 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             color: #000;
         }
 
-        .terjemahan {
-            font-size: 1rem;
-            line-height: 1.7;
-            color: var(--ink);
-            padding-top: 20px;
-            border-top: 1px dashed var(--border);
+        .hadis-actions {
+            display: flex;
+            gap: 10px;
+            padding: 0 24px 20px;
+            flex-wrap: wrap;
         }
 
-        .terjemahan-label {
-            display: inline-block;
+        .btn-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border-radius: 30px;
+            border: 1.5px solid var(--border);
+            background: white;
+            font-family: inherit;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--muted);
+            cursor: pointer;
+            transition: all 0.25s;
+        }
+
+        .btn-toggle:hover {
+            border-color: var(--primary-light);
+            background: #f0fdf4;
+        }
+
+        .btn-toggle.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #fff;
+        }
+
+        .hadis-section {
+            display: none;
+            padding: 20px 24px;
+            border-top: 1px dashed var(--border);
+            font-size: 0.95rem;
+            line-height: 1.7;
+        }
+
+        .hadis-section.open {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hadis-section .section-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
             background: #f1f5f9;
             color: var(--muted);
-            padding: 6px 12px;
+            padding: 5px 12px;
             border-radius: 8px;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1px;
             margin-bottom: 12px;
+        }
+
+        .hadis-section .section-label.sanad-label {
+            background: #fff7ed;
+            color: #c2410c;
+        }
+
+        .hadis-section .section-label.arti-label {
+            background: #ecfdf5;
+            color: #047857;
+        }
+
+        .sanad-text {
+            color: #9a3412;
+        }
+
+        .sanad-text .narrator {
+            color: #c2410c;
+            font-weight: 700;
+        }
+
+        .sanad-text .arrow {
+            color: #fdba74;
+            margin: 0 4px;
         }
 
         .highlight {
@@ -301,6 +371,10 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             padding: 2px 4px;
             border-radius: 4px;
             font-weight: 600;
+        }
+
+        .arabic-text {
+            cursor: pointer;
         }
 
         .loader {
@@ -566,14 +640,15 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             }
         }
 
+        const SEARCH_LIMIT = 1000;
+
         // --- FUNGSI AMBIL BANYAK HADIS ---
         async function loadBanyakHadis(start, end, isSearch, keyword = '') {
-            const jumlah = end - start + 1;
-            setLoading(true, isSearch ? `Mencari "${keyword}"...` : `Memuat ${jumlah} hadis...`);
+            const jumlah = Math.min(end, SEARCH_LIMIT);
+            setLoading(true, isSearch ? `Mencari "${keyword}" dari ${jumlah} hadis...` : `Memuat ${jumlah} hadis...`);
 
             try {
-                // Pakai endpoint paginated: 1 request = banyak hadis
-                const res = await fetch(`${API_BASE}/hadith/${currentKitabId}?page=1&limit=${end}`);
+                const res = await fetch(`${API_BASE}/hadith/${currentKitabId}?page=1&limit=${jumlah}`);
                 const data = await res.json();
 
                 if (!data || !data.items || data.items.length === 0) {
@@ -584,7 +659,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
 
                 let kumpulanHadis = data.items;
 
-                // Filter kata kunci jika user mencari topik
                 if (isSearch) {
                     kumpulanHadis = kumpulanHadis.filter(h =>
                         (h.id && h.id.toLowerCase().includes(keyword)) ||
@@ -595,7 +669,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
                             <div class="empty-state">
                                 <i class="fas fa-search" style="font-size: 3rem; color: #cbd5e1; margin-bottom:15px; display:block;"></i>
                                 Tidak ada hadis terkait "<b>${keyword}</b>" pada ${jumlah} hadis pertama.
-                                <p style="margin-top:8px; font-size:0.85rem;">Coba cari dengan nomor hadis untuk hasil yang lebih tepat.</p>
+                                <p style="margin-top:8px; font-size:0.85rem;">Coba cari dengan nomor hadis untuk hasil yang lebih spesifik.</p>
                             </div>`;
                         setLoading(false);
                         return;
@@ -610,12 +684,45 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             }
         }
 
+        function pisahSanadMatan(teks) {
+            // Coba pisah sanad dari matan di teks Indonesia
+            const pola = /(Rasulullah\s*(?:shallallahu\s*['\u2018\u2019]alaihi\s*wasallam|SAW|saw|shalallahu\s*['\u2018\u2019]alaihi\s*wasallam)?\s*(?:shallallahu\s*['\u2018\u2019]alaihi\s*wasallam)?\s*bersabda\s*[:.,]?)/i;
+            const cocok = teks.match(pola);
+            if (cocok) {
+                const idx = cocok.index + cocok[0].length;
+                const sanad = teks.substring(0, idx).trim();
+                const matan = teks.substring(idx).trim().replace(/^["\u201C\u201D\s]+|["\u201C\u201D\s]+$/g, '');
+                return { sanad, matan };
+            }
+            // Fallback: cari "Nabi" atau "beliau bersabda"
+            const pola2 = /(Nabi\s*(?:Muhammad)?\s*(?:SAW|saw)?\s*bersabda\s*[:.,]?)/i;
+            const cocok2 = teks.match(pola2);
+            if (cocok2) {
+                const idx = cocok2.index + cocok2[0].length;
+                const sanad = teks.substring(0, idx).trim();
+                const matan = teks.substring(idx).trim().replace(/^["\u201C\u201D\s]+|["\u201C\u201D\s]+$/g, '');
+                return { sanad, matan };
+            }
+            return { sanad: '', matan: teks.trim() };
+        }
+
+        function formatSanadHTML(sanad) {
+            if (!sanad) return '';
+            let html = sanad;
+            // Highlight narrator names in brackets
+            html = html.replace(/\[([^\]]+)\]/g, '<span class="narrator">$1</span>');
+            // Add arrows between narrators
+            html = html.replace(/;\s*/g, '; <span class="arrow">→</span> ');
+            // Highlight "Rasulullah" and "Nabi"
+            html = html.replace(/(Rasulullah|Nabi|beliau)/gi, '<span class="narrator">$1</span>');
+            return html;
+        }
+
         // --- RENDER HADIS KE HTML ---
         function renderHadis(dataArray, isSearch, keyword) {
             const listArea = document.getElementById('hadisList');
             listArea.innerHTML = '';
 
-            // Tampilkan info hasil pencarian
             if (isSearch) {
                 const info = document.createElement('div');
                 info.style.cssText = 'background: #ecfdf5; border-radius: 12px; padding: 12px 18px; font-size: 0.85rem; font-weight: 600; color: var(--primary-dark); margin-bottom: 16px; display: flex; align-items: center; gap: 8px;';
@@ -624,12 +731,14 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             }
 
             dataArray.forEach(hadis => {
-                let teksArti = hadis.id;
+                const { sanad, matan } = pisahSanadMatan(hadis.id);
 
-                // Highlight kata kunci (Stabilo Kuning)
+                let teksMatan = matan;
+                let teksSanad = sanad;
                 if (isSearch && keyword) {
                     const regex = new RegExp(`(${keyword})`, 'gi');
-                    teksArti = teksArti.replace(regex, `<span class="highlight">$1</span>`);
+                    teksMatan = teksMatan.replace(regex, `<span class="highlight">$1</span>`);
+                    teksSanad = teksSanad.replace(regex, `<span class="highlight">$1</span>`);
                 }
 
                 const card = document.createElement('div');
@@ -641,14 +750,34 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
                     </div>
                     <div class="hadis-content">
                         <div class="arabic-text">${hadis.arab}</div>
-                        <div class="terjemahan">
-                            <span class="terjemahan-label"><i class="fas fa-sitemap"></i> Sanad & Matan (Terjemahan)</span>
-                            <div>${teksArti}</div>
-                        </div>
+                    </div>
+                    <div class="hadis-actions">
+                        <button class="btn-toggle toggle-terjemah" onclick="toggleSection(this, 'terjemah-${hadis.number}')">
+                            <i class="fas fa-language"></i> Terjemah
+                        </button>
+                        ${teksSanad ? `<button class="btn-toggle toggle-sanad" onclick="toggleSection(this, 'sanad-${hadis.number}')">
+                            <i class="fas fa-sitemap"></i> Sanad
+                        </button>` : ''}
+                    </div>
+                    ${teksSanad ? `
+                    <div class="hadis-section" id="sanad-${hadis.number}">
+                        <span class="section-label sanad-label"><i class="fas fa-chain"></i> Sanad (Rantai Perawi)</span>
+                        <div class="sanad-text">${formatSanadHTML(teksSanad)}</div>
+                    </div>` : ''}
+                    <div class="hadis-section" id="terjemah-${hadis.number}">
+                        <span class="section-label arti-label"><i class="fas fa-book-open"></i> Arti / Kandungan</span>
+                        <div>${teksMatan}</div>
                     </div>
                 `;
                 listArea.appendChild(card);
             });
+        }
+
+        function toggleSection(btn, sectionId) {
+            const section = document.getElementById(sectionId);
+            if (!section) return;
+            const isOpen = section.classList.toggle('open');
+            btn.classList.toggle('active', isOpen);
         }
 
         // --- UTILITIES ---

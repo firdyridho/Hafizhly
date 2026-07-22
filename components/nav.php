@@ -112,19 +112,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
     }
 
     .app-nav::after {
-        content: '';
-        position: absolute;
-        top: -12px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 66px;
-        height: 26px;
-        background: transparent;
-        border: 1.5px solid rgba(255,255,255,0.45);
-        border-bottom: none;
-        border-radius: 50%;
-        pointer-events: none;
-        z-index: 0;
+        display: none;
     }
 
     @keyframes navRise {

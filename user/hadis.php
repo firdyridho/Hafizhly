@@ -406,11 +406,13 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
 
     <!-- ============ JAVASCRIPT ============ -->
     <script>
+        const API_BASE = 'https://hadis-api-id.vercel.app';
+
         const dataKitab = [{
                 id: 'bukhari',
                 name: 'Sahih Bukhari',
                 arab: 'صحيح البخاري',
-                total: 7008,
+                total: 6638,
                 icon: 'fa-book-open',
                 gradient: 'linear-gradient(135deg, #059669, #047857)'
             },
@@ -418,7 +420,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
                 id: 'muslim',
                 name: 'Sahih Muslim',
                 arab: 'صحيح مسلم',
-                total: 5362,
+                total: 4930,
                 icon: 'fa-book',
                 gradient: 'linear-gradient(135deg, #2563eb, #1d4ed8)'
             },
@@ -426,7 +428,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
                 id: 'abu-dawud',
                 name: 'Sunan Abu Dawud',
                 arab: 'سنن أبي داود',
-                total: 4590,
+                total: 4419,
                 icon: 'fa-book-quran',
                 gradient: 'linear-gradient(135deg, #7c3aed, #6d28d9)'
             },
@@ -450,7 +452,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
                 id: 'ibnu-majah',
                 name: 'Sunan Ibnu Majah',
                 arab: 'سنن ابن ماجه',
-                total: 4341,
+                total: 4285,
                 icon: 'fa-book-open-reader',
                 gradient: 'linear-gradient(135deg, #0891b2, #0e7490)'
             },
@@ -466,7 +468,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
                 id: 'malik',
                 name: 'Muwatta Malik',
                 arab: 'موطأ مالك',
-                total: 1589,
+                total: 1587,
                 icon: 'fa-scale-balanced',
                 gradient: 'linear-gradient(135deg, #0d9488, #0f766e)'
             },
@@ -551,12 +553,12 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
         async function loadSatuHadis(nomor) {
             setLoading(true, "Mencari hadis nomor " + nomor + "...");
             try {
-                const res = await fetch(`https://api.hadith.gading.dev/books/${currentKitabId}/${nomor}`);
+                const res = await fetch(`${API_BASE}/hadith/${currentKitabId}/${nomor}`);
                 const data = await res.json();
 
-                if (data.code !== 200) throw new Error("Gagal");
+                if (!data || !data.number) throw new Error("Gagal");
 
-                renderHadis([data.data.contents], false, '');
+                renderHadis([data], false, '');
             } catch (err) {
                 tampilError("Nomor hadis tidak ditemukan atau server sedang sibuk.");
             } finally {
@@ -564,52 +566,48 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             }
         }
 
-        // --- FUNGSI AMBIL BANYAK HADIS (BERTAHAP) ---
+        // --- FUNGSI AMBIL BANYAK HADIS ---
         async function loadBanyakHadis(start, end, isSearch, keyword = '') {
-            setLoading(true, isSearch ? `Mencari "${keyword}" di ${end} hadis...` : "Memuat data hadis...");
+            const jumlah = end - start + 1;
+            setLoading(true, isSearch ? `Mencari "${keyword}"...` : `Memuat ${jumlah} hadis...`);
 
-            let kumpulanHadis = [];
+            try {
+                // Pakai endpoint paginated: 1 request = banyak hadis
+                const res = await fetch(`${API_BASE}/hadith/${currentKitabId}?page=1&limit=${end}`);
+                const data = await res.json();
 
-            // Ambil hadis bertahap agar tidak membebani API
-            for (let i = start; i <= end; i++) {
-                try {
-                    const res = await fetch(`https://api.hadith.gading.dev/books/${currentKitabId}/${i}`);
-                    const data = await res.json();
-                    if (data && data.code === 200 && data.data) {
-                        kumpulanHadis.push(data.data.contents);
-                    }
-                } catch (e) {
-                    // skip gagal
-                }
-                if (i < end) await new Promise(r => setTimeout(r, 50));
-            }
-
-            if (kumpulanHadis.length === 0) {
-                tampilError("Koneksi ke server API terputus. Silakan coba beberapa saat lagi.");
-                setLoading(false);
-                return;
-            }
-
-            // Filter kata kunci jika user mencari topik
-            if (isSearch) {
-                kumpulanHadis = kumpulanHadis.filter(h =>
-                    h.id.toLowerCase().includes(keyword) ||
-                    h.arab.toLowerCase().includes(keyword)
-                );
-                if (kumpulanHadis.length === 0) {
-                    document.getElementById('hadisList').innerHTML = `
-                        <div class="empty-state">
-                            <i class="fas fa-search" style="font-size: 3rem; color: #cbd5e1; margin-bottom:15px; display:block;"></i>
-                            Tidak ada hadis terkait "<b>${keyword}</b>" pada ${end} hadis pertama kitab ini.
-                            <p style="margin-top:8px; font-size:0.85rem;">Coba cari dengan nomor hadis untuk hasil yang lebih tepat.</p>
-                        </div>`;
+                if (!data || !data.items || data.items.length === 0) {
+                    tampilError("Gagal memuat data dari server.");
                     setLoading(false);
                     return;
                 }
-            }
 
-            renderHadis(kumpulanHadis, isSearch, keyword);
-            setLoading(false);
+                let kumpulanHadis = data.items;
+
+                // Filter kata kunci jika user mencari topik
+                if (isSearch) {
+                    kumpulanHadis = kumpulanHadis.filter(h =>
+                        (h.id && h.id.toLowerCase().includes(keyword)) ||
+                        (h.arab && h.arab.toLowerCase().includes(keyword))
+                    );
+                    if (kumpulanHadis.length === 0) {
+                        document.getElementById('hadisList').innerHTML = `
+                            <div class="empty-state">
+                                <i class="fas fa-search" style="font-size: 3rem; color: #cbd5e1; margin-bottom:15px; display:block;"></i>
+                                Tidak ada hadis terkait "<b>${keyword}</b>" pada ${jumlah} hadis pertama.
+                                <p style="margin-top:8px; font-size:0.85rem;">Coba cari dengan nomor hadis untuk hasil yang lebih tepat.</p>
+                            </div>`;
+                        setLoading(false);
+                        return;
+                    }
+                }
+
+                renderHadis(kumpulanHadis, isSearch, keyword);
+            } catch (e) {
+                tampilError("Gagal terhubung ke server. Coba beberapa saat lagi.");
+            } finally {
+                setLoading(false);
+            }
         }
 
         // --- RENDER HADIS KE HTML ---

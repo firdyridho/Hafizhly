@@ -679,17 +679,17 @@ $has_notif = count($notifications) > 0;
         <div class="prayer-row" id="prayer-container">
             <!-- Loader Sementara untuk struktur -->
             <div class="prayer-item">
-                <div class="p-name">Fajr</div>
+                <div class="p-name">Shubuh</div>
                 <div class="p-icon"><i class="fas fa-cloud-moon"></i></div>
                 <div class="p-time">--:--</div>
             </div>
             <div class="prayer-item">
-                <div class="p-name">Dzuhr</div>
+                <div class="p-name">Dzuhur</div>
                 <div class="p-icon"><i class="fas fa-sun"></i></div>
                 <div class="p-time">--:--</div>
             </div>
             <div class="prayer-item">
-                <div class="p-name">Asr</div>
+                <div class="p-name">Ashar</div>
                 <div class="p-icon"><i class="fas fa-cloud-sun"></i></div>
                 <div class="p-time">--:--</div>
             </div>
@@ -699,7 +699,7 @@ $has_notif = count($notifications) > 0;
                 <div class="p-time">--:--</div>
             </div>
             <div class="prayer-item">
-                <div class="p-name">Isha</div>
+                <div class="p-name">Isya</div>
                 <div class="p-icon"><i class="fas fa-star"></i></div>
                 <div class="p-time">--:--</div>
             </div>
@@ -739,10 +739,6 @@ $has_notif = count($notifications) > 0;
             <a href="game.php" class="menu-item">
                 <div class="menu-icon"><i class="fas fa-gamepad"></i></div>
                 <div class="menu-text">Game</div>
-            </a>
-            <a href="hadis.php" class="menu-item">
-                <div class="menu-icon"><i class="fas fa-book-quran"></i></div>
-                <div class="menu-text">Hadis</div>
             </a>
             <div class="menu-item menu-all" onclick="toggleModal('menuModal')">
                 <div class="menu-icon"><i class="fas fa-th-large"></i></div>
@@ -1034,17 +1030,17 @@ $has_notif = count($notifications) > 0;
 
         const prayerConfig = [{
                 id: 'Fajr',
-                name: 'Fajr',
+                name: 'Shubuh',
                 icon: 'fa-cloud-moon'
             },
             {
                 id: 'Dhuhr',
-                name: 'Dzuhr',
+                name: 'Dzuhur',
                 icon: 'fa-sun'
             },
             {
                 id: 'Asr',
-                name: 'Asr',
+                name: 'Ashar',
                 icon: 'fa-cloud-sun'
             },
             {
@@ -1054,7 +1050,7 @@ $has_notif = count($notifications) > 0;
             },
             {
                 id: 'Isha',
-                name: 'Isha',
+                name: 'Isya',
                 icon: 'fa-star'
             }
         ];

@@ -13,7 +13,6 @@ session_destroy();
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Sampai Jumpa · Hifzhly</title>
     <link rel="icon" type="image/png" href="assets/icon/logo.png">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <style>
         :root {
             --nav-primary: #059669;
@@ -207,19 +206,6 @@ session_destroy();
             }
         }
 
-        .icon-circle i {
-            font-size: 2.1rem;
-            color: #fff;
-            opacity: 0;
-            animation: iconFade 0.4s ease 0.75s forwards;
-        }
-
-        @keyframes iconFade {
-            to {
-                opacity: 1;
-            }
-        }
-
         .title {
             font-size: 1.4rem;
             font-weight: 800;
@@ -336,7 +322,7 @@ session_destroy();
             <span class="ring-pulse"></span>
             <span class="ring-pulse delay"></span>
             <div class="icon-circle">
-                <i class="fa-solid fa-circle-check"></i>
+                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:32px;height:32px"><polyline points="4 13 9 18 20 7"/></svg>
             </div>
         </div>
 
@@ -349,7 +335,7 @@ session_destroy();
         <div class="redirect-label">Mengalihkan ke halaman masuk...</div>
 
         <a href="index.php" class="manual-link">
-            Kembali sekarang <i class="fa-solid fa-arrow-right"></i>
+            Kembali sekarang <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
         </a>
     </div>
 

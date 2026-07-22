@@ -79,7 +79,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             background: var(--card-bg);
             border: 1px solid var(--border);
             border-radius: var(--radius);
-            padding: 24px;
             cursor: pointer;
             transition: all 0.3s;
             position: relative;
@@ -92,27 +91,71 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             box-shadow: 0 15px 30px rgba(16, 185, 129, 0.1);
         }
 
-        .kitab-card .icon {
-            width: 50px;
-            height: 50px;
-            background: #ecfdf5;
-            color: var(--primary);
-            border-radius: 14px;
+        .kitab-cover {
+            height: 160px;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
-            margin-bottom: 16px;
+            position: relative;
+            overflow: hidden;
         }
 
-        .kitab-card h3 {
-            font-size: 1.2rem;
+        .kitab-cover .cover-pattern {
+            position: absolute;
+            inset: 0;
+            opacity: 0.1;
+            background-image:
+                radial-gradient(circle at 20% 50%, #fff 1px, transparent 1px),
+                radial-gradient(circle at 80% 50%, #fff 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        .kitab-cover .cover-icon {
+            font-size: 2.2rem;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 8px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .kitab-cover .cover-arab {
+            font-family: 'Amiri', serif;
+            font-size: 1.3rem;
+            color: rgba(255,255,255,0.95);
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            line-height: 1.5;
+            padding: 0 12px;
+        }
+
+        .kitab-cover .cover-label {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(4px);
+            color: #fff;
+            font-size: 0.65rem;
             font-weight: 700;
-            margin-bottom: 6px;
+            padding: 3px 10px;
+            border-radius: 20px;
+            letter-spacing: 0.5px;
         }
 
-        .kitab-card p {
-            font-size: 0.85rem;
+        .kitab-info {
+            padding: 18px 20px 20px;
+        }
+
+        .kitab-info h3 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .kitab-info p {
+            font-size: 0.8rem;
             color: var(--muted);
         }
 
@@ -314,8 +357,9 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
 
 <body>
 
-    <!-- Include Navbar dipanggil di dalam Body agar UI rapi -->
     <?php include '../components/nav.php'; ?>
+
+    <div id="ajax-content">
 
     <div class="container-hadis">
 
@@ -358,61 +402,81 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
         </div>
     </div>
 
+    </div>
+
     <!-- ============ JAVASCRIPT ============ -->
     <script>
         const dataKitab = [{
                 id: 'bukhari',
                 name: 'Sahih Bukhari',
+                arab: 'صحيح البخاري',
                 total: 7008,
-                icon: 'fa-book-open'
+                icon: 'fa-book-open',
+                gradient: 'linear-gradient(135deg, #059669, #047857)'
             },
             {
                 id: 'muslim',
                 name: 'Sahih Muslim',
+                arab: 'صحيح مسلم',
                 total: 5362,
-                icon: 'fa-book'
+                icon: 'fa-book',
+                gradient: 'linear-gradient(135deg, #2563eb, #1d4ed8)'
             },
             {
                 id: 'abu-dawud',
                 name: 'Sunan Abu Dawud',
+                arab: 'سنن أبي داود',
                 total: 4590,
-                icon: 'fa-book-quran'
+                icon: 'fa-book-quran',
+                gradient: 'linear-gradient(135deg, #7c3aed, #6d28d9)'
             },
             {
                 id: 'tirmidzi',
                 name: 'Sunan Tirmidzi',
+                arab: 'جامع الترمذي',
                 total: 3625,
-                icon: 'fa-book-bookmark'
+                icon: 'fa-book-bookmark',
+                gradient: 'linear-gradient(135deg, #d97706, #b45309)'
             },
             {
                 id: 'nasai',
                 name: 'Sunan An-Nasai',
+                arab: 'سنن النسائي',
                 total: 5364,
-                icon: 'fa-scroll'
+                icon: 'fa-scroll',
+                gradient: 'linear-gradient(135deg, #dc2626, #b91c1c)'
             },
             {
                 id: 'ibnu-majah',
                 name: 'Sunan Ibnu Majah',
+                arab: 'سنن ابن ماجه',
                 total: 4341,
-                icon: 'fa-book-open-reader'
+                icon: 'fa-book-open-reader',
+                gradient: 'linear-gradient(135deg, #0891b2, #0e7490)'
             },
             {
                 id: 'ahmad',
                 name: 'Musnad Ahmad',
+                arab: 'مسند أحمد',
                 total: 4305,
-                icon: 'fa-layer-group'
+                icon: 'fa-layer-group',
+                gradient: 'linear-gradient(135deg, #65a30d, #4d7c0f)'
             },
             {
                 id: 'malik',
                 name: 'Muwatta Malik',
+                arab: 'موطأ مالك',
                 total: 1589,
-                icon: 'fa-scale-balanced'
+                icon: 'fa-scale-balanced',
+                gradient: 'linear-gradient(135deg, #0d9488, #0f766e)'
             },
             {
                 id: 'darimi',
                 name: 'Sunan Ad-Darimi',
+                arab: 'سنن الدارمي',
                 total: 2949,
-                icon: 'fa-star-and-crescent'
+                icon: 'fa-star-and-crescent',
+                gradient: 'linear-gradient(135deg, #db2777, #be185d)'
             }
         ];
 
@@ -426,9 +490,16 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
                 card.className = 'kitab-card';
                 card.onclick = () => bukaKitab(kitab.id, kitab.name, kitab.total);
                 card.innerHTML = `
-                    <div class="icon"><i class="fas ${kitab.icon}"></i></div>
-                    <h3>${kitab.name}</h3>
-                    <p>${kitab.total} Hadis tersedia</p>
+                    <div class="kitab-cover" style="background: ${kitab.gradient};">
+                        <div class="cover-pattern"></div>
+                        <div class="cover-icon"><i class="fas ${kitab.icon}"></i></div>
+                        <div class="cover-arab">${kitab.arab}</div>
+                        <div class="cover-label">${kitab.total} Hadis</div>
+                    </div>
+                    <div class="kitab-info">
+                        <h3>${kitab.name}</h3>
+                        <p><i class="fas fa-bookmark" style="color: var(--primary);"></i> ${kitab.total} hadis tersedia</p>
+                    </div>
                 `;
                 grid.appendChild(card);
             });
@@ -470,8 +541,8 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             if (/^\d+$/.test(input)) {
                 loadSatuHadis(input);
             } else {
-                // Jika input berupa huruf/topik = ambil 30 hadis awal lalu saring lokal
-                loadBanyakHadis(1, 30, true, input.toLowerCase());
+                // Jika input berupa huruf/topik = ambil hadis lalu saring lokal
+                loadBanyakHadis(1, 50, true, input.toLowerCase());
             }
         }
 
@@ -494,7 +565,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
 
         // --- FUNGSI AMBIL BANYAK HADIS (PARALEL) ---
         async function loadBanyakHadis(start, end, isSearch, keyword = '') {
-            setLoading(true, isSearch ? "Mencari kata kunci..." : "Memuat data sanad & matan...");
+            setLoading(true, isSearch ? `Mencari "${keyword}" di ${end} hadis...` : "Memuat data hadis...");
 
             let kumpulanHadis = [];
             let promises = [];
@@ -520,12 +591,16 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
 
                 // Filter Kata Kunci jika user sedang mencari topik
                 if (isSearch) {
-                    kumpulanHadis = kumpulanHadis.filter(h => h.id.toLowerCase().includes(keyword));
+                    kumpulanHadis = kumpulanHadis.filter(h =>
+                        h.id.toLowerCase().includes(keyword) ||
+                        h.arab.toLowerCase().includes(keyword)
+                    );
                     if (kumpulanHadis.length === 0) {
                         document.getElementById('hadisList').innerHTML = `
                             <div class="empty-state">
                                 <i class="fas fa-search" style="font-size: 3rem; color: #cbd5e1; margin-bottom:15px; display:block;"></i>
-                                Tidak ada hadis terkait kata kunci "<b>${keyword}</b>" pada urutan awal kitab ini.
+                                Tidak ada hadis terkait "<b>${keyword}</b>" pada 50 hadis pertama kitab ini.
+                                <p style="margin-top:8px; font-size:0.85rem;">Coba cari dengan nomor hadis untuk hasil yang lebih tepat.</p>
                             </div>`;
                         setLoading(false);
                         return;
@@ -546,6 +621,14 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             const listArea = document.getElementById('hadisList');
             listArea.innerHTML = '';
 
+            // Tampilkan info hasil pencarian
+            if (isSearch) {
+                const info = document.createElement('div');
+                info.style.cssText = 'background: #ecfdf5; border-radius: 12px; padding: 12px 18px; font-size: 0.85rem; font-weight: 600; color: var(--primary-dark); margin-bottom: 16px; display: flex; align-items: center; gap: 8px;';
+                info.innerHTML = `<i class="fas fa-search"></i> Ditemukan ${dataArray.length} hadis untuk "<b>${keyword}</b>"`;
+                listArea.appendChild(info);
+            }
+
             dataArray.forEach(hadis => {
                 let teksArti = hadis.id;
 
@@ -559,8 +642,8 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
                 card.className = 'hadis-item';
                 card.innerHTML = `
                     <div class="hadis-header">
-                        <span>Hadis No. ${hadis.number}</span>
-                        <span class="badge" style="background: var(--gold); color: #fff; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem;">Sahih</span>
+                        <span><i class="fas fa-quote-right" style="margin-right: 6px;"></i> Hadis No. ${hadis.number}</span>
+                        <span class="badge" style="background: var(--gold); color: #fff; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700;">${currentKitabName}</span>
                     </div>
                     <div class="hadis-content">
                         <div class="arabic-text">${hadis.arab}</div>

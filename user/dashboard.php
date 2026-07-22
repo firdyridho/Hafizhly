@@ -618,7 +618,7 @@ $has_notif = count($notifications) > 0;
             }
 
             .menu-grid {
-                grid-template-columns: repeat(8, 1fr);
+                grid-template-columns: repeat(9, 1fr);
                 padding: 25px;
             }
 
@@ -740,6 +740,10 @@ $has_notif = count($notifications) > 0;
                 <div class="menu-icon"><i class="fas fa-gamepad"></i></div>
                 <div class="menu-text">Game</div>
             </a>
+            <a href="hadis.php" class="menu-item">
+                <div class="menu-icon"><i class="fas fa-book-quran"></i></div>
+                <div class="menu-text">Hadis</div>
+            </a>
             <div class="menu-item menu-all" onclick="toggleModal('menuModal')">
                 <div class="menu-icon"><i class="fas fa-th-large"></i></div>
                 <div class="menu-text">Lainnya</div>
@@ -857,6 +861,10 @@ $has_notif = count($notifications) > 0;
                     <a href="target.php" class="menu-item">
                         <div class="menu-icon"><i class="fas fa-bullseye"></i></div>
                         <div class="menu-text">Target</div>
+                    </a>
+                    <a href="hadis.php" class="menu-item">
+                        <div class="menu-icon"><i class="fas fa-book-quran"></i></div>
+                        <div class="menu-text">Hadis</div>
                     </a>
                 </div>
             </div>

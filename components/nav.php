@@ -611,6 +611,10 @@ $current_page = basename($_SERVER['PHP_SELF']);
             <span class="nav-icon-wrap"><i class="fa-solid fa-chart-simple nav-icon"></i></span>
             <span class="nav-text">Mutabaah</span>
         </a>
+        <a href="hadis.php" class="nav-item <?= $current_page == 'hadis.php' ? 'active' : '' ?>" data-ajax-link>
+            <span class="nav-icon-wrap"><i class="fa-solid fa-book-quran nav-icon"></i></span>
+            <span class="nav-text">Hadis</span>
+        </a>
         <a href="../logout.php" class="nav-item nav-logout" id="logout-trigger">
             <span class="nav-icon-wrap"><i class="fa-solid fa-right-from-bracket nav-icon"></i></span>
             <span class="nav-text">Keluar</span>

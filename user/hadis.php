@@ -1,11 +1,12 @@
 <?php
 session_start();
 
-// Cek apakah user sudah login (Sesuaikan 'status_login' dengan variabel session yang kamu pakai di projectmu)
-if (!isset($_SESSION['status_login']) || $_SESSION['status_login'] !== true) {
-    echo "<script>alert('Silakan login terlebih dahulu!'); window.location.href = '../login.php';</script>";
+// Cek session login yang sesuai dengan project kita sebelumnya
+if (!isset($_SESSION['login'])) {
+    header("Location: ../login.php");
     exit;
 }
+
 ?>
 <!DOCTYPE html>
 <html lang="id">

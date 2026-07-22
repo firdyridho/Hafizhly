@@ -114,16 +114,18 @@ $current_page = basename($_SERVER['PHP_SELF']);
     .app-nav::after {
         content: '';
         position: absolute;
-        top: -18px;
+        top: -16px;
         left: 50%;
         transform: translateX(-50%);
-        width: 80px;
-        height: 36px;
+        width: 76px;
+        height: 32px;
         background: rgba(255,255,255,0.85);
         backdrop-filter: blur(22px);
-        border-radius: 80px 80px 0 0;
+        border-radius: 76px 76px 0 0;
         z-index: 0;
-        box-shadow: 0 -4px 12px rgba(0,0,0,0.04);
+        box-shadow:
+            inset 0 6px 10px rgba(0,0,0,0.06),
+            0 -2px 6px rgba(0,0,0,0.03);
     }
 
     @keyframes navRise {
@@ -278,8 +280,11 @@ $current_page = basename($_SERVER['PHP_SELF']);
         width: 58px;
         height: 58px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #34d399, #059669, #047857);
-        box-shadow: 0 10px 28px rgba(5, 150, 105, 0.45), inset 0 2px 0 rgba(255,255,255,0.25);
+        background: linear-gradient(145deg, #6ee7b7 0%, #059669 40%, #047857 100%);
+        box-shadow:
+            0 10px 28px rgba(5, 150, 105, 0.45),
+            inset 0 -6px 8px rgba(0,0,0,0.15),
+            inset 0 4px 6px rgba(255,255,255,0.25);
         transform: translateY(-14px);
         transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
@@ -304,7 +309,10 @@ $current_page = basename($_SERVER['PHP_SELF']);
 
     .nav-item.nav-home.active .nav-icon-wrap {
         transform: translateY(-20px) scale(1.06);
-        box-shadow: 0 16px 35px rgba(5, 150, 105, 0.55), inset 0 2px 0 rgba(255,255,255,0.3);
+        box-shadow:
+            0 16px 35px rgba(5, 150, 105, 0.55),
+            inset 0 -6px 8px rgba(0,0,0,0.18),
+            inset 0 4px 6px rgba(255,255,255,0.3);
     }
 
     .nav-item.nav-home.active::after {

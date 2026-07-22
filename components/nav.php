@@ -114,23 +114,17 @@ $current_page = basename($_SERVER['PHP_SELF']);
     .app-nav::after {
         content: '';
         position: absolute;
-        top: -4px;
+        top: -12px;
         left: 50%;
         transform: translateX(-50%);
-        width: 70px;
-        height: 36px;
+        width: 66px;
+        height: 26px;
         background: transparent;
-        border: 1.5px solid rgba(255,255,255,0.5);
+        border: 1.5px solid rgba(255,255,255,0.45);
         border-bottom: none;
         border-radius: 50%;
-        box-shadow: 0 -4px 12px rgba(0,0,0,0.04);
-        z-index: 0;
         pointer-events: none;
-    }
-
-    .app-nav {
-        -webkit-mask-image: radial-gradient(circle at 50% 24px, transparent 34px, black 34px);
-        mask-image: radial-gradient(circle at 50% 24px, transparent 34px, black 34px);
+        z-index: 0;
     }
 
     @keyframes navRise {
@@ -354,8 +348,6 @@ $current_page = basename($_SERVER['PHP_SELF']);
             border-top: none;
             border-bottom: 1px solid rgba(15, 23, 42, 0.05);
             animation: navDrop 0.55s cubic-bezier(0.16, 1, 0.3, 1);
-            -webkit-mask-image: none;
-            mask-image: none;
         }
 
         .app-nav::before {

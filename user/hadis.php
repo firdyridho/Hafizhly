@@ -366,6 +366,45 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             margin: 0 4px;
         }
 
+        .topik-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 14px;
+            border-radius: 30px;
+            border: 1.5px solid var(--border);
+            background: white;
+            font-family: inherit;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--muted);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .pill:hover {
+            border-color: var(--primary-light);
+            background: #f0fdf4;
+            color: var(--primary-dark);
+        }
+
+        .pill.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #fff;
+        }
+
+        .pill i {
+            font-size: 0.7rem;
+        }
+
         .highlight {
             background-color: #fef08a;
             padding: 2px 4px;
@@ -460,11 +499,13 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             <div class="error-msg" id="errorMsg"></div>
 
             <div class="search-box">
-                <input type="text" id="inputPencarian" placeholder="Cari nomor (ex: 5) atau topik (ex: hukum, puasa)..." onkeypress="handleEnter(event)">
+                <input type="text" id="inputPencarian" placeholder="Cari nomor atau kata kunci..." onkeypress="handleEnter(event)">
                 <button class="btn-cari" onclick="prosesPencarian()">
                     <i class="fas fa-search"></i> Cari
                 </button>
             </div>
+
+            <div class="topik-pills" id="topikPills"></div>
 
             <div class="loader" id="loader">
                 <i class="fas fa-circle-notch"></i>
@@ -556,8 +597,51 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             }
         ];
 
+        const TOPIK_LIST = [
+            { label: 'Semua', icon: 'fa-list', keyword: '' },
+            { label: 'Iman', icon: 'fa-star', keyword: 'iman' },
+            { label: 'Shalat', icon: 'fa-mosque', keyword: 'shalat' },
+            { label: 'Puasa', icon: 'fa-moon', keyword: 'puasa' },
+            { label: 'Zakat', icon: 'fa-hand-holding-heart', keyword: 'zakat' },
+            { label: 'Haji', icon: 'fa-kaaba', keyword: 'haji' },
+            { label: 'Ilmu', icon: 'fa-graduation-cap', keyword: 'ilmu' },
+            { label: 'Nikah', icon: 'fa-ring', keyword: 'nikah' },
+            { label: 'Jual Beli', icon: 'fa-store', keyword: 'jual' },
+            { label: 'Akhlak', icon: 'fa-handshake', keyword: 'akhlak' },
+            { label: 'Doa', icon: 'fa-hands-praying', keyword: 'doa' },
+            { label: 'Hukum', icon: 'fa-scale-balanced', keyword: 'hukum' },
+            { label: 'Surga', icon: 'fa-tree', keyword: 'surga' },
+            { label: 'Neraka', icon: 'fa-fire', keyword: 'neraka' },
+            { label: 'Malaikat', icon: 'fa-feather', keyword: 'malaikat' }
+        ];
+
         let currentKitabId = '';
         let currentKitabName = '';
+        let dataKitabCache = {}; // cache full hadis per kitab
+
+        function renderTopikPills() {
+            const container = document.getElementById('topikPills');
+            if (!container) return;
+            container.innerHTML = '';
+            TOPIK_LIST.forEach(t => {
+                const pill = document.createElement('button');
+                pill.className = 'pill' + (t.keyword === '' ? ' active' : '');
+                pill.innerHTML = `<i class="fas ${t.icon}"></i> ${t.label}`;
+                pill.onclick = () => {
+                    document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+                    pill.classList.add('active');
+                    document.getElementById('inputPencarian').value = t.keyword;
+                    if (t.keyword) {
+                        prosesPencarian();
+                    } else {
+                        // Semua: reload initial
+                        document.getElementById('hadisList').innerHTML = '';
+                        loadBanyakHadis(1, 10, false);
+                    }
+                };
+                container.appendChild(pill);
+            });
+        }
 
         (function initKitab() {
             const grid = document.getElementById('kitabGrid');
@@ -594,7 +678,12 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             document.getElementById('view-home').style.display = 'none';
             document.getElementById('view-detail').style.display = 'block';
 
-            // Load 10 hadis pertama secara paralel
+            renderTopikPills();
+            // Reset pills ke "Semua"
+            document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+            const pillSemua = document.querySelector('.pill');
+            if (pillSemua) pillSemua.classList.add('active');
+
             loadBanyakHadis(1, 10, false);
         }
 
@@ -614,12 +703,10 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
                 return;
             }
 
-            // Jika input berupa angka = cari nomor spesifik
             if (/^\d+$/.test(input)) {
                 loadSatuHadis(input);
             } else {
-                // Jika input berupa huruf/topik = ambil hadis lalu saring lokal
-                loadBanyakHadis(1, 50, true, input.toLowerCase());
+                loadBanyakHadis(1, 10, true, input.toLowerCase());
             }
         }
 
@@ -640,43 +727,68 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
             }
         }
 
-        const SEARCH_LIMIT = 1000;
+        async function ambilSemuaHadis() {
+            if (dataKitabCache[currentKitabId]) {
+                return dataKitabCache[currentKitabId];
+            }
+            // Cari total dari dataKitab
+            const kitab = dataKitab.find(k => k.id === currentKitabId);
+            const total = kitab ? kitab.total : 1000;
+            setLoading(true, `Memuat ${total} hadis...`);
+
+            try {
+                const res = await fetch(`${API_BASE}/hadith/${currentKitabId}?page=1&limit=${total}`);
+                const data = await res.json();
+                if (!data || !data.items) throw new Error("Gagal");
+                dataKitabCache[currentKitabId] = data.items;
+                return data.items;
+            } catch (e) {
+                tampilError("Gagal memuat data dari server.");
+                return null;
+            } finally {
+                setLoading(false);
+            }
+        }
 
         // --- FUNGSI AMBIL BANYAK HADIS ---
         async function loadBanyakHadis(start, end, isSearch, keyword = '') {
-            const jumlah = Math.min(end, SEARCH_LIMIT);
-            setLoading(true, isSearch ? `Mencari "${keyword}" dari ${jumlah} hadis...` : `Memuat ${jumlah} hadis...`);
+            if (isSearch) {
+                // Search: ambil semua hadis, filter client-side
+                setLoading(true, `Mencari "${keyword}" dari semua hadis...`);
+                const semua = await ambilSemuaHadis();
+                if (!semua) { setLoading(false); return; }
 
+                const hasil = semua.filter(h =>
+                    (h.id && h.id.toLowerCase().includes(keyword)) ||
+                    (h.arab && h.arab.toLowerCase().includes(keyword))
+                );
+
+                if (hasil.length === 0) {
+                    document.getElementById('hadisList').innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-search" style="font-size: 3rem; color: #cbd5e1; margin-bottom:15px; display:block;"></i>
+                            Tidak ada hadis dengan kata "<b>${keyword}</b>" di kitab ini.
+                        </div>`;
+                    setLoading(false);
+                    return;
+                }
+
+                renderHadis(hasil, true, keyword);
+                setLoading(false);
+                return;
+            }
+
+            // Initial load: ambil 20 hadis pertama
+            setLoading(true, "Memuat hadis...");
             try {
-                const res = await fetch(`${API_BASE}/hadith/${currentKitabId}?page=1&limit=${jumlah}`);
+                const res = await fetch(`${API_BASE}/hadith/${currentKitabId}?page=1&limit=20`);
                 const data = await res.json();
-
                 if (!data || !data.items || data.items.length === 0) {
                     tampilError("Gagal memuat data dari server.");
                     setLoading(false);
                     return;
                 }
-
-                let kumpulanHadis = data.items;
-
-                if (isSearch) {
-                    kumpulanHadis = kumpulanHadis.filter(h =>
-                        (h.id && h.id.toLowerCase().includes(keyword)) ||
-                        (h.arab && h.arab.toLowerCase().includes(keyword))
-                    );
-                    if (kumpulanHadis.length === 0) {
-                        document.getElementById('hadisList').innerHTML = `
-                            <div class="empty-state">
-                                <i class="fas fa-search" style="font-size: 3rem; color: #cbd5e1; margin-bottom:15px; display:block;"></i>
-                                Tidak ada hadis terkait "<b>${keyword}</b>" pada ${jumlah} hadis pertama.
-                                <p style="margin-top:8px; font-size:0.85rem;">Coba cari dengan nomor hadis untuk hasil yang lebih spesifik.</p>
-                            </div>`;
-                        setLoading(false);
-                        return;
-                    }
-                }
-
-                renderHadis(kumpulanHadis, isSearch, keyword);
+                renderHadis(data.items, false, '');
             } catch (e) {
                 tampilError("Gagal terhubung ke server. Coba beberapa saat lagi.");
             } finally {

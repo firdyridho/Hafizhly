@@ -585,7 +585,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     <div id="dashboardView">
         <div class="dash-header">
             <h1 class="dash-title">Murojaah Realtime</h1>
-            <a href="index.php" style="color:var(--text-dark); font-size:1.2rem;"><i class="fas fa-home"></i></a>
+            <a href="dashboard.php" style="color:var(--text-dark); font-size:1.2rem;"><i class="fas fa-home"></i></a>
         </div>
         <div class="bookmark-card" id="bookmarkCard" onclick="loadBookmarkedPage()">
             <div class="bookmark-label"><i class="fas fa-bookmark"></i> Lanjutkan Murojaah</div>
@@ -2081,9 +2081,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 if (isLoggedIn) {
                     fetch(window.location.href, {
                         method: 'POST',
-                        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
                         body: 'action=save_murojaah_progress&surah_nomor=' + currentSurahId + '&last_ayat=' + currentLastAyah + '&last_page=' + currentPage
-                    }).catch(function(){});
+                    }).catch(function() {});
                 }
             }
         }

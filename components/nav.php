@@ -111,6 +111,21 @@ $current_page = basename($_SERVER['PHP_SELF']);
         opacity: 0.55;
     }
 
+    .app-nav::after {
+        content: '';
+        position: absolute;
+        top: -18px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 36px;
+        background: rgba(255,255,255,0.85);
+        backdrop-filter: blur(22px);
+        border-radius: 80px 80px 0 0;
+        z-index: 0;
+        box-shadow: 0 -4px 12px rgba(0,0,0,0.04);
+    }
+
     @keyframes navRise {
         from {
             transform: translateY(110%);
@@ -255,34 +270,41 @@ $current_page = basename($_SERVER['PHP_SELF']);
     .nav-item:nth-child(4) { order: 4; }
     .nav-item:nth-child(5) { order: 5; }
 
+    .nav-item.nav-home {
+        z-index: 2;
+    }
+
     .nav-item.nav-home .nav-icon-wrap {
-        width: 52px;
-        height: 52px;
-        border-radius: 18px;
-        background: linear-gradient(135deg, var(--nav-primary-light), var(--nav-primary));
-        box-shadow: 0 8px 20px var(--nav-glow);
-        transform: translateY(-6px);
+        width: 58px;
+        height: 58px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #34d399, #059669, #047857);
+        box-shadow: 0 10px 28px rgba(5, 150, 105, 0.45), inset 0 2px 0 rgba(255,255,255,0.25);
+        transform: translateY(-14px);
         transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
     .nav-item.nav-home .nav-icon {
         color: #fff;
-        font-size: 1.35rem;
+        font-size: 1.4rem;
+        filter: drop-shadow(0 1px 2px rgba(0,0,0,0.15));
     }
 
     .nav-item.nav-home .nav-text {
         color: var(--nav-primary-dark);
-        font-weight: 700;
+        font-weight: 800;
         opacity: 1;
+        margin-top: -4px;
+        font-size: 0.65rem;
     }
 
     .nav-item.nav-home:active .nav-icon-wrap {
-        transform: translateY(-3px) scale(0.92);
+        transform: translateY(-8px) scale(0.92);
     }
 
     .nav-item.nav-home.active .nav-icon-wrap {
-        transform: translateY(-16px) scale(1.08);
-        box-shadow: 0 14px 30px var(--nav-glow);
+        transform: translateY(-20px) scale(1.06);
+        box-shadow: 0 16px 35px rgba(5, 150, 105, 0.55), inset 0 2px 0 rgba(255,255,255,0.3);
     }
 
     .nav-item.nav-home.active::after {
@@ -329,6 +351,10 @@ $current_page = basename($_SERVER['PHP_SELF']);
             opacity: 1;
             background: linear-gradient(90deg, transparent, var(--nav-gold) 20%, var(--nav-primary) 50%, var(--nav-gold) 80%, transparent);
             opacity: 0.35;
+        }
+
+        .app-nav::after {
+            display: none;
         }
 
         @keyframes navDrop {
@@ -442,6 +468,10 @@ $current_page = basename($_SERVER['PHP_SELF']);
         .nav-item:nth-child(4),
         .nav-item:nth-child(5) { order: unset; }
 
+        .nav-item.nav-home {
+            z-index: auto;
+        }
+
         .nav-item.nav-home .nav-icon-wrap {
             width: auto;
             height: auto;
@@ -454,12 +484,15 @@ $current_page = basename($_SERVER['PHP_SELF']);
         .nav-item.nav-home .nav-icon {
             color: inherit;
             font-size: 1rem;
+            filter: none;
         }
 
         .nav-item.nav-home .nav-text {
             color: inherit;
             font-weight: 600;
             opacity: 0.75;
+            margin-top: 0;
+            font-size: 0.92rem;
         }
 
         .nav-item.nav-home.active .nav-icon-wrap {

@@ -38,6 +38,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     echo json_encode(['status' => 'success']);
     exit;
 }
+
+// Ambil data hafalan terbaru dari DB untuk sync antar device
+$db_hafalan = null;
+if ($is_logged_in && isset($conn)) {
+    $uid = $_SESSION['user_id'];
+    $q = mysqli_query($conn, "SELECT surah, ayah_end, created_at FROM mutabaah WHERE user_id='$uid' AND activity_type='hafalan_baru' ORDER BY created_at DESC LIMIT 1");
+    if ($q && mysqli_num_rows($q) > 0) {
+        $db_hafalan = mysqli_fetch_assoc($q);
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -1418,6 +1428,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
         // State Save
         let savedPageToResume = null;
+        const dbHafalan = <?= json_encode($db_hafalan) ?>;
 
         // State Menu Long Press
         let targetVerseKeyForMenu = null;
@@ -1432,22 +1443,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         // Cek History Terakhir
         // ==========================================
         function checkSavedProgress() {
-            const savedDataStr = localStorage.getItem('hifzly_save_data');
-            if (savedDataStr) {
-                const savedData = JSON.parse(savedDataStr);
-                savedPageToResume = savedData.page;
-
-                document.getElementById('lastReadText').innerText = `Surah ${savedData.surahName} • Ayat ${savedData.verseNum} (Hal ${savedData.page})`;
-
-                const badge = document.getElementById('lastReadStatus');
-                if (savedData.status === 'lancar') {
+            // Langsung baca dari DB, bukan localStorage — biar lintas device sinkron
+            if (dbHafalan && dbHafalan.surah) {
+                const found = surahs.find(function(s) { return s.name === dbHafalan.surah; });
+                if (found) {
+                    savedPageToResume = found.page;
+                    document.getElementById('lastReadText').innerText = `Surah ${dbHafalan.surah} • Ayat ${dbHafalan.ayah_end} (Hal ${found.page})`;
+                    const badge = document.getElementById('lastReadStatus');
                     badge.className = 'status-badge lancar';
                     badge.innerText = "🟢 Hafalan Lancar";
-                } else {
-                    badge.className = 'status-badge ulang';
-                    badge.innerText = "🔴 Perlu Diulang";
+                    document.getElementById('lastReadCard').style.display = 'flex';
                 }
-                document.getElementById('lastReadCard').style.display = 'flex';
             }
         }
 

@@ -31,6 +31,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     echo json_encode(['status' => 'success']);
     exit;
 }
+
+// Ambil bookmark dari DB untuk sync antar device
+$db_murojaah = null;
+if ($is_logged_in && isset($conn)) {
+    $uid = $_SESSION['user_id'];
+    $q = mysqli_query($conn, "SELECT surah_nomor, last_ayat, last_page FROM murojaah_progress WHERE user_id='$uid' ORDER BY updated_at DESC LIMIT 1");
+    if ($q && mysqli_num_rows($q) > 0) {
+        $db_murojaah = mysqli_fetch_assoc($q);
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -1491,6 +1501,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         let currentSurahId = 1;
         let currentLastAyah = 1;
         const isLoggedIn = <?= $is_logged_in ? 'true' : 'false' ?>;
+        const dbBookmark = <?= json_encode($db_murojaah) ?>;
         const juzStartPages = [0, 1, 22, 42, 62, 82, 102, 122, 142, 162, 182, 202, 222, 242, 262, 282, 302, 322, 342, 362, 382, 402, 422, 442, 462, 482, 502, 522, 542, 562, 582];
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -1596,9 +1607,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         }
 
         function checkBookmarkStatus() {
-            const saved = localStorage.getItem('hifzly_murojaah_bookmark');
-            if (saved) {
-                const page = parseInt(saved);
+            // Langsung baca dari DB, bukan localStorage — biar lintas device sinkron
+            const page = dbBookmark && dbBookmark.last_page ? parseInt(dbBookmark.last_page) : null;
+            if (page) {
                 const surah = surahsData.slice().reverse().find(s => s.startPage <= page);
                 document.getElementById('bmSurahName').innerText = surah?.name || '?';
                 document.getElementById('bmPageInfo').innerText = `Melanjutkan Halaman ${page}`;
@@ -1606,8 +1617,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         }
 
         function loadBookmarkedPage() {
-            const saved = localStorage.getItem('hifzly_murojaah_bookmark');
-            if (saved) openMurojaah(parseInt(saved));
+            const page = dbBookmark && dbBookmark.last_page ? parseInt(dbBookmark.last_page) : null;
+            if (page) openMurojaah(page);
         }
 
         function openMurojaah(page, startVerseKey = null) {

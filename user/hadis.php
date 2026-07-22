@@ -1,6 +1,11 @@
 <?php
-// Pastikan file nav.php ada di direktori yang sama, atau sesuaikan path-nya (misal: '../nav.php')
-include 'nav.php';
+session_start();
+
+// Cek apakah user sudah login (Sesuaikan 'status_login' dengan variabel session yang kamu pakai di projectmu)
+if (!isset($_SESSION['status_login']) || $_SESSION['status_login'] !== true) {
+    echo "<script>alert('Silakan login terlebih dahulu!'); window.location.href = '../login.php';</script>";
+    exit;
+}
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -9,6 +14,8 @@ include 'nav.php';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pustaka Hadis - Hifzhly</title>
+
+    <!-- Fonts & Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -56,7 +63,7 @@ include 'nav.php';
             color: var(--muted);
         }
 
-        /* GRID KITAB */
+        /* ============ VIEW 1: GRID KITAB ============ */
         #view-home {
             transition: opacity 0.3s;
         }
@@ -108,7 +115,7 @@ include 'nav.php';
             color: var(--muted);
         }
 
-        /* VIEW DETAIL & PENCARIAN */
+        /* ============ VIEW 2: DETAIL & PENCARIAN ============ */
         #view-detail {
             display: none;
             animation: slideIn 0.4s ease forwards;
@@ -137,6 +144,7 @@ include 'nav.php';
             font-weight: 600;
             cursor: pointer;
             margin-bottom: 24px;
+            transition: 0.2s;
         }
 
         .btn-back:hover {
@@ -177,13 +185,14 @@ include 'nav.php';
             border: none;
             font-weight: 700;
             cursor: pointer;
+            transition: 0.2s;
         }
 
         .btn-cari:hover {
             background: var(--primary-dark);
         }
 
-        /* LIST HADIS */
+        /* ============ LIST HADIS ============ */
         .hadis-list {
             display: flex;
             flex-direction: column;
@@ -243,7 +252,6 @@ include 'nav.php';
             margin-bottom: 12px;
         }
 
-        /* Highlight hasil pencarian */
         .highlight {
             background-color: #fef08a;
             padding: 2px 4px;
@@ -305,9 +313,12 @@ include 'nav.php';
 
 <body>
 
+    <!-- Include Navbar dipanggil di dalam Body agar UI rapi -->
+    <?php include '../components/nav.php'; ?>
+
     <div class="container-hadis">
 
-        <!-- ============ VIEW 1: HOME (GRID KITAB) ============ -->
+        <!-- VIEW 1: HOME (GRID KITAB) -->
         <div id="view-home">
             <div class="header-section">
                 <h1>Pustaka Hadis</h1>
@@ -316,7 +327,7 @@ include 'nav.php';
             <div class="kitab-grid" id="kitabGrid"></div>
         </div>
 
-        <!-- ============ VIEW 2: PENCARIAN & DAFTAR HADIS ============ -->
+        <!-- VIEW 2: PENCARIAN & DAFTAR HADIS -->
         <div id="view-detail">
             <button class="btn-back" onclick="kembaliKeHome()">
                 <i class="fas fa-arrow-left"></i> Kembali ke Daftar Kitab
@@ -338,14 +349,15 @@ include 'nav.php';
 
             <div class="loader" id="loader">
                 <i class="fas fa-circle-notch"></i>
-                <p style="margin-top: 10px; font-weight: 600;" id="loaderText">Memuat daftar hadis...</p>
+                <p style="margin-top: 10px; font-weight: 600;" id="loaderText">Memuat data...</p>
             </div>
 
-            <!-- List Hadis akan di-generate di sini -->
+            <!-- List Hadis -->
             <div class="hadis-list" id="hadisList"></div>
         </div>
     </div>
 
+    <!-- ============ JAVASCRIPT ============ -->
     <script>
         const dataKitab = [{
                 id: 'bukhari',
@@ -433,8 +445,8 @@ include 'nav.php';
             document.getElementById('view-home').style.display = 'none';
             document.getElementById('view-detail').style.display = 'block';
 
-            // Otomatis load 20 hadis pertama supaya tidak kosong!
-            loadHadisRange('1-20', false);
+            // Load 10 hadis pertama secara paralel
+            loadBanyakHadis(1, 10, false);
         }
 
         function kembaliKeHome() {
@@ -446,90 +458,133 @@ include 'nav.php';
             if (e.key === 'Enter') prosesPencarian();
         }
 
-        // Fungsi Filter Utama (Cek apakah user ketik Angka atau Huruf)
         function prosesPencarian() {
             const input = document.getElementById('inputPencarian').value.trim();
             if (!input) {
-                loadHadisRange('1-20', false); // Kalau kosong, balik ke awal
+                loadBanyakHadis(1, 10, false);
                 return;
             }
 
-            // Jika murni angka = cari by ID/Nomor
+            // Jika input berupa angka = cari nomor spesifik
             if (/^\d+$/.test(input)) {
-                loadHadisRange(input, false);
+                loadSatuHadis(input);
             } else {
-                // Jika mengandung huruf = cari by Kata Kunci (hukum, puasa, dll)
-                // Kita load 300 hadis pertama dari API, lalu di-filter lokal
-                loadHadisRange('1-300', true, input.toLowerCase());
+                // Jika input berupa huruf/topik = ambil 30 hadis awal lalu saring lokal
+                loadBanyakHadis(1, 30, true, input.toLowerCase());
             }
         }
 
-        async function loadHadisRange(rangeOrNumber, isSearchKeyword = false, keyword = '') {
-            const loader = document.getElementById('loader');
-            const listArea = document.getElementById('hadisList');
-            const errorMsg = document.getElementById('errorMsg');
-            const loaderText = document.getElementById('loaderText');
-
-            errorMsg.style.display = 'none';
-            listArea.innerHTML = '';
-            loaderText.innerText = isSearchKeyword ? 'Mencari kata kunci...' : 'Memuat data sanad & matan...';
-            loader.style.display = 'block';
-
+        // --- FUNGSI AMBIL 1 HADIS (BY NOMOR) ---
+        async function loadSatuHadis(nomor) {
+            setLoading(true, "Mencari hadis nomor " + nomor + "...");
             try {
-                // Endpoint bisa menerima nomor tunggal (ex: 5) atau jangkauan (ex: 1-20)
-                const res = await fetch(`https://api.hadith.gading.dev/books/${currentKitabId}?range=${rangeOrNumber}`);
+                const res = await fetch(`https://api.hadith.gading.dev/books/${currentKitabId}/${nomor}`);
                 const data = await res.json();
 
-                loader.style.display = 'none';
+                if (data.code !== 200) throw new Error("Gagal");
 
-                if (data.code !== 200 || !data.data || !data.data.hadiths) {
-                    throw new Error("Data tidak ditemukan.");
-                }
+                renderHadis([data.data.contents], false, '');
+            } catch (err) {
+                tampilError("Nomor hadis tidak ditemukan atau server sedang sibuk.");
+            } finally {
+                setLoading(false);
+            }
+        }
 
-                let kumpulanHadis = data.data.hadiths;
+        // --- FUNGSI AMBIL BANYAK HADIS (PARALEL) ---
+        async function loadBanyakHadis(start, end, isSearch, keyword = '') {
+            setLoading(true, isSearch ? "Mencari kata kunci..." : "Memuat data sanad & matan...");
 
-                // Proses Filter Jika User Mencari Kata Kunci (Topik/Hukum)
-                if (isSearchKeyword) {
+            let kumpulanHadis = [];
+            let promises = [];
+
+            for (let i = start; i <= end; i++) {
+                promises.push(
+                    fetch(`https://api.hadith.gading.dev/books/${currentKitabId}/${i}`)
+                    .then(res => res.json())
+                    .catch(() => null)
+                );
+            }
+
+            try {
+                const results = await Promise.all(promises);
+
+                results.forEach(res => {
+                    if (res && res.code === 200 && res.data) {
+                        kumpulanHadis.push(res.data.contents);
+                    }
+                });
+
+                if (kumpulanHadis.length === 0) throw new Error("Gagal");
+
+                // Filter Kata Kunci jika user sedang mencari topik
+                if (isSearch) {
                     kumpulanHadis = kumpulanHadis.filter(h => h.id.toLowerCase().includes(keyword));
                     if (kumpulanHadis.length === 0) {
-                        listArea.innerHTML = `<div class="empty-state"><i class="fas fa-search" style="font-size: 3rem; color: #cbd5e1; margin-bottom:15px; display:block;"></i>Tidak ada hadis terkait kata kunci "<b>${keyword}</b>" pada urutan 1-300 kitab ini.</div>`;
+                        document.getElementById('hadisList').innerHTML = `
+                            <div class="empty-state">
+                                <i class="fas fa-search" style="font-size: 3rem; color: #cbd5e1; margin-bottom:15px; display:block;"></i>
+                                Tidak ada hadis terkait kata kunci "<b>${keyword}</b>" pada urutan awal kitab ini.
+                            </div>`;
+                        setLoading(false);
                         return;
                     }
                 }
 
-                // Render ke HTML
-                kumpulanHadis.forEach(hadis => {
-                    let teksArti = hadis.id;
-
-                    // Highlight kata kunci jika sedang mencari
-                    if (isSearchKeyword) {
-                        const regex = new RegExp(`(${keyword})`, 'gi');
-                        teksArti = teksArti.replace(regex, `<span class="highlight">$1</span>`);
-                    }
-
-                    const card = document.createElement('div');
-                    card.className = 'hadis-item';
-                    card.innerHTML = `
-                        <div class="hadis-header">
-                            <span>Hadis No. ${hadis.number}</span>
-                            <span class="badge" style="background: var(--gold); color: #fff; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem;">Sahih</span>
-                        </div>
-                        <div class="hadis-content">
-                            <div class="arabic-text">${hadis.arab}</div>
-                            <div class="terjemahan">
-                                <span class="terjemahan-label"><i class="fas fa-sitemap"></i> Sanad & Matan (Terjemahan)</span>
-                                <div>${teksArti}</div>
-                            </div>
-                        </div>
-                    `;
-                    listArea.appendChild(card);
-                });
+                renderHadis(kumpulanHadis, isSearch, keyword);
 
             } catch (error) {
-                loader.style.display = 'none';
-                errorMsg.innerText = "Gagal memuat hadis. Periksa koneksi internet atau nomor hadis salah.";
-                errorMsg.style.display = 'block';
+                tampilError("Koneksi ke server API terputus. Silakan coba beberapa saat lagi.");
+            } finally {
+                setLoading(false);
             }
+        }
+
+        // --- RENDER HADIS KE HTML ---
+        function renderHadis(dataArray, isSearch, keyword) {
+            const listArea = document.getElementById('hadisList');
+            listArea.innerHTML = '';
+
+            dataArray.forEach(hadis => {
+                let teksArti = hadis.id;
+
+                // Highlight kata kunci (Stabilo Kuning)
+                if (isSearch && keyword) {
+                    const regex = new RegExp(`(${keyword})`, 'gi');
+                    teksArti = teksArti.replace(regex, `<span class="highlight">$1</span>`);
+                }
+
+                const card = document.createElement('div');
+                card.className = 'hadis-item';
+                card.innerHTML = `
+                    <div class="hadis-header">
+                        <span>Hadis No. ${hadis.number}</span>
+                        <span class="badge" style="background: var(--gold); color: #fff; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem;">Sahih</span>
+                    </div>
+                    <div class="hadis-content">
+                        <div class="arabic-text">${hadis.arab}</div>
+                        <div class="terjemahan">
+                            <span class="terjemahan-label"><i class="fas fa-sitemap"></i> Sanad & Matan (Terjemahan)</span>
+                            <div>${teksArti}</div>
+                        </div>
+                    </div>
+                `;
+                listArea.appendChild(card);
+            });
+        }
+
+        // --- UTILITIES ---
+        function setLoading(isLoading, text = "") {
+            document.getElementById('loader').style.display = isLoading ? 'block' : 'none';
+            document.getElementById('errorMsg').style.display = 'none';
+            if (isLoading) document.getElementById('loaderText').innerText = text;
+        }
+
+        function tampilError(msg) {
+            const errorMsg = document.getElementById('errorMsg');
+            errorMsg.innerText = msg;
+            errorMsg.style.display = 'block';
+            document.getElementById('hadisList').innerHTML = '';
         }
     </script>
 </body>

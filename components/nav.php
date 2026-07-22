@@ -114,21 +114,23 @@ $current_page = basename($_SERVER['PHP_SELF']);
     .app-nav::after {
         content: '';
         position: absolute;
-        top: -16px;
+        top: -4px;
         left: 50%;
         transform: translateX(-50%);
-        width: 66px;
+        width: 70px;
         height: 36px;
         background: transparent;
+        border: 1.5px solid rgba(255,255,255,0.5);
+        border-bottom: none;
         border-radius: 50%;
-        box-shadow: 0 0 0 1.5px rgba(255,255,255,0.5), 0 -4px 12px rgba(0,0,0,0.04);
+        box-shadow: 0 -4px 12px rgba(0,0,0,0.04);
         z-index: 0;
         pointer-events: none;
     }
 
     .app-nav {
-        -webkit-mask-image: radial-gradient(circle at 50% -8px, transparent 31px, black 31px);
-        mask-image: radial-gradient(circle at 50% -8px, transparent 31px, black 31px);
+        -webkit-mask-image: radial-gradient(circle at 50% 24px, transparent 34px, black 34px);
+        mask-image: radial-gradient(circle at 50% 24px, transparent 34px, black 34px);
     }
 
     @keyframes navRise {

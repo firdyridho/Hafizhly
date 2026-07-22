@@ -368,9 +368,17 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
 
         .topik-pills {
             display: flex;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
             gap: 8px;
             margin-bottom: 20px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            padding-bottom: 4px;
+        }
+
+        .topik-pills::-webkit-scrollbar {
+            display: none;
         }
 
         .pill {

@@ -248,6 +248,47 @@ $current_page = basename($_SERVER['PHP_SELF']);
         }
     }
 
+    /* Beranda di tengah & spesial (mobile) */
+    .nav-item:nth-child(1) { order: 3; }
+    .nav-item:nth-child(2) { order: 1; }
+    .nav-item:nth-child(3) { order: 2; }
+    .nav-item:nth-child(4) { order: 4; }
+    .nav-item:nth-child(5) { order: 5; }
+
+    .nav-item.nav-home .nav-icon-wrap {
+        width: 52px;
+        height: 52px;
+        border-radius: 18px;
+        background: linear-gradient(135deg, var(--nav-primary-light), var(--nav-primary));
+        box-shadow: 0 8px 20px var(--nav-glow);
+        transform: translateY(-6px);
+        transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .nav-item.nav-home .nav-icon {
+        color: #fff;
+        font-size: 1.35rem;
+    }
+
+    .nav-item.nav-home .nav-text {
+        color: var(--nav-primary-dark);
+        font-weight: 700;
+        opacity: 1;
+    }
+
+    .nav-item.nav-home:active .nav-icon-wrap {
+        transform: translateY(-3px) scale(0.92);
+    }
+
+    .nav-item.nav-home.active .nav-icon-wrap {
+        transform: translateY(-16px) scale(1.08);
+        box-shadow: 0 14px 30px var(--nav-glow);
+    }
+
+    .nav-item.nav-home.active::after {
+        display: none;
+    }
+
     /* Item logout diberi aksen merah halus saat disentuh */
     .nav-item.nav-logout:active .nav-icon-wrap {
         background: rgba(239, 68, 68, 0.1);
@@ -393,6 +434,42 @@ $current_page = basename($_SERVER['PHP_SELF']);
 
         .nav-item.active .nav-text {
             font-weight: 700;
+        }
+
+        .nav-item:nth-child(1),
+        .nav-item:nth-child(2),
+        .nav-item:nth-child(3),
+        .nav-item:nth-child(4),
+        .nav-item:nth-child(5) { order: unset; }
+
+        .nav-item.nav-home .nav-icon-wrap {
+            width: auto;
+            height: auto;
+            border-radius: 0;
+            background: none;
+            box-shadow: none;
+            transform: none;
+        }
+
+        .nav-item.nav-home .nav-icon {
+            color: inherit;
+            font-size: 1rem;
+        }
+
+        .nav-item.nav-home .nav-text {
+            color: inherit;
+            font-weight: 600;
+            opacity: 0.75;
+        }
+
+        .nav-item.nav-home.active .nav-icon-wrap {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .nav-item.nav-home.active .nav-text {
+            font-weight: 700;
+            opacity: 1;
         }
 
         .nav-item.nav-logout {
@@ -599,7 +676,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
     </a>
 
     <div class="nav-links">
-        <a href="dashboard.php" class="nav-item <?= $current_page == 'dashboard.php' ? 'active' : '' ?>" data-ajax-link>
+        <a href="dashboard.php" class="nav-item nav-home <?= $current_page == 'dashboard.php' ? 'active' : '' ?>" data-ajax-link>
             <span class="nav-icon-wrap"><i class="fa-solid fa-house nav-icon"></i></span>
             <span class="nav-text">Beranda</span>
         </a>

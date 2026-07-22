@@ -5,6 +5,39 @@ if (file_exists('../config/database.php')) {
 }
 
 $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
+
+// Auto-create table + AJAX save handler untuk hafalan (mutabaah)
+if ($is_logged_in && isset($conn)) {
+    mysqli_query($conn, "CREATE TABLE IF NOT EXISTS `mutabaah` (
+        `id` int(11) NOT NULL AUTO_INCREMENT,
+        `user_id` int(11) NOT NULL,
+        `activity_type` enum('tilawah','murojaah','hafalan_baru','setoran') NOT NULL,
+        `activity_date` date NOT NULL,
+        `activity_time` time NOT NULL,
+        `surah` varchar(100) NOT NULL,
+        `ayah_start` int(11) NOT NULL,
+        `ayah_end` int(11) NOT NULL,
+        `notes` text DEFAULT NULL,
+        `created_at` timestamp NULL DEFAULT current_timestamp(),
+        PRIMARY KEY (`id`),
+        KEY `user_id` (`user_id`)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci");
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'save_hafalan_progress' && $is_logged_in && isset($conn)) {
+    $uid = $_SESSION['user_id'];
+    $surah = mysqli_real_escape_string($conn, $_POST['surah']);
+    $ayat = (int)$_POST['ayat'];
+    $status = mysqli_real_escape_string($conn, $_POST['status']);
+    $today = date('Y-m-d');
+    $now = date('H:i:s');
+    $notes = ucfirst($status) . ' - ' . $surah . ' ayat ' . $ayat;
+    $q = "INSERT INTO mutabaah (user_id, activity_type, activity_date, activity_time, surah, ayah_start, ayah_end, notes) 
+          VALUES ('$uid', 'hafalan_baru', '$today', '$now', '$surah', '$ayat', '$ayat', '$notes')";
+    mysqli_query($conn, $q);
+    echo json_encode(['status' => 'success']);
+    exit;
+}
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -1539,6 +1572,7 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
 
         function saveAyahProgress(status) {
             const ayahNum = targetVerseKeyForMenu.split(':')[1];
+            const surahNum = targetVerseKeyForMenu.split(':')[0];
             const saveData = {
                 page: currentPage,
                 surahName: currentSurahNameGlobal,
@@ -1549,6 +1583,14 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             localStorage.setItem('hifzly_save_data', JSON.stringify(saveData));
             closeAyahMenu();
             showToast("Hafalan ayat berhasil disimpan!");
+            const loggedIn = <?= $is_logged_in ? 'true' : 'false' ?>;
+            if (loggedIn) {
+                fetch(window.location.href, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                    body: 'action=save_hafalan_progress&surah=' + encodeURIComponent(currentSurahNameGlobal) + '&ayat=' + ayahNum + '&status=' + status
+                }).catch(function(){});
+            }
         }
 
         // ==========================================

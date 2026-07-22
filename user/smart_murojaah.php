@@ -4,6 +4,33 @@ if (file_exists('../config/database.php')) {
     require_once '../config/database.php';
 }
 $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
+
+// Auto-create table + AJAX save handler untuk murojaah_progress
+if ($is_logged_in && isset($conn)) {
+    mysqli_query($conn, "CREATE TABLE IF NOT EXISTS `murojaah_progress` (
+        `id` int(11) NOT NULL AUTO_INCREMENT,
+        `user_id` int(11) NOT NULL,
+        `surah_nomor` int(11) NOT NULL DEFAULT 0,
+        `last_ayat` int(11) NOT NULL DEFAULT 1,
+        `last_page` int(11) DEFAULT NULL,
+        `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+        PRIMARY KEY (`id`),
+        UNIQUE KEY `uniq_user_surah` (`user_id`,`surah_nomor`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'save_murojaah_progress' && $is_logged_in && isset($conn)) {
+    $uid = $_SESSION['user_id'];
+    $surah_nomor = (int)$_POST['surah_nomor'];
+    $last_ayat = (int)$_POST['last_ayat'];
+    $last_page = (int)$_POST['last_page'];
+    $q = "INSERT INTO murojaah_progress (user_id, surah_nomor, last_ayat, last_page, updated_at) 
+          VALUES ('$uid', '$surah_nomor', '$last_ayat', '$last_page', NOW())
+          ON DUPLICATE KEY UPDATE last_ayat='$last_ayat', last_page='$last_page', updated_at=NOW()";
+    mysqli_query($conn, $q);
+    echo json_encode(['status' => 'success']);
+    exit;
+}
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -1461,6 +1488,9 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
         let selectedSurahId = 1;
         let selectedSurahAyahs = 1;
         let activeModalTab = 'ayat';
+        let currentSurahId = 1;
+        let currentLastAyah = 1;
+        const isLoggedIn = <?= $is_logged_in ? 'true' : 'false' ?>;
         const juzStartPages = [0, 1, 22, 42, 62, 82, 102, 122, 142, 162, 182, 202, 222, 242, 262, 282, 302, 322, 342, 362, 382, 402, 422, 442, 462, 482, 502, 522, 542, 562, 582];
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -1607,6 +1637,12 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
             try {
                 const res = await fetch(`https://api.quran.com/api/v4/verses/by_page/${page}?language=id&words=true&word_fields=text_uthmani,line_number`);
                 const data = await res.json();
+                if (data.verses.length > 0) {
+                    const firstKey = data.verses[0].verse_key;
+                    const lastKey = data.verses[data.verses.length - 1].verse_key;
+                    currentSurahId = parseInt(firstKey.split(':')[0]);
+                    currentLastAyah = parseInt(lastKey.split(':')[1]);
+                }
                 const targetIdx = renderExactMushafLayout(data.verses, page, startVerseKey);
 
                 currentWordTargetIdx = targetIdx;
@@ -2042,6 +2078,13 @@ $is_logged_in = isset($_SESSION['user_id']) && $_SESSION['role'] === 'user';
                 localStorage.setItem('hifzly_murojaah_bookmark', currentPage);
                 btn.classList.add('active');
                 showToast("Halaman disimpan");
+                if (isLoggedIn) {
+                    fetch(window.location.href, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                        body: 'action=save_murojaah_progress&surah_nomor=' + currentSurahId + '&last_ayat=' + currentLastAyah + '&last_page=' + currentPage
+                    }).catch(function(){});
+                }
             }
         }
 

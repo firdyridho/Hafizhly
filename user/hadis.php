@@ -2,7 +2,7 @@
 session_start();
 
 // Cek session login yang sesuai dengan project kita sebelumnya
-if (!isset($_SESSION['login'])) {
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'user') {
     header("Location: ../login.php");
     exit;
 }

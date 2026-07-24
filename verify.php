@@ -1,6 +1,6 @@
 <?php
-session_start();
 require_once 'config/database.php';
+require_once 'config/email.php';
 
 $email = $_GET['email'] ?? $_POST['email'] ?? '';
 $pesan = '';
@@ -34,25 +34,12 @@ if (isset($_POST['kirim_ulang'])) {
     $query = mysqli_query($conn, "SELECT * FROM users WHERE email = '$email' AND is_verified = 0");
     if (mysqli_num_rows($query) === 1) {
         $user = mysqli_fetch_assoc($query);
+        $nama = $user['nama_lengkap'];
         $kode_baru = sprintf("%06d", random_int(0, 999999));
         $expiry_baru = date('Y-m-d H:i:s', strtotime('+15 minutes'));
         mysqli_query($conn, "UPDATE users SET verification_code = '$kode_baru', verification_expiry = '$expiry_baru' WHERE email = '$email'");
 
-        require_once 'config/email.php';
-        $subject = 'Kode Verifikasi Baru - Hifzhly';
-        $body = "
-        <div style='font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 30px 20px; background: #f7faf8; border-radius: 20px;'>
-            <div style='text-align: center; margin-bottom: 24px;'>
-                <h2 style='color: #0f172a; margin-top: 10px; font-size: 1.3rem;'>Kode Verifikasi Baru</h2>
-            </div>
-            <p style='color: #475569; font-size: 0.95rem; line-height: 1.6;'>Berikut kode verifikasi yang baru:</p>
-            <div style='text-align: center; margin: 28px 0;'>
-                <span style='display: inline-block; background: #ffffff; border: 2px dashed #059669; border-radius: 16px; padding: 16px 40px; font-size: 2.2rem; font-weight: 800; letter-spacing: 10px; color: #059669;'>$kode_baru</span>
-            </div>
-            <p style='color: #64748b; font-size: 0.85rem;'>Kode ini berlaku selama <b>15 menit</b>.</p>
-        </div>";
-
-        if (kirim_email($email, $subject, $body)) {
+        if (kirim_kode_verifikasi($email, $nama, $kode_baru)) {
             $pesan = 'Kode baru telah dikirim ke email kamu.';
             $pesanTipe = 'sukses';
         } else {

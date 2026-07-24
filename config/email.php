@@ -40,8 +40,10 @@ function buat_template_email($judul, $konten)
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <!-- Import Font Keren -->
+        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;800&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
     </head>
-    <body style="margin:0;padding:0;background-color:#f4f9f6;font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,Helvetica,Arial,sans-serif;">
+    <body style="margin:0;padding:0;background-color:#f4f9f6;font-family:\'Plus Jakarta Sans\',-apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,Helvetica,Arial,sans-serif;">
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f9f6;padding:30px 16px;">
             <tr>
                 <td align="center">
@@ -50,9 +52,9 @@ function buat_template_email($judul, $konten)
                         <!-- Header Section (Bismillah & Logo) -->
                         <tr>
                             <td align="center" style="background:linear-gradient(135deg, #059669, #047857);padding:35px 20px;">
-                                <p style="color:#a7f3d0;font-size:22px;margin:0 0 12px;font-family:\'Amiri\', serif, Times;">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم</p>
-                                <h1 style="color:#ffffff;font-size:28px;margin:0;font-weight:800;letter-spacing:3px;text-transform:uppercase;">HIFZHLY</h1>
-                                <p style="color:#d1fae5;font-size:13px;margin:8px 0 0;letter-spacing:0.5px;">Pendamping Murojaah Al-Qur\'an</p>
+                                <p style="color:#a7f3d0;font-size:24px;margin:0 0 8px;font-family:\'Amiri\', serif;">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم</p>
+                                <h1 style="color:#ffffff;font-size:32px;margin:0;font-weight:800;letter-spacing:4px;font-family:\'Plus Jakarta Sans\', sans-serif;">HIFZHLY</h1>
+                                <p style="color:#d1fae5;font-size:13px;margin:8px 0 0;letter-spacing:0.5px;font-weight:600;">Pendamping Murojaah Al-Qur\'an</p>
                             </td>
                         </tr>
 
@@ -90,23 +92,29 @@ function kirim_kode_verifikasi($email, $nama, $kode)
 
     $konten = '
         <tr>
-            <td style="padding: 30px 30px 15px; color: #334155; font-size: 16px; line-height: 1.6;">
-                <p style="margin:0 0 15px; color: #059669; font-weight: 600;">Assalamu\'alaikum Warahmatullahi Wabarakatuh,</p>
+            <td style="padding: 30px 30px 15px; color: #334155; font-size: 15px; line-height: 1.6;">
+                <p style="margin:0 0 15px; color: #059669; font-weight: 700;">Assalamu\'alaikum Warahmatullahi Wabarakatuh,</p>
                 <p style="margin:0;">Ahlan wa sahlan, <strong style="color: #0f172a;">' . $nama_aman . '</strong>!</p>
             </td>
         </tr>
         <tr>
             <td style="padding: 0 30px 25px; color: #475569; font-size: 15px; line-height: 1.7;">
                 <p style="margin:0;">Alhamdulillah, langkah pertamamu untuk mulai menjaga hafalan bersama <strong>Hifzhly</strong> sudah hampir selesai. Semoga niat baik ini selalu dimudahkan dan diberkahi oleh Allah SWT.</p>
-                <p style="margin:16px 0 0;">Untuk menyelesaikan pendaftaran, silakan masukkan kode verifikasi berikut:</p>
+                <p style="margin:16px 0 0;">Untuk menyelesaikan pendaftaran, silakan gunakan kode verifikasi berikut:</p>
             </td>
         </tr>
         <tr>
-            <td align="center" style="padding: 10px 30px 35px;">
-                <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
+            <td align="center" style="padding: 10px 30px 25px;">
+                <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 auto; width: 100%;">
                     <tr>
-                        <td align="center" style="background-color: #ecfdf5; border: 2px dashed #10b981; border-radius: 12px; padding: 16px 35px;">
-                            <span style="font-family: \'Courier New\', Courier, monospace; font-size: 38px; font-weight: 800; letter-spacing: 12px; color: #047857; display: block; margin-right: -12px;">' . $kode . '</span>
+                        <td align="center" style="background-color: #ecfdf5; border: 2px dashed #10b981; border-radius: 12px; padding: 20px 10px;">
+                            <!-- CSS user-select: all membuat teks langsung terblok semua saat ditekan -->
+                            <span style="font-family: \'Plus Jakarta Sans\', \'Courier New\', monospace; font-size: 42px; font-weight: 800; letter-spacing: 14px; color: #047857; display: block; margin-right: -14px; cursor: pointer; user-select: all; -webkit-user-select: all; -moz-user-select: all;">' . $kode . '</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="center" style="padding-top: 10px;">
+                            <span style="background-color: #d1fae5; color: #047857; font-size: 12px; padding: 4px 12px; border-radius: 20px; font-weight: 600;"><i class="fa-regular fa-copy"></i> Tekan/klik kode di atas untuk menyalin</span>
                         </td>
                     </tr>
                 </table>
@@ -117,7 +125,7 @@ function kirim_kode_verifikasi($email, $nama, $kode)
                 <div style="background-color: #f1f5f9; padding: 16px 20px; border-radius: 10px; border-left: 4px solid #cbd5e1;">
                     <p style="margin:0; color: #64748b; font-size: 13px; line-height: 1.6;">
                         <strong style="color: #475569;">Catatan Keamanan:</strong><br>
-                        Kode ini hanya berlaku selama <strong>15 menit</strong>. Mohon untuk tidak pernah memberikan kode ini kepada siapa pun demi keamanan akunmu.
+                        Kode ini hanya berlaku selama <strong>15 menit</strong>. Mohon untuk tidak pernah memberikan kode ini kepada siapa pun.
                     </p>
                 </div>
             </td>
@@ -133,8 +141,8 @@ function kirim_kode_reset($email, $nama, $kode)
 
     $konten = '
         <tr>
-            <td style="padding: 30px 30px 15px; color: #334155; font-size: 16px; line-height: 1.6;">
-                <p style="margin:0 0 15px; color: #059669; font-weight: 600;">Assalamu\'alaikum Warahmatullahi Wabarakatuh,</p>
+            <td style="padding: 30px 30px 15px; color: #334155; font-size: 15px; line-height: 1.6;">
+                <p style="margin:0 0 15px; color: #059669; font-weight: 700;">Assalamu\'alaikum Warahmatullahi Wabarakatuh,</p>
                 <p style="margin:0;">Halo, <strong style="color: #0f172a;">' . $nama_aman . '</strong>.</p>
             </td>
         </tr>
@@ -145,11 +153,17 @@ function kirim_kode_reset($email, $nama, $kode)
             </td>
         </tr>
         <tr>
-            <td align="center" style="padding: 10px 30px 35px;">
-                <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
+            <td align="center" style="padding: 10px 30px 25px;">
+                <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 auto; width: 100%;">
                     <tr>
-                        <td align="center" style="background-color: #fffbeb; border: 2px dashed #f59e0b; border-radius: 12px; padding: 16px 35px;">
-                            <span style="font-family: \'Courier New\', Courier, monospace; font-size: 38px; font-weight: 800; letter-spacing: 12px; color: #b45309; display: block; margin-right: -12px;">' . $kode . '</span>
+                        <!-- Diubah menjadi tema Hijau Konsisten -->
+                        <td align="center" style="background-color: #ecfdf5; border: 2px dashed #10b981; border-radius: 12px; padding: 20px 10px;">
+                            <span style="font-family: \'Plus Jakarta Sans\', \'Courier New\', monospace; font-size: 42px; font-weight: 800; letter-spacing: 14px; color: #047857; display: block; margin-right: -14px; cursor: pointer; user-select: all; -webkit-user-select: all; -moz-user-select: all;">' . $kode . '</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="center" style="padding-top: 10px;">
+                            <span style="background-color: #d1fae5; color: #047857; font-size: 12px; padding: 4px 12px; border-radius: 20px; font-weight: 600;"><i class="fa-regular fa-copy"></i> Tekan/klik kode di atas untuk menyalin</span>
                         </td>
                     </tr>
                 </table>
@@ -157,10 +171,11 @@ function kirim_kode_reset($email, $nama, $kode)
         </tr>
         <tr>
             <td style="padding: 0 30px 35px;">
-                <div style="background-color: #fef2f2; padding: 16px 20px; border-radius: 10px; border-left: 4px solid #fca5a5;">
-                    <p style="margin:0; color: #7f1d1d; font-size: 13px; line-height: 1.6;">
-                        <strong style="color: #991b1b;">Peringatan Penting:</strong><br>
-                        Kode pemulihan ini hangus dalam <strong>15 menit</strong>. Jika kamu tidak merasa meminta reset password, mohon abaikan email ini dan pastikan password akunmu aman.
+                <!-- Kotak peringatan diubah jadi warna hijau netral/abu -->
+                <div style="background-color: #f1f5f9; padding: 16px 20px; border-radius: 10px; border-left: 4px solid #cbd5e1;">
+                    <p style="margin:0; color: #64748b; font-size: 13px; line-height: 1.6;">
+                        <strong style="color: #475569;">Peringatan Penting:</strong><br>
+                        Kode pemulihan ini hangus dalam <strong>15 menit</strong>. Jika kamu tidak meminta reset password, mohon abaikan email ini dan pastikan password akunmu aman.
                     </p>
                 </div>
             </td>

@@ -187,6 +187,12 @@ if (isset($_POST['reset_password'])) {
             }
             return true;
         }
+        document.querySelectorAll('form').forEach(function(form) {
+            form.addEventListener('submit', function() {
+                var btn = this.querySelector('button[type="submit"]');
+                if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner"></i> Memproses...'; }
+            });
+        });
     </script>
 </body>
 </html>

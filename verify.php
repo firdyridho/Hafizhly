@@ -158,6 +158,12 @@ if (isset($_POST['kirim_ulang'])) {
         document.getElementById('kode')?.addEventListener('input', function() {
             this.value = this.value.replace(/\D/g, '').substring(0, 6);
         });
+        document.querySelectorAll('form').forEach(function(form) {
+            form.addEventListener('submit', function() {
+                var btn = this.querySelector('button[type="submit"]');
+                if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner"></i> Memproses...'; }
+            });
+        });
     </script>
 </body>
 </html>

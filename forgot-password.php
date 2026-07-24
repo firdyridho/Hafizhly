@@ -108,5 +108,13 @@ if (isset($_POST['lupa_password'])) {
             <a href="login.php">&larr; Kembali ke halaman masuk</a>
         </div>
     </div>
+    <script>
+        document.querySelectorAll('form').forEach(function(form) {
+            form.addEventListener('submit', function() {
+                var btn = this.querySelector('button[type="submit"]');
+                if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner"></i> Memproses...'; }
+            });
+        });
+    </script>
 </body>
 </html>

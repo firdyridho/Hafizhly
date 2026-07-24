@@ -430,56 +430,6 @@ session_start();
             flex-shrink: 0;
         }
 
-        /* ============ STATISTICS ============ */
-        .stats-section {
-            position: relative;
-            z-index: 1;
-            padding: clamp(50px, 7vw, 80px) 6%;
-            background: linear-gradient(135deg, var(--emerald-deep), #0f4d3b);
-            overflow: hidden;
-        }
-        .stats-section::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140'%3E%3Cg fill='none' stroke='%23ffffff' stroke-width='1'%3E%3Cpath d='M70 8 L112 35 L112 105 L70 132 L28 105 L28 35 Z'/%3E%3C/g%3E%3C/svg%3E");
-            opacity: 0.04;
-        }
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: clamp(20px, 3vw, 40px);
-            max-width: 960px;
-            margin: 0 auto;
-            position: relative;
-        }
-        .stat-item {
-            text-align: center;
-            padding: 24px 16px;
-        }
-        .stat-icon {
-            font-size: 1.8rem;
-            color: var(--gold);
-            margin-bottom: 16px;
-        }
-        .stat-number {
-            font-family: 'Amiri', serif;
-            font-size: clamp(2.2rem, 4vw, 3.2rem);
-            font-weight: 700;
-            color: var(--ivory);
-            line-height: 1.2;
-        }
-        .stat-number .suffix {
-            color: var(--gold);
-        }
-        .stat-label {
-            color: rgba(253, 252, 249, 0.6);
-            font-size: 0.85rem;
-            font-weight: 500;
-            letter-spacing: 0.5px;
-            margin-top: 8px;
-        }
-
         /* ============ TEAM SECTION ============ */
         .team-section {
             position: relative;
@@ -717,93 +667,6 @@ session_start();
         .social-btn:hover .tooltip-text {
             opacity: 1;
             transform: translateX(-50%) scale(1);
-        }
-
-        /* ============ JOURNEY / TIMELINE ============ */
-        .journey-section {
-            position: relative;
-            z-index: 1;
-            padding: clamp(50px, 7vw, 80px) 6% clamp(60px, 8vw, 100px);
-            background: rgba(253, 252, 249, 0.6);
-        }
-        .timeline {
-            position: relative;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px 0;
-        }
-        .timeline::before {
-            content: "";
-            position: absolute;
-            left: 50%;
-            top: 0;
-            bottom: 0;
-            width: 2px;
-            background: linear-gradient(180deg, var(--emerald-bright), var(--gold), var(--emerald-bright));
-            transform: translateX(-50%);
-        }
-        .tl-item {
-            position: relative;
-            display: flex;
-            align-items: flex-start;
-            margin-bottom: 50px;
-            width: 100%;
-        }
-        .tl-item:last-child {
-            margin-bottom: 0;
-        }
-        .tl-item .tl-badge {
-            position: absolute;
-            left: 50%;
-            top: 6px;
-            transform: translateX(-50%);
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: var(--emerald-deep);
-            border: 4px solid var(--ivory);
-            box-shadow: 0 0 0 2px var(--emerald-bright), 0 4px 12px rgba(7, 59, 44, 0.2);
-            z-index: 2;
-        }
-        .tl-item .tl-content {
-            width: calc(50% - 40px);
-            background: rgba(253, 252, 249, 0.85);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            border-radius: 18px;
-            padding: 24px 28px;
-            border: 1px solid var(--line);
-            transition: 0.4s var(--ease);
-        }
-        .tl-item .tl-content:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 16px 40px rgba(7, 59, 44, 0.08);
-        }
-        .tl-item:nth-child(odd) .tl-content {
-            margin-right: auto;
-        }
-        .tl-item:nth-child(even) .tl-content {
-            margin-left: auto;
-        }
-        .tl-content .tl-date {
-            display: inline-block;
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: var(--gold);
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            margin-bottom: 8px;
-        }
-        .tl-content h4 {
-            font-size: 1.1rem;
-            color: var(--emerald-deep);
-            margin-bottom: 8px;
-        }
-        .tl-content p {
-            font-size: 0.9rem;
-            color: var(--ink-muted);
-            line-height: 1.7;
-            margin: 0;
         }
 
         /* ============ TECH STACK ============ */
@@ -1067,25 +930,6 @@ session_start();
         }
 
         /* ============ RESPONSIVE ============ */
-        @media (max-width: 900px) {
-            .timeline::before {
-                left: 20px;
-            }
-            .tl-item .tl-badge {
-                left: 20px;
-            }
-            .tl-item .tl-content,
-            .tl-item:nth-child(odd) .tl-content,
-            .tl-item:nth-child(even) .tl-content {
-                width: calc(100% - 52px);
-                margin-left: 52px;
-                margin-right: 0;
-            }
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
         @media (max-width: 860px) {
             .dev-row,
             .dev-row.reverse {
@@ -1109,6 +953,9 @@ session_start();
             .vision-grid {
                 grid-template-columns: 1fr;
             }
+            .section-heading {
+                margin-bottom: clamp(32px, 5vw, 48px);
+            }
         }
 
         @media (max-width: 768px) {
@@ -1119,36 +966,199 @@ session_start();
                 padding: 10px 5%;
             }
             .hero {
-                padding: 128px 6% 60px;
+                padding: 128px 6% 50px;
+            }
+            .hero p {
+                max-width: 100%;
             }
             .dev-photo-wrap {
-                width: clamp(190px, 55vw, 250px);
+                width: clamp(180px, 55vw, 240px);
             }
             .tech-belt {
-                gap: 14px;
-            }
-            .stats-grid {
                 gap: 12px;
             }
-            .stat-item {
-                padding: 16px 8px;
+            .tech-item {
+                padding: 18px 20px 14px;
+                min-width: 104px;
+            }
+            .tech-icon-badge {
+                width: 44px;
+                height: 44px;
+            }
+            .tech-icon-badge i {
+                font-size: 1.1rem;
+            }
+            .tech-name {
+                font-size: 0.78rem;
+            }
+            .vision-card {
+                padding: clamp(24px, 3vw, 32px);
+            }
+            .cta-section {
+                padding: clamp(48px, 8vw, 72px) 5%;
+            }
+            .btn-cta {
+                padding: 14px 32px;
+                font-size: 0.95rem;
+            }
+            footer {
+                padding: 28px 5%;
+            }
+            footer .footer-links {
+                gap: 16px;
             }
         }
 
         @media (max-width: 480px) {
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
+            .navbar-hz {
+                padding: 12px 4%;
+            }
+            .navbar-hz.scrolled {
+                padding: 8px 4%;
+            }
+            .nav-brand {
+                font-size: 1.2rem;
+            }
+            .nav-brand .logo-mark {
+                width: 32px;
+                height: 32px;
+            }
+            .btn-back {
+                padding: 8px 16px;
+                font-size: 0.82rem;
+            }
+            .hero {
+                padding: 112px 5% 44px;
+            }
+            .hero h1 {
+                font-size: clamp(1.6rem, 7vw, 2rem);
+            }
+            .hero p {
+                font-size: 0.92rem;
+            }
+            .hero-scrollcue {
+                margin-top: 36px;
+                font-size: 0.7rem;
+            }
+            .hero-eyebrow {
+                font-size: 0.7rem;
+                letter-spacing: 2px;
+            }
+            .hero-eyebrow::before,
+            .hero-eyebrow::after {
+                width: 18px;
+            }
+            .hero-mark {
+                width: 48px;
+                height: 48px;
+                padding: 10px;
+                margin-bottom: 20px;
+            }
+            .section-label {
+                font-size: 0.7rem;
+                letter-spacing: 2px;
+            }
+            .section-heading {
+                font-size: clamp(1.2rem, 5vw, 1.5rem);
+            }
+            .dev-photo-wrap {
+                width: clamp(160px, 60vw, 200px);
+            }
+            .dev-name {
+                font-size: clamp(1.2rem, 5vw, 1.4rem);
+            }
+            .dev-bio {
+                font-size: 0.9rem;
+            }
+            .dev-skills {
                 gap: 8px;
             }
-            .stat-number {
-                font-size: 1.6rem;
+            .skill-chip {
+                padding: 7px 14px 7px 10px;
+                font-size: 0.76rem;
             }
-            .stat-icon {
-                font-size: 1.3rem;
-                margin-bottom: 10px;
+            .social-btn {
+                width: 38px;
+                height: 38px;
+                font-size: 0.9rem;
             }
-            .stat-label {
+            .vision-card {
+                padding: 22px;
+                border-radius: 20px;
+            }
+            .vision-icon {
+                width: 48px;
+                height: 48px;
+                font-size: 1.2rem;
+                margin-bottom: 16px;
+            }
+            .vision-card h3 {
+                font-size: 1.1rem;
+            }
+            .vision-card p,
+            .vision-card ul li {
+                font-size: 0.88rem;
+            }
+            .tech-section {
+                padding: clamp(48px, 8vw, 64px) 0;
+            }
+            .tech-section h2 {
+                font-size: clamp(1.2rem, 5vw, 1.5rem);
+            }
+            .tech-subtitle {
+                font-size: 0.85rem;
+                margin-bottom: 32px;
+            }
+            .tech-cat-btn {
+                padding: 7px 16px;
+                font-size: 0.78rem;
+            }
+            .tech-categories {
+                gap: 8px;
+            }
+            .tech-item {
+                padding: 14px 14px 10px;
+                min-width: 88px;
+                gap: 10px;
+            }
+            .tech-icon-badge {
+                width: 38px;
+                height: 38px;
+            }
+            .tech-icon-badge i {
+                font-size: 0.95rem;
+            }
+            .tech-name {
+                font-size: 0.7rem;
+            }
+            .cta-section h2 {
+                font-size: clamp(1.2rem, 5vw, 1.5rem);
+            }
+            .cta-section p {
+                font-size: 0.9rem;
+            }
+            .btn-cta {
+                padding: 12px 28px;
+                font-size: 0.88rem;
+            }
+            footer {
+                padding: 24px 4%;
+                font-size: 0.8rem;
+            }
+            footer .footer-brand {
+                font-size: 1rem;
+            }
+            footer .footer-links a {
                 font-size: 0.75rem;
+            }
+        }
+
+        @media (min-width: 1400px) {
+            .hero p {
+                max-width: 720px;
+            }
+            .dev-bio {
+                max-width: 520px;
             }
         }
     </style>
@@ -1211,32 +1221,6 @@ session_start();
                     <li>Menghadirkan pengalaman belajar yang menyenangkan melalui gamifikasi dan target harian.</li>
                     <li>Terus berinovasi berdasarkan masukan dari komunitas penghafal Al-Qur'an.</li>
                 </ul>
-            </div>
-        </div>
-    </section>
-
-    <!-- STATISTICS -->
-    <section class="stats-section" id="stats">
-        <div class="stats-grid">
-            <div class="stat-item" data-aos="zoom-in" data-aos-delay="50">
-                <div class="stat-icon"><i class="fas fa-book-quran"></i></div>
-                <div class="stat-number"><span class="counter" data-target="6236">0</span><span class="suffix">+</span></div>
-                <div class="stat-label">Total Ayat</div>
-            </div>
-            <div class="stat-item" data-aos="zoom-in" data-aos-delay="150">
-                <div class="stat-icon"><i class="fas fa-users"></i></div>
-                <div class="stat-number"><span class="counter" data-target="1200">0</span><span class="suffix">+</span></div>
-                <div class="stat-label">Pengguna Aktif</div>
-            </div>
-            <div class="stat-item" data-aos="zoom-in" data-aos-delay="250">
-                <div class="stat-icon"><i class="fas fa-puzzle-piece"></i></div>
-                <div class="stat-number"><span class="counter" data-target="25">0</span><span class="suffix">+</span></div>
-                <div class="stat-label">Fitur Lengkap</div>
-            </div>
-            <div class="stat-item" data-aos="zoom-in" data-aos-delay="350">
-                <div class="stat-icon"><i class="fas fa-code"></i></div>
-                <div class="stat-number"><span class="counter" data-target="2">0</span></div>
-                <div class="stat-label">Developer Kreatif</div>
             </div>
         </div>
     </section>
@@ -1308,46 +1292,6 @@ session_start();
                     <a href="#" class="social-btn"><i class="fab fa-github"></i><span class="tooltip-text">GitHub</span></a>
                     <a href="#" class="social-btn"><i class="fab fa-linkedin-in"></i><span class="tooltip-text">LinkedIn</span></a>
                     <a href="#" class="social-btn"><i class="fas fa-envelope"></i><span class="tooltip-text">Email</span></a>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- JOURNEY / TIMELINE -->
-    <section class="journey-section" id="perjalanan">
-        <div class="section-label" data-aos="fade-up">Perjalanan</div>
-        <h2 class="section-heading" data-aos="fade-up" data-aos-delay="80">Cerita di Balik Hifzhly</h2>
-        <div class="timeline">
-            <div class="tl-item" data-aos="fade-right" data-aos-delay="50">
-                <div class="tl-badge"></div>
-                <div class="tl-content">
-                    <div class="tl-date"><i class="far fa-calendar-alt"></i> 2024 &mdash; Ide Awal</div>
-                    <h4>Lahirnya Sebuah Gagasan</h4>
-                    <p>Berawal dari kegelisahan akan sulitnya menemukan platform hafalan Qur'an yang sederhana, lengkap, dan gratis. Maka muncullah ide untuk membangun Hifzhly.</p>
-                </div>
-            </div>
-            <div class="tl-item" data-aos="fade-left" data-aos-delay="100">
-                <div class="tl-badge"></div>
-                <div class="tl-content">
-                    <div class="tl-date"><i class="far fa-calendar-alt"></i> 2024 &mdash; Perancangan</div>
-                    <h4>Merancang Fondasi</h4>
-                    <p>Riset mendalam dilakukan—mulai dari kebutuhan pengguna, arsitektur database, hingga desain antarmuka. Setiap detail dipikirkan dengan cermat untuk kenyamanan maksimal.</p>
-                </div>
-            </div>
-            <div class="tl-item" data-aos="fade-right" data-aos-delay="150">
-                <div class="tl-badge"></div>
-                <div class="tl-content">
-                    <div class="tl-date"><i class="far fa-calendar-alt"></i> 2025 &mdash; Pengembangan</div>
-                    <h4>Eksekusi &amp; Inovasi</h4>
-                    <p>Proses coding berlangsung intensif. Fitur demi fitur lahir: murojaah cerdas, mutabaah harian, game interaktif, dan sistem target pribadi—semua dalam satu genggaman.</p>
-                </div>
-            </div>
-            <div class="tl-item" data-aos="fade-left" data-aos-delay="200">
-                <div class="tl-badge"></div>
-                <div class="tl-content">
-                    <div class="tl-date"><i class="far fa-calendar-alt"></i> 2025 &mdash; Publikasi</div>
-                    <h4>Melayani Umat</h4>
-                    <p>Hifzhly resmi diluncurkan untuk publik. Lebih dari seribu pengguna telah merasakan manfaatnya, dan kami terus berinovasi untuk memberikan yang terbaik.</p>
                 </div>
             </div>
         </div>
@@ -1494,35 +1438,6 @@ session_start();
                 }, 500);
             });
         });
-
-        // Animated counters
-        const counters = document.querySelectorAll('.counter');
-        if (counters.length) {
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        const el = entry.target;
-                        const target = parseInt(el.dataset.target);
-                        const duration = 2000;
-                        const start = performance.now();
-                        const update = (now) => {
-                            const elapsed = now - start;
-                            const progress = Math.min(elapsed / duration, 1);
-                            const eased = 1 - Math.pow(1 - progress, 3);
-                            el.textContent = Math.round(eased * target);
-                            if (progress < 1) {
-                                requestAnimationFrame(update);
-                            } else {
-                                el.textContent = target;
-                            }
-                        };
-                        requestAnimationFrame(update);
-                        observer.unobserve(el);
-                    }
-                });
-            }, { threshold: 0.5 });
-            counters.forEach(c => observer.observe(c));
-        }
 
         // Floating particles
         const canvas = document.getElementById('particles-canvas');

@@ -23,7 +23,6 @@ function kirim_email($to, $subject, $body) {
         $mail->Body = $body;
         $mail->Timeout = 10;
         $mail->SMTPKeepAlive = false;
-        $mail->do_debug = 0;
         $mail->send();
         return true;
     } catch (\Throwable $e) {

@@ -6,21 +6,6 @@ use PHPMailer\PHPMailer\Exception;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-$env_file = __DIR__ . '/../.env';
-if (file_exists($env_file)) {
-    $lines = file($env_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-    foreach ($lines as $line) {
-        $line = trim($line);
-        if ($line === '' || str_starts_with($line, '#')) continue;
-        if (str_contains($line, '=')) {
-            [$key, $val] = explode('=', $line, 2);
-            $val = trim($val, " \t\n\r\0\x0B\"'");
-            putenv(trim($key) . '=' . $val);
-            $_ENV[trim($key)] = $val;
-        }
-    }
-}
-
 function kirim_email($to, $subject, $body)
 {
     $mail = new PHPMailer(true);
@@ -30,7 +15,7 @@ function kirim_email($to, $subject, $body)
         $mail->Host = 'smtp.gmail.com';
         $mail->SMTPAuth = true;
         $mail->Username = 'hifzhlyid@gmail.com';
-        $mail->Password = getenv('SMTP_PASSWORD') ?: 'ejnm hevu hkdl jnxs';
+        $mail->Password = 'ejnm hevu hkdl jnxs';
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port = 587;
         $mail->setFrom('hifzhlyid@gmail.com', 'Hifzhly');

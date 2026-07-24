@@ -47,8 +47,8 @@ function buat_template_email($judul, $konten)
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
     </head>
-    <body style="margin:0;padding:0;background:#06120e;font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',Helvetica,Arial,sans-serif;">
-        <div style="background:linear-gradient(170deg,#06120e 0%,#0a1f16 50%,#071410 100%);padding:40px 16px;">
+    <body style="margin:0;padding:0;background:#08170f;font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',Helvetica,Arial,sans-serif;">
+        <div style="background:linear-gradient(170deg,#08170f 0%,#0d2618 45%,#0a1f14 100%);padding:40px 16px;">
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                     <td align="center">
@@ -57,22 +57,22 @@ function buat_template_email($judul, $konten)
                             <!-- ===== HEADER BANNER ===== -->
                             <tr>
                                 <td style="border-radius:24px 24px 0 0;overflow:hidden;">
-                                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#0d2b1f 0%,#0a8a5c 45%,#047857 100%);position:relative;">
+                                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#0f8a52 0%,#12a05e 45%,#0c7a49 100%);position:relative;">
                                         <tr>
                                             <td style="padding:0;">
                                                 <!-- Ornamen garis emas atas -->
                                                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-                                                    <tr><td style="height:3px;background:linear-gradient(90deg,transparent,#d4a72c,#f2d675,#d4a72c,transparent);"></td></tr>
+                                                    <tr><td style="height:4px;background:linear-gradient(90deg,transparent,#d4a72c,#ffd966,#d4a72c,transparent);"></td></tr>
                                                 </table>
  
                                                 <!-- Bismillah -->
                                                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                                                     <tr>
                                                         <td align="center" style="padding:28px 24px 6px;">
-                                                            <div style="font-family:\'Times New Roman\',\'Traditional Arabic\',serif;font-size:30px;color:#f2d675;font-weight:400;opacity:0.95;line-height:1.6;letter-spacing:0.5px;">
+                                                            <div style="font-family:\'Times New Roman\',\'Traditional Arabic\',serif;font-size:30px;color:#ffd966;font-weight:400;opacity:0.95;line-height:1.6;letter-spacing:0.5px;">
                                                                 بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ
                                                             </div>
-                                                            <div style="font-size:10px;color:rgba(255,255,255,0.45);letter-spacing:2px;text-transform:uppercase;margin-top:6px;">
+                                                            <div style="font-size:10px;color:rgba(255,255,255,0.65);letter-spacing:2px;text-transform:uppercase;margin-top:6px;">
                                                                 Dengan Nama Allah Yang Maha Pengasih Lagi Maha Penyayang
                                                             </div>
                                                         </td>
@@ -82,9 +82,9 @@ function buat_template_email($judul, $konten)
                                                 <!-- Ornamen diamond pemisah -->
                                                 <table role="presentation" cellpadding="0" cellspacing="0" style="margin:18px auto 6px;">
                                                     <tr>
-                                                        <td style="width:60px;height:1px;background:linear-gradient(90deg,transparent,rgba(242,214,117,0.5));"></td>
-                                                        <td style="padding:0 10px;color:#f2d675;font-size:11px;">✦</td>
-                                                        <td style="width:60px;height:1px;background:linear-gradient(90deg,rgba(242,214,117,0.5),transparent);"></td>
+                                                        <td style="width:60px;height:1px;background:linear-gradient(90deg,transparent,rgba(255,217,102,0.7));"></td>
+                                                        <td style="padding:0 10px;color:#ffd966;font-size:11px;">✦</td>
+                                                        <td style="width:60px;height:1px;background:linear-gradient(90deg,rgba(255,217,102,0.7),transparent);"></td>
                                                     </tr>
                                                 </table>
  
@@ -92,14 +92,14 @@ function buat_template_email($judul, $konten)
                                                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                                                     <tr>
                                                         <td align="center" style="padding:8px 24px 30px;">
-                                                            <table role="presentation" cellpadding="0" cellspacing="0" style="background:rgba(6,18,14,0.35);border:1px solid rgba(242,214,117,0.35);border-radius:20px;padding:14px 34px;backdrop-filter:blur(6px);">
+                                                            <table role="presentation" cellpadding="0" cellspacing="0" style="background:rgba(8,23,15,0.4);border:1.5px solid #ffd966;border-radius:20px;padding:14px 34px;backdrop-filter:blur(6px);">
                                                                 <tr>
                                                                     <td style="text-align:center;">
-                                                                        <div style="font-size:11px;color:rgba(255,255,255,0.55);letter-spacing:4px;text-transform:uppercase;margin-bottom:4px;">Assalamu\'alaikum</div>
+                                                                        <div style="font-size:11px;color:rgba(255,255,255,0.7);letter-spacing:4px;text-transform:uppercase;margin-bottom:4px;">Assalamu\'alaikum</div>
                                                                         <div style="font-size:26px;font-weight:900;color:#ffffff;letter-spacing:1px;font-family:\'Helvetica Neue\',Arial,sans-serif;">
-                                                                            هِفْظْلِي <span style="color:#f2d675;">·</span> Hifzhly
+                                                                            هِفْظْلِي <span style="color:#ffd966;">·</span> Hifzhly
                                                                         </div>
-                                                                        <div style="font-size:11px;color:rgba(255,255,255,0.5);letter-spacing:1px;margin-top:4px;">Sahabat Murojaah Al-Qur\'an Kamu</div>
+                                                                        <div style="font-size:11px;color:#ffd966;letter-spacing:1px;margin-top:4px;">Sahabat Murojaah Al-Qur\'an Kamu</div>
                                                                     </td>
                                                                 </tr>
                                                             </table>
@@ -114,12 +114,12 @@ function buat_template_email($judul, $konten)
  
                             <!-- ===== CARD KONTEN ===== -->
                             <tr>
-                                <td style="background:linear-gradient(160deg,#0f221c,#0b1d16);border-radius:0 0 24px 24px;padding:38px 32px 32px;border:1px solid rgba(212,167,44,0.1);border-top:none;box-shadow:0 12px 56px rgba(0,0,0,0.55);">
+                                <td style="background:linear-gradient(160deg,#122e1f,#0d2418);border-radius:0 0 24px 24px;padding:38px 32px 32px;border:1px solid rgba(255,217,102,0.18);border-top:none;box-shadow:0 12px 56px rgba(0,0,0,0.5);">
                                     <table role="presentation" width="100%">
                                         <tr>
-                                            <td style="font-size:19px;font-weight:800;color:#e8e6e1;letter-spacing:0.3px;padding-bottom:2px;">' . $judul . '</td>
+                                            <td style="font-size:19px;font-weight:800;color:#ffd966;letter-spacing:0.3px;padding-bottom:2px;">' . $judul . '</td>
                                         </tr>
-                                        <tr><td style="height:1px;background:linear-gradient(90deg,rgba(212,167,44,0.3),rgba(212,167,44,0.06),transparent);margin:14px 0 8px;display:block;"></td></tr>
+                                        <tr><td style="height:1px;background:linear-gradient(90deg,rgba(255,217,102,0.4),rgba(255,217,102,0.08),transparent);margin:14px 0 8px;display:block;"></td></tr>
                                         ' . $konten . '
                                     </table>
                                 </td>
@@ -130,15 +130,15 @@ function buat_template_email($judul, $konten)
                                 <td align="center" style="padding:30px 0 6px;">
                                     <table role="presentation" cellpadding="0" cellspacing="0" style="margin-bottom:14px;">
                                         <tr>
-                                            <td style="width:40px;height:1px;background:linear-gradient(90deg,transparent,rgba(212,167,44,0.35));"></td>
-                                            <td style="padding:0 8px;color:rgba(212,167,44,0.5);font-size:10px;">❖</td>
-                                            <td style="width:40px;height:1px;background:linear-gradient(90deg,rgba(212,167,44,0.35),transparent);"></td>
+                                            <td style="width:40px;height:1px;background:linear-gradient(90deg,transparent,rgba(255,217,102,0.45));"></td>
+                                            <td style="padding:0 8px;color:rgba(255,217,102,0.65);font-size:10px;">❖</td>
+                                            <td style="width:40px;height:1px;background:linear-gradient(90deg,rgba(255,217,102,0.45),transparent);"></td>
                                         </tr>
                                     </table>
-                                    <p style="margin:0 0 6px;font-size:11px;color:rgba(255,255,255,0.28);letter-spacing:0.4px;">"Sebaik-baik kalian adalah yang belajar Al-Qur\'an dan mengajarkannya."</p>
-                                    <p style="margin:0 0 12px;font-size:10px;color:rgba(255,255,255,0.18);">— HR. Bukhari</p>
-                                    <p style="margin:12px 0 4px;font-size:11px;color:rgba(255,255,255,0.2);letter-spacing:0.5px;">&copy; 2026 هِفْظْلِي Hifzhly · Pendamping Murojaah Al-Qur\'an Berbasis AI</p>
-                                    <p style="margin:0;font-size:10px;color:rgba(255,255,255,0.15);">Email ini dikirim otomatis, harap tidak membalas.</p>
+                                    <p style="margin:0 0 6px;font-size:11px;color:rgba(255,255,255,0.35);letter-spacing:0.4px;">"Sebaik-baik kalian adalah yang belajar Al-Qur\'an dan mengajarkannya."</p>
+                                    <p style="margin:0 0 12px;font-size:10px;color:rgba(255,217,102,0.4);">— HR. Bukhari</p>
+                                    <p style="margin:12px 0 4px;font-size:11px;color:rgba(255,255,255,0.28);letter-spacing:0.5px;">&copy; 2026 هِفْظْلِي Hifzhly · Pendamping Murojaah Al-Qur\'an Berbasis AI</p>
+                                    <p style="margin:0;font-size:10px;color:rgba(255,255,255,0.2);">Email ini dikirim otomatis, harap tidak membalas.</p>
                                 </td>
                             </tr>
  

@@ -21,9 +21,12 @@ function kirim_email($to, $subject, $body) {
         $mail->isHTML(true);
         $mail->Subject = $subject;
         $mail->Body = $body;
+        $mail->Timeout = 10;
+        $mail->SMTPKeepAlive = false;
+        $mail->do_debug = 0;
         $mail->send();
         return true;
-    } catch (Exception $e) {
+    } catch (\Throwable $e) {
         return false;
     }
 }

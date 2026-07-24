@@ -276,12 +276,7 @@ if (isset($_POST['login'])) {
         .card {
             width: 100%;
             max-width: 400px;
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(14px);
             padding: 34px 30px;
-            border-radius: 26px;
-            box-shadow: 0 24px 60px rgba(15, 23, 42, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.6);
             text-align: center;
             opacity: 0;
             animation: cardIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -304,13 +299,9 @@ if (isset($_POST['login'])) {
             width: 76px;
             height: 76px;
             margin: 0 auto 16px;
-            background: #fff;
-            border-radius: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 12px 26px var(--glow), 0 0 0 1px var(--border);
-            padding: 12px;
         }
 
         .logo-frame img {
@@ -514,7 +505,6 @@ if (isset($_POST['login'])) {
         @media (max-width: 480px) {
             .card {
                 padding: 28px 22px;
-                border-radius: 22px;
             }
 
             .logo-frame {

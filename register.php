@@ -269,12 +269,7 @@ if (isset($_POST['register'])) {
         .card {
             width: 100%;
             max-width: 420px;
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(14px);
             padding: 32px 30px;
-            border-radius: 26px;
-            box-shadow: 0 24px 60px rgba(15, 23, 42, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.6);
             text-align: center;
             opacity: 0;
             animation: cardIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -296,14 +291,11 @@ if (isset($_POST['register'])) {
             width: 58px;
             height: 58px;
             margin: 0 auto 14px;
-            border-radius: 17px 6px 17px 17px;
-            background: linear-gradient(135deg, var(--primary-light), var(--primary));
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #fff;
+            color: var(--primary);
             font-size: 1.4rem;
-            box-shadow: 0 12px 26px var(--glow);
         }
 
         .card h2 {
@@ -689,7 +681,6 @@ if (isset($_POST['register'])) {
         @media (max-width: 480px) {
             .card {
                 padding: 26px 20px;
-                border-radius: 22px;
             }
         }
     </style>

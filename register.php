@@ -1,36 +1,52 @@
 <?php
-// 1. Panggil koneksi database
 require_once 'config/database.php';
+require_once 'config/email.php';
 
 $pesan = '';
-$pesanTipe = ''; // 'sukses' atau 'gagal'
+$pesanTipe = '';
 
-// 2. Cek apakah tombol "Daftar" sudah ditekan
 if (isset($_POST['register'])) {
-    // Ambil data dari form dan bersihkan dari karakter berbahaya
     $nama_lengkap = mysqli_real_escape_string($conn, $_POST['nama_lengkap']);
     $email = mysqli_real_escape_string($conn, $_POST['email']);
     $password = mysqli_real_escape_string($conn, $_POST['password']);
-
-    // Enkripsi password agar aman di database
     $password_hashed = password_hash($password, PASSWORD_DEFAULT);
-
-    // Role default untuk pendaftar baru adalah 'user'
     $role = 'user';
 
-    // Cek apakah email sudah pernah didaftarkan
-    $cek_email = mysqli_query($conn, "SELECT email FROM users WHERE email = '$email'");
+    $cek_email = mysqli_query($conn, "SELECT * FROM users WHERE email = '$email'");
     if (mysqli_num_rows($cek_email) > 0) {
-        $pesan = 'Email sudah terdaftar! Gunakan email lain.';
-        $pesanTipe = 'gagal';
+        $existing = mysqli_fetch_assoc($cek_email);
+        if ($existing['is_verified'] == 1) {
+            $pesan = 'Email sudah terdaftar! Gunakan email lain.';
+            $pesanTipe = 'gagal';
+        } else {
+            $kode = sprintf("%06d", random_int(0, 999999));
+            $expiry = date('Y-m-d H:i:s', strtotime('+15 minutes'));
+            $password_hashed = password_hash($password, PASSWORD_DEFAULT);
+            mysqli_query($conn, "UPDATE users SET nama_lengkap = '$nama_lengkap', password = '$password_hashed', verification_code = '$kode', verification_expiry = '$expiry' WHERE email = '$email'");
+            if (kirim_kode_verifikasi($email, $nama_lengkap, $kode)) {
+                header("Location: verify.php?email=" . urlencode($email));
+                exit();
+            } else {
+                $pesan = 'Gagal mengirim email verifikasi. Coba lagi nanti.';
+                $pesanTipe = 'gagal';
+            }
+        }
     } else {
-        // Jika email belum ada, masukkan data ke tabel users
-        $query = "INSERT INTO users (nama_lengkap, email, password, role) 
-                  VALUES ('$nama_lengkap', '$email', '$password_hashed', '$role')";
+        $kode = sprintf("%06d", random_int(0, 999999));
+        $expiry = date('Y-m-d H:i:s', strtotime('+15 minutes'));
+
+        $query = "INSERT INTO users (nama_lengkap, email, password, role, verification_code, verification_expiry, is_verified) 
+                  VALUES ('$nama_lengkap', '$email', '$password_hashed', '$role', '$kode', '$expiry', 0)";
 
         if (mysqli_query($conn, $query)) {
-            $pesan = 'Pendaftaran berhasil! Silakan masuk dengan akun barumu.';
-            $pesanTipe = 'sukses';
+            if (kirim_kode_verifikasi($email, $nama_lengkap, $kode)) {
+                header("Location: verify.php?email=" . urlencode($email));
+                exit();
+            } else {
+                mysqli_query($conn, "DELETE FROM users WHERE email = '$email'");
+                $pesan = 'Gagal mengirim email verifikasi. Coba lagi nanti.';
+                $pesanTipe = 'gagal';
+            }
         } else {
             $pesan = 'Terjadi kesalahan: ' . mysqli_error($conn);
             $pesanTipe = 'gagal';

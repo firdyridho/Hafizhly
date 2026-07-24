@@ -18,26 +18,26 @@ if (isset($_POST['login'])) {
     $email = mysqli_real_escape_string($conn, $_POST['email']);
     $password = mysqli_real_escape_string($conn, $_POST['password']);
 
-    // Cari user berdasarkan email
     $query = mysqli_query($conn, "SELECT * FROM users WHERE email = '$email'");
 
     if (mysqli_num_rows($query) === 1) {
         $user = mysqli_fetch_assoc($query);
 
-        // Cek kecocokan password
         if (password_verify($password, $user['password'])) {
-            // Set session jika berhasil
-            $_SESSION['user_id'] = $user['id'];
-            $_SESSION['nama_lengkap'] = $user['nama_lengkap'];
-            $_SESSION['role'] = $user['role'];
-
-            // Arahkan berdasarkan role
-            if ($user['role'] == 'admin') {
-                header("Location: admin/dashboard.php");
+            if ($user['is_verified'] == 0) {
+                $pesan = "belum_verifikasi";
             } else {
-                header("Location: user/dashboard.php");
+                $_SESSION['user_id'] = $user['id'];
+                $_SESSION['nama_lengkap'] = $user['nama_lengkap'];
+                $_SESSION['role'] = $user['role'];
+
+                if ($user['role'] == 'admin') {
+                    header("Location: admin/dashboard.php");
+                } else {
+                    header("Location: user/dashboard.php");
+                }
+                exit();
             }
-            exit();
         } else {
             $pesan = "salah";
         }
@@ -551,6 +551,8 @@ if (isset($_POST['login'])) {
                     <div class="alert alert-danger"><i class="fa-solid fa-circle-exclamation"></i> Password salah!</div>
                 <?php elseif ($pesan === 'tidak_ada'): ?>
                     <div class="alert alert-danger"><i class="fa-solid fa-circle-exclamation"></i> Email tidak ditemukan!</div>
+                <?php elseif ($pesan === 'belum_verifikasi'): ?>
+                    <div class="alert alert-danger"><i class="fa-solid fa-circle-exclamation"></i> Email belum diverifikasi! <a href="verify.php?email=<?= urlencode($_POST['email'] ?? '') ?>" style="color:#059669;font-weight:700;">Verifikasi sekarang</a></div>
                 <?php endif; ?>
 
                 <form action="" method="POST" onsubmit="tampilkanLoading()">
@@ -571,6 +573,10 @@ if (isset($_POST['login'])) {
                                 <i class="fa-solid fa-eye"></i>
                             </button>
                         </div>
+                    </div>
+
+                    <div style="text-align: right; margin-top: 4px;">
+                        <a href="forgot-password.php" style="font-size: 0.82rem; color: var(--primary); font-weight: 600; text-decoration: none;">Lupa password?</a>
                     </div>
 
                     <button type="submit" name="login" class="btn" id="btn-login">
